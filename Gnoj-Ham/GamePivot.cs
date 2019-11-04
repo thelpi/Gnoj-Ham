@@ -79,7 +79,7 @@ namespace Gnoj_Ham
             DominantWind = WindPivot.East;
             EastIndexTurnCount = 1;
             EastIndex = _players.FindIndex(p => p.InitialWind == WindPivot.East);
-            Draw = new DrawPivot();
+            Draw = new DrawPivot(withRedDoras);
         }
 
         #endregion Constructors
