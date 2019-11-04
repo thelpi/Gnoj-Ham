@@ -42,6 +42,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="DragonPivot.cs" />
+    <Compile Include="DrawPivot.cs" />
+    <Compile Include="GamePivot.cs" />
     <Compile Include="GlobalExtensions.cs" />
     <Compile Include="Messages.Designer.cs">
       <AutoGen>True</AutoGen>

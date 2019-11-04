@@ -23,7 +23,7 @@ namespace Gnoj_Ham
         /// </summary>
         public int Points { get; private set; }
 
-        #endregion
+        #endregion Embedded properties
 
         #region Constructors
 
@@ -49,6 +49,6 @@ namespace Gnoj_Ham
             return Enumerable.Range(0, 4).Select(i => new PlayerPivot($"Player_{i + 1}", (WindPivot)i, initialPointsRulePivot)).ToList();
         }
 
-        #endregion
+        #endregion Static methods
     }
 }
