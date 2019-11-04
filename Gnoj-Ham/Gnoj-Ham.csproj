@@ -48,10 +48,13 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Messages.resx</DependentUpon>
     </Compile>
+    <Compile Include="PlayerPivot.cs" />
+    <Compile Include="InitialPointsRulePivot.cs" />
     <Compile Include="TileCombo.cs" />
     <Compile Include="TilePivot.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="FamilyPivot.cs" />
+    <Compile Include="GlobalTools.cs" />
     <Compile Include="WindPivot.cs" />
   </ItemGroup>
   <ItemGroup>

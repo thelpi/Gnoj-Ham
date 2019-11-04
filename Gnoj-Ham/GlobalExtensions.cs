@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace Gnoj_Ham
 {
@@ -22,6 +23,24 @@ namespace Gnoj_Ham
                 {
                     sourceList.Add(newElement);
                 }
+            }
+        }
+
+        /// <summary>
+        /// Gets the number of points from the specified <see cref="InitialPointsRulePivot"/> value.
+        /// </summary>
+        /// <param name="initialPointsRule">The <see cref="InitialPointsRulePivot"/> value.</param>
+        /// <returns>The number of points.</returns>
+        public static int GetInitialPointsFromRule(this InitialPointsRulePivot initialPointsRule)
+        {
+            switch (initialPointsRule)
+            {
+                case InitialPointsRulePivot.K25:
+                    return 25000;
+                case InitialPointsRulePivot.K30:
+                    return 30000;
+                default:
+                    throw new NotImplementedException();
             }
         }
     }
