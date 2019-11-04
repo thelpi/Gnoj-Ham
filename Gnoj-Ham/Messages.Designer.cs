@@ -70,24 +70,6 @@ namespace Gnoj_Ham {
         }
         
         /// <summary>
-        ///   Recherche une chaîne localisée semblable à The family is invalid (should be caracter, circle or bamboo)..
-        /// </summary>
-        internal static string InvalidFamily {
-            get {
-                return ResourceManager.GetString("InvalidFamily", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Recherche une chaîne localisée semblable à The tile number is invalid (should be between 1 and 9)..
-        /// </summary>
-        internal static string InvalidTileNumber {
-            get {
-                return ResourceManager.GetString("InvalidTileNumber", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Recherche une chaîne localisée semblable à The number of tiles is invalid (should be between 2 and 4)..
         /// </summary>
         internal static string InvalidTilesCount {

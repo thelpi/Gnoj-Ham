@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Gnoj_Ham
 {
@@ -64,46 +66,23 @@ namespace Gnoj_Ham
 
         #region Constructors
 
-        /// <summary>
-        /// Constructor for non-honor families.
-        /// </summary>
-        /// <param name="family">The <see cref="Family"/> value.</param>
-        /// <param name="number">The <see cref="Number"/> value.</param>
-        /// <param name="isRedDora">Optionnal; the <see cref="IsRedDora"/> value; default value is <c>False</c>.</param>
-        /// <exception cref="ArgumentException"><see cref="Messages.InvalidFamily"/></exception>
-        /// <exception cref="ArgumentOutOfRangeException"><see cref="Messages.InvalidTileNumber"/></exception>
-        public TilePivot(FamilyPivot family, byte number, bool isRedDora = false)
+        // Constructor for non-honor families.
+        private TilePivot(FamilyPivot family, byte number, bool isRedDora = false)
         {
-            if (family == FamilyPivot.Wind || family == FamilyPivot.Dragon)
-            {
-                throw new ArgumentException(Messages.InvalidFamily, nameof(family));
-            }
-
-            if (number < 1 || number > 9)
-            {
-                throw new ArgumentOutOfRangeException(nameof(family), number, Messages.InvalidTileNumber);
-            }
-
             Family = family;
             Number = number;
             IsRedDora = isRedDora;
         }
 
-        /// <summary>
-        /// Constructor for <see cref="FamilyPivot.Wind"/>.
-        /// </summary>
-        /// <param name="wind">The <see cref="Wind"/> value.</param>
-        public TilePivot(WindPivot wind)
+        // Constructor for wind.
+        private TilePivot(WindPivot wind)
         {
             Family = FamilyPivot.Wind;
             Wind = wind;
         }
 
-        /// <summary>
-        /// Constructor for <see cref="FamilyPivot.Dragon"/>.
-        /// </summary>
-        /// <param name="dragon">The <see cref="Dragon"/> value.</param>
-        public TilePivot(DragonPivot dragon)
+        // Constructor for dragon.
+        private TilePivot(DragonPivot dragon)
         {
             Family = FamilyPivot.Dragon;
             Dragon = dragon;
@@ -244,5 +223,57 @@ namespace Gnoj_Ham
         }
 
         #endregion Interfaces implementation and overrides from base
+
+        #region Static methods
+
+        /// <summary>
+        /// Gets a complete set of <see cref="TilePivot"/>.
+        /// </summary>
+        /// <param name="withRedDoras">
+        /// Optionnal; indicates if the set contains red doras; default value is <c>False</c>.
+        /// Selected tiles are <c>5</c> of non-honor families (one of each).
+        /// </param>
+        /// <returns>A list of <see cref="TilePivot"/>.</returns>
+        public static List<TilePivot> GetCompleteSet(bool withRedDoras = false)
+        {
+            var tiles = new List<TilePivot>();
+
+            foreach (FamilyPivot family in Enum.GetValues(typeof(FamilyPivot)).Cast<FamilyPivot>())
+            {
+                if (family == FamilyPivot.Dragon)
+                {
+                    foreach (DragonPivot dragon in Enum.GetValues(typeof(DragonPivot)).Cast<DragonPivot>())
+                    {
+                        tiles.Add(new TilePivot(dragon), 4);
+                    }
+                }
+                else if (family == FamilyPivot.Wind)
+                {
+                    foreach (WindPivot wind in Enum.GetValues(typeof(WindPivot)).Cast<WindPivot>())
+                    {
+                        tiles.Add(new TilePivot(wind), 4);
+                    }
+                }
+                else
+                {
+                    for (byte j = 1; j <= 9; j++)
+                    {
+                        if (withRedDoras && j == 5)
+                        {
+                            tiles.Add(new TilePivot(family, j), 3);
+                            tiles.Add(new TilePivot(family, j, true));
+                        }
+                        else
+                        {
+                            tiles.Add(new TilePivot(family, j), 4);
+                        }
+                    }
+                }
+            }
+
+            return tiles;
+        }
+
+        #endregion
     }
 }
