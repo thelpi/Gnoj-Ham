@@ -117,10 +117,16 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="InvalidCombination" xml:space="preserve">
+    <value>The combination of tiles is invalid.</value>
+  </data>
   <data name="InvalidFamily" xml:space="preserve">
-    <value>The family is invalid.</value>
+    <value>The family is invalid (should be caracter, circle or bamboo).</value>
   </data>
   <data name="InvalidTileNumber" xml:space="preserve">
-    <value>The tile number is invalid.</value>
+    <value>The tile number is invalid (should be between 1 and 9).</value>
+  </data>
+  <data name="InvalidTilesCount" xml:space="preserve">
+    <value>The number of tiles is invalid (should be between 2 and 4).</value>
   </data>
 </root>
