@@ -14,7 +14,7 @@ namespace Gnoj_Ham
 
         private readonly List<TilePivot> _tiles;
         /// <summary>
-        /// List of <see cref="TilePivot"/>.
+        /// Inferred; list of tiles; includes <see cref="OpenTile"/>.
         /// </summary>
         /// <remarks>Sorted by <see cref="IComparable{TilePivot}"/>.</remarks>
         public IReadOnlyCollection<TilePivot> Tiles
@@ -25,9 +25,25 @@ namespace Gnoj_Ham
             }
         }
 
+        /// <summary>
+        /// Optionnal tile not concealed.
+        /// </summary>
+        public readonly TilePivot OpenTile;
+
         #endregion Embedded properties
 
         #region Inferred properties
+
+        /// <summary>
+        /// Inferred; indicates if the combination is concealed.
+        /// </summary>
+        public bool IsConcealed
+        {
+            get
+            {
+                return OpenTile == null;
+            }
+        }
 
         /// <summary>
         /// Inferred; indicates if the combination is a pair.
@@ -129,21 +145,30 @@ namespace Gnoj_Ham
         /// <summary>
         /// Constructor.
         /// </summary>
-        /// <param name="tiles">The <see cref="Tiles"/> value.</param>
-        /// <exception cref="ArgumentNullException"><paramref name="tiles"/> is <c>Null</c>.</exception>
+        /// <param name="concealedTiles">List of concealed tiles.</param>
+        /// <param name="openTile">Optionnal; non-concealed tile; default value is <c>Null</c>.</param>
+        /// <exception cref="ArgumentNullException"><paramref name="concealedTiles"/> is <c>Null</c>.</exception>
         /// <exception cref="ArgumentException"><see cref="Messages.InvalidTilesCount"/></exception>
         /// <exception cref="ArgumentException"><see cref="Messages.InvalidCombination"/></exception>
-        public TileCombo(IEnumerable<TilePivot> tiles)
+        public TileCombo(IEnumerable<TilePivot> concealedTiles, TilePivot openTile = null)
         {
-            if (tiles is null)
+            if (concealedTiles is null)
             {
-                throw new ArgumentNullException(nameof(tiles));
+                throw new ArgumentNullException(nameof(concealedTiles));
+            }
+
+            var tiles = new List<TilePivot>(concealedTiles);
+            if (openTile != null)
+            {
+                tiles.Add(openTile);
             }
 
             if (tiles.Count() < 2 || tiles.Count() > 4)
             {
-                throw new ArgumentException(Messages.InvalidTilesCount, nameof(tiles));
+                throw new ArgumentException(Messages.InvalidTilesCount, nameof(concealedTiles));
             }
+            
+            OpenTile = openTile;
 
             // The sort is important here...
             _tiles = tiles.OrderBy(t => t).ToList();
