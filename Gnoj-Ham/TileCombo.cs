@@ -13,6 +13,7 @@ namespace Gnoj_Ham
         #region Embedded properties
 
         private readonly List<TilePivot> _tiles;
+
         /// <summary>
         /// Inferred; list of tiles; includes <see cref="OpenTile"/>.
         /// </summary>
@@ -24,7 +25,6 @@ namespace Gnoj_Ham
                 return _tiles;
             }
         }
-
         /// <summary>
         /// Optionnal tile not concealed.
         /// </summary>

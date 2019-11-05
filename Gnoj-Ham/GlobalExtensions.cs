@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Gnoj_Ham
 {
@@ -27,7 +28,7 @@ namespace Gnoj_Ham
         }
 
         /// <summary>
-        /// Gets the number of points from the specified <see cref="InitialPointsRulePivot"/> value.
+        /// Extension; gets the number of points from the specified <see cref="InitialPointsRulePivot"/> value.
         /// </summary>
         /// <param name="initialPointsRule">The <see cref="InitialPointsRulePivot"/> value.</param>
         /// <returns>The number of points.</returns>
@@ -42,6 +43,28 @@ namespace Gnoj_Ham
                 default:
                     throw new NotImplementedException();
             }
+        }
+
+        /// <summary>
+        /// Extension; generates the cartesian product of two lists.
+        /// </summary>
+        /// <typeparam name="T">The underlying type of both list.</typeparam>
+        /// <param name="firstList">The first list.</param>
+        /// <param name="secondList">The second list.</param>
+        /// <returns>The cartesian product; empty list if at least one argument is <c>Null</c>.</returns>
+        public static List<List<T>> CartesianProduct<T>(this List<List<T>> firstList, List<List<T>> secondList)
+        {
+            if (firstList == null || secondList == null)
+            {
+                return new List<List<T>>();
+            }
+
+            return firstList.SelectMany(elem1 => secondList, (elem1, elem2) =>
+                                        {
+                                            List<T> elemsJoin = new List<T>(elem1);
+                                            elemsJoin.AddRange(elem2);
+                                            return elemsJoin;
+                                        }).ToList();
         }
     }
 }

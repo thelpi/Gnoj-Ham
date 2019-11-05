@@ -70,6 +70,15 @@ namespace Gnoj_Ham {
         }
         
         /// <summary>
+        ///   Recherche une chaîne localisée semblable à The total number of tiles is invalid (should be 14)..
+        /// </summary>
+        internal static string InvalidHandTilesCount {
+            get {
+                return ResourceManager.GetString("InvalidHandTilesCount", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Recherche une chaîne localisée semblable à The number of tiles is invalid (should be between 2 and 4, or 1 and 3 with an open tile)..
         /// </summary>
         internal static string InvalidTilesCount {

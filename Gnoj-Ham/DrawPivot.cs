@@ -11,6 +11,14 @@ namespace Gnoj_Ham
         #region Embedded properties
 
         private readonly List<TilePivot> _wallTiles;
+        private readonly List<HandPivot> _hands;
+        private readonly List<TilePivot> _compensationTiles;
+        private readonly List<TilePivot> _doraIndicatorTiles;
+        private readonly List<TilePivot> _uraDoraIndicatorTiles;
+        private readonly List<TilePivot> _deadTreasureTiles;
+        private readonly List<List<TilePivot>> _discards;
+        private readonly List<int> _riichiPositionInDiscard;
+
         /// <summary>
         /// Wall tiles.
         /// </summary>
@@ -22,7 +30,6 @@ namespace Gnoj_Ham
             }
         }
 
-        private readonly List<HandPivot> _hands;
         /// <summary>
         /// Hands of four players. The first one is east.
         /// </summary>
@@ -34,7 +41,6 @@ namespace Gnoj_Ham
             }
         }
 
-        private readonly List<TilePivot> _compensationTiles;
         /// <summary>
         /// List of compensation tiles. 4 at the beginning, between 0 and 4 at the end.
         /// </summary>
@@ -46,7 +52,6 @@ namespace Gnoj_Ham
             }
         }
 
-        private readonly List<TilePivot> _doraIndicatorTiles;
         /// <summary>
         /// List of dora indicator tiles. Always 5 (doesn't mean they're all visible).
         /// </summary>
@@ -58,7 +63,6 @@ namespace Gnoj_Ham
             }
         }
 
-        private readonly List<TilePivot> _uraDoraIndicatorTiles;
         /// <summary>
         /// List of ura-dora indicator tiles. Always 5 (doesn't mean they're all visible).
         /// </summary>
@@ -70,7 +74,6 @@ namespace Gnoj_Ham
             }
         }
 
-        private readonly List<TilePivot> _deadTreasureTiles;
         /// <summary>
         /// Other tiles of the treasure Always 4 minus the number of tiles of <see cref="_compensationTiles"/>.
         /// </summary>
@@ -82,7 +85,6 @@ namespace Gnoj_Ham
             }
         }
 
-        private List<List<TilePivot>> _discards;
         /// <summary>
         /// Discards of four players. The first one is east.
         /// </summary>
@@ -94,7 +96,6 @@ namespace Gnoj_Ham
             }
         }
 
-        private List<int> _riichiPositionInDiscard;
         /// <summary>
         /// Riichi mark in the discard of each player; <c>-1</c> if the player is not riichi. The first one is east.
         /// </summary>

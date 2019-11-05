@@ -11,6 +11,7 @@ namespace Gnoj_Ham
         #region Embedded properties
 
         private readonly List<PlayerPivot> _players;
+
         /// <summary>
         /// List of players.
         /// </summary>
