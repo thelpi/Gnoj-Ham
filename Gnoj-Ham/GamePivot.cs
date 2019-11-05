@@ -60,7 +60,7 @@ namespace Gnoj_Ham
         {
             get
             {
-                // TODO : what to do in case of equality ?
+                // TODO: what to do in case of equality ?
                 return _players.OrderByDescending(p => p.Points).ThenBy(p => (int)p.InitialWind).ToList();
             }
         }

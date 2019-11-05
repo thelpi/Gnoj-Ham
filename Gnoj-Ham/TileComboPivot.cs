@@ -85,6 +85,16 @@ namespace Gnoj_Ham
                 return _tiles.Count == 3 && _tiles[0].Number != _tiles[1].Number;
             }
         }
+        /// <summary>
+        /// Inferred; indicates if the combination is a brelan or a square.
+        /// </summary>
+        public bool IsbrelanOrSquare
+        {
+            get
+            {
+                return IsBrelan || IsSquare;
+            }
+        }
 
         /// <summary>
         /// Inferred; gets the combination <see cref="FamilyPivot"/>.

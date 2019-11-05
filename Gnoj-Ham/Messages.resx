@@ -123,6 +123,9 @@
   <data name="InvalidHandTilesCount" xml:space="preserve">
     <value>The total number of tiles is invalid (should be 14).</value>
   </data>
+  <data name="InvalidLatestTileContext" xml:space="preserve">
+    <value>The specified latest tile should be include in the current hand.</value>
+  </data>
   <data name="InvalidTilesCount" xml:space="preserve">
     <value>The number of tiles is invalid (should be between 2 and 4, or 1 and 3 with an open tile).</value>
   </data>

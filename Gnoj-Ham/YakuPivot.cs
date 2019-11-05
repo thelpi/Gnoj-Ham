@@ -119,7 +119,6 @@ namespace Gnoj_Ham
                         new YakuPivot(KOKUSHI_MUSOU, "Thirteen orphans", 0, "One tile of each dragon, wind and terminal, plus a duplicate.", 13),
                         new YakuPivot(DAISANGEN, "Big three dragons", 13, "Brelan of each dragon type."),
                         new YakuPivot(SUUANKOU, "Four concealed triplets", 13, "Four concealed brelans."),
-                        new YakuPivot(SHOUSUUSHII, "Little four winds", 13, "Brelan of three wind type, and a pair of the fourth wind."),
                         // Depending on rules, might count as double yakuman.
                         new YakuPivot(DAISUUSHII, "Big four winds", 13, "Brelan of each wind type."),
                         new YakuPivot(TSUUIISOU, "All honors", 13, "Every combinations contain honors."),
@@ -162,61 +161,62 @@ namespace Gnoj_Ham
                     _yakus.Add(new YakuPivot(CHANTA, "Terminal or honor in each group", 1, "At least one terminal or honor in every combinations.", 2, _yakus.Find(y => y.Name == JUNCHAN), _yakus.Find(y => y.Name == HONROUTOU)));
                     _yakus.Add(new YakuPivot(RIICHI, "Ready hand", 0, "Win after declaring a tenpai hand. Must be concealed.", 1, _yakus.Find(y => y.Name == DABURU_RIICHI)));
                     _yakus.Add(new YakuPivot(IIPEIKOU, "Identical sequences", 0, "Twice the same sequence in one family. Must be concealed.", 1, _yakus.Find(y => y.Name == RYANPEIKOU)));
+                    _yakus.Add(new YakuPivot(SHOUSUUSHII, "Little four winds", 13, "Brelan of three wind type, and a pair of the fourth wind.", 0, _yakus.Find(y => y.Name == DAISUUSHII)));
                 }
                 return _yakus;
             }
         }
 
         /// <summary>
-        /// Kokushi musou.
+        /// Kokushi musou; yakuman.
         /// </summary>
         public static readonly YakuPivot KokushiMusou = Yakus.First(y => y.Name == KOKUSHI_MUSOU);
         /// <summary>
-        /// Daisangen.
+        /// Daisangen; yakuman.
         /// </summary>
         public static readonly YakuPivot Daisangen = Yakus.First(y => y.Name == DAISANGEN);
         /// <summary>
-        /// Suuankou.
+        /// Suuankou; yakuman.
         /// </summary>
         public static readonly YakuPivot Suuankou = Yakus.First(y => y.Name == SUUANKOU);
         /// <summary>
-        /// Shousuushii.
+        /// Shousuushii; yakuman.
         /// </summary>
         public static readonly YakuPivot Shousuushii = Yakus.First(y => y.Name == SHOUSUUSHII);
         /// <summary>
-        /// Daisuushii.
+        /// Daisuushii; yakuman.
         /// </summary>
         public static readonly YakuPivot Daisuushii = Yakus.First(y => y.Name == DAISUUSHII);
         /// <summary>
-        /// Tsuuiisou.
+        /// Tsuuiisou; yakuman.
         /// </summary>
         public static readonly YakuPivot Tsuuiisou = Yakus.First(y => y.Name == TSUUIISOU);
         /// <summary>
-        /// Ryuuiisou.
+        /// Ryuuiisou; yakuman.
         /// </summary>
         public static readonly YakuPivot Ryuuiisou = Yakus.First(y => y.Name == RYUUIISOU);
         /// <summary>
-        /// Chinroutou.
+        /// Chinroutou; yakuman.
         /// </summary>
         public static readonly YakuPivot Chinroutou = Yakus.First(y => y.Name == CHINROUTOU);
         /// <summary>
-        /// Chuuren poutou.
+        /// Chuuren poutou; yakuman.
         /// </summary>
         public static readonly YakuPivot ChuurenPoutou = Yakus.First(y => y.Name == CHUUREN_POUTOU);
         /// <summary>
-        /// Suukantsu.
+        /// Suukantsu; yakuman.
         /// </summary>
         public static readonly YakuPivot Suukantsu = Yakus.First(y => y.Name == SUUKANTSU);
         /// <summary>
-        /// Tenhou.
+        /// Tenhou; yakuman.
         /// </summary>
         public static readonly YakuPivot Tenhou = Yakus.First(y => y.Name == TENHOU);
         /// <summary>
-        /// Chiihou.
+        /// Chiihou; yakuman.
         /// </summary>
         public static readonly YakuPivot Chiihou = Yakus.First(y => y.Name == CHIIHOU);
         /// <summary>
-        /// Renhou.
+        /// Renhou; yakuman (optionnal).
         /// </summary>
         public static readonly YakuPivot Renhou = Yakus.First(y => y.Name == RENHOU);
         /// <summary>

@@ -61,6 +61,16 @@ namespace Gnoj_Ham
                 return Number == 1 || Number == 9;
             }
         }
+        /// <summary>
+        /// Inferred; indicates if the instance is an honor or a terminal.
+        /// </summary>
+        public bool IsHonorOrTerminal
+        {
+            get
+            {
+                return IsTerminal || IsHonor;
+            }
+        }
 
         #endregion Inferred properties
 
