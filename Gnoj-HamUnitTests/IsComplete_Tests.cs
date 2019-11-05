@@ -6,7 +6,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace Gnoj_HamUnitTests
 {
     /// <summary>
-    /// Unit tests for the static method <see cref="HandPivot.IsComplete(List{TilePivot}, List{TileCombo})"/>.
+    /// Unit tests for the static method <see cref="HandPivot.IsComplete(List{TilePivot}, List{TileComboPivot})"/>.
     /// </summary>
     [TestClass]
     public class IsComplete_Tests
@@ -39,7 +39,7 @@ namespace Gnoj_HamUnitTests
 
             concealedTiles = concealedTiles.OrderBy(t => GlobalTools.Randomizer.NextDouble()).ToList();
 
-            List<List<TileCombo>> result = HandPivot.IsComplete(concealedTiles, new List<TileCombo>());
+            List<List<TileComboPivot>> result = HandPivot.IsComplete(concealedTiles, new List<TileComboPivot>());
 
             Assert.IsNotNull(result);
             Assert.AreEqual(1, result.Count);
@@ -71,9 +71,9 @@ namespace Gnoj_HamUnitTests
 
             concealedTiles = concealedTiles.OrderBy(t => GlobalTools.Randomizer.NextDouble()).ToList();
 
-            List<List<TileCombo>> result = HandPivot.IsComplete(concealedTiles, new List<TileCombo>
+            List<List<TileComboPivot>> result = HandPivot.IsComplete(concealedTiles, new List<TileComboPivot>
             {
-                TileCombo.BuildSquare(TilePivot.GetTile(tilesSet, FamilyPivot.Dragon, dragon: DragonPivot.White))
+                TileComboPivot.BuildSquare(TilePivot.GetTile(tilesSet, FamilyPivot.Dragon, dragon: DragonPivot.White))
             });
 
             Assert.IsNotNull(result);
@@ -81,7 +81,7 @@ namespace Gnoj_HamUnitTests
             result.ForEach(cg => AssertFiveCombinationsIncludingOnePair(cg));
         }
 
-        private static void AssertFiveCombinationsIncludingOnePair(List<TileCombo> result)
+        private static void AssertFiveCombinationsIncludingOnePair(List<TileComboPivot> result)
         {
             Assert.IsNotNull(result);
             Assert.AreEqual(5, result.Count);

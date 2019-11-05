@@ -12,7 +12,7 @@ namespace Gnoj_Ham
         #region Embedded properties
 
         private readonly List<TilePivot> _concealedTiles;
-        private readonly List<TileCombo> _declaredCombinations;
+        private readonly List<TileComboPivot> _declaredCombinations;
 
         /// <summary>
         /// List of concealed tiles.
@@ -25,9 +25,9 @@ namespace Gnoj_Ham
             }
         }
         /// <summary>
-        /// List of declared <see cref="TileCombo"/>.
+        /// List of declared <see cref="TileComboPivot"/>.
         /// </summary>
-        public IReadOnlyCollection<TileCombo> DeclaredCombinations
+        public IReadOnlyCollection<TileComboPivot> DeclaredCombinations
         {
             get
             {
@@ -61,7 +61,7 @@ namespace Gnoj_Ham
         internal HandPivot(IEnumerable<TilePivot> tiles)
         {
             _concealedTiles = tiles.ToList();
-            _declaredCombinations = new List<TileCombo>();
+            _declaredCombinations = new List<TileComboPivot>();
         }
 
         #endregion Constructors
@@ -78,7 +78,7 @@ namespace Gnoj_Ham
         /// <exception cref="ArgumentNullException"><paramref name="concealedTiles"/> is <c>Null</c>.</exception>
         /// <exception cref="ArgumentNullException"><paramref name="declaredCombinations"/> is <c>Null</c>.</exception>
         /// <exception cref="ArgumentException"><see cref="Messages.InvalidHandTilesCount"/></exception>
-        public static List<List<TileCombo>> IsComplete(List<TilePivot> concealedTiles, List<TileCombo> declaredCombinations)
+        public static List<List<TileComboPivot>> IsComplete(List<TilePivot> concealedTiles, List<TileComboPivot> declaredCombinations)
         {
             if (declaredCombinations == null)
             {
@@ -95,7 +95,7 @@ namespace Gnoj_Ham
                 throw new ArgumentException(Messages.InvalidHandTilesCount, nameof(concealedTiles));
             }
 
-            var combinationsSequences = new List<List<TileCombo>>();
+            var combinationsSequences = new List<List<TileComboPivot>>();
 
             // Every combinations are declared.
             if (declaredCombinations.Count == 4)
@@ -104,9 +104,9 @@ namespace Gnoj_Ham
                 if (concealedTiles[0] == concealedTiles[1])
                 {
                     combinationsSequences.Add(
-                        new List<TileCombo>(declaredCombinations)
+                        new List<TileComboPivot>(declaredCombinations)
                         {
-                            new TileCombo(concealedTiles)
+                            new TileComboPivot(concealedTiles)
                         });
                 }
                 return combinationsSequences;
@@ -135,7 +135,7 @@ namespace Gnoj_Ham
                         CheckHonorsForCombinations(familyGroup, t => t.Wind.Value, combinationsSequences);
                         break;
                     default:
-                        List<List<TileCombo>> temporaryCombinationsSequences = GetCombinationSequencesRecursive(familyGroup);
+                        List<List<TileComboPivot>> temporaryCombinationsSequences = GetCombinationSequencesRecursive(familyGroup);
                         // Cartesian product of existant sequences and temporary list.
                         combinationsSequences = combinationsSequences.Count > 0 ?
                             combinationsSequences.CartesianProduct(temporaryCombinationsSequences) : temporaryCombinationsSequences;
@@ -144,7 +144,7 @@ namespace Gnoj_Ham
             }
 
             // Adds the declared combinations to each sequence of combinations.
-            foreach (List<TileCombo> combinationsSequence in combinationsSequences)
+            foreach (List<TileComboPivot> combinationsSequence in combinationsSequences)
             {
                 combinationsSequence.AddRange(declaredCombinations);
             }
@@ -166,13 +166,13 @@ namespace Gnoj_Ham
 
         // Builds combinations (pairs and brelans) from dragon family or wind family.
         private static void CheckHonorsForCombinations<T>(IEnumerable<TilePivot> familyGroup,
-            Func<TilePivot, T> groupKeyFunc, List<List<TileCombo>> combinationsSequences)
+            Func<TilePivot, T> groupKeyFunc, List<List<TileComboPivot>> combinationsSequences)
         {
-            List<TileCombo> combinations =
+            List<TileComboPivot> combinations =
                 familyGroup
                     .GroupBy(groupKeyFunc)
                     .Where(sg => sg.Count() == 2 || sg.Count() == 3)
-                    .Select(sg => new TileCombo(sg))
+                    .Select(sg => new TileComboPivot(sg))
                     .ToList();
 
             if (combinations.Count > 0)
@@ -192,16 +192,16 @@ namespace Gnoj_Ham
 
         // Assumes that all tiles are from the same family, and this family is caracter / circle / bamboo.
         // Also assumes that referenced tile is included in the list.
-        private static List<TileCombo> GetCombinationsForTile(TilePivot tile, IEnumerable<TilePivot> tiles)
+        private static List<TileComboPivot> GetCombinationsForTile(TilePivot tile, IEnumerable<TilePivot> tiles)
         {
-            var combinations = new List<TileCombo>();
+            var combinations = new List<TileComboPivot>();
             
             List<TilePivot> sameNumber = tiles.Where(t => t.Number == tile.Number).ToList();
 
             if (sameNumber.Count > 1)
             {
                 // Can make a pair.
-                combinations.Add(new TileCombo(new List<TilePivot>
+                combinations.Add(new TileComboPivot(new List<TilePivot>
                 {
                     tile,
                     tile
@@ -209,7 +209,7 @@ namespace Gnoj_Ham
                 if (sameNumber.Count > 2)
                 {
                     // Can make a brelan.
-                    combinations.Add(new TileCombo(new List<TilePivot>
+                    combinations.Add(new TileComboPivot(new List<TilePivot>
                     {
                         tile,
                         tile,
@@ -226,7 +226,7 @@ namespace Gnoj_Ham
             if (secondLow != null && firstLow != null)
             {
                 // Can make a sequence.
-                combinations.Add(new TileCombo(new List<TilePivot>
+                combinations.Add(new TileComboPivot(new List<TilePivot>
                 {
                     secondLow,
                     firstLow,
@@ -236,7 +236,7 @@ namespace Gnoj_Ham
             if (firstLow != null && firstHigh != null)
             {
                 // Can make a sequence.
-                combinations.Add(new TileCombo(new List<TilePivot>
+                combinations.Add(new TileComboPivot(new List<TilePivot>
                 {
                     firstLow,
                     tile,
@@ -246,7 +246,7 @@ namespace Gnoj_Ham
             if (firstHigh != null && secondHigh != null)
             {
                 // Can make a sequence.
-                combinations.Add(new TileCombo(new List<TilePivot>
+                combinations.Add(new TileComboPivot(new List<TilePivot>
                 {
                     tile,
                     firstHigh,
@@ -258,15 +258,15 @@ namespace Gnoj_Ham
         }
 
         // Assumes that all tiles are from the same family, and this family is caracter / circle / bamboo.
-        private static List<List<TileCombo>> GetCombinationSequencesRecursive(IEnumerable<TilePivot> tiles)
+        private static List<List<TileComboPivot>> GetCombinationSequencesRecursive(IEnumerable<TilePivot> tiles)
         {
-            var combinationsSequences = new List<List<TileCombo>>();
+            var combinationsSequences = new List<List<TileComboPivot>>();
 
             List<byte> distinctNumbers = tiles.Select(tg => tg.Number).Distinct().OrderBy(v => v).ToList();
             foreach (byte number in distinctNumbers)
             {
-                List<TileCombo> combinations = GetCombinationsForTile(tiles.First(fg => fg.Number == number), tiles);
-                foreach (TileCombo combination in combinations)
+                List<TileComboPivot> combinations = GetCombinationsForTile(tiles.First(fg => fg.Number == number), tiles);
+                foreach (TileComboPivot combination in combinations)
                 {
                     var subTiles = new List<TilePivot>(tiles);
                     foreach (TilePivot tile in combination.Tiles)
@@ -275,8 +275,8 @@ namespace Gnoj_Ham
                     }
                     if (subTiles.Count > 0)
                     {
-                        List<List<TileCombo>> subCombinationsSequences = GetCombinationSequencesRecursive(subTiles);
-                        foreach (List<TileCombo> combinationsSequence in subCombinationsSequences)
+                        List<List<TileComboPivot>> subCombinationsSequences = GetCombinationSequencesRecursive(subTiles);
+                        foreach (List<TileComboPivot> combinationsSequence in subCombinationsSequences)
                         {
                             combinationsSequence.Add(combination);
                             combinationsSequences.Add(combinationsSequence);
@@ -284,7 +284,7 @@ namespace Gnoj_Ham
                     }
                     else
                     {
-                        combinationsSequences.Add(new List<TileCombo>() { combination });
+                        combinationsSequences.Add(new List<TileComboPivot>() { combination });
                     }
                 }
             }

@@ -8,7 +8,7 @@ namespace Gnoj_Ham
     /// Represents a combination of <see cref="TilePivot"/>.
     /// </summary>
     /// <seealso cref="IEquatable{T}"/>
-    public class TileCombo : IEquatable<TileCombo>
+    public class TileComboPivot : IEquatable<TileComboPivot>
     {
         #region Embedded properties
 
@@ -150,7 +150,7 @@ namespace Gnoj_Ham
         /// <exception cref="ArgumentNullException"><paramref name="concealedTiles"/> is <c>Null</c>.</exception>
         /// <exception cref="ArgumentException"><see cref="Messages.InvalidTilesCount"/></exception>
         /// <exception cref="ArgumentException"><see cref="Messages.InvalidCombination"/></exception>
-        public TileCombo(IEnumerable<TilePivot> concealedTiles, TilePivot openTile = null)
+        public TileComboPivot(IEnumerable<TilePivot> concealedTiles, TilePivot openTile = null)
         {
             if (concealedTiles is null)
             {
@@ -185,23 +185,23 @@ namespace Gnoj_Ham
         #region Interfaces implementation and overrides from base
 
         /// <summary>
-        /// Overriden; checks equality between an instance of <see cref="TileCombo"/> and any object.
+        /// Overriden; checks equality between an instance of <see cref="TileComboPivot"/> and any object.
         /// </summary>
-        /// <param name="tile">The <see cref="TileCombo"/> instance.</param>
+        /// <param name="tile">The <see cref="TileComboPivot"/> instance.</param>
         /// <param name="obj">Any <see cref="object"/>.</param>
         /// <returns><c>True</c> if instances are equal or both <c>Null</c>; <c>False</c> otherwise.</returns>
-        public static bool operator ==(TileCombo tile, object obj)
+        public static bool operator ==(TileComboPivot tile, object obj)
         {
             return tile is null ? obj is null : tile.Equals(obj);
         }
 
         /// <summary>
-        /// Overriden; checks inequality between an instance of <see cref="TileCombo"/> and any object.
+        /// Overriden; checks inequality between an instance of <see cref="TileComboPivot"/> and any object.
         /// </summary>
-        /// <param name="tile">The <see cref="TileCombo"/> instance.</param>
+        /// <param name="tile">The <see cref="TileComboPivot"/> instance.</param>
         /// <param name="obj">Any <see cref="object"/>.</param>
         /// <returns><c>False</c> if instances are equal or both <c>Null</c>; <c>True</c> otherwise.</returns>
-        public static bool operator !=(TileCombo tile, object obj)
+        public static bool operator !=(TileComboPivot tile, object obj)
         {
             return !(tile == obj);
         }
@@ -211,7 +211,7 @@ namespace Gnoj_Ham
         /// </summary>
         /// <param name="other">The second instance.</param>
         /// <returns><c>True</c> if both instances are equal; <c>False</c> otherwise.</returns>
-        public bool Equals(TileCombo other)
+        public bool Equals(TileComboPivot other)
         {
             return !(other is null) && _tiles.IsBijection(other.Tiles);
         }
@@ -238,13 +238,13 @@ namespace Gnoj_Ham
 
         /// <summary>
         /// Overriden; checks the equality between this instance and any other object.
-        /// If <paramref name="obj"/> is a <see cref="TileCombo"/>, see <see cref="Equals(TileCombo)"/>.
+        /// If <paramref name="obj"/> is a <see cref="TileComboPivot"/>, see <see cref="Equals(TileComboPivot)"/>.
         /// </summary>
         /// <param name="obj">Any <see cref="object"/>.</param>
         /// <returns><c>True</c> if both instances are equal; <c>False</c> otherwise.</returns>
         public override bool Equals(object obj)
         {
-            return Equals(obj as TileCombo);
+            return Equals(obj as TileComboPivot);
         }
 
         /// <summary>
@@ -360,7 +360,7 @@ namespace Gnoj_Ham
         /// </summary>
         /// <param name="tile">The tile.</param>
         /// <returns>The pair.</returns>
-        public static TileCombo BuildPair(TilePivot tile)
+        public static TileComboPivot BuildPair(TilePivot tile)
         {
             return Build(tile, 2);
         }
@@ -370,7 +370,7 @@ namespace Gnoj_Ham
         /// </summary>
         /// <param name="tile">The tile.</param>
         /// <returns>The brelan.</returns>
-        public static TileCombo BuildBrelan(TilePivot tile)
+        public static TileComboPivot BuildBrelan(TilePivot tile)
         {
             return Build(tile, 3);
         }
@@ -380,15 +380,15 @@ namespace Gnoj_Ham
         /// </summary>
         /// <param name="tile">The tile.</param>
         /// <returns>The square.</returns>
-        public static TileCombo BuildSquare(TilePivot tile)
+        public static TileComboPivot BuildSquare(TilePivot tile)
         {
             return Build(tile, 4);
         }
 
         // Builds a pair, brelan or square of the specified tile.
-        private static TileCombo Build(TilePivot tile, int k)
+        private static TileComboPivot Build(TilePivot tile, int k)
         {
-            return new TileCombo(Enumerable.Range(0, k).Select(i => tile));
+            return new TileComboPivot(Enumerable.Range(0, k).Select(i => tile));
         }
 
         #endregion Static methods
