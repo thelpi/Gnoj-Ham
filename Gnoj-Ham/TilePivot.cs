@@ -274,6 +274,45 @@ namespace Gnoj_Ham
             return tiles;
         }
 
+        /// <summary>
+        /// Gets a tile by criteria from a set.
+        /// </summary>
+        /// <param name="tilesSet">The set of tiles.</param>
+        /// <param name="family">The <see cref="Family"/> value.</param>
+        /// <param name="number">Optionnal; the <see cref="Number"/> value; default value is <c>Null</c>.</param>
+        /// <param name="dragon">Optionnal; the <see cref="Dragon"/> value; default value is <c>Null</c>.</param>
+        /// <param name="wind">Optionnal; the <see cref="Wind"/> value; default value is <c>Null</c>.</param>
+        /// <param name="isRedDora">Optionnal; the <see cref="IsRedDora"/> value; default value is <c>Null</c>.</param>
+        /// <returns></returns>
+        public static TilePivot GetTile(IEnumerable<TilePivot> tilesSet, FamilyPivot family, byte? number = null,
+            DragonPivot? dragon = null, WindPivot? wind = null, bool? isRedDora = null)
+        {
+            if (tilesSet == null)
+            {
+                return null;
+            }
+
+            tilesSet = tilesSet.Where(t => t.Family == family);
+            if (number.HasValue)
+            {
+                tilesSet = tilesSet.Where(t => t.Number == number.Value);
+            }
+            if (dragon.HasValue)
+            {
+                tilesSet = tilesSet.Where(t => t.Dragon == dragon.Value);
+            }
+            if (wind.HasValue)
+            {
+                tilesSet = tilesSet.Where(t => t.Wind == wind.Value);
+            }
+            if (isRedDora.HasValue)
+            {
+                tilesSet = tilesSet.Where(t => t.IsRedDora == isRedDora.Value);
+            }
+
+            return tilesSet.FirstOrDefault();
+        }
+
         #endregion
     }
 }

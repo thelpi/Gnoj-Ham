@@ -352,5 +352,45 @@ namespace Gnoj_Ham
         }
 
         #endregion Private methods
+
+        #region Static methods
+
+        /// <summary>
+        /// Builds a pair from the specified tile.
+        /// </summary>
+        /// <param name="tile">The tile.</param>
+        /// <returns>The pair.</returns>
+        public static TileCombo BuildPair(TilePivot tile)
+        {
+            return Build(tile, 2);
+        }
+
+        /// <summary>
+        /// Builds a brelan from the specified tile.
+        /// </summary>
+        /// <param name="tile">The tile.</param>
+        /// <returns>The brelan.</returns>
+        public static TileCombo BuildBrelan(TilePivot tile)
+        {
+            return Build(tile, 3);
+        }
+
+        /// <summary>
+        /// Builds a square from the specified tile.
+        /// </summary>
+        /// <param name="tile">The tile.</param>
+        /// <returns>The square.</returns>
+        public static TileCombo BuildSquare(TilePivot tile)
+        {
+            return Build(tile, 4);
+        }
+
+        // Builds a pair, brelan or square of the specified tile.
+        private static TileCombo Build(TilePivot tile, int k)
+        {
+            return new TileCombo(Enumerable.Range(0, k).Select(i => tile));
+        }
+
+        #endregion Static methods
     }
 }
