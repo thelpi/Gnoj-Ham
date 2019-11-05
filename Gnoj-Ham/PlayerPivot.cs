@@ -27,7 +27,7 @@ namespace Gnoj_Ham
 
         #region Constructors
 
-        // Constructor
+        // Constructor.
         private PlayerPivot(string name, WindPivot initialWind, InitialPointsRulePivot initialPointsRulePivot)
         {
             Name = name;

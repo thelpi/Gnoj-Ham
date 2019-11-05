@@ -31,13 +31,13 @@ namespace Gnoj_Ham
         /// </summary>
         public int EastIndex { get; private set; }
         /// <summary>
-        /// Number of draws with the current <see cref="EastIndex"/>.
+        /// Number of rounds with the current <see cref="EastIndex"/>.
         /// </summary>
         public int EastIndexTurnCount { get; private set; }
         /// <summary>
-        /// Current <see cref="DrawPivot"/>.
+        /// Current <see cref="RoundPivot"/>.
         /// </summary>
-        public DrawPivot Draw { get; private set; }
+        public RoundPivot Round { get; private set; }
 
         #endregion Embedded properties
 
@@ -80,7 +80,7 @@ namespace Gnoj_Ham
             DominantWind = WindPivot.East;
             EastIndexTurnCount = 1;
             EastIndex = _players.FindIndex(p => p.InitialWind == WindPivot.East);
-            Draw = new DrawPivot(withRedDoras);
+            Round = new RoundPivot(withRedDoras);
         }
 
         #endregion Constructors

@@ -4,9 +4,9 @@ using System.Linq;
 namespace Gnoj_Ham
 {
     /// <summary>
-    /// Represents a draw.
+    /// Represents a round in a game.
     /// </summary>
-    public class DrawPivot
+    public class RoundPivot
     {
         #region Embedded properties
 
@@ -115,7 +115,7 @@ namespace Gnoj_Ham
         /// Constructor.
         /// </summary>
         /// <param name="withRedDoras">Optionnal; indicates if the set used for the game should contain red doras; default value is <c>False</c>.</param>
-        internal DrawPivot(bool withRedDoras = false)
+        internal RoundPivot(bool withRedDoras = false)
         {
             List<TilePivot> tiles = TilePivot
                                     .GetCompleteSet(withRedDoras)
