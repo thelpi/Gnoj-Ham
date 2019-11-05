@@ -66,5 +66,19 @@ namespace Gnoj_Ham
                                             return elemsJoin;
                                         }).ToList();
         }
+
+        /// <summary>
+        /// Extension; checks if a list is a bijection of another list.
+        /// </summary>
+        /// <typeparam name="T">The underlying type in both lists; must implement <see cref="IEquatable{T}"/>.</typeparam>
+        /// <param name="list1">The first list.</param>
+        /// <param name="list2">The second list.</param>
+        /// <returns><c>True</c> if <paramref name="list1"/> is a bijection of <paramref name="list2"/>; <c>False</c> otherwise.</returns>
+        public static bool IsBijection<T>(this IEnumerable<T> list1, IEnumerable<T> list2) where T : IEquatable<T>
+        {
+            return list1 != null && list2 != null
+                && list1.All(e1 => list2.Contains(e1))
+                && list2.All(e2 => list1.Contains(e2));
+        }
     }
 }

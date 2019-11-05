@@ -213,10 +213,7 @@ namespace Gnoj_Ham
         /// <returns><c>True</c> if both instances are equal; <c>False</c> otherwise.</returns>
         public bool Equals(TileCombo other)
         {
-            // Bijection.
-            return !(other is null)
-                && _tiles.All(t => other._tiles.Any(tOther => tOther == t))
-                && other._tiles.All(tOther => _tiles.Any(t => t == tOther));
+            return !(other is null) && _tiles.IsBijection(other.Tiles);
         }
         
         /// <summary>

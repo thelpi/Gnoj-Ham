@@ -5,6 +5,8 @@ VisualStudioVersion = 15.0.27703.2026
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gnoj-Ham", "Gnoj-Ham\Gnoj-Ham.csproj", "{87ADEF1A-F64A-4ED2-8AC7-88226C385BFE}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gnoj-HamUnitTests", "Gnoj-HamUnitTests\Gnoj-HamUnitTests.csproj", "{834D8D3D-8334-403E-A2C5-8E5416561B52}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +17,10 @@ Global
 		{87ADEF1A-F64A-4ED2-8AC7-88226C385BFE}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{87ADEF1A-F64A-4ED2-8AC7-88226C385BFE}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{87ADEF1A-F64A-4ED2-8AC7-88226C385BFE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{834D8D3D-8334-403E-A2C5-8E5416561B52}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{834D8D3D-8334-403E-A2C5-8E5416561B52}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{834D8D3D-8334-403E-A2C5-8E5416561B52}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{834D8D3D-8334-403E-A2C5-8E5416561B52}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

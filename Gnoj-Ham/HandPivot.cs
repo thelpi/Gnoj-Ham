@@ -137,7 +137,8 @@ namespace Gnoj_Ham
                     default:
                         List<List<TileCombo>> temporaryCombinationsSequences = GetCombinationSequencesRecursive(familyGroup);
                         // Cartesian product of existant sequences and temporary list.
-                        combinationsSequences = combinationsSequences.CartesianProduct(temporaryCombinationsSequences);
+                        combinationsSequences = combinationsSequences.Count > 0 ?
+                            combinationsSequences.CartesianProduct(temporaryCombinationsSequences) : temporaryCombinationsSequences;
                         break;
                 }
             }
@@ -148,7 +149,13 @@ namespace Gnoj_Ham
                 combinationsSequence.AddRange(declaredCombinations);
             }
 
-            // Filtres invalid sequences :
+            // Filters duplicates sequences
+            combinationsSequences.RemoveAll(cs1 =>
+                combinationsSequences.Exists(cs2 =>
+                    combinationsSequences.IndexOf(cs2) < combinationsSequences.IndexOf(cs1)
+                    && cs1.IsBijection(cs2)));
+
+            // Filters invalid sequences :
             // - Doesn't contain exactly 5 combinations.
             // - Doesn't contain a pair.
             // - Contains more than one pair.
@@ -266,11 +273,18 @@ namespace Gnoj_Ham
                     {
                         subTiles.Remove(tile);
                     }
-                    List<List<TileCombo>> subCombinationsSequences = GetCombinationSequencesRecursive(subTiles);
-                    foreach (List<TileCombo> combinationsSequence in subCombinationsSequences)
+                    if (subTiles.Count > 0)
                     {
-                        combinationsSequence.Add(combination);
-                        combinationsSequences.Add(combinationsSequence);
+                        List<List<TileCombo>> subCombinationsSequences = GetCombinationSequencesRecursive(subTiles);
+                        foreach (List<TileCombo> combinationsSequence in subCombinationsSequences)
+                        {
+                            combinationsSequence.Add(combination);
+                            combinationsSequences.Add(combinationsSequence);
+                        }
+                    }
+                    else
+                    {
+                        combinationsSequences.Add(new List<TileCombo>() { combination });
                     }
                 }
             }
