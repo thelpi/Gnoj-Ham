@@ -509,8 +509,8 @@ namespace Gnoj_Ham
                     {
                         addYaku = combinationsSequence.Count(c => c.IsSequence && c.IsConcealed) == 4
                             && combinationsSequence.Any(c => c.IsSequence && c.Family == context.LatestTile.Family && (
-                                c.Tiles.Min(t => t.Number) == context.LatestTile.Number
-                                || c.Tiles.Max(t => t.Number) == context.LatestTile.Number
+                                c.SequenceFirstNumber == context.LatestTile.Number
+                                || c.SequenceLastNumber == context.LatestTile.Number
                             ));
                     }
                     else if (yaku == YakuPivot.Iipeikou)
@@ -564,15 +564,15 @@ namespace Gnoj_Ham
                                 .ToList();
 
                         addYaku = ittsuFamilyCombos != null
-                            && ittsuFamilyCombos.Any(c => c.Tiles.Min(t => t.Number) == 1)
-                            && ittsuFamilyCombos.Any(c => c.Tiles.Min(t => t.Number) == 4)
-                            && ittsuFamilyCombos.Any(c => c.Tiles.Min(t => t.Number) == 7);
+                            && ittsuFamilyCombos.Any(c => c.SequenceFirstNumber == 1)
+                            && ittsuFamilyCombos.Any(c => c.SequenceFirstNumber == 4)
+                            && ittsuFamilyCombos.Any(c => c.SequenceFirstNumber == 7);
                     }
                     else if (yaku == YakuPivot.SanshokuDoujun)
                     {
                         addYaku = combinationsSequence
                                     .Where(c => c.IsSequence)
-                                    .GroupBy(c => c.Tiles.Min(t => t.Number))
+                                    .GroupBy(c => c.SequenceFirstNumber)
                                     .FirstOrDefault(b => b.Count() >= 3)?
                                     .Select(b => b.Family)?
                                     .Distinct()?
@@ -705,6 +705,79 @@ namespace Gnoj_Ham
             }
 
             CheckTilesForCallAndExtractCombo(_concealedTiles.Where(t => t == tile), 4, null, null);
+        }
+
+        /// <summary>
+        /// Tries to discard the specified tile.
+        /// </summary>
+        /// <param name="tile">The tile to discard; should obviously be contained in <see cref="_concealedTiles"/>.</param>
+        /// <param name="afterStealing">Optionnal; indicates if the discard is made after stealing a tile; the default value is <c>False</c>.</param>
+        /// <returns><c>False</c> if the discard is forbidden by the tile stolen; <c>True</c> otherwise.</returns>
+        /// <exception cref="ArgumentNullException"><paramref name="tile"/> is <c>Null</c>.</exception>
+        /// <exception cref="InvalidOperationException"><see cref="Messages.ImpossibleDiscard"/></exception>
+        /// <exception cref="ArgumentException"><see cref="Messages.ImpossibleStealingArgument"/></exception>
+        internal bool Discard(TilePivot tile, bool afterStealing = false)
+        {
+            if (tile == null)
+            {
+                throw new ArgumentNullException(nameof(tile));
+            }
+
+            if (!_concealedTiles.Contains(tile))
+            {
+                throw new InvalidOperationException(Messages.ImpossibleDiscard);
+            }
+
+            if (afterStealing)
+            {
+                TileComboPivot lastCombination = _declaredCombinations.LastOrDefault();
+                if (lastCombination == null || lastCombination.IsConcealed)
+                {
+                    throw new ArgumentException(Messages.ImpossibleStealingArgument, nameof(afterStealing));
+                }
+                TilePivot stolenTile = lastCombination.OpenTile;
+                if (stolenTile == tile)
+                {
+                    return false;
+                }
+                else if (lastCombination.IsSequence
+                    && lastCombination.OpenTile.Number == lastCombination.SequenceFirstNumber
+                    && tile.Number == lastCombination.SequenceFirstNumber + 3)
+                {
+                    return false;
+                }
+                else if (lastCombination.IsSequence
+                    && lastCombination.OpenTile.Number == lastCombination.SequenceLastNumber
+                    && tile.Number == lastCombination.SequenceLastNumber - 3)
+                {
+                    return false;
+                }
+            }
+
+            _concealedTiles.Remove(tile);
+            return true;
+        }
+
+        /// <summary>
+        /// Picks a tile from the wall (or from the treasure as compensation of a kan) and adds it to the hand.
+        /// </summary>
+        /// <param name="tile">The tile picked.</param>
+        /// <exception cref="ArgumentNullException"><paramref name="tile"/> is <c>Null</c>.</exception>
+        /// <exception cref="InvalidOperationException"><see cref="Messages.InvalidDraw"/></exception>
+        internal void Pick(TilePivot tile)
+        {
+            if (tile == null)
+            {
+                throw new ArgumentNullException(nameof(tile));
+            }
+
+            if (_concealedTiles.Count + _declaredCombinations.Count * 3 != 13)
+            {
+                throw new InvalidOperationException(Messages.InvalidDraw);
+            }
+
+            _concealedTiles.Add(tile);
+            _concealedTiles.Sort();
         }
 
         #endregion Internal methods

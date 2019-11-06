@@ -117,6 +117,12 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="ImpossibleDiscard" xml:space="preserve">
+    <value>The tile can't be discarded in this context.</value>
+  </data>
+  <data name="ImpossibleStealingArgument" xml:space="preserve">
+    <value>Stealing is impossible in this context.</value>
+  </data>
   <data name="InvalidCall" xml:space="preserve">
     <value>This call is invalid.</value>
   </data>
@@ -125,6 +131,9 @@
   </data>
   <data name="InvalidContextIppatsuValue" xml:space="preserve">
     <value>Ippatsu impossible if not riichi.</value>
+  </data>
+  <data name="InvalidDraw" xml:space="preserve">
+    <value>A draw can't be made in this context.</value>
   </data>
   <data name="InvalidHandTilesCount" xml:space="preserve">
     <value>The total number of tiles is invalid (should be 14).</value>

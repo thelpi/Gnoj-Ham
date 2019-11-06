@@ -61,6 +61,24 @@ namespace Gnoj_Ham {
         }
         
         /// <summary>
+        ///   Recherche une chaîne localisée semblable à The tile can&apos;t be discarded in this context..
+        /// </summary>
+        internal static string ImpossibleDiscard {
+            get {
+                return ResourceManager.GetString("ImpossibleDiscard", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Recherche une chaîne localisée semblable à Stealing is impossible in this context..
+        /// </summary>
+        internal static string ImpossibleStealingArgument {
+            get {
+                return ResourceManager.GetString("ImpossibleStealingArgument", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Recherche une chaîne localisée semblable à This call is invalid..
         /// </summary>
         internal static string InvalidCall {
@@ -84,6 +102,15 @@ namespace Gnoj_Ham {
         internal static string InvalidContextIppatsuValue {
             get {
                 return ResourceManager.GetString("InvalidContextIppatsuValue", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Recherche une chaîne localisée semblable à A draw can&apos;t be made in this context..
+        /// </summary>
+        internal static string InvalidDraw {
+            get {
+                return ResourceManager.GetString("InvalidDraw", resourceCulture);
             }
         }
         

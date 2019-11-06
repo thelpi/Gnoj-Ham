@@ -152,6 +152,26 @@ namespace Gnoj_Ham
                 return HasTerminal || IsHonor;
             }
         }
+        /// <summary>
+        /// Inferred; if sequence, the first number of it; otherwise <c>0</c>.
+        /// </summary>
+        public byte SequenceFirstNumber
+        {
+            get
+            {
+                return _tiles.Min(t => t.Number);
+            }
+        }
+        /// <summary>
+        /// Inferred; if sequence, the last number of it; otherwise <c>0</c>.
+        /// </summary>
+        public byte SequenceLastNumber
+        {
+            get
+            {
+                return _tiles.Max(t => t.Number);
+            }
+        }
 
         #endregion Inferred properties
 
