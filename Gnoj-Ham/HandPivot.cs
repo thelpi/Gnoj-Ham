@@ -294,7 +294,7 @@ namespace Gnoj_Ham
 
         #endregion Static methods
 
-        #region Public methods
+        #region Internal methods
 
         /// <summary>
         /// Computes every yakus from the current hand in the specified context.
@@ -308,7 +308,7 @@ namespace Gnoj_Ham
         /// <exception cref="ArgumentNullException"><paramref name="context"/> is <c>Null</c>.</exception>
         /// <exception cref="InvalidOperationException"><see cref="Messages.InvalidHandTilesCount"/></exception>
         /// <exception cref="InvalidOperationException"><see cref="Messages.InvalidLatestTileContext"/></exception>
-        public List<List<YakuPivot>> GetYakus(WinContextPivot context)
+        internal List<List<YakuPivot>> GetYakus(WinContextPivot context)
         {
             if (context == null)
             {
@@ -619,10 +619,6 @@ namespace Gnoj_Ham
 
             return yakusSequences;
         }
-
-        #endregion Public methods
-
-        #region Internal methods
 
         /// <summary>
         /// Declares a chii. Does not discard a tile.
