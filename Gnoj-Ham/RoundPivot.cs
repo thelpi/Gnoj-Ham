@@ -166,7 +166,8 @@ namespace Gnoj_Ham
             _hands[CurrentPlayerIndex].Pick(tile);
             tile = _hands[CurrentPlayerIndex].ConcealedTiles.Skip(GlobalTools.Randomizer.Next(0, 14)).First();
             _hands[CurrentPlayerIndex].Discard(tile);
-            CurrentPlayerIndex = CurrentPlayerIndex == 3 ? 0 : CurrentPlayerIndex++;
+            _discards[CurrentPlayerIndex].Add(tile);
+            CurrentPlayerIndex = CurrentPlayerIndex == 3 ? 0 : CurrentPlayerIndex + 1;
             return true;
         }
 

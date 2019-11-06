@@ -246,11 +246,11 @@ namespace Gnoj_Ham
             switch (Family)
             {
                 case FamilyPivot.Dragon:
-                    return $"{Family.ToString()} - {Dragon.Value.ToString()}";
+                    return $"{Family.ToString().ToLowerInvariant()}_{Dragon.Value.ToString().ToLowerInvariant()}";
                 case FamilyPivot.Wind:
-                    return $"{Family.ToString()} - {Wind.Value.ToString()}";
+                    return $"{Family.ToString().ToLowerInvariant()}_{Wind.Value.ToString().ToLowerInvariant()}";
                 default:
-                    return $"{Family.ToString()} - {Number.ToString()}" + (IsRedDora ? " (R)" : string.Empty);
+                    return $"{Family.ToString().ToLowerInvariant()}_{Number.ToString()}" + (IsRedDora ? "_red" : string.Empty);
             }
         }
 

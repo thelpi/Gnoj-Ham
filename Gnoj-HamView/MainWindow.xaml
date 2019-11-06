@@ -34,6 +34,9 @@
             </StackPanel>
             <DockPanel DockPanel.Dock="Top">
                 <ScrollViewer DockPanel.Dock="Top" HorizontalScrollBarVisibility="Visible">
+                    <StackPanel Orientation="Horizontal" Name="StpDiscardP0" />
+                </ScrollViewer>
+                <ScrollViewer DockPanel.Dock="Top" HorizontalScrollBarVisibility="Visible">
                     <StackPanel Orientation="Horizontal" Name="StpDiscardP1" />
                 </ScrollViewer>
                 <ScrollViewer DockPanel.Dock="Top" HorizontalScrollBarVisibility="Visible">

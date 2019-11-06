@@ -1,17 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.Drawing;
+using System.Drawing.Imaging;
+using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 using Gnoj_Ham;
 
 namespace Gnoj_HamView
@@ -21,6 +15,9 @@ namespace Gnoj_HamView
     /// </summary>
     public partial class MainWindow : Window
     {
+        private const int TILE_WIDTH = 60;
+        private const int TILE_HEIGHT = 80;
+
         private GamePivot _game;
 
         public MainWindow()
@@ -30,8 +27,19 @@ namespace Gnoj_HamView
             _game = new GamePivot(InitialPointsRulePivot.K25, true);
 
             NewRoundRefresh();
-            
-            BtnSkip.IsEnabled = _game.Round.CurrentPlayerIndex != 0;
+
+            BuildPanelHand();
+
+            StpTreasure.Children.Add(GenerateTileButton(_game.Round.DoraIndicatorTiles.First()));
+        }
+
+        private void BuildPanelHand()
+        {
+            StpHandP0.Children.Clear();
+            foreach (var tile in _game.Round.Hands.ElementAt(0).ConcealedTiles)
+            {
+                StpHandP0.Children.Add(GenerateTileButton(tile));
+            }
         }
 
         private void NewRoundRefresh()
@@ -71,12 +79,48 @@ namespace Gnoj_HamView
 
         private void BtnSkip_Click(object sender, RoutedEventArgs e)
         {
+            var playerToIncrement = _game.Round.CurrentPlayerIndex;
             if (!_game.Round.DefaultAction())
             {
                 MessageBox.Show("End of round");
                 Environment.Exit(0);
             }
-            BtnSkip.IsEnabled = _game.Round.CurrentPlayerIndex != 0;
+            (FindName($"StpDiscardP{playerToIncrement}") as StackPanel).Children.Add(GenerateTileButton(_game.Round.Discards.ElementAt(playerToIncrement).Last()));
+        }
+
+        private Button GenerateTileButton(TilePivot tile, RoutedEventHandler handler = null)
+        {
+            var imgObj = Properties.Resources.ResourceManager.GetObject(tile.ToString());
+
+            var button = new Button
+            {
+                Height = TILE_HEIGHT,
+                Width = TILE_WIDTH,
+                Content = new System.Windows.Controls.Image { Source = ToBitmapImage(imgObj as Bitmap) }
+            };
+            if (handler != null)
+            {
+                button.Click += handler;
+            }
+            return button;
+        }
+
+        private BitmapImage ToBitmapImage(Bitmap bitmap)
+        {
+            using (var memory = new MemoryStream())
+            {
+                bitmap.Save(memory, ImageFormat.Png);
+                memory.Position = 0;
+
+                var bitmapImage = new BitmapImage();
+                bitmapImage.BeginInit();
+                bitmapImage.StreamSource = memory;
+                bitmapImage.CacheOption = BitmapCacheOption.OnLoad;
+                bitmapImage.EndInit();
+                bitmapImage.Freeze();
+
+                return bitmapImage;
+            }
         }
     }
 }
