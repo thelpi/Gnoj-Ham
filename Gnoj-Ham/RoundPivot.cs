@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace Gnoj_Ham
@@ -107,6 +108,11 @@ namespace Gnoj_Ham
             }
         }
 
+        /// <summary>
+        /// The current player index, between 0 and 3.
+        /// </summary>
+        public int CurrentPlayerIndex { get; private set; }
+
         #endregion Embedded properties
 
         #region Constructors
@@ -114,9 +120,16 @@ namespace Gnoj_Ham
         /// <summary>
         /// Constructor.
         /// </summary>
+        /// <param name="firstPlayerIndex">The initial <see cref="CurrentPlayerIndex"/> value.</param>
         /// <param name="withRedDoras">Optionnal; indicates if the set used for the game should contain red doras; default value is <c>False</c>.</param>
-        internal RoundPivot(bool withRedDoras = false)
+        /// <exception cref="ArgumentOutOfRangeException"><paramref name="firstPlayerIndex"/> value should be between <c>0</c> and <c>3</c>.</exception>
+        internal RoundPivot(int firstPlayerIndex, bool withRedDoras = false)
         {
+            if (firstPlayerIndex < 0 || firstPlayerIndex > 3)
+            {
+                throw new ArgumentOutOfRangeException(nameof(firstPlayerIndex));
+            }
+
             List<TilePivot> tiles = TilePivot
                                     .GetCompleteSet(withRedDoras)
                                     .OrderBy(t => GlobalTools.Randomizer.NextDouble())
@@ -130,8 +143,33 @@ namespace Gnoj_Ham
             _doraIndicatorTiles = tiles.GetRange(126, 5);
             _uraDoraIndicatorTiles = tiles.GetRange(131, 5);
             _deadTreasureTiles = new List<TilePivot>();
+            CurrentPlayerIndex = firstPlayerIndex;
         }
 
         #endregion Constructors
+
+        #region Public methods
+
+        /// <summary>
+        /// Proceeds to default action for the current player: picks a tile from the wall and discard a random one.
+        /// </summary>
+        /// <returns><c>False</c> if the wall is exhausted; <c>True</c> otherwise.</returns>
+        public bool DefaultAction()
+        {
+            if (_wallTiles.Count == 0)
+            {
+                return false;
+            }
+
+            var tile = _wallTiles.First();
+            _wallTiles.Remove(tile);
+            _hands[CurrentPlayerIndex].Pick(tile);
+            tile = _hands[CurrentPlayerIndex].ConcealedTiles.Skip(GlobalTools.Randomizer.Next(0, 14)).First();
+            _hands[CurrentPlayerIndex].Discard(tile);
+            CurrentPlayerIndex = CurrentPlayerIndex == 3 ? 0 : CurrentPlayerIndex++;
+            return true;
+        }
+
+        #endregion Public methods
     }
 }

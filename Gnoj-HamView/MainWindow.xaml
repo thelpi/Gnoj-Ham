@@ -1,0 +1,51 @@
+﻿<Window x:Class="Gnoj_HamView.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:Gnoj_HamView"
+        mc:Ignorable="d" WindowStartupLocation="CenterScreen"
+        Title="MainWindow" Height="576" Width="1024">
+    <DockPanel>
+        <StackPanel DockPanel.Dock="Bottom" Orientation="Vertical">
+            <StackPanel Orientation="Horizontal">
+                <Label Width="150" Content="Dominant wind :" HorizontalContentAlignment="Right" />
+                <Label Width="150" Name="LblDominantWind" />
+            </StackPanel>
+            <StackPanel Orientation="Horizontal">
+                <Label Width="150" Content="Current East :" HorizontalContentAlignment="Right" />
+                <Label Width="150" Name="LblCurrentEast" />
+            </StackPanel>
+            <StackPanel Orientation="Horizontal">
+                <Label Width="150" Name="LblPlayer1Points" />
+                <Label Width="150" Name="LblPlayer2Points" />
+                <Label Width="150" Name="LblPlayer3Points" />
+                <Label Width="150" Name="LblPlayer4Points" />
+            </StackPanel>
+        </StackPanel>
+        <DockPanel DockPanel.Dock="Top">
+            <StackPanel Orientation="Horizontal" DockPanel.Dock="Bottom" HorizontalAlignment="Center">
+                <Button Width="75" Content="Chi" Name="BtnCallChi" Click="BtnCallChi_Click" />
+                <Button Width="75" Content="Pon" Margin="5, 0, 0, 0" Name="BtnCallPon" Click="BtnCallPon_Click" />
+                <Button Width="75" Content="Kan" Margin="5, 0, 0, 0" Name="BtnCallKan" Click="BtnCallKan_Click" />
+                <Button Width="75" Content="Tsumo" Margin="5, 0, 0, 0" Name="BtnCallTsumo" Click="BtnCallTsumo_Click" />
+                <Button Width="75" Content="Ron" Margin="5, 0, 0, 0" Name="BtnCallRon" Click="BtnCallRon_Click" />
+                <Button Width="75" Content="Skip" Margin="5, 0, 0, 0" Name="BtnSkip" Click="BtnSkip_Click" />
+            </StackPanel>
+            <DockPanel DockPanel.Dock="Top">
+                <ScrollViewer DockPanel.Dock="Top" HorizontalScrollBarVisibility="Visible">
+                    <StackPanel Orientation="Horizontal" Name="StpDiscardP1" />
+                </ScrollViewer>
+                <ScrollViewer DockPanel.Dock="Top" HorizontalScrollBarVisibility="Visible">
+                    <StackPanel Orientation="Horizontal" Name="StpDiscardP2" />
+                </ScrollViewer>
+                <ScrollViewer DockPanel.Dock="Top" HorizontalScrollBarVisibility="Visible">
+                    <StackPanel Orientation="Horizontal" Name="StpDiscardP3" />
+                </ScrollViewer>
+                <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Name="StpHandP0" />
+                <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Name="StpOpenCombinationsP0" />
+                <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" Name="StpTreasure" />
+            </DockPanel>
+        </DockPanel>
+    </DockPanel>
+</Window>
