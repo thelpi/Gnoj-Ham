@@ -70,6 +70,15 @@ namespace Gnoj_Ham {
         }
         
         /// <summary>
+        ///   Recherche une chaîne localisée semblable à Ippatsu impossible if not riichi..
+        /// </summary>
+        internal static string InvalidContextIppatsuValue {
+            get {
+                return ResourceManager.GetString("InvalidContextIppatsuValue", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Recherche une chaîne localisée semblable à The total number of tiles is invalid (should be 14)..
         /// </summary>
         internal static string InvalidHandTilesCount {

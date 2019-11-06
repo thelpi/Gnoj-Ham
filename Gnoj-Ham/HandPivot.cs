@@ -304,7 +304,8 @@ namespace Gnoj_Ham
         /// <param name="context">The context.</param>
         /// <returns>List of yakus sequences; the caller will have to choose the best and apply specific rules (nagashi, renhou...).</returns>
         /// <exception cref="ArgumentNullException"><paramref name="context"/> is <c>Null</c>.</exception>
-        /// <exception cref="ArgumentNullException"><see cref="WinContextPivot.LatestTile"/> is <c>Null</c>.</exception>
+        /// <exception cref="InvalidOperationException"><see cref="Messages.InvalidHandTilesCount"/></exception>
+        /// <exception cref="InvalidOperationException"><see cref="Messages.InvalidLatestTileContext"/></exception>
         public List<List<YakuPivot>> GetYakus(WinContextPivot context)
         {
             if (context == null)
@@ -312,24 +313,19 @@ namespace Gnoj_Ham
                 throw new ArgumentNullException(nameof(context));
             }
 
-            if (context.LatestTile == null)
-            {
-                throw new ArgumentNullException(nameof(context.LatestTile));
-            }
-
-            int tilesCount = _concealedTiles.Count + _declaredCombinations.Count * 3 + (context.IsSimulatedLatestPick ? 1 : 0);
+            int tilesCount = _concealedTiles.Count + _declaredCombinations.Count * 3 + (context.IsSimulated ? 1 : 0);
             if (tilesCount != 14)
             {
                 throw new InvalidOperationException(Messages.InvalidHandTilesCount);
             }
 
-            if (!context.IsSimulatedLatestPick && !_concealedTiles.Contains(context.LatestTile))
+            if (!context.IsSimulated && !_concealedTiles.Contains(context.LatestTile))
             {
                 throw new InvalidOperationException(Messages.InvalidLatestTileContext);
             }
 
             var concealedTiles = new List<TilePivot>(_concealedTiles);
-            if (context.IsSimulatedLatestPick)
+            if (context.IsSimulated)
             {
                 concealedTiles.Add(context.LatestTile);
             }
@@ -464,7 +460,7 @@ namespace Gnoj_Ham
                     }
                     else if (yaku == YakuPivot.Haitei)
                     {
-                        addYaku = context.IsLastTile;
+                        addYaku = context.IsRoundLastTile;
                     }
                     else if (yaku == YakuPivot.RinshanKaihou)
                     {
