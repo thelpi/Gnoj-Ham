@@ -132,7 +132,7 @@ namespace Gnoj_Ham
                         new YakuPivot(RENHOU, "Hand of man", 0, "Ron on first turn, no other call made.", 13),
                         // Depending on rules, might be ignored.
                         new YakuPivot(NAGASHI_MANGAN, "Discard mangan", 0, "Round ending in Ryuukyoku: the discard of the player contains only terminals and honors. No call has been made by the player, nor by opponents on player's discards.", 5),
-                        new YakuPivot(CHINIISOU, "Flush", 5, "Only one family and no honors.", 6),
+                        new YakuPivot(CHINIISOU, "Flush", 5, "One family only.", 6),
                         new YakuPivot(JUNCHAN, "Terminal in each meld", 2, "Terminal in every combinations.", 3),
                         new YakuPivot(RYANPEIKOU, "Two sets of identical sequences", 0, "Double iipeikou. Must be concealed.", 3),
                         // Note : concealed kans are allowed for dealer.

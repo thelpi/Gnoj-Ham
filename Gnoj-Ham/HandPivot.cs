@@ -339,7 +339,8 @@ namespace Gnoj_Ham
             // - hand is concealed and seven pairs (aka "Chiitoitsu"); in that case, we form every pairs and add an element to "regularCombinationsSequences".
             // - hand is concealed and "13 orphans" (aka "Kokushi musou").
             List<List<TileComboPivot>> regularCombinationsSequences = IsComplete(concealedTiles, new List<TileComboPivot>(_declaredCombinations));
-            if (concealedTiles.Count == 14 && concealedTiles.Distinct().Count() == 7)
+            bool isSevenPairs = concealedTiles.Count == 14 && concealedTiles.Distinct().Count() == 7;
+            if (isSevenPairs)
             {
                 // TODO: this LINQ expression might not working.
                 regularCombinationsSequences.Add(new List<TileComboPivot>(concealedTiles.GroupBy(t => t).Select(c => new TileComboPivot(c))));
@@ -363,19 +364,19 @@ namespace Gnoj_Ham
                 }
                 else if (yaku == YakuPivot.Daisangen)
                 {
-                    addYaku = regularCombinationsSequences.Any(cs => cs.Count(c => c.IsbrelanOrSquare && c.Family == FamilyPivot.Dragon) == 3);
+                    addYaku = regularCombinationsSequences.Any(cs => cs.Count(c => c.IsBrelanOrSquare && c.Family == FamilyPivot.Dragon) == 3);
                 }
                 else if (yaku == YakuPivot.Suuankou)
                 {
-                    addYaku = regularCombinationsSequences.Any(cs => cs.Count(c => c.IsbrelanOrSquare && c.IsConcealed) == 4);
+                    addYaku = regularCombinationsSequences.Any(cs => cs.Count(c => c.IsBrelanOrSquare && c.IsConcealed && (!c.Tiles.Contains(context.LatestTile) || (context.IsWallDraw || context.IsCompensationTile))) == 4);
                 }
                 else if (yaku == YakuPivot.Shousuushii)
                 {
-                    addYaku = regularCombinationsSequences.Any(cs => cs.Count(c => c.IsbrelanOrSquare && c.Family == FamilyPivot.Wind) == 3 && cs.Any(c => c.IsPair && c.Family == FamilyPivot.Wind));
+                    addYaku = regularCombinationsSequences.Any(cs => cs.Count(c => c.IsBrelanOrSquare && c.Family == FamilyPivot.Wind) == 3 && cs.Any(c => c.IsPair && c.Family == FamilyPivot.Wind));
                 }
                 else if (yaku == YakuPivot.Daisuushii)
                 {
-                    addYaku = regularCombinationsSequences.Any(cs => cs.Count(c => c.IsbrelanOrSquare && c.Family == FamilyPivot.Wind) == 4);
+                    addYaku = regularCombinationsSequences.Any(cs => cs.Count(c => c.IsBrelanOrSquare && c.Family == FamilyPivot.Wind) == 4);
                 }
                 else if (yaku == YakuPivot.Tsuuiisou)
                 {
@@ -383,7 +384,7 @@ namespace Gnoj_Ham
                 }
                 else if (yaku == YakuPivot.Ryuuiisou)
                 {
-                    addYaku = regularCombinationsSequences.Any(cs => cs.All(c => 
+                    addYaku = regularCombinationsSequences.Any(cs => cs.All(c =>
                         (c.Family == FamilyPivot.Bamboo && c.Tiles.All(t => new[] { 2, 3, 4, 6, 8 }.Contains(t.Number)))
                         || (c.Family == FamilyPivot.Dragon && c.Tiles.First().Dragon == DragonPivot.Green)
                     ));
@@ -422,6 +423,10 @@ namespace Gnoj_Ham
                     // Ron at first turn (includes chankan).
                     addYaku = context.IsFirstTurnDraw && !context.IsWallDraw && !context.IsCompensationTile;
                 }
+                else
+                {
+                    throw new NotImplementedException();
+                }
 
                 if (addYaku)
                 {
@@ -429,7 +434,7 @@ namespace Gnoj_Ham
                 }
             }
 
-            // Remove yakumans with existant upgrade (it's an overkill as the only known case is "Shousuushii" vs. "Daisuushii")
+            // Remove yakumans with existant upgrade (it's an overkill as the only known case is "Shousuushii" vs. "Daisuushii").
             yakumans.RemoveAll(y => y.Upgrades.Any(yu => yakumans.Contains(yu)));
 
             var yakusSequences = new List<List<YakuPivot>>();
@@ -445,7 +450,174 @@ namespace Gnoj_Ham
                 }
             }
 
-            // TODO
+            foreach (List<TileComboPivot> combinationsSequence in regularCombinationsSequences)
+            {
+                List<YakuPivot> yakusForThisSequence = new List<YakuPivot>();
+                foreach (YakuPivot yaku in YakuPivot.Yakus.Where(y => !y.IsYakuman))
+                {
+                    bool addYaku = false;
+                    int occurences = 1;
+                    if (yaku == YakuPivot.Chiniisou)
+                    {
+                        addYaku = combinationsSequence.Select(c => c.Family).Distinct().Count() == 1
+                            && !combinationsSequence.Any(c => c.IsHonor);
+                    }
+                    else if (yaku == YakuPivot.Haitei)
+                    {
+                        addYaku = context.IsLastTile;
+                    }
+                    else if (yaku == YakuPivot.RinshanKaihou)
+                    {
+                        addYaku = context.IsCompensationTile;
+                    }
+                    else if (yaku == YakuPivot.Chankan)
+                    {
+                        addYaku = context.IsStolenFromOpponentKan;
+                    }
+                    else if (yaku == YakuPivot.Tanyao)
+                    {
+                        addYaku = combinationsSequence.All(c => !c.HasTerminalOrHonor);
+                    }
+                    else if (yaku == YakuPivot.Yakuhai)
+                    {
+                        occurences = combinationsSequence.Count(c =>
+                            c.IsBrelanOrSquare && (
+                                c.Family == FamilyPivot.Dragon || (
+                                    c.Family == FamilyPivot.Wind && (
+                                        c.Tiles.First().Wind == context.DominantWind || c.Tiles.First().Wind == context.PlayerWind
+                                    )
+                                )
+                            )
+                        );
+                        addYaku = occurences > 0;
+                    }
+                    else if (yaku == YakuPivot.Riichi)
+                    {
+                        addYaku = context.IsRiichi;
+                    }
+                    else if (yaku == YakuPivot.Ippatsu)
+                    {
+                        addYaku = context.IsIppatsu;
+                    }
+                    else if (yaku == YakuPivot.MenzenTsumo)
+                    {
+                        addYaku = (context.IsWallDraw || context.IsCompensationTile) && combinationsSequence.All(c => c.IsConcealed);
+                    }
+                    else if (yaku == YakuPivot.Honiisou)
+                    {
+                        addYaku = combinationsSequence.Where(c => !c.IsHonor).Select(c => c.Family).Distinct().Count() == 1;
+                    }
+                    else if (yaku == YakuPivot.Pinfu)
+                    {
+                        addYaku = combinationsSequence.Count(c => c.IsSequence && c.IsConcealed) == 4
+                            && combinationsSequence.Any(c => c.IsSequence && c.Family == context.LatestTile.Family && (
+                                c.Tiles.Min(t => t.Number) == context.LatestTile.Number
+                                || c.Tiles.Max(t => t.Number) == context.LatestTile.Number
+                            ));
+                    }
+                    else if (yaku == YakuPivot.Iipeikou)
+                    {
+                        int sequencesCount = combinationsSequence.Count(c => c.IsSequence);
+                        addYaku = combinationsSequence.All(c => c.IsConcealed) && sequencesCount >= 2
+                            && combinationsSequence.Where(c => c.IsSequence).Distinct().Count() < sequencesCount;
+                    }
+                    else if (yaku == YakuPivot.Shousangen)
+                    {
+                        addYaku = combinationsSequence.Count(c => c.IsBrelanOrSquare && c.Family == FamilyPivot.Dragon) == 2
+                            && combinationsSequence.Any(c => c.IsPair && c.Family == FamilyPivot.Dragon);
+                    }
+                    else if (yaku == YakuPivot.Honroutou)
+                    {
+                        addYaku = combinationsSequence.All(c => c.IsTerminal || c.IsHonor);
+                    }
+                    else if (yaku == YakuPivot.Chiitoitsu)
+                    {
+                        addYaku = combinationsSequence.All(c => c.IsPair);
+                    }
+                    else if (yaku == YakuPivot.Sankantsu)
+                    {
+                        addYaku = combinationsSequence.Count(c => c.IsSquare) == 3;
+                    }
+                    else if (yaku == YakuPivot.SanshokuDoukou)
+                    {
+                        addYaku = combinationsSequence
+                                    .Where(c => c.IsBrelanOrSquare && !c.IsHonor)
+                                    .GroupBy(c => c.Tiles.First().Number)
+                                    .FirstOrDefault(b => b.Count() >= 3)?
+                                    .Select(b => b.Family)?
+                                    .Distinct()?
+                                    .Count() == 3;
+                    }
+                    else if (yaku == YakuPivot.Sanankou)
+                    {
+                        addYaku = combinationsSequence.Count(c => c.IsBrelanOrSquare && c.IsConcealed && (!c.Tiles.Contains(context.LatestTile) || (context.IsWallDraw || context.IsCompensationTile))) == 3;
+                    }
+                    else if (yaku == YakuPivot.Toitoi)
+                    {
+                        addYaku = combinationsSequence.Count(c => c.IsBrelanOrSquare) == 4;
+                    }
+                    else if (yaku == YakuPivot.Ittsu)
+                    {
+                        List<TileComboPivot> ittsuFamilyCombos =
+                            combinationsSequence
+                                .Where(c => c.IsSequence)
+                                .GroupBy(c => c.Family)
+                                .FirstOrDefault(b => b.Count() >= 3)?
+                                .ToList();
+
+                        addYaku = ittsuFamilyCombos != null
+                            && ittsuFamilyCombos.Any(c => c.Tiles.Min(t => t.Number) == 1)
+                            && ittsuFamilyCombos.Any(c => c.Tiles.Min(t => t.Number) == 4)
+                            && ittsuFamilyCombos.Any(c => c.Tiles.Min(t => t.Number) == 7);
+                    }
+                    else if (yaku == YakuPivot.SanshokuDoujun)
+                    {
+                        addYaku = combinationsSequence
+                                    .Where(c => c.IsSequence)
+                                    .GroupBy(c => c.Tiles.Min(t => t.Number))
+                                    .FirstOrDefault(b => b.Count() >= 3)?
+                                    .Select(b => b.Family)?
+                                    .Distinct()?
+                                    .Count() == 3;
+                    }
+                    else if (yaku == YakuPivot.Chanta)
+                    {
+                        addYaku = combinationsSequence.All(c => c.HasTerminalOrHonor);
+                    }
+                    else if (yaku == YakuPivot.DaburuRiichi)
+                    {
+                        addYaku = context.IsRiichi && context.IsFirstTurnRiichi;
+                    }
+                    else if (yaku == YakuPivot.Ryanpeikou)
+                    {
+                        addYaku = combinationsSequence.All(c => c.IsConcealed)
+                            && combinationsSequence.Count(c => c.IsSequence) == 4
+                            && combinationsSequence.Where(c => c.IsSequence).Distinct().Count() == 2;
+                    }
+                    else if (yaku == YakuPivot.Junchan)
+                    {
+                        addYaku = combinationsSequence.All(c => c.HasTerminal);
+                    }
+                    else if (yaku == YakuPivot.NagashiMangan)
+                    {
+                        // Do nothing here, but prevents the exception below.
+                    }
+                    else
+                    {
+                        throw new NotImplementedException();
+                    }
+
+                    if (addYaku)
+                    {
+                        yakusForThisSequence.Add(yaku, occurences);
+                    }
+                }
+
+                // Remove yakus with existant upgrade.
+                yakusForThisSequence.RemoveAll(y => y.Upgrades.Any(yu => yakumans.Contains(yu)));
+
+                yakusSequences.Add(yakusForThisSequence);
+            }
 
             return yakusSequences;
         }
@@ -487,6 +659,10 @@ namespace Gnoj_Ham
             /// <c>True</c> if the player has called riichi.
             /// </summary>
             public bool IsRiichi { get; set; }
+            /// <summary>
+            /// <c>True</c> if the player has called riichi on the first turn.
+            /// </summary>
+            public bool IsFirstTurnRiichi { get; set; }
             /// <summary>
             /// <c>True</c> if it's the first turn after calling riichi.
             /// </summary>

@@ -26,7 +26,8 @@ namespace Gnoj_Ham
             }
         }
         /// <summary>
-        /// Optionnal tile not concealed.
+        /// Optionnal tile not concealed (from a call "pon", "chi" or "kan").
+        /// The tile from a call "ron" is not considered as an open tile.
         /// </summary>
         public readonly TilePivot OpenTile;
 
@@ -88,7 +89,7 @@ namespace Gnoj_Ham
         /// <summary>
         /// Inferred; indicates if the combination is a brelan or a square.
         /// </summary>
-        public bool IsbrelanOrSquare
+        public bool IsBrelanOrSquare
         {
             get
             {
@@ -156,7 +157,7 @@ namespace Gnoj_Ham
         /// Constructor.
         /// </summary>
         /// <param name="concealedTiles">List of concealed tiles.</param>
-        /// <param name="openTile">Optionnal; non-concealed tile; default value is <c>Null</c>.</param>
+        /// <param name="openTile">Optionnal; the <see cref="OpenTile"/> value; default value is <c>Null</c>.</param>
         /// <exception cref="ArgumentNullException"><paramref name="concealedTiles"/> is <c>Null</c>.</exception>
         /// <exception cref="ArgumentException"><see cref="Messages.InvalidTilesCount"/></exception>
         /// <exception cref="ArgumentException"><see cref="Messages.InvalidCombination"/></exception>
