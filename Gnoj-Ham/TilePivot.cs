@@ -167,7 +167,29 @@ namespace Gnoj_Ham
                 default:
                     if (other.Family == Family)
                     {
-                        return Number < other.Number ? -1 : (Number == other.Number ? 0 : 1);
+                        if (Number < other.Number)
+                        {
+                            return -1;
+                        }
+                        else if (Number > other.Number)
+                        {
+                            return 1;
+                        }
+                        else
+                        {
+                            if (IsRedDora && !other.IsRedDora)
+                            {
+                                return -1;
+                            }
+                            else if (!IsRedDora && other.IsRedDora)
+                            {
+                                return 1;
+                            }
+                            else
+                            {
+                                return 0;
+                            }
+                        }
                     }
                     else if (other.Family < Family)
                     {

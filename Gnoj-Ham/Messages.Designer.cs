@@ -61,6 +61,15 @@ namespace Gnoj_Ham {
         }
         
         /// <summary>
+        ///   Recherche une chaîne localisée semblable à This call is invalid..
+        /// </summary>
+        internal static string InvalidCall {
+            get {
+                return ResourceManager.GetString("InvalidCall", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Recherche une chaîne localisée semblable à The combination of tiles is invalid..
         /// </summary>
         internal static string InvalidCombination {
@@ -102,6 +111,15 @@ namespace Gnoj_Ham {
         internal static string InvalidTilesCount {
             get {
                 return ResourceManager.GetString("InvalidTilesCount", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Recherche une chaîne localisée semblable à The wind which the tile has been stolen is not specified..
+        /// </summary>
+        internal static string StolenFromNotSpecified {
+            get {
+                return ResourceManager.GetString("StolenFromNotSpecified", resourceCulture);
             }
         }
     }

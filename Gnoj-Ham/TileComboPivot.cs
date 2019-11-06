@@ -30,6 +30,10 @@ namespace Gnoj_Ham
         /// The tile from a call "ron" is not considered as an open tile.
         /// </summary>
         public readonly TilePivot OpenTile;
+        /// <summary>
+        /// If <see cref="OpenTile"/> is specified, indicates the wind which the tile has been stolen from; otherwise <c>Null</c>.
+        /// </summary>
+        public readonly WindPivot? StolenFrom;
 
         #endregion Embedded properties
 
@@ -158,10 +162,12 @@ namespace Gnoj_Ham
         /// </summary>
         /// <param name="concealedTiles">List of concealed tiles.</param>
         /// <param name="openTile">Optionnal; the <see cref="OpenTile"/> value; default value is <c>Null</c>.</param>
+        /// <param name="stolenFrom">Optionnal; the <see cref="StolenFrom"/> value; default value is <c>Null</c>.</param>
         /// <exception cref="ArgumentNullException"><paramref name="concealedTiles"/> is <c>Null</c>.</exception>
         /// <exception cref="ArgumentException"><see cref="Messages.InvalidTilesCount"/></exception>
         /// <exception cref="ArgumentException"><see cref="Messages.InvalidCombination"/></exception>
-        public TileComboPivot(IEnumerable<TilePivot> concealedTiles, TilePivot openTile = null)
+        /// <exception cref="ArgumentException"><see cref="Messages.StolenFromNotSpecified"/></exception>
+        public TileComboPivot(IEnumerable<TilePivot> concealedTiles, TilePivot openTile = null, WindPivot? stolenFrom = null)
         {
             if (concealedTiles is null)
             {
@@ -178,8 +184,14 @@ namespace Gnoj_Ham
             {
                 throw new ArgumentException(Messages.InvalidTilesCount, nameof(concealedTiles));
             }
-            
+
+            if (openTile != null && !stolenFrom.HasValue)
+            {
+                throw new ArgumentException(Messages.StolenFromNotSpecified, nameof(stolenFrom));
+            }
+
             OpenTile = openTile;
+            StolenFrom = stolenFrom;
 
             // The sort is important here...
             _tiles = tiles.OrderBy(t => t).ToList();

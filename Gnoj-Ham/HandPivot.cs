@@ -60,7 +60,7 @@ namespace Gnoj_Ham
         /// <param name="tiles">Initial list of <see cref="TilePivot"/> (13).</param>
         internal HandPivot(IEnumerable<TilePivot> tiles)
         {
-            _concealedTiles = tiles.ToList();
+            _concealedTiles = tiles.OrderBy(t => t).ToList();
             _declaredCombinations = new List<TileComboPivot>();
         }
 
@@ -293,6 +293,8 @@ namespace Gnoj_Ham
         }
 
         #endregion Static methods
+
+        #region Public methods
 
         /// <summary>
         /// Computes every yakus from the current hand in the specified context.
@@ -617,5 +619,111 @@ namespace Gnoj_Ham
 
             return yakusSequences;
         }
+
+        #endregion Public methods
+
+        #region Internal methods
+
+        /// <summary>
+        /// Declares a chii. Does not discard a tile.
+        /// </summary>
+        /// <param name="tile">The stolen tile.</param>
+        /// <param name="stolenFrom">The wind which the tile has been stolen from.</param>
+        /// <param name="startNumber">The sequence first number.</param>
+        /// <exception cref="ArgumentNullException"><paramref name="tile"/> is <c>Null</c>.</exception>
+        /// <exception cref="ArgumentOutOfRangeException"><paramref name="startNumber"/> is out of range.</exception>
+        /// <exception cref="InvalidOperationException"><see cref="Messages.InvalidCall"/></exception>
+        internal void DeclareChii(TilePivot tile, WindPivot stolenFrom, int startNumber)
+        {
+            if (tile == null)
+            {
+                throw new ArgumentNullException(nameof(tile));
+            }
+
+            if (startNumber < 1 || startNumber > 7)
+            {
+                throw new ArgumentOutOfRangeException(nameof(startNumber));
+            }
+
+            if (tile.Number < startNumber || tile.Number > startNumber + 2)
+            {
+                throw new InvalidOperationException(Messages.InvalidCall);
+            }
+
+            CheckTilesForCallAndExtractCombo(Enumerable
+                                                .Range(startNumber, 3)
+                                                .Where(i => i != tile.Number)
+                                                .Select(i => _concealedTiles.FirstOrDefault(t => t.Family == tile.Family && t.Number == i))
+                                                .Where(t => t != null), 2, tile, stolenFrom);
+        }
+
+        /// <summary>
+        /// Declares a pon. Does not discard a tile.
+        /// </summary>
+        /// <param name="tile">The stolen tile.</param>
+        /// <param name="stolenFrom">The wind which the tile has been stolen from.</param>
+        /// <exception cref="ArgumentNullException"><paramref name="tile"/> is <c>Null</c>.</exception>
+        /// <exception cref="InvalidOperationException"><see cref="Messages.InvalidCall"/></exception>
+        internal void DeclarePon(TilePivot tile, WindPivot stolenFrom)
+        {
+            if (tile == null)
+            {
+                throw new ArgumentNullException(nameof(tile));
+            }
+
+            CheckTilesForCallAndExtractCombo(_concealedTiles.Where(t => t == tile), 3, tile, stolenFrom);
+        }
+
+        /// <summary>
+        /// Declares a kan (opened). Does not discard a tile. Does not draw substitution tile.
+        /// </summary>
+        /// <param name="tile">The stolen tile.</param>
+        /// <param name="stolenFrom">The wind which the tile has been stolen from.</param>
+        /// <exception cref="ArgumentNullException"><paramref name="tile"/> is <c>Null</c>.</exception>
+        /// <exception cref="InvalidOperationException"><see cref="Messages.InvalidCall"/></exception>
+        internal void DeclareKan(TilePivot tile, WindPivot stolenFrom)
+        {
+            if (tile == null)
+            {
+                throw new ArgumentNullException(nameof(tile));
+            }
+
+            CheckTilesForCallAndExtractCombo(_concealedTiles.Where(t => t == tile), 3, tile, stolenFrom);
+        }
+
+        /// <summary>
+        /// Declares a kan (concealed). Does not discard a tile. Does not draw substitution tile.
+        /// </summary>
+        /// <param name="tile">The tile, from the current hand, to make a square from.</param>
+        /// <exception cref="ArgumentNullException"><paramref name="tile"/> is <c>Null</c>.</exception>
+        /// <exception cref="InvalidOperationException"><see cref="Messages.InvalidCall"/></exception>
+        internal void DeclareKan(TilePivot tile)
+        {
+            if (tile == null)
+            {
+                throw new ArgumentNullException(nameof(tile));
+            }
+
+            CheckTilesForCallAndExtractCombo(_concealedTiles.Where(t => t == tile), 4, null, null);
+        }
+
+        #endregion Internal methods
+
+        #region Private methods
+
+        private void CheckTilesForCallAndExtractCombo(IEnumerable<TilePivot> tiles, int expectedCount, TilePivot tile, WindPivot? stolenFrom)
+        {
+            if (tiles.Count() < expectedCount)
+            {
+                throw new InvalidOperationException(Messages.InvalidCall);
+            }
+
+            List<TilePivot> tilesPick = tiles.Take(expectedCount).ToList();
+
+            _declaredCombinations.Add(new TileComboPivot(tilesPick, tile, stolenFrom));
+            tilesPick.ForEach(t => _concealedTiles.Remove(t));
+        }
+
+        #endregion
     }
 }
