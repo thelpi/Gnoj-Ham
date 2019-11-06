@@ -80,5 +80,15 @@ namespace Gnoj_Ham
                 && list1.All(e1 => list2.Contains(e1))
                 && list2.All(e2 => list1.Contains(e2));
         }
+
+        /// <summary>
+        /// Extension; checks if the specified <see cref="DrawTypePivot"/> is a self draw.
+        /// </summary>
+        /// <param name="drawType">The <see cref="DrawTypePivot"/>.</param>
+        /// <returns><c>True</c> if self draw; <c>False</c> otherwise.</returns>
+        public static bool IsSelfDraw(this DrawTypePivot drawType)
+        {
+            return drawType == DrawTypePivot.Wall || drawType == DrawTypePivot.Compensation;
+        }
     }
 }

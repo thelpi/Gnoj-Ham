@@ -42,6 +42,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="DragonPivot.cs" />
+    <Compile Include="DrawTypePivot.cs" />
     <Compile Include="RoundPivot.cs" />
     <Compile Include="GamePivot.cs" />
     <Compile Include="GlobalExtensions.cs" />
@@ -58,6 +59,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="FamilyPivot.cs" />
     <Compile Include="GlobalTools.cs" />
+    <Compile Include="WinContextPivot.cs" />
     <Compile Include="WindPivot.cs" />
     <Compile Include="YakuPivot.cs" />
   </ItemGroup>

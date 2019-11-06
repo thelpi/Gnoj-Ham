@@ -304,8 +304,8 @@ namespace Gnoj_Ham
         /// <param name="context">The context.</param>
         /// <returns>List of yakus sequences; the caller will have to choose the best and apply specific rules (nagashi, renhou...).</returns>
         /// <exception cref="ArgumentNullException"><paramref name="context"/> is <c>Null</c>.</exception>
-        /// <exception cref="ArgumentNullException"><see cref="ContextPivot.LatestTile"/> is <c>Null</c>.</exception>
-        public List<List<YakuPivot>> GetYakus(ContextPivot context)
+        /// <exception cref="ArgumentNullException"><see cref="WinContextPivot.LatestTile"/> is <c>Null</c>.</exception>
+        public List<List<YakuPivot>> GetYakus(WinContextPivot context)
         {
             if (context == null)
             {
@@ -368,7 +368,7 @@ namespace Gnoj_Ham
                 }
                 else if (yaku == YakuPivot.Suuankou)
                 {
-                    addYaku = regularCombinationsSequences.Any(cs => cs.Count(c => c.IsBrelanOrSquare && c.IsConcealed && (!c.Tiles.Contains(context.LatestTile) || (context.IsWallDraw || context.IsCompensationTile))) == 4);
+                    addYaku = regularCombinationsSequences.Any(cs => cs.Count(c => c.IsBrelanOrSquare && c.IsConcealed && (!c.Tiles.Contains(context.LatestTile) || context.DrawType.IsSelfDraw())) == 4);
                 }
                 else if (yaku == YakuPivot.Shousuushii)
                 {
@@ -412,16 +412,16 @@ namespace Gnoj_Ham
                 }
                 else if (yaku == YakuPivot.Tenhou)
                 {
-                    addYaku = context.IsFirstTurnDraw && context.PlayerWind == WindPivot.East && (context.IsWallDraw || context.IsCompensationTile);
+                    addYaku = context.IsFirstTurnDraw && context.PlayerWind == WindPivot.East && context.DrawType.IsSelfDraw();
                 }
                 else if (yaku == YakuPivot.Chiihou)
                 {
-                    addYaku = context.IsFirstTurnDraw && context.PlayerWind != WindPivot.East && (context.IsWallDraw || context.IsCompensationTile);
+                    addYaku = context.IsFirstTurnDraw && context.PlayerWind != WindPivot.East && context.DrawType.IsSelfDraw();
                 }
                 else if (yaku == YakuPivot.Renhou)
                 {
                     // Ron at first turn (includes chankan).
-                    addYaku = context.IsFirstTurnDraw && !context.IsWallDraw && !context.IsCompensationTile;
+                    addYaku = context.IsFirstTurnDraw && !context.DrawType.IsSelfDraw();
                 }
                 else
                 {
@@ -468,11 +468,11 @@ namespace Gnoj_Ham
                     }
                     else if (yaku == YakuPivot.RinshanKaihou)
                     {
-                        addYaku = context.IsCompensationTile;
+                        addYaku = context.DrawType == DrawTypePivot.Compensation;
                     }
                     else if (yaku == YakuPivot.Chankan)
                     {
-                        addYaku = context.IsStolenFromOpponentKan;
+                        addYaku = context.DrawType == DrawTypePivot.OpponentKanCall;
                     }
                     else if (yaku == YakuPivot.Tanyao)
                     {
@@ -501,7 +501,7 @@ namespace Gnoj_Ham
                     }
                     else if (yaku == YakuPivot.MenzenTsumo)
                     {
-                        addYaku = (context.IsWallDraw || context.IsCompensationTile) && combinationsSequence.All(c => c.IsConcealed);
+                        addYaku = context.DrawType.IsSelfDraw() && combinationsSequence.All(c => c.IsConcealed);
                     }
                     else if (yaku == YakuPivot.Honiisou)
                     {
@@ -550,7 +550,7 @@ namespace Gnoj_Ham
                     }
                     else if (yaku == YakuPivot.Sanankou)
                     {
-                        addYaku = combinationsSequence.Count(c => c.IsBrelanOrSquare && c.IsConcealed && (!c.Tiles.Contains(context.LatestTile) || (context.IsWallDraw || context.IsCompensationTile))) == 3;
+                        addYaku = combinationsSequence.Count(c => c.IsBrelanOrSquare && c.IsConcealed && (!c.Tiles.Contains(context.LatestTile) || context.DrawType.IsSelfDraw())) == 3;
                     }
                     else if (yaku == YakuPivot.Toitoi)
                     {
@@ -620,65 +620,6 @@ namespace Gnoj_Ham
             }
 
             return yakusSequences;
-        }
-
-        /// <summary>
-        /// Represents a game and round context to check yakus for the hand.
-        /// </summary>
-        /// <remarks>
-        /// Consistency between properties is not checked.
-        /// Example: <see cref="IsRiichi"/> should be <c>True</c> if <see cref="IsIppatsu"/> is <c>True</c>.
-        /// </remarks>
-        public class ContextPivot
-        {
-            /// <summary>
-            /// The latest tile (from self-draw or not).
-            /// </summary>
-            public TilePivot LatestTile { get; set; }
-            /// <summary>
-            /// <c>True</c> if <see cref="LatestTile"/> is not actually in the hand (simulation).
-            /// </summary>
-            public bool IsSimulatedLatestPick { get; set; }
-            /// <summary>
-            /// <c>True</c> if <see cref="LatestTile"/> is a self-draw from the wall.
-            /// </summary>
-            public bool IsWallDraw { get; set; }
-            /// <summary>
-            /// <c>True</c> if <see cref="LatestTile"/> comes from an opponent calling kan.
-            /// </summary>
-            public bool IsStolenFromOpponentKan { get; set; }
-            /// <summary>
-            /// <c>True</c> if <see cref="LatestTile"/> is a compensation tile after a kan.
-            /// </summary>
-            public bool IsCompensationTile { get; set; }
-            /// <summary>
-            /// <c>True</c> if <see cref="LatestTile"/> was the last tile of the round (from wall or opponent discard).
-            /// </summary>
-            public bool IsLastTile { get; set; }
-            /// <summary>
-            /// <c>True</c> if the player has called riichi.
-            /// </summary>
-            public bool IsRiichi { get; set; }
-            /// <summary>
-            /// <c>True</c> if the player has called riichi on the first turn.
-            /// </summary>
-            public bool IsFirstTurnRiichi { get; set; }
-            /// <summary>
-            /// <c>True</c> if it's the first turn after calling riichi.
-            /// </summary>
-            public bool IsIppatsu { get; set; }
-            /// <summary>
-            /// The current dominant wind.
-            /// </summary>
-            public WindPivot DominantWind { get; set; }
-            /// <summary>
-            /// The current player wind.
-            /// </summary>
-            public WindPivot PlayerWind { get; set; }
-            /// <summary>
-            /// <c>True</c> if it's first turn draw (without call made).
-            /// </summary>
-            public bool IsFirstTurnDraw { get; set; }
         }
     }
 }
