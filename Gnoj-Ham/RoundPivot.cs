@@ -11,6 +11,10 @@ namespace Gnoj_Ham
     {
         #region Embedded properties
 
+        private bool _stealingInProgress = false;
+        private bool _waitForDiscard = false;
+        private readonly GamePivot _game;
+
         private readonly List<TilePivot> _wallTiles;
         private readonly List<HandPivot> _hands;
         private readonly List<TilePivot> _compensationTiles;
@@ -115,15 +119,42 @@ namespace Gnoj_Ham
 
         #endregion Embedded properties
 
+        #region Inferred properties
+
+        /// <summary>
+        /// Inferred; indicates if the current player is the human player.
+        /// </summary>
+        public bool IsHumanPlayer
+        {
+            get
+            {
+                return CurrentPlayerIndex == GamePivot.HUMAN_INDEX;
+            }
+        }
+
+        /// <summary>
+        /// Inferred; indicates the index of the player before <see cref="CurrentPlayerIndex"/>.
+        /// </summary>
+        public int PreviousPlayerIndex
+        {
+            get
+            {
+                return CurrentPlayerIndex == 0 ? 3 : CurrentPlayerIndex - 1;
+            }
+        }
+
+        #endregion Inferred properties
+
         #region Constructors
 
         /// <summary>
         /// Constructor.
         /// </summary>
+        /// <param name="game">The <see cref="GamePivot"/>.</param>
         /// <param name="firstPlayerIndex">The initial <see cref="CurrentPlayerIndex"/> value.</param>
         /// <param name="withRedDoras">Optionnal; indicates if the set used for the game should contain red doras; default value is <c>False</c>.</param>
         /// <exception cref="ArgumentOutOfRangeException"><paramref name="firstPlayerIndex"/> value should be between <c>0</c> and <c>3</c>.</exception>
-        internal RoundPivot(int firstPlayerIndex, bool withRedDoras = false)
+        internal RoundPivot(GamePivot game, int firstPlayerIndex, bool withRedDoras = false)
         {
             if (firstPlayerIndex < 0 || firstPlayerIndex > 3)
             {
@@ -144,6 +175,8 @@ namespace Gnoj_Ham
             _uraDoraIndicatorTiles = tiles.GetRange(131, 5);
             _deadTreasureTiles = new List<TilePivot>();
             CurrentPlayerIndex = firstPlayerIndex;
+
+            _game = game;
         }
 
         #endregion Constructors
@@ -151,26 +184,141 @@ namespace Gnoj_Ham
         #region Public methods
 
         /// <summary>
-        /// Proceeds to default action for the current player: picks a tile from the wall and discard a random one.
+        /// Tries to pick the next tile from the wall.
         /// </summary>
-        /// <returns><c>False</c> if the wall is exhausted; <c>True</c> otherwise.</returns>
-        public bool DefaultAction()
+        /// <returns><c>True</c> if success; <c>False</c> if failure (ie exhausted wall).</returns>
+        public bool Pick()
         {
-            if (_wallTiles.Count == 0)
+            if (_wallTiles.Count == 0 || _waitForDiscard)
             {
                 return false;
             }
 
-            var tile = _wallTiles.First();
+            TilePivot tile = _wallTiles.First();
             _wallTiles.Remove(tile);
             _hands[CurrentPlayerIndex].Pick(tile);
-            tile = _hands[CurrentPlayerIndex].ConcealedTiles.Skip(GlobalTools.Randomizer.Next(0, 14)).First();
-            _hands[CurrentPlayerIndex].Discard(tile);
+            _waitForDiscard = true;
+            return true;
+        }
+
+        /// <summary>
+        /// Checks if calling chii is allowed in this context.
+        /// </summary>
+        /// <returns>
+        /// For each sequence which can be made by calling chii, the lowest number in the current player concealed tiles (and the position [0, 1, 2] of this number in the sequence);
+        /// the list is empty if calling chii is impossible.
+        /// </returns>
+        public Dictionary<int, int> CanCallChii()
+        {
+            if (_wallTiles.Count == 0 || _discards[PreviousPlayerIndex].Count == 0 || _waitForDiscard)
+            {
+                return new Dictionary<int, int>();
+            }
+
+            TilePivot tile = _discards[PreviousPlayerIndex].Last();
+            if (tile.IsHonor)
+            {
+                return new Dictionary<int, int>();
+            }
+
+            List<TilePivot> potentialTiles =
+                _hands[CurrentPlayerIndex]
+                    .ConcealedTiles
+                    .Where(t => t.Family == tile.Family && t.Number != tile.Number && (t.Number >= tile.Number - 2 || t.Number <= tile.Number + 2))
+                    .Distinct()
+                    .ToList();
+
+            var allowedNumbers = new Dictionary<int, int>();
+            if (potentialTiles.Any(t => t.Number == tile.Number - 2) && potentialTiles.Any(t => t.Number == tile.Number - 1))
+            {
+                allowedNumbers.Add(tile.Number - 2, 0);
+            }
+            if (potentialTiles.Any(t => t.Number == tile.Number - 1) && potentialTiles.Any(t => t.Number == tile.Number + 1))
+            {
+                allowedNumbers.Add(tile.Number - 1, 0);
+            }
+            if (potentialTiles.Any(t => t.Number == tile.Number + 1) && potentialTiles.Any(t => t.Number == tile.Number + 2))
+            {
+                allowedNumbers.Add(tile.Number + 1, 1);
+            }
+
+            return allowedNumbers;
+        }
+
+        /// <summary>
+        /// Tries to call chii for the current player.
+        /// </summary>
+        /// <param name="startNumber">The number indicating the beginning of the sequence.</param>
+        /// <returns><c>True</c> if success; <c>False</c> if failure.</returns>
+        public bool CallChii(int startNumber)
+        {
+            if (CanCallChii().Keys.Count == 0)
+            {
+                return false;
+            }
+
+            _hands[CurrentPlayerIndex].DeclareChii(
+                _discards[PreviousPlayerIndex].Last(),
+                _game.GetPlayerCurrentWind(PreviousPlayerIndex),
+                startNumber
+            );
+            _stealingInProgress = true;
+            _waitForDiscard = true;
+            return true;
+        }
+
+        /// <summary>
+        /// Tries to discard the specified tile for the <see cref="CurrentPlayerIndex"/>.
+        /// </summary>
+        /// <param name="tile">The tile to discard.</param>
+        /// <returns>
+        /// <c>False</c> if the discard is forbidden by the tile stolen, or a discard is not expected in this context;
+        /// <c>True</c> otherwise.
+        /// </returns>
+        public bool Discard(TilePivot tile)
+        {
+            if (!_waitForDiscard || !_hands[CurrentPlayerIndex].Discard(tile, _stealingInProgress))
+            {
+                return false;
+            }
+
             _discards[CurrentPlayerIndex].Add(tile);
-            CurrentPlayerIndex = CurrentPlayerIndex == 3 ? 0 : CurrentPlayerIndex + 1;
+            _stealingInProgress = false;
+            _waitForDiscard = false;
+            SetCurrentPlayerIndex();
+            return true;
+        }
+
+        /// <summary>
+        /// Proceeds to default action for the current player: picks a tile from the wall and discard a random one.
+        /// </summary>
+        /// <returns>
+        /// <c>False</c> if the wall is exhausted, or a move is not expected in this context;
+        /// <c>True</c> otherwise.
+        /// </returns>
+        public bool AutoPickAndDiscard()
+        {
+            if (!Pick())
+            {
+                return false;
+            }
+
+            // Discards a random tile.
+            // Can't fail as it's never from a stolen call.
+            Discard(_hands[CurrentPlayerIndex].ConcealedTiles.Skip(GlobalTools.Randomizer.Next(0, _hands[CurrentPlayerIndex].ConcealedTiles.Count)).First());
+
             return true;
         }
 
         #endregion Public methods
+
+        #region Private methods
+
+        private void SetCurrentPlayerIndex()
+        {
+            CurrentPlayerIndex = CurrentPlayerIndex == 3 ? 0 : CurrentPlayerIndex + 1;
+        }
+
+        #endregion Private methods
     }
 }

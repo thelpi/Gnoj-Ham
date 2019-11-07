@@ -24,21 +24,25 @@ namespace Gnoj_HamView
         {
             InitializeComponent();
 
-            _game = new GamePivot(InitialPointsRulePivot.K25, true);
+            _game = new GamePivot("Human", InitialPointsRulePivot.K25, true);
 
             NewRoundRefresh();
 
             BuildPanelHand();
 
             StpTreasure.Children.Add(GenerateTileButton(_game.Round.DoraIndicatorTiles.First()));
+
+            BtnCallChi.IsEnabled = _game.Round.IsHumanPlayer && _game.Round.CanCallChii().Keys.Count > 0;
+            BtnPick.IsEnabled = _game.Round.IsHumanPlayer;
+            BtnSkip.IsEnabled = true;
         }
 
         private void BuildPanelHand()
         {
             StpHandP0.Children.Clear();
-            foreach (var tile in _game.Round.Hands.ElementAt(0).ConcealedTiles)
+            foreach (var tile in _game.Round.Hands.ElementAt(GamePivot.HUMAN_INDEX).ConcealedTiles)
             {
-                StpHandP0.Children.Add(GenerateTileButton(tile));
+                StpHandP0.Children.Add(GenerateTileButton(tile, Discard));
             }
         }
 
@@ -52,40 +56,85 @@ namespace Gnoj_HamView
             LblPlayer4Points.Content = $"{_game.Players.ElementAt(3).Name} {_game.Players.ElementAt(3).Points}";
         }
 
-        private void BtnCallChi_Click(object sender, RoutedEventArgs e)
+        private void Discard(object sender, RoutedEventArgs e)
         {
-
+            if (_game.Round.IsHumanPlayer)
+            {
+                bool success = _game.Round.Discard((sender as Button).Tag as TilePivot);
+                if (success)
+                {
+                    BuildPanelHand();
+                    AddToPlayerDiscard(_game.Round.PreviousPlayerIndex);
+                    EndOFRound();
+                    BtnCallChi.IsEnabled = _game.Round.IsHumanPlayer && _game.Round.CanCallChii().Keys.Count > 0;
+                    BtnPick.IsEnabled = _game.Round.IsHumanPlayer;
+                    BtnSkip.IsEnabled = true;
+                }
+            }
         }
 
-        private void BtnCallPon_Click(object sender, RoutedEventArgs e)
+        private void AddToPlayerDiscard(int pIndex)
         {
-
+            (FindName($"StpDiscardP{pIndex}") as StackPanel).Children.Add(GenerateTileButton(_game.Round.Discards.ElementAt(pIndex).Last()));
         }
 
-        private void BtnCallKan_Click(object sender, RoutedEventArgs e)
+        private void EndOFRound()
         {
-
-        }
-
-        private void BtnCallTsumo_Click(object sender, RoutedEventArgs e)
-        {
-
-        }
-
-        private void BtnCallRon_Click(object sender, RoutedEventArgs e)
-        {
-
-        }
-
-        private void BtnSkip_Click(object sender, RoutedEventArgs e)
-        {
-            var playerToIncrement = _game.Round.CurrentPlayerIndex;
-            if (!_game.Round.DefaultAction())
+            if (_game.Round.WallTiles.Count == 0)
             {
                 MessageBox.Show("End of round");
                 Environment.Exit(0);
             }
-            (FindName($"StpDiscardP{playerToIncrement}") as StackPanel).Children.Add(GenerateTileButton(_game.Round.Discards.ElementAt(playerToIncrement).Last()));
+        }
+
+        private void EffectiveChiCall(object sender, RoutedEventArgs e)
+        {
+            if (_game.Round.CallChii(((sender as Button).Tag as TilePivot).Number))
+            {
+                BuildPanelHand();
+                foreach (var tile in _game.Round.Hands.ElementAt(_game.Round.CurrentPlayerIndex).DeclaredCombinations.Last().Tiles)
+                {
+                    StpOpenCombinationsP0.Children.Add(GenerateTileButton(tile));
+                }
+                BtnCallChi.IsEnabled = false;
+                BtnPick.IsEnabled = false;
+                BtnSkip.IsEnabled = false;
+            }
+            else
+            {
+                EndOFRound();
+            }
+        }
+
+        private void BtnCallChi_Click(object sender, RoutedEventArgs e)
+        {
+            var r = _game.Round.CanCallChii();
+
+            BtnCallChi.IsEnabled = false;
+            BtnPick.IsEnabled = false;
+            BtnSkip.IsEnabled = false;
+
+            // attente du clic
+        }
+
+        private void BtnSkip_Click(object sender, RoutedEventArgs e)
+        {
+            if (_game.Round.AutoPickAndDiscard())
+            {
+                AddToPlayerDiscard(_game.Round.PreviousPlayerIndex);
+                if (_game.Round.PreviousPlayerIndex == GamePivot.HUMAN_INDEX)
+                {
+                    BuildPanelHand();
+                }
+                BtnCallChi.IsEnabled = _game.Round.IsHumanPlayer && _game.Round.CanCallChii().Keys.Count > 0;
+                BtnPick.IsEnabled = _game.Round.IsHumanPlayer;
+                BtnSkip.IsEnabled = true;
+            }
+            else
+            {
+                EndOFRound();
+                // unable to skip for another reason.
+            }
         }
 
         private Button GenerateTileButton(TilePivot tile, RoutedEventHandler handler = null)
@@ -96,7 +145,8 @@ namespace Gnoj_HamView
             {
                 Height = TILE_HEIGHT,
                 Width = TILE_WIDTH,
-                Content = new System.Windows.Controls.Image { Source = ToBitmapImage(imgObj as Bitmap) }
+                Content = new System.Windows.Controls.Image { Source = ToBitmapImage(imgObj as Bitmap) },
+                Tag = tile
             };
             if (handler != null)
             {
@@ -120,6 +170,21 @@ namespace Gnoj_HamView
                 bitmapImage.Freeze();
 
                 return bitmapImage;
+            }
+        }
+
+        private void BtnPick_Click(object sender, RoutedEventArgs e)
+        {
+            if (!_game.Round.Pick())
+            {
+                EndOFRound();
+            }
+            else
+            {
+                BuildPanelHand();
+                BtnCallChi.IsEnabled = false;
+                BtnPick.IsEnabled = false;
+                BtnSkip.IsEnabled = false;
             }
         }
     }

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace Gnoj_Ham
@@ -8,6 +9,15 @@ namespace Gnoj_Ham
     /// </summary>
     public class GamePivot
     {
+        #region Constants
+
+        /// <summary>
+        /// Index of the human player in <see cref="Players"/>.
+        /// </summary>
+        public const int HUMAN_INDEX = 0;
+
+        #endregion Constants
+
         #region Embedded properties
 
         private readonly List<PlayerPivot> _players;
@@ -72,17 +82,50 @@ namespace Gnoj_Ham
         /// <summary>
         /// Constructor.
         /// </summary>
+        /// <param name="humanPlayerName">The name of the human player; other players will be <see cref="PlayerPivot.IsCpu"/>.</param>
         /// <param name="initialPointsRule">The rule for initial points count.</param>
         /// <param name="withRedDoras">Optionnal; indicates if the set used for the game should contain red doras; default value is <c>False</c>.</param>
-        public GamePivot(InitialPointsRulePivot initialPointsRule, bool withRedDoras = false)
+        public GamePivot(string humanPlayerName, InitialPointsRulePivot initialPointsRule, bool withRedDoras = false)
         {
-            _players = PlayerPivot.GetFourPlayers(initialPointsRule);
+            _players = PlayerPivot.GetFourPlayers(humanPlayerName, initialPointsRule);
             DominantWind = WindPivot.East;
             EastIndexTurnCount = 1;
             EastIndex = _players.FindIndex(p => p.InitialWind == WindPivot.East);
-            Round = new RoundPivot(EastIndex, withRedDoras);
+            Round = new RoundPivot(this, EastIndex, withRedDoras);
         }
 
         #endregion Constructors
+
+        #region Public methods
+
+        /// <summary>
+        /// Gets the current <see cref="WindPivot"/> of the specified player.
+        /// </summary>
+        /// <param name="playerIndex">The player index in <see cref="Players"/>.</param>
+        /// <returns>The <see cref="WindPivot"/>.</returns>
+        public WindPivot GetPlayerCurrentWind(int playerIndex)
+        {
+            if (playerIndex < 0 || playerIndex > 3)
+            {
+                throw new ArgumentOutOfRangeException(nameof(playerIndex));
+            }
+
+            if (playerIndex == EastIndex + 1 || playerIndex == EastIndex - 3)
+            {
+                return WindPivot.South;
+            }
+            else if (playerIndex == EastIndex + 2 || playerIndex == EastIndex - 2)
+            {
+                return WindPivot.West;
+            }
+            else if (playerIndex == EastIndex + 3 || playerIndex == EastIndex - 1)
+            {
+                return WindPivot.North;
+            }
+
+            return WindPivot.East;
+        }
+
+        #endregion Public methods
     }
 }

@@ -26,11 +26,8 @@
         <DockPanel DockPanel.Dock="Top">
             <StackPanel Orientation="Horizontal" DockPanel.Dock="Bottom" HorizontalAlignment="Center">
                 <Button Width="75" Content="Chi" Name="BtnCallChi" Click="BtnCallChi_Click" />
-                <Button Width="75" Content="Pon" Margin="5, 0, 0, 0" Name="BtnCallPon" Click="BtnCallPon_Click" />
-                <Button Width="75" Content="Kan" Margin="5, 0, 0, 0" Name="BtnCallKan" Click="BtnCallKan_Click" />
-                <Button Width="75" Content="Tsumo" Margin="5, 0, 0, 0" Name="BtnCallTsumo" Click="BtnCallTsumo_Click" />
-                <Button Width="75" Content="Ron" Margin="5, 0, 0, 0" Name="BtnCallRon" Click="BtnCallRon_Click" />
                 <Button Width="75" Content="Skip" Margin="5, 0, 0, 0" Name="BtnSkip" Click="BtnSkip_Click" />
+                <Button Width="75" Content="Pick" Margin="5, 0, 0, 0" Name="BtnPick" Click="BtnPick_Click" />
             </StackPanel>
             <DockPanel DockPanel.Dock="Top">
                 <ScrollViewer DockPanel.Dock="Top" HorizontalScrollBarVisibility="Visible">
