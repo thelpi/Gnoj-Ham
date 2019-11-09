@@ -205,20 +205,22 @@ namespace Gnoj_Ham
         /// Checks if calling chii is allowed in this context.
         /// </summary>
         /// <returns>
-        /// For each sequence which can be made by calling chii, the lowest number in the current player concealed tiles (and the position [0, 1, 2] of this number in the sequence);
-        /// the list is empty if calling chii is impossible.
+        /// A dictionnary, where each <see cref="KeyValuePair{TilePivot, Boolean}"/> is an indication of the chii which can be made:
+        /// - The key is the first tile (ie the lowest number) of <see cref="HandPivot.ConcealedTiles"/> to use in the sequence.
+        /// - The value indicates if the key is used as lowest number in the sequence (<c>False</c>) or second (<c>True</c>, ie the tile stolen is the lowest number).
+        /// The list is empty if calling chii is impossible.
         /// </returns>
-        public Dictionary<int, int> CanCallChii()
+        public Dictionary<TilePivot, bool> CanCallChii()
         {
             if (_wallTiles.Count == 0 || _discards[PreviousPlayerIndex].Count == 0 || _waitForDiscard)
             {
-                return new Dictionary<int, int>();
+                return new Dictionary<TilePivot, bool>();
             }
 
             TilePivot tile = _discards[PreviousPlayerIndex].Last();
             if (tile.IsHonor)
             {
-                return new Dictionary<int, int>();
+                return new Dictionary<TilePivot, bool>();
             }
 
             List<TilePivot> potentialTiles =
@@ -228,21 +230,26 @@ namespace Gnoj_Ham
                     .Distinct()
                     .ToList();
 
-            var allowedNumbers = new Dictionary<int, int>();
-            if (potentialTiles.Any(t => t.Number == tile.Number - 2) && potentialTiles.Any(t => t.Number == tile.Number - 1))
+            TilePivot tileRelativePositionMinus2 = potentialTiles.FirstOrDefault(t => t.Number == tile.Number - 2);
+            TilePivot tileRelativePositionMinus1 = potentialTiles.FirstOrDefault(t => t.Number == tile.Number - 1);
+            TilePivot tileRelativePositionBonus1 = potentialTiles.FirstOrDefault(t => t.Number == tile.Number + 1);
+            TilePivot tileRelativePositionBonus2 = potentialTiles.FirstOrDefault(t => t.Number == tile.Number + 2);
+
+            var tilesFromConcealedHandWithRelativePosition = new Dictionary<TilePivot, bool>();
+            if (tileRelativePositionMinus2 != null && tileRelativePositionMinus1 != null)
             {
-                allowedNumbers.Add(tile.Number - 2, 0);
+                tilesFromConcealedHandWithRelativePosition.Add(tileRelativePositionMinus2, false);
             }
-            if (potentialTiles.Any(t => t.Number == tile.Number - 1) && potentialTiles.Any(t => t.Number == tile.Number + 1))
+            if (tileRelativePositionMinus1 != null && tileRelativePositionBonus1 != null)
             {
-                allowedNumbers.Add(tile.Number - 1, 0);
+                tilesFromConcealedHandWithRelativePosition.Add(tileRelativePositionMinus1, false);
             }
-            if (potentialTiles.Any(t => t.Number == tile.Number + 1) && potentialTiles.Any(t => t.Number == tile.Number + 2))
+            if (tileRelativePositionBonus1 != null && tileRelativePositionBonus2 != null)
             {
-                allowedNumbers.Add(tile.Number + 1, 1);
+                tilesFromConcealedHandWithRelativePosition.Add(tileRelativePositionBonus1, true);
             }
 
-            return allowedNumbers;
+            return tilesFromConcealedHandWithRelativePosition;
         }
 
         /// <summary>

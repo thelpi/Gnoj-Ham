@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
@@ -15,8 +16,8 @@ namespace Gnoj_HamView
     /// </summary>
     public partial class MainWindow : Window
     {
-        private const int TILE_WIDTH = 60;
-        private const int TILE_HEIGHT = 80;
+        private const int TILE_WIDTH = 45;
+        private const int TILE_HEIGHT = 60;
 
         private GamePivot _game;
 
@@ -89,7 +90,8 @@ namespace Gnoj_HamView
 
         private void EffectiveChiCall(object sender, RoutedEventArgs e)
         {
-            if (_game.Round.CallChii(((sender as Button).Tag as TilePivot).Number))
+            var tag = (KeyValuePair<TilePivot, bool>)((sender as Button).Tag);
+            if (_game.Round.CallChii(tag.Value ? tag.Key.Number - 1 : tag.Key.Number))
             {
                 BuildPanelHand();
                 foreach (var tile in _game.Round.Hands.ElementAt(_game.Round.CurrentPlayerIndex).DeclaredCombinations.Last().Tiles)
@@ -110,11 +112,24 @@ namespace Gnoj_HamView
         {
             var r = _game.Round.CanCallChii();
 
-            BtnCallChi.IsEnabled = false;
-            BtnPick.IsEnabled = false;
-            BtnSkip.IsEnabled = false;
+            if (r.Keys.Count > 0)
+            {
+                BtnCallChi.IsEnabled = false;
+                BtnPick.IsEnabled = false;
+                BtnSkip.IsEnabled = false;
 
-            // attente du clic
+                var buttons = StpHandP0.Children.OfType<Button>().ToList();
+                var clickableButtons = new List<Button>();
+                foreach (var tile in r.Keys)
+                {
+                    var buttonClickable = buttons.First(b => b.Tag as TilePivot == tile);
+                    buttonClickable.Click += EffectiveChiCall;
+                    buttonClickable.Tag = new KeyValuePair<TilePivot, bool>(tile, r[tile]);
+                    clickableButtons.Add(buttonClickable);
+                }
+                buttons.Where(b => !clickableButtons.Contains(b)).All(b => { b.IsEnabled = false; return true; });
+                // attente du clic
+            }
         }
 
         private void BtnSkip_Click(object sender, RoutedEventArgs e)
