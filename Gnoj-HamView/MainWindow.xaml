@@ -3,49 +3,84 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:Gnoj_HamView"
-        mc:Ignorable="d" WindowStartupLocation="CenterScreen"
-        Title="MainWindow" Height="576" Width="1024">
-    <DockPanel>
-        <StackPanel DockPanel.Dock="Bottom" Orientation="Vertical">
-            <StackPanel Orientation="Horizontal">
-                <Label Width="150" Content="Dominant wind :" HorizontalContentAlignment="Right" />
-                <Label Width="150" Name="LblDominantWind" />
+        mc:Ignorable="d"
+        WindowState="Maximized">
+    <Grid Name="GrdMain">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Name="Cod0" />
+            <ColumnDefinition Name="Cod1" />
+            <ColumnDefinition Name="Cod2" />
+            <ColumnDefinition Name="Cod3" />
+            <ColumnDefinition Name="Cod4" />
+            <ColumnDefinition Name="Cod5" />
+            <ColumnDefinition Name="Cod6" />
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Name="Rod0" />
+            <RowDefinition Name="Rod1" />
+            <RowDefinition Name="Rod2" />
+            <RowDefinition Name="Rod3" />
+            <RowDefinition Name="Rod4" />
+            <RowDefinition Name="Rod5" />
+            <RowDefinition Name="Rod6" />
+        </Grid.RowDefinitions>
+        <!-- Combinations stacks -->
+        <!-- P1 (bottom) -->
+        <StackPanel Orientation="Horizontal" Grid.Column="1" Grid.Row="6" Grid.ColumnSpan="6" Name="StpCombosP0" />
+        <!-- P2 (right) -->
+        <Grid Grid.Column="6" Grid.Row="0" Grid.RowSpan="6">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+            <StackPanel Orientation="Vertical" Grid.Row="1" Name="StpCombosP1" />
+        </Grid>
+        <!-- P3 (top) -->
+        <Grid Grid.Column="0" Grid.Row="0" Grid.ColumnSpan="6">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <StackPanel Orientation="Vertical" Grid.Column="1" Name="StpCombosP2" />
+        </Grid>
+        <!-- P4 (left) -->
+        <StackPanel Orientation="Vertical" Grid.Column="0" Grid.Row="1" Grid.RowSpan="6" Name="StpCombosP3" />
+
+        <!-- Hands stacks -->
+        <!-- P1 (bottom) -->
+        <DockPanel Grid.Column="2" Grid.Row="5" Grid.ColumnSpan="3">
+            <!-- Action buttons container -->
+            <StackPanel Orientation="Horizontal" DockPanel.Dock="Right" HorizontalAlignment="Right">
+                <Button Name="BtnTsumo" Content="Tsumo" Height="25" Width="50" Visibility="Collapsed" Click="BtnTsumo_Click" />
+                <Button Name="BtnRon" Content="Ron" Height="25" Width="50" Visibility="Collapsed" Click="BtnRon_Click" />
+                <Button Name="BtnPon" Content="Pon" Height="25" Width="50" Visibility="Collapsed" Click="BtnPon_Click" />
+                <Button Name="BtnChii" Content="Chii" Height="25" Width="50" Visibility="Collapsed" Click="BtnChii_Click" />
+                <Button Name="BtnKan" Content="Kan" Height="25" Width="50" Visibility="Collapsed" Click="BtnKan_Click" />
+                <Button Name="BtnSkip" Content="Skip" Height="25" Width="50" Visibility="Collapsed" Click="BtnSkip_Click" />
+                <Button Name="BtnPick" Content="Pick" Height="25" Width="50" Visibility="Collapsed" Click="BtnPick_Click" />
+                <Button Name="BtnRiichi" Content="Riichi" Height="25" Width="50" Visibility="Collapsed" Click="BtnRiichi_Click" />
             </StackPanel>
-            <StackPanel Orientation="Horizontal">
-                <Label Width="150" Content="Current East :" HorizontalContentAlignment="Right" />
-                <Label Width="150" Name="LblCurrentEast" />
-            </StackPanel>
-            <StackPanel Orientation="Horizontal">
-                <Label Width="150" Name="LblPlayer1Points" />
-                <Label Width="150" Name="LblPlayer2Points" />
-                <Label Width="150" Name="LblPlayer3Points" />
-                <Label Width="150" Name="LblPlayer4Points" />
-            </StackPanel>
-        </StackPanel>
-        <DockPanel DockPanel.Dock="Top">
-            <StackPanel Orientation="Horizontal" DockPanel.Dock="Bottom" HorizontalAlignment="Center">
-                <Button Width="75" Content="Chi" Name="BtnCallChi" Click="BtnCallChi_Click" />
-                <Button Width="75" Content="Skip" Margin="5, 0, 0, 0" Name="BtnSkip" Click="BtnSkip_Click" />
-                <Button Width="75" Content="Pick" Margin="5, 0, 0, 0" Name="BtnPick" Click="BtnPick_Click" />
-            </StackPanel>
-            <DockPanel DockPanel.Dock="Top">
-                <ScrollViewer DockPanel.Dock="Top" HorizontalScrollBarVisibility="Visible">
-                    <StackPanel Orientation="Horizontal" Name="StpDiscardP0" />
-                </ScrollViewer>
-                <ScrollViewer DockPanel.Dock="Top" HorizontalScrollBarVisibility="Visible">
-                    <StackPanel Orientation="Horizontal" Name="StpDiscardP1" />
-                </ScrollViewer>
-                <ScrollViewer DockPanel.Dock="Top" HorizontalScrollBarVisibility="Visible">
-                    <StackPanel Orientation="Horizontal" Name="StpDiscardP2" />
-                </ScrollViewer>
-                <ScrollViewer DockPanel.Dock="Top" HorizontalScrollBarVisibility="Visible">
-                    <StackPanel Orientation="Horizontal" Name="StpDiscardP3" />
-                </ScrollViewer>
-                <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Name="StpHandP0" />
-                <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Name="StpOpenCombinationsP0" />
-                <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" Name="StpTreasure" />
-            </DockPanel>
+            <StackPanel Orientation="Horizontal" DockPanel.Dock="Left" Name="StpHandP0" />
+            <!-- Tile just picked (separate view) -->
+            <StackPanel Orientation="Horizontal" DockPanel.Dock="Left" Name="StpPickP0" Margin="10, 0, 0, 0" />
         </DockPanel>
-    </DockPanel>
+        <!-- P2 (right) -->
+        <Grid Grid.Column="5" Grid.Row="2" Grid.RowSpan="3" >
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+            <StackPanel Orientation="Vertical" Grid.Row="1" Name="StpHandP1" />
+        </Grid>
+        <!-- P3 (top) -->
+        <Grid Grid.Column="2" Grid.Row="1" Grid.ColumnSpan="3">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <StackPanel Grid.Column="1" Orientation="Horizontal" Name="StpHandP2" />
+        </Grid>
+        <!-- P4 (left) -->
+        <StackPanel Orientation="Vertical" Grid.Column="1" Grid.Row="2" Grid.RowSpan="3" Name="StpHandP3" />
+    </Grid>
 </Window>

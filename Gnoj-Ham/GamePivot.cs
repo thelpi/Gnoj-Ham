@@ -20,6 +20,8 @@ namespace Gnoj_Ham
 
         #region Embedded properties
 
+        private bool _isEndOfRoundWithTurningWind;
+        private readonly bool _withRedDoras;
         private readonly List<PlayerPivot> _players;
 
         /// <summary>
@@ -75,6 +77,17 @@ namespace Gnoj_Ham
             }
         }
 
+        /// <summary>
+        /// Inferred; gets the player index which was the first <see cref="WindPivot.East"/>.
+        /// </summary>
+        public int FirstEastIndex
+        {
+            get
+            {
+                return _players.FindIndex(p => p.InitialWind == WindPivot.East);
+            }
+        }
+
         #endregion
 
         #region Constructors
@@ -90,13 +103,45 @@ namespace Gnoj_Ham
             _players = PlayerPivot.GetFourPlayers(humanPlayerName, initialPointsRule);
             DominantWind = WindPivot.East;
             EastIndexTurnCount = 1;
-            EastIndex = _players.FindIndex(p => p.InitialWind == WindPivot.East);
-            Round = new RoundPivot(this, EastIndex, withRedDoras);
+            EastIndex = FirstEastIndex;
+            _withRedDoras = withRedDoras;
+            _isEndOfRoundWithTurningWind = false;
+
+            Round = new RoundPivot(this, EastIndex, _withRedDoras);
         }
 
         #endregion Constructors
 
         #region Public methods
+
+        /// <summary>
+        /// Generates a new round.
+        /// </summary>
+        /// <exception cref="NotImplementedException">End of game is not implemented yet.</exception>
+        public void NewRound()
+        {
+            if (_isEndOfRoundWithTurningWind)
+            {
+                if (DominantWind == WindPivot.South)
+                {
+                    throw new NotImplementedException();
+                }
+
+                EastIndex = EastIndex == 3 ? 0 : EastIndex + 1;
+                EastIndexTurnCount = 1;
+
+                if (EastIndex == FirstEastIndex)
+                {
+                    DominantWind = WindPivot.South;
+                }
+            }
+            else
+            {
+                EastIndexTurnCount++;
+            }
+
+            Round = new RoundPivot(this, EastIndex, _withRedDoras);
+        }
 
         /// <summary>
         /// Gets the current <see cref="WindPivot"/> of the specified player.

@@ -143,6 +143,17 @@ namespace Gnoj_Ham
             }
         }
 
+        /// <summary>
+        /// Inferred; indicates if the current round is over by wall exhaustion.
+        /// </summary>
+        public bool IsWallExhaustion
+        {
+            get
+            {
+                return WallTiles.Count == 0;
+            }
+        }
+
         #endregion Inferred properties
 
         #region Constructors
