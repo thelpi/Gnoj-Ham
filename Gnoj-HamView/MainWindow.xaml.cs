@@ -30,41 +30,10 @@ namespace Gnoj_HamView
         {
             InitializeComponent();
 
-            Title = WINDOW_TITLE;
-
-            Cod0.Width = new GridLength(TILE_HEIGHT + DEFAULT_TILE_MARGIN);
-            Cod1.Width = new GridLength(TILE_HEIGHT + DEFAULT_TILE_MARGIN);
-            Cod2.Width = new GridLength((TILE_HEIGHT * 3) + (DEFAULT_TILE_MARGIN * 2));
-            Cod4.Width = new GridLength((TILE_HEIGHT * 3) + (DEFAULT_TILE_MARGIN * 2));
-            Cod5.Width = new GridLength(TILE_HEIGHT + DEFAULT_TILE_MARGIN);
-            Cod6.Width = new GridLength(TILE_HEIGHT + DEFAULT_TILE_MARGIN);
-
-            Rod0.Height = new GridLength(TILE_HEIGHT + DEFAULT_TILE_MARGIN);
-            Rod1.Height = new GridLength(TILE_HEIGHT + DEFAULT_TILE_MARGIN);
-            Rod2.Height = new GridLength((TILE_HEIGHT * 3) + (DEFAULT_TILE_MARGIN * 2));
-            Rod4.Height = new GridLength((TILE_HEIGHT * 3) + (DEFAULT_TILE_MARGIN * 2));
-            Rod5.Height = new GridLength(TILE_HEIGHT + DEFAULT_TILE_MARGIN);
-            Rod6.Height = new GridLength(TILE_HEIGHT + DEFAULT_TILE_MARGIN);
-
             // TODO : first screen to personalize informations.
             _game = new GamePivot("Human", InitialPointsRulePivot.K25, true);
 
-            // Fix the size of every discard panels
-            for (int i = 0; i < _game.Players.Count; i++)
-            {
-                for (int j = 1; j <= 3; j++)
-                {
-                    StackPanel panel = FindName($"StpP{i}Discard{j}") as StackPanel;
-                    if (i % 2 == 0)
-                    {
-                        panel.Height = TILE_HEIGHT + (0.5 * DEFAULT_TILE_MARGIN);
-                    }
-                    else
-                    {
-                        panel.Width = TILE_HEIGHT + (0.5 * DEFAULT_TILE_MARGIN);
-                    }
-                }
-            }
+            FixWindowDimensions();
 
             NewRoundRefresh();
         }
@@ -77,9 +46,11 @@ namespace Gnoj_HamView
             {
                 FillHandPanel(_game.Round.PreviousPlayerIndex);
                 AddLatestDiscardToPanel(_game.Round.PreviousPlayerIndex);
-                BtnChii.Visibility = BtnChiiVisibility();
-                BtnPick.Visibility = _game.Round.IsHumanPlayer ? Visibility.Visible : Visibility.Collapsed;
+                BtnChii.Visibility = Visibility.Collapsed;
+                BtnPick.Visibility = Visibility.Collapsed;
                 BtnSkip.Visibility = Visibility.Visible;
+                BtnPon.Visibility = Visibility.Collapsed;
+                BtnKan.Visibility = Visibility.Collapsed;
 
                 IsEndOfRoundByWallExhaustion();
             }
@@ -93,9 +64,13 @@ namespace Gnoj_HamView
             {
                 FillHandPanel(_game.Round.CurrentPlayerIndex);
                 AddLatestCombinationToStack(GamePivot.HUMAN_INDEX);
+                RemoveLatestDiscardFromPanel(_game.Round.PreviousPlayerIndex);
                 BtnChii.Visibility = Visibility.Collapsed;
                 BtnPick.Visibility = Visibility.Collapsed;
                 BtnSkip.Visibility = Visibility.Collapsed;
+                BtnPon.Visibility = Visibility.Collapsed;
+                // TODO : is it possible to call kan after a first call ?
+                BtnKan.Visibility = Visibility.Collapsed;
             }
             else
             {
@@ -112,6 +87,8 @@ namespace Gnoj_HamView
                 BtnChii.Visibility = BtnChiiVisibility();
                 BtnPick.Visibility = _game.Round.IsHumanPlayer ? Visibility.Visible : Visibility.Collapsed;
                 BtnSkip.Visibility = Visibility.Visible;
+                BtnPon.Visibility = _game.Round.CanCallPon(GamePivot.HUMAN_INDEX) ? Visibility.Visible : Visibility.Collapsed;
+                BtnKan.Visibility = _game.Round.CanCallKan(GamePivot.HUMAN_INDEX) ? Visibility.Visible : Visibility.Collapsed;
             }
             else if (!IsEndOfRoundByWallExhaustion())
             {
@@ -137,6 +114,8 @@ namespace Gnoj_HamView
                 BtnChii.Visibility = Visibility.Collapsed;
                 BtnPick.Visibility = Visibility.Collapsed;
                 BtnSkip.Visibility = Visibility.Collapsed;
+                BtnPon.Visibility = Visibility.Collapsed;
+                BtnKan.Visibility = _game.Round.CanCallKan(GamePivot.HUMAN_INDEX) ? Visibility.Visible : Visibility.Collapsed;
             }
         }
 
@@ -152,7 +131,31 @@ namespace Gnoj_HamView
 
         private void BtnPon_Click(object sender, RoutedEventArgs e)
         {
-            throw new NotImplementedException();
+            if (_game.Round.CanCallPon(GamePivot.HUMAN_INDEX))
+            {
+                // Note : this value is stored here because the call to "CallPon" makes it change.
+                int previousPlayerIndex = _game.Round.PreviousPlayerIndex;
+                if (!_game.Round.CallPon(GamePivot.HUMAN_INDEX))
+                {
+                    throw new NotImplementedException();
+                }
+                else
+                {
+                    FillHandPanel(GamePivot.HUMAN_INDEX);
+                    AddLatestCombinationToStack(GamePivot.HUMAN_INDEX);
+                    RemoveLatestDiscardFromPanel(previousPlayerIndex);
+                    BtnChii.Visibility = Visibility.Collapsed;
+                    BtnPick.Visibility = Visibility.Collapsed;
+                    BtnSkip.Visibility = Visibility.Collapsed;
+                    BtnPon.Visibility = Visibility.Collapsed;
+                    // TODO : is it possible to call kan after a first call ?
+                    BtnKan.Visibility = Visibility.Collapsed;
+                }
+            }
+            else if (!IsEndOfRoundByWallExhaustion())
+            {
+                throw new NotImplementedException();
+            }
         }
 
         private void BtnChii_Click(object sender, RoutedEventArgs e)
@@ -164,6 +167,8 @@ namespace Gnoj_HamView
                 BtnChii.Visibility = Visibility.Collapsed;
                 BtnPick.Visibility = Visibility.Collapsed;
                 BtnSkip.Visibility = Visibility.Collapsed;
+                BtnPon.Visibility = Visibility.Collapsed;
+                BtnKan.Visibility = Visibility.Collapsed;
 
                 List<Button> buttons = StpHandP0.Children.OfType<Button>().ToList();
 
@@ -209,6 +214,42 @@ namespace Gnoj_HamView
 
         #region Private methods
 
+        // Fix dimensions of the window and every panels (when it's required).
+        private void FixWindowDimensions()
+        {
+            Title = WINDOW_TITLE;
+
+            Cod0.Width = new GridLength(TILE_HEIGHT + DEFAULT_TILE_MARGIN);
+            Cod1.Width = new GridLength(TILE_HEIGHT + DEFAULT_TILE_MARGIN);
+            Cod2.Width = new GridLength((TILE_HEIGHT * 3) + (DEFAULT_TILE_MARGIN * 2));
+            Cod4.Width = new GridLength((TILE_HEIGHT * 3) + (DEFAULT_TILE_MARGIN * 2));
+            Cod5.Width = new GridLength(TILE_HEIGHT + DEFAULT_TILE_MARGIN);
+            Cod6.Width = new GridLength(TILE_HEIGHT + DEFAULT_TILE_MARGIN);
+
+            Rod0.Height = new GridLength(TILE_HEIGHT + DEFAULT_TILE_MARGIN);
+            Rod1.Height = new GridLength(TILE_HEIGHT + DEFAULT_TILE_MARGIN);
+            Rod2.Height = new GridLength((TILE_HEIGHT * 3) + (DEFAULT_TILE_MARGIN * 2));
+            Rod4.Height = new GridLength((TILE_HEIGHT * 3) + (DEFAULT_TILE_MARGIN * 2));
+            Rod5.Height = new GridLength(TILE_HEIGHT + DEFAULT_TILE_MARGIN);
+            Rod6.Height = new GridLength(TILE_HEIGHT + DEFAULT_TILE_MARGIN);
+
+            for (int i = 0; i < _game.Players.Count; i++)
+            {
+                for (int j = 1; j <= 3; j++)
+                {
+                    StackPanel panel = FindName($"StpP{i}Discard{j}") as StackPanel;
+                    if (i % 2 == 0)
+                    {
+                        panel.Height = TILE_HEIGHT + (0.5 * DEFAULT_TILE_MARGIN);
+                    }
+                    else
+                    {
+                        panel.Width = TILE_HEIGHT + (0.5 * DEFAULT_TILE_MARGIN);
+                    }
+                }
+            }
+        }
+
         // Clears and refills the hand panel of the specified player index.
         private void FillHandPanel(int pIndex)
         {
@@ -243,6 +284,8 @@ namespace Gnoj_HamView
             BtnChii.Visibility = BtnChiiVisibility();
             BtnPick.Visibility = _game.Round.IsHumanPlayer ? Visibility.Visible : Visibility.Collapsed;
             BtnSkip.Visibility = Visibility.Visible;
+            BtnPon.Visibility = Visibility.Collapsed;
+            BtnKan.Visibility = _game.Round.CanCallKan(GamePivot.HUMAN_INDEX) ? Visibility.Visible : Visibility.Collapsed;
         }
 
         // Adds the last tile discarded to the discard panel of the specified player.
@@ -260,6 +303,16 @@ namespace Gnoj_HamView
             {
                 panel.Children.Add(GenerateTileButton(discards.Last(), angle: (Angle)pIndex));
             }
+        }
+
+        // Removes the last tile discarded from the discard panel of the specified player.
+        private void RemoveLatestDiscardFromPanel(int pIndex)
+        {
+            IReadOnlyCollection<TilePivot> discards = _game.Round.Discards.ElementAt(pIndex);
+
+            StackPanel panel = FindName($"StpP{pIndex}Discard{(discards.Count > 12 ? 3 : (discards.Count > 6 ? 2 : 1))}") as StackPanel;
+
+            panel.Children.RemoveAt(pIndex == 1 || pIndex == 2 ? 0 : panel.Children.Count - 1);
         }
 
         // Checks if a round is over by wall exhaustion.
@@ -327,14 +380,13 @@ namespace Gnoj_HamView
             };
 
             WindPivot pWind = _game.GetPlayerCurrentWind(pIndex);
-
-            Dictionary<TilePivot, bool> tiles = combo.GetSortedTilesForDisplay(pWind);
+            
             int i = 0;
-            foreach (TilePivot tile in tiles.Keys)
+            foreach (KeyValuePair<TilePivot, bool> tileKvp in combo.GetSortedTilesForDisplay(pWind))
             {
-                panel.Children.Add(GenerateTileButton(tile,
+                panel.Children.Add(GenerateTileButton(tileKvp.Key,
                     null,
-                    (Angle)(tiles[tile] ? (pIndex == 3 ? 0 : pIndex + 1) : pIndex),
+                    (Angle)(tileKvp.Value ? (pIndex == 3 ? 0 : pIndex + 1) : pIndex),
                     combo.IsSquare && combo.IsConcealed && i > 0 && i < 3));
                 i++;
             }

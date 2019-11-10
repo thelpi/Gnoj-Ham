@@ -667,7 +667,7 @@ namespace Gnoj_Ham
                 throw new ArgumentNullException(nameof(tile));
             }
 
-            CheckTilesForCallAndExtractCombo(_concealedTiles.Where(t => t == tile), 3, tile, stolenFrom);
+            CheckTilesForCallAndExtractCombo(_concealedTiles.Where(t => t == tile), 2, tile, stolenFrom);
         }
 
         /// <summary>
@@ -677,7 +677,7 @@ namespace Gnoj_Ham
         /// <param name="stolenFrom">The wind which the tile has been stolen from.</param>
         /// <exception cref="ArgumentNullException"><paramref name="tile"/> is <c>Null</c>.</exception>
         /// <exception cref="InvalidOperationException"><see cref="Messages.InvalidCall"/></exception>
-        internal void DeclareKan(TilePivot tile, WindPivot stolenFrom)
+        internal void DeclareKan(TilePivot tile, WindPivot? stolenFrom)
         {
             if (tile == null)
             {

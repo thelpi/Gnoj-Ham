@@ -138,6 +138,9 @@
   <data name="InvalidHandTilesCount" xml:space="preserve">
     <value>The total number of tiles is invalid (should be 14).</value>
   </data>
+  <data name="InvalidKanTileChoice" xml:space="preserve">
+    <value>The kan call can't be done with the specified tile.</value>
+  </data>
   <data name="InvalidLatestTileContext" xml:space="preserve">
     <value>The specified latest tile should be include in the current hand.</value>
   </data>

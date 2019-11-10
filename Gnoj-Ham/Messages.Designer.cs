@@ -124,6 +124,15 @@ namespace Gnoj_Ham {
         }
         
         /// <summary>
+        ///   Recherche une chaîne localisée semblable à The kan call can&apos;t be done with the specified tile..
+        /// </summary>
+        internal static string InvalidKanTileChoice {
+            get {
+                return ResourceManager.GetString("InvalidKanTileChoice", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Recherche une chaîne localisée semblable à The specified latest tile should be include in the current hand..
         /// </summary>
         internal static string InvalidLatestTileContext {

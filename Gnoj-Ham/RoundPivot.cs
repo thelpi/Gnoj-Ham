@@ -264,6 +264,53 @@ namespace Gnoj_Ham
         }
 
         /// <summary>
+        /// Checks if calling pon is allowed for the specified player in this context.
+        /// </summary>
+        /// <param name="playerIndex">The player index.</param>
+        /// <returns><c>True</c> if calling pon is allowed in this context; <c>False otherwise.</c></returns>
+        public bool CanCallPon(int playerIndex)
+        {
+            if (_wallTiles.Count == 0 || _discards[PreviousPlayerIndex].Count == 0 || _waitForDiscard)
+            {
+                return false;
+            }
+
+            return _hands[playerIndex].ConcealedTiles.Where(t => t == _discards[PreviousPlayerIndex].Last()).Count() >= 2;
+        }
+
+        /// <summary>
+        /// Checks if calling kan is allowed for the specified player in this context.
+        /// </summary>
+        /// <param name="playerIndex">The player index.</param>
+        /// <returns><c>True</c> if calling kan is allowed in this context; <c>False otherwise.</c></returns>
+        public bool CanCallKan(int playerIndex)
+        {
+            if (_compensationTiles.Count == 0)
+            {
+                return false;
+            }
+
+            if (CurrentPlayerIndex == playerIndex)
+            {
+                if (!_waitForDiscard)
+                {
+                    return false;
+                }
+
+                return _hands[playerIndex].ConcealedTiles.GroupBy(t => t).Any(t => t.Count() == 4);
+            }
+            else
+            {
+                if (_waitForDiscard || _discards[PreviousPlayerIndex].Count == 0)
+                {
+                    return false;
+                }
+
+                return _hands[playerIndex].ConcealedTiles.Where(t => t == _discards[PreviousPlayerIndex].Last()).Count() >= 3;
+            }
+        }
+
+        /// <summary>
         /// Tries to call chii for the current player.
         /// </summary>
         /// <param name="startNumber">The number indicating the beginning of the sequence.</param>
@@ -280,9 +327,78 @@ namespace Gnoj_Ham
                 _game.GetPlayerCurrentWind(PreviousPlayerIndex),
                 startNumber
             );
+            _discards[PreviousPlayerIndex].RemoveAt(_discards[PreviousPlayerIndex].Count - 1);
             _stealingInProgress = true;
             _waitForDiscard = true;
             return true;
+        }
+
+        /// <summary>
+        /// Tries to call pon for the specified player.
+        /// </summary>
+        /// <param name="playerIndex">The player index.</param>
+        /// <returns><c>True</c> if success; <c>False</c> if failure.</returns>
+        public bool CallPon(int playerIndex)
+        {
+            if (!CanCallPon(playerIndex))
+            {
+                return false;
+            }
+
+            _hands[playerIndex].DeclarePon(
+                _discards[PreviousPlayerIndex].Last(),
+                _game.GetPlayerCurrentWind(PreviousPlayerIndex)
+            );
+            _discards[PreviousPlayerIndex].RemoveAt(_discards[PreviousPlayerIndex].Count - 1);
+            CurrentPlayerIndex = playerIndex;
+            _stealingInProgress = true;
+            _waitForDiscard = true;
+            return true;
+        }
+
+        /// <summary>
+        /// Tries to call kan for the specified player.
+        /// </summary>
+        /// <param name="playerIndex">The player index.</param>
+        /// <param name="tileChoice">Optionnal; the tile choice, if the current player is <paramref name="playerIndex"/> and he has several possible tiles in its hand; default value is <c>Null</c>.</param>
+        /// <returns>The tile picked as compensation; <c>Null</c> if failure.</returns>
+        public TilePivot CallKan(int playerIndex, TilePivot tileChoice = null)
+        {
+            if (!CanCallKan(playerIndex))
+            {
+                return null;
+            }
+
+            if (CurrentPlayerIndex == playerIndex && tileChoice != null
+                && !_hands[playerIndex].ConcealedTiles.GroupBy(t => t).Any(t => t.Count() == 4 && t == tileChoice))
+            {
+                throw new ArgumentException(Messages.InvalidKanTileChoice, nameof(tileChoice));
+            }
+
+            TilePivot compensationTile = PickCompensationTile(playerIndex);
+
+            if (CurrentPlayerIndex == playerIndex)
+            {
+                if (tileChoice == null)
+                {
+                    tileChoice = _hands[playerIndex].ConcealedTiles.GroupBy(t => t).First(t => t.Count() == 4).Key;
+                }
+
+                _hands[playerIndex].DeclareKan(tileChoice, null);
+            }
+            else
+            {
+                _hands[playerIndex].DeclareKan(
+                    _discards[PreviousPlayerIndex].Last(),
+                    _game.GetPlayerCurrentWind(PreviousPlayerIndex)
+                );
+                _discards[PreviousPlayerIndex].RemoveAt(_discards[PreviousPlayerIndex].Count - 1);
+                CurrentPlayerIndex = playerIndex;
+                _stealingInProgress = true;
+            }
+
+            _waitForDiscard = true;
+            return compensationTile;
         }
 
         /// <summary>
@@ -331,6 +447,16 @@ namespace Gnoj_Ham
         #endregion Public methods
 
         #region Private methods
+
+        private TilePivot PickCompensationTile(int playerIndex)
+        {
+            TilePivot compensationTile = _compensationTiles.First();
+            _compensationTiles.RemoveAt(0);
+            _deadTreasureTiles.Add(_wallTiles.Last());
+            _wallTiles.RemoveAt(_wallTiles.Count - 1);
+            _hands[playerIndex].Pick(compensationTile);
+            return compensationTile;
+        }
 
         private void SetCurrentPlayerIndex()
         {
