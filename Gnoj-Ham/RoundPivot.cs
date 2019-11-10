@@ -213,17 +213,18 @@ namespace Gnoj_Ham
         }
 
         /// <summary>
-        /// Checks if calling chii is allowed in this context.
+        /// Checks if calling chii is allowed for the specified player.
         /// </summary>
+        /// <param name="playerIndex">The player index.</param>
         /// <returns>
         /// A dictionnary, where each <see cref="KeyValuePair{TilePivot, Boolean}"/> is an indication of the chii which can be made:
         /// - The key is the first tile (ie the lowest number) of <see cref="HandPivot.ConcealedTiles"/> to use in the sequence.
         /// - The value indicates if the key is used as lowest number in the sequence (<c>False</c>) or second (<c>True</c>, ie the tile stolen is the lowest number).
         /// The list is empty if calling chii is impossible.
         /// </returns>
-        public Dictionary<TilePivot, bool> CanCallChii()
+        public Dictionary<TilePivot, bool> CanCallChii(int playerIndex)
         {
-            if (_wallTiles.Count == 0 || _discards[PreviousPlayerIndex].Count == 0 || _waitForDiscard)
+            if (_wallTiles.Count == 0 || CurrentPlayerIndex != playerIndex || _discards[PreviousPlayerIndex].Count == 0 || _waitForDiscard)
             {
                 return new Dictionary<TilePivot, bool>();
             }
@@ -335,13 +336,14 @@ namespace Gnoj_Ham
         }
 
         /// <summary>
-        /// Tries to call chii for the current player.
+        /// Tries to call chii for the specified player.
         /// </summary>
+        /// <param name="playerIndex">Player index.</param>
         /// <param name="startNumber">The number indicating the beginning of the sequence.</param>
         /// <returns><c>True</c> if success; <c>False</c> if failure.</returns>
-        public bool CallChii(int startNumber)
+        public bool CallChii(int playerIndex, int startNumber)
         {
-            if (CanCallChii().Keys.Count == 0)
+            if (CanCallChii(playerIndex).Keys.Count == 0)
             {
                 return false;
             }

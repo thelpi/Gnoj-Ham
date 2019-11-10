@@ -56,10 +56,7 @@ namespace Gnoj_HamView
             {
                 FillHandPanel(_game.Round.PreviousPlayerIndex);
                 FillDiscardPanel(_game.Round.PreviousPlayerIndex);
-                BtnChii.Visibility = Visibility.Collapsed;
-                BtnPon.Visibility = Visibility.Collapsed;
-                BtnKan.Visibility = Visibility.Collapsed;
-
+                SetActionButtonsVisibility();
                 AutoSkip();
             }
         }
@@ -68,15 +65,12 @@ namespace Gnoj_HamView
         {
             KeyValuePair<TilePivot, bool> tag = (KeyValuePair<TilePivot, bool>)((sender as Button).Tag);
 
-            if (_game.Round.CallChii(tag.Value ? tag.Key.Number - 1 : tag.Key.Number))
+            if (_game.Round.CallChii(GamePivot.HUMAN_INDEX, tag.Value ? tag.Key.Number - 1 : tag.Key.Number))
             {
                 FillHandPanel(_game.Round.CurrentPlayerIndex);
                 AddLatestCombinationToStack(GamePivot.HUMAN_INDEX);
                 FillDiscardPanel(_game.Round.PreviousPlayerIndex);
-                BtnChii.Visibility = Visibility.Collapsed;
-                BtnPon.Visibility = Visibility.Collapsed;
-                // TODO : is it possible to call kan after a first call ?
-                BtnKan.Visibility = Visibility.Collapsed;
+                SetActionButtonsVisibility();
             }
             else
             {
@@ -104,10 +98,7 @@ namespace Gnoj_HamView
                     FillHandPanel(GamePivot.HUMAN_INDEX);
                     AddLatestCombinationToStack(GamePivot.HUMAN_INDEX);
                     FillDiscardPanel(previousPlayerIndex);
-                    BtnChii.Visibility = Visibility.Collapsed;
-                    BtnPon.Visibility = Visibility.Collapsed;
-                    // TODO : is it possible to call kan after a first call ?
-                    BtnKan.Visibility = Visibility.Collapsed;
+                    SetActionButtonsVisibility();
                 }
             }
             else
@@ -118,7 +109,7 @@ namespace Gnoj_HamView
 
         private void BtnChii_Click(object sender, RoutedEventArgs e)
         {
-            Dictionary<TilePivot, bool> tileChoices = _game.Round.CanCallChii();
+            Dictionary<TilePivot, bool> tileChoices = _game.Round.CanCallChii(GamePivot.HUMAN_INDEX);
 
             if (tileChoices.Keys.Count > 0)
             {
@@ -165,6 +156,17 @@ namespace Gnoj_HamView
             throw new NotImplementedException();
         }
 
+        private void Window_MouseDoubleClick(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        {
+            if (BtnPon.Visibility == Visibility.Visible
+                || BtnChii.Visibility == Visibility.Visible
+                || BtnKan.Visibility == Visibility.Visible
+                || BtnRon.Visibility == Visibility.Visible)
+            {
+                AutoSkip(true);
+            }
+        }
+
         #endregion Window events
 
         #region Private methods
@@ -172,9 +174,7 @@ namespace Gnoj_HamView
         // Inner process for kan and chii tile selection.
         private void InnerKanOrChiiTileSelection(IDictionary<TilePivot, bool> tileChoices, RoutedEventHandler handler)
         {
-            BtnChii.Visibility = Visibility.Collapsed;
-            BtnPon.Visibility = Visibility.Collapsed;
-            BtnKan.Visibility = Visibility.Collapsed;
+            SetActionButtonsVisibility();
 
             List<Button> buttons = StpHandP0.Children.OfType<Button>().ToList();
             if (StpPickP0.Children.Count > 0)
@@ -226,9 +226,7 @@ namespace Gnoj_HamView
                     FillDiscardPanel(previousPlayerIndex.Value);
                 }
                 AddLatestCombinationToStack(GamePivot.HUMAN_INDEX);
-                BtnChii.Visibility = Visibility.Collapsed;
-                BtnPon.Visibility = Visibility.Collapsed;
-                BtnKan.Visibility = _game.Round.CanCallKan(GamePivot.HUMAN_INDEX).Count > 0 ? Visibility.Visible : Visibility.Collapsed;
+                SetActionButtonsVisibility(preDiscard: true);
             }
         }
 
@@ -299,10 +297,7 @@ namespace Gnoj_HamView
                 FillHandPanel(pIndex);
                 FillDiscardPanel(pIndex);
             }
-
-            BtnChii.Visibility = _game.Round.IsHumanPlayer && _game.Round.CanCallChii().Keys.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
-            BtnPon.Visibility = Visibility.Collapsed;
-            BtnKan.Visibility = _game.Round.CanCallKan(GamePivot.HUMAN_INDEX).Count > 0 ? Visibility.Visible : Visibility.Collapsed;
+            SetActionButtonsVisibility(preDiscard: true);
         }
 
         // Rebuilds the discard panel of the specified player.
@@ -401,17 +396,23 @@ namespace Gnoj_HamView
         }
 
         // Proceeds to skip CPU moves while human can't interact.
-        private void AutoSkip()
+        private void AutoSkip(bool skipCurrentAction = false)
         {
             Task.Run(() =>
             {
                 // TODO : add "Ron" action when ready.
                 while (!_game.Round.IsWallExhaustion
                     && !_game.Round.IsHumanPlayer
-                    && _game.Round.CanCallKan(GamePivot.HUMAN_INDEX).Count == 0
-                    && !_game.Round.CanCallPon(GamePivot.HUMAN_INDEX)
-                    && (!_game.Round.IsHumanPlayer || _game.Round.CanCallChii().Keys.Count == 0))
+                    && (
+                        skipCurrentAction || (
+                            _game.Round.CanCallKan(GamePivot.HUMAN_INDEX).Count == 0
+                            && !_game.Round.CanCallPon(GamePivot.HUMAN_INDEX)
+                            && _game.Round.CanCallChii(GamePivot.HUMAN_INDEX).Keys.Count == 0
+                        )
+                    )
+                )
                 {
+                    skipCurrentAction = false;
                     Thread.Sleep(Convert.ToInt32(CPU_SPEED.ToString().Replace("S", string.Empty)));
                     if (_game.Round.AutoPickAndDiscard())
                     {
@@ -419,9 +420,7 @@ namespace Gnoj_HamView
                         {
                             FillDiscardPanel(_game.Round.PreviousPlayerIndex);
                             FillHandPanel(_game.Round.PreviousPlayerIndex);
-                            BtnChii.Visibility = _game.Round.IsHumanPlayer && _game.Round.CanCallChii().Keys.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
-                            BtnPon.Visibility = _game.Round.CanCallPon(GamePivot.HUMAN_INDEX) ? Visibility.Visible : Visibility.Collapsed;
-                            BtnKan.Visibility = _game.Round.CanCallKan(GamePivot.HUMAN_INDEX).Count > 0 ? Visibility.Visible : Visibility.Collapsed;
+                            SetActionButtonsVisibility(cpuPlay: true);
                         });
                     }
                     else if (!_game.Round.IsWallExhaustion)
@@ -431,7 +430,11 @@ namespace Gnoj_HamView
                 }
                 if (!_game.Round.IsWallExhaustion
                     && _game.Round.IsHumanPlayer
-                    && _game.Round.CanCallChii().Keys.Count == 0)
+                    && (
+                        skipCurrentAction
+                        || _game.Round.CanCallChii(GamePivot.HUMAN_INDEX).Keys.Count == 0
+                    )
+                )
                 {
                     TilePivot pick = _game.Round.Pick();
                     if (pick == null)
@@ -446,9 +449,7 @@ namespace Gnoj_HamView
                         Dispatcher.Invoke(() =>
                         {
                             StpPickP0.Children.Add(GenerateTileButton(pick, BtnDiscard_Click));
-                            BtnChii.Visibility = Visibility.Collapsed;
-                            BtnPon.Visibility = Visibility.Collapsed;
-                            BtnKan.Visibility = _game.Round.CanCallKan(GamePivot.HUMAN_INDEX).Count > 0 ? Visibility.Visible : Visibility.Collapsed;
+                            SetActionButtonsVisibility(preDiscard: true);
                         });
                     }
                 }
@@ -457,6 +458,32 @@ namespace Gnoj_HamView
                     Dispatcher.Invoke(NewRound);
                 }
             });
+        }
+
+        // Sets the Visibility property of every action buttons
+        private void SetActionButtonsVisibility(bool preDiscard = false, bool cpuPlay = false)
+        {
+            // Default behavior.
+            BtnChii.Visibility = Visibility.Collapsed;
+            BtnPon.Visibility = Visibility.Collapsed;
+            BtnKan.Visibility = Visibility.Collapsed;
+
+            if (preDiscard)
+            {
+                // When the player has 14 tiles and need to discard
+                // A kan call might be possible
+                BtnChii.Visibility = Visibility.Collapsed;
+                BtnPon.Visibility = Visibility.Collapsed;
+                BtnKan.Visibility = _game.Round.CanCallKan(GamePivot.HUMAN_INDEX).Count > 0 ? Visibility.Visible : Visibility.Collapsed;
+            }
+            else if (cpuPlay)
+            {
+                // When the CPU is playing
+                // Or it's player's turn but he has not pick yet
+                BtnChii.Visibility = _game.Round.CanCallChii(GamePivot.HUMAN_INDEX).Keys.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
+                BtnPon.Visibility = _game.Round.CanCallPon(GamePivot.HUMAN_INDEX) ? Visibility.Visible : Visibility.Collapsed;
+                BtnKan.Visibility = _game.Round.CanCallKan(GamePivot.HUMAN_INDEX).Count > 0 ? Visibility.Visible : Visibility.Collapsed;
+            }
         }
 
         #endregion Private methods
