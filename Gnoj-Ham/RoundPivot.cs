@@ -36,7 +36,7 @@ namespace Gnoj_Ham
         }
 
         /// <summary>
-        /// Hands of four players. The first one is east.
+        /// Hands of four players.
         /// </summary>
         public IReadOnlyCollection<HandPivot> Hands
         {
@@ -91,7 +91,7 @@ namespace Gnoj_Ham
         }
 
         /// <summary>
-        /// Discards of four players. The first one is east.
+        /// Discards of four players.
         /// </summary>
         public IReadOnlyCollection<IReadOnlyCollection<TilePivot>> Discards
         {
@@ -102,7 +102,7 @@ namespace Gnoj_Ham
         }
 
         /// <summary>
-        /// Riichi mark in the discard of each player; <c>-1</c> if the player is not riichi. The first one is east.
+        /// Riichi mark in the discard of each player; <c>-1</c> if the player is not riichi.
         /// </summary>
         public IReadOnlyCollection<int> RiichiPositionInDiscard
         {
@@ -271,7 +271,7 @@ namespace Gnoj_Ham
         /// <returns><c>True</c> if calling pon is allowed in this context; <c>False otherwise.</c></returns>
         public bool CanCallPon(int playerIndex)
         {
-            if (_wallTiles.Count == 0 || _discards[PreviousPlayerIndex].Count == 0 || _waitForDiscard)
+            if (_wallTiles.Count == 0 || PreviousPlayerIndex == playerIndex || _discards[PreviousPlayerIndex].Count == 0 || _waitForDiscard)
             {
                 return false;
             }
@@ -317,7 +317,7 @@ namespace Gnoj_Ham
             }
             else
             {
-                if (_waitForDiscard || _discards[PreviousPlayerIndex].Count == 0)
+                if (_waitForDiscard || PreviousPlayerIndex == playerIndex || _discards[PreviousPlayerIndex].Count == 0)
                 {
                     return new List<TilePivot>();
                 }
@@ -478,6 +478,65 @@ namespace Gnoj_Ham
             Discard(_hands[CurrentPlayerIndex].ConcealedTiles.Skip(GlobalTools.Randomizer.Next(0, _hands[CurrentPlayerIndex].ConcealedTiles.Count)).First());
 
             return true;
+        }
+
+        /// <summary>
+        /// Checks if the hand of the specified player is ready for calling tsumo.
+        /// </summary>
+        /// <param name="playerIndex">The player index.</param>
+        /// <param name="isKanCompensation"><c>True</c> if the latest pick comes from a kan compensation.</param>
+        /// <returns>The optimal combination of <see cref="YakuPivot"/>; empty list if none.</returns>
+        public List<YakuPivot> CanCallTsumo(int playerIndex, bool isKanCompensation)
+        {
+            if (CurrentPlayerIndex == playerIndex && _waitForDiscard)
+            {
+                var yakus = _hands[CurrentPlayerIndex].GetYakus(new WinContextPivot(
+                    latestTile: _hands[CurrentPlayerIndex].ConcealedTiles.Last(),
+                    drawType: isKanCompensation ? DrawTypePivot.Compensation : DrawTypePivot.Wall,
+                    dominantWind: _game.DominantWind,
+                    playerWind: _game.GetPlayerCurrentWind(playerIndex),
+                    isFirstOrLast: IsWallExhaustion ? (bool?)null : false, // TODO : tenhou
+                    isRiichi: _riichiPositionInDiscard[playerIndex] >= 0, // TODO : dabburi-riichi
+                    isIppatsu: _riichiPositionInDiscard[playerIndex] >= 0 && true // TODO : ippatsu
+                ));
+                return yakus.OrderByDescending(ys => ys.Sum(y => _hands[CurrentPlayerIndex].IsConcealed ? y.ConcealedFanCount : y.FanCount)).FirstOrDefault() ?? new List<YakuPivot>();
+            }
+            else
+            {
+                return new List<YakuPivot>();
+            }
+        }
+
+        /// <summary>
+        /// Indicates if the context is a skippable move from a CPU player.
+        /// </summary>
+        /// <param name="skipCurrentAction"><c>True</c> to force call skip.</param>
+        /// <returns><c>True</c> if skippable; <c>False</c> otherwise.</returns>
+        public bool IsCpuSkippable(bool skipCurrentAction)
+        {
+            return !IsWallExhaustion
+                && !IsHumanPlayer
+                && (skipCurrentAction || (
+                    CanCallKan(GamePivot.HUMAN_INDEX).Count == 0
+                    && !CanCallPon(GamePivot.HUMAN_INDEX)
+                    && CanCallChii(GamePivot.HUMAN_INDEX).Keys.Count == 0
+                    // TODO : ron skip
+                ));
+        }
+
+        /// <summary>
+        /// Indicates if the context is human player ready to pick.
+        /// </summary>
+        /// <param name="skipCurrentAction"><c>True</c> to force call skip.</param>
+        /// <returns><c>True</c> if the context is human player before pick.</returns>
+        public bool IsHumanTurnBeforePick(bool skipCurrentAction)
+        {
+            return !IsWallExhaustion
+                && IsHumanPlayer
+                && (
+                    skipCurrentAction
+                    || _game.Round.CanCallChii(GamePivot.HUMAN_INDEX).Keys.Count == 0
+                );
         }
 
         #endregion Public methods
