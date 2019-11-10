@@ -282,32 +282,55 @@ namespace Gnoj_Ham
         /// Checks if calling kan is allowed for the specified player in this context.
         /// </summary>
         /// <param name="playerIndex">The player index.</param>
-        /// <returns>The number of possible kans.</returns>
-        public int CanCallKan(int playerIndex)
+        /// <returns>A tile from every possible kans.</returns>
+        public List<TilePivot> CanCallKan(int playerIndex)
         {
             if (_compensationTiles.Count == 0)
             {
-                return 0;
+                return new List<TilePivot>();
             }
 
             if (CurrentPlayerIndex == playerIndex)
             {
                 if (!_waitForDiscard)
                 {
-                    return 0;
+                    return new List<TilePivot>();
                 }
-                
-                return _hands[playerIndex].ConcealedTiles.GroupBy(t => t).Count(t => t.Count() == 4) +
-                    _hands[playerIndex].DeclaredCombinations.Count(c => c.IsBrelan && _hands[playerIndex].ConcealedTiles.Any(t => t == c.OpenTile));
+
+                IEnumerable<TilePivot> kansFromConcealed =
+                    _hands[playerIndex].ConcealedTiles
+                                            .GroupBy(t => t)
+                                            .Where(t => t.Count() == 4)
+                                            .Select(t => t.Key)
+                                            .Distinct();
+
+                IEnumerable<TilePivot> kansFromPons =
+                    _hands[playerIndex].DeclaredCombinations
+                                            .Where(c => c.IsBrelan && _hands[playerIndex].ConcealedTiles.Any(t => t == c.OpenTile))
+                                            .Select(c => c.OpenTile)
+                                            .Distinct();
+
+                var everyKans = new List<TilePivot>(kansFromConcealed);
+                everyKans.AddRange(kansFromPons);
+                return everyKans;
             }
             else
             {
                 if (_waitForDiscard || _discards[PreviousPlayerIndex].Count == 0)
                 {
-                    return 0;
+                    return new List<TilePivot>();
                 }
 
-                return _hands[playerIndex].ConcealedTiles.Where(t => t == _discards[PreviousPlayerIndex].Last()).Count() >= 3 ? 1 : 0;
+                TilePivot referenceTileFromDiscard = _discards[PreviousPlayerIndex].Last();
+                if (_hands[playerIndex].ConcealedTiles.Where(t => t == referenceTileFromDiscard).Count() >= 3)
+                {
+                    return new List<TilePivot>
+                    {
+                        referenceTileFromDiscard
+                    };
+                }
+
+                return new List<TilePivot>();
             }
         }
 
@@ -365,7 +388,7 @@ namespace Gnoj_Ham
         /// <returns>The tile picked as compensation; <c>Null</c> if failure.</returns>
         public TilePivot CallKan(int playerIndex, TilePivot tileChoice = null)
         {
-            if (CanCallKan(playerIndex) == 0)
+            if (CanCallKan(playerIndex).Count == 0)
             {
                 return null;
             }
@@ -375,7 +398,7 @@ namespace Gnoj_Ham
 
             if (CurrentPlayerIndex == playerIndex
                 && tileChoice != null
-                && !_hands[playerIndex].ConcealedTiles.GroupBy(t => t).Any(t => t.Count() == 4 && t == tileChoice)
+                && !_hands[playerIndex].ConcealedTiles.GroupBy(t => t).Any(t => t.Count() == 4 && t.Key == tileChoice)
                 && fromPreviousPon == null)
             {
                 throw new ArgumentException(Messages.InvalidKanTileChoice, nameof(tileChoice));

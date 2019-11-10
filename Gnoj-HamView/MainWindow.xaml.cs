@@ -87,6 +87,24 @@ namespace Gnoj_HamView
             }
         }
 
+        private void BtnKanChoice_Click(object sender, RoutedEventArgs e)
+        {
+            TilePivot compensationTile = _game.Round.CallKan(GamePivot.HUMAN_INDEX, (sender as Button).Tag as TilePivot);
+            if (compensationTile == null)
+            {
+                throw new NotImplementedException();
+            }
+            else
+            {
+                FillHandPanel(GamePivot.HUMAN_INDEX, compensationTile);
+                StpPickP0.Children.Add(GenerateTileButton(compensationTile, BtnDiscard_Click));
+                AddLatestCombinationToStack(GamePivot.HUMAN_INDEX);
+                BtnChii.Visibility = Visibility.Collapsed;
+                BtnPon.Visibility = Visibility.Collapsed;
+                BtnKan.Visibility = _game.Round.CanCallKan(GamePivot.HUMAN_INDEX).Count > 0 ? Visibility.Visible : Visibility.Collapsed;
+            }
+        }
+
         private void BtnPon_Click(object sender, RoutedEventArgs e)
         {
             if (_game.Round.CanCallPon(GamePivot.HUMAN_INDEX))
@@ -127,11 +145,12 @@ namespace Gnoj_HamView
                 List<Button> buttons = StpHandP0.Children.OfType<Button>().ToList();
 
                 var clickableButtons = new List<Button>();
-                foreach (var tile in tileChoices.Keys)
+                foreach (TilePivot tile in tileChoices.Keys)
                 {
                     // Changes the event (and tag) of every buttons concerned by the chii call...
                     Button buttonClickable = buttons.First(b => b.Tag as TilePivot == tile);
                     buttonClickable.Click += BtnChiiChoice_Click;
+                    buttonClickable.Click -= BtnDiscard_Click;
                     buttonClickable.Tag = new KeyValuePair<TilePivot, bool>(tile, tileChoices[tile]);
                     clickableButtons.Add(buttonClickable);
                 }
@@ -156,14 +175,34 @@ namespace Gnoj_HamView
 
         private void BtnKan_Click(object sender, RoutedEventArgs e)
         {
-            int canCount = _game.Round.CanCallKan(GamePivot.HUMAN_INDEX);
-            if (canCount > 0)
+            List<TilePivot> kanTiles = _game.Round.CanCallKan(GamePivot.HUMAN_INDEX);
+            if (kanTiles.Count > 0)
             {
                 if (_game.Round.IsHumanPlayer)
                 {
-                    if (canCount > 1)
+                    if (kanTiles.Count > 1)
                     {
-                        // TODO : hardmode !
+                        BtnChii.Visibility = Visibility.Collapsed;
+                        BtnPon.Visibility = Visibility.Collapsed;
+                        BtnKan.Visibility = Visibility.Collapsed;
+
+                        List<Button> buttons = StpHandP0.Children.OfType<Button>().ToList();
+                        if (StpPickP0.Children.Count > 0)
+                        {
+                            buttons.Add(StpPickP0.Children[0] as Button);
+                        }
+
+                        var clickableButtons = new List<Button>();
+                        foreach (var tile in kanTiles)
+                        {
+                            // Changes the event of every buttons concerned by the chii call...
+                            Button buttonClickable = buttons.First(b => b.Tag as TilePivot == tile);
+                            buttonClickable.Click += BtnKanChoice_Click;
+                            buttonClickable.Click -= BtnDiscard_Click;
+                            clickableButtons.Add(buttonClickable);
+                        }
+                        // ...and disables every buttons not concerned.
+                        buttons.Where(b => !clickableButtons.Contains(b)).All(b => { b.IsEnabled = false; return true; });
                     }
                     else
                     {
@@ -179,7 +218,7 @@ namespace Gnoj_HamView
                             AddLatestCombinationToStack(GamePivot.HUMAN_INDEX);
                             BtnChii.Visibility = Visibility.Collapsed;
                             BtnPon.Visibility = Visibility.Collapsed;
-                            BtnKan.Visibility = _game.Round.CanCallKan(GamePivot.HUMAN_INDEX) > 0 ? Visibility.Visible : Visibility.Collapsed;
+                            BtnKan.Visibility = _game.Round.CanCallKan(GamePivot.HUMAN_INDEX).Count > 0 ? Visibility.Visible : Visibility.Collapsed;
                         }
                     }
                 }
@@ -200,7 +239,7 @@ namespace Gnoj_HamView
                         FillDiscardPanel(previousPlayerIndex);
                         BtnChii.Visibility = Visibility.Collapsed;
                         BtnPon.Visibility = Visibility.Collapsed;
-                        BtnKan.Visibility = _game.Round.CanCallKan(GamePivot.HUMAN_INDEX) > 0 ? Visibility.Visible : Visibility.Collapsed;
+                        BtnKan.Visibility = _game.Round.CanCallKan(GamePivot.HUMAN_INDEX).Count > 0 ? Visibility.Visible : Visibility.Collapsed;
                     }
                 }
             }
@@ -299,7 +338,7 @@ namespace Gnoj_HamView
 
             BtnChii.Visibility = BtnChiiVisibility();
             BtnPon.Visibility = Visibility.Collapsed;
-            BtnKan.Visibility = _game.Round.CanCallKan(GamePivot.HUMAN_INDEX) > 0 ? Visibility.Visible : Visibility.Collapsed;
+            BtnKan.Visibility = _game.Round.CanCallKan(GamePivot.HUMAN_INDEX).Count > 0 ? Visibility.Visible : Visibility.Collapsed;
         }
 
         // Rebuilds the discard panel of the specified player.
@@ -421,7 +460,7 @@ namespace Gnoj_HamView
             {
                 // TODO : add "Ron" action when ready.
                 while (!_game.Round.IsHumanPlayer
-                    && _game.Round.CanCallKan(GamePivot.HUMAN_INDEX) == 0
+                    && _game.Round.CanCallKan(GamePivot.HUMAN_INDEX).Count == 0
                     && !_game.Round.CanCallPon(GamePivot.HUMAN_INDEX)
                     && (!_game.Round.IsHumanPlayer || _game.Round.CanCallChii().Keys.Count == 0))
                 {
@@ -434,7 +473,7 @@ namespace Gnoj_HamView
                             FillHandPanel(_game.Round.PreviousPlayerIndex);
                             BtnChii.Visibility = BtnChiiVisibility();
                             BtnPon.Visibility = _game.Round.CanCallPon(GamePivot.HUMAN_INDEX) ? Visibility.Visible : Visibility.Collapsed;
-                            BtnKan.Visibility = _game.Round.CanCallKan(GamePivot.HUMAN_INDEX) > 0 ? Visibility.Visible : Visibility.Collapsed;
+                            BtnKan.Visibility = _game.Round.CanCallKan(GamePivot.HUMAN_INDEX).Count > 0 ? Visibility.Visible : Visibility.Collapsed;
                         });
                     }
                     else if (_game.Round.IsWallExhaustion)
@@ -467,7 +506,7 @@ namespace Gnoj_HamView
                             StpPickP0.Children.Add(GenerateTileButton(pick, BtnDiscard_Click));
                             BtnChii.Visibility = Visibility.Collapsed;
                             BtnPon.Visibility = Visibility.Collapsed;
-                            BtnKan.Visibility = _game.Round.CanCallKan(GamePivot.HUMAN_INDEX) > 0 ? Visibility.Visible : Visibility.Collapsed;
+                            BtnKan.Visibility = _game.Round.CanCallKan(GamePivot.HUMAN_INDEX).Count > 0 ? Visibility.Visible : Visibility.Collapsed;
                         });
                     }
                 }
