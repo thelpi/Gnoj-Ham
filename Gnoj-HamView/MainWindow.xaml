@@ -52,12 +52,9 @@
         <DockPanel Grid.Column="2" Grid.Row="5" Grid.ColumnSpan="3">
             <!-- Action buttons container -->
             <StackPanel Orientation="Horizontal" DockPanel.Dock="Right" HorizontalAlignment="Right">
-                <Button Name="BtnTsumo" Content="Tsumo" Height="25" Width="50" Visibility="Collapsed" Click="BtnTsumo_Click" />
-                <Button Name="BtnRon" Content="Ron" Height="25" Width="50" Visibility="Collapsed" Click="BtnRon_Click" />
                 <Button Name="BtnPon" Content="Pon" Height="25" Width="50" Visibility="Collapsed" Click="BtnPon_Click" />
                 <Button Name="BtnChii" Content="Chii" Height="25" Width="50" Visibility="Collapsed" Click="BtnChii_Click" />
                 <Button Name="BtnKan" Content="Kan" Height="25" Width="50" Visibility="Collapsed" Click="BtnKan_Click" />
-                <Button Name="BtnRiichi" Content="Riichi" Height="25" Width="50" Visibility="Collapsed" Click="BtnRiichi_Click" />
             </StackPanel>
             <StackPanel Orientation="Horizontal" DockPanel.Dock="Left" Name="StpHandP0" />
             <!-- Tile just picked (separate view) -->

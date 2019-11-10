@@ -160,8 +160,7 @@ namespace Gnoj_HamView
         {
             if (BtnPon.Visibility == Visibility.Visible
                 || BtnChii.Visibility == Visibility.Visible
-                || BtnKan.Visibility == Visibility.Visible
-                || BtnRon.Visibility == Visibility.Visible)
+                || BtnKan.Visibility == Visibility.Visible)
             {
                 AutoSkip(true);
             }
@@ -170,6 +169,19 @@ namespace Gnoj_HamView
         #endregion Window events
 
         #region Private methods
+
+        private void TsumoManagement(bool isKanCompensation)
+        {
+            List<YakuPivot> yakus = _game.Round.CanCallTsumo(GamePivot.HUMAN_INDEX, isKanCompensation);
+            if (yakus.Count > 0)
+            {
+                var r = MessageBox.Show("Declare tsumo ?", WINDOW_TITLE, MessageBoxButton.YesNo);
+                if (r == MessageBoxResult.Yes)
+                {
+                    NewRound(GamePivot.HUMAN_INDEX, yakus);
+                }
+            }
+        }
 
         // Inner process for kan and chii tile selection.
         private void InnerKanOrChiiTileSelection(IDictionary<TilePivot, bool> tileChoices, RoutedEventHandler handler)
@@ -227,6 +239,7 @@ namespace Gnoj_HamView
                 }
                 AddLatestCombinationToStack(GamePivot.HUMAN_INDEX);
                 SetActionButtonsVisibility(preDiscard: true);
+                TsumoManagement(true);
             }
         }
 
@@ -298,6 +311,7 @@ namespace Gnoj_HamView
                 FillDiscardPanel(pIndex);
             }
             SetActionButtonsVisibility(preDiscard: true);
+            TsumoManagement(false);
         }
 
         // Rebuilds the discard panel of the specified player.
@@ -327,9 +341,16 @@ namespace Gnoj_HamView
         }
 
         // Proceeds to new round.
-        private void NewRound()
+        private void NewRound(int playerIndex, List<YakuPivot> yakus)
         {
-            MessageBox.Show("End of round");
+            if (yakus.Count == 0)
+            {
+                MessageBox.Show("End of round (Ryuukyoku)", WINDOW_TITLE);
+            }
+            else
+            {
+                MessageBox.Show($"End of round ({_game.Players.ElementAt(playerIndex).Name} wins with {string.Join(" + ", yakus.Select(y => y.Name))})", WINDOW_TITLE);
+            }
             _game.NewRound();
             NewRoundRefresh();
             AutoSkip();
@@ -400,17 +421,7 @@ namespace Gnoj_HamView
         {
             Task.Run(() =>
             {
-                // TODO : add "Ron" action when ready.
-                while (!_game.Round.IsWallExhaustion
-                    && !_game.Round.IsHumanPlayer
-                    && (
-                        skipCurrentAction || (
-                            _game.Round.CanCallKan(GamePivot.HUMAN_INDEX).Count == 0
-                            && !_game.Round.CanCallPon(GamePivot.HUMAN_INDEX)
-                            && _game.Round.CanCallChii(GamePivot.HUMAN_INDEX).Keys.Count == 0
-                        )
-                    )
-                )
+                while (_game.Round.IsCpuSkippable(skipCurrentAction))
                 {
                     skipCurrentAction = false;
                     Thread.Sleep(Convert.ToInt32(CPU_SPEED.ToString().Replace("S", string.Empty)));
@@ -428,13 +439,7 @@ namespace Gnoj_HamView
                         throw new NotImplementedException();
                     }
                 }
-                if (!_game.Round.IsWallExhaustion
-                    && _game.Round.IsHumanPlayer
-                    && (
-                        skipCurrentAction
-                        || _game.Round.CanCallChii(GamePivot.HUMAN_INDEX).Keys.Count == 0
-                    )
-                )
+                if (!_game.Round.IsHumanTurnBeforePick(skipCurrentAction))
                 {
                     TilePivot pick = _game.Round.Pick();
                     if (pick == null)
@@ -450,12 +455,21 @@ namespace Gnoj_HamView
                         {
                             StpPickP0.Children.Add(GenerateTileButton(pick, BtnDiscard_Click));
                             SetActionButtonsVisibility(preDiscard: true);
+                            TsumoManagement(false);
                         });
                     }
                 }
-                if (_game.Round.IsWallExhaustion)
+                else if (_game.Round.IsWallExhaustion)
                 {
-                    Dispatcher.Invoke(NewRound);
+                    Dispatcher.Invoke(() => NewRound(-1, new List<YakuPivot>()));
+                }
+            })
+            .ContinueWith(task =>
+            {
+                // Without this code, no exception is thrown by the parallel task.
+                if (task?.Exception?.InnerExceptions?.FirstOrDefault() != null)
+                {
+                    throw task.Exception.InnerExceptions.First();
                 }
             });
         }
