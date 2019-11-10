@@ -4,9 +4,11 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d"
+        Background="Gainsboro"
         MouseDoubleClick="Window_MouseDoubleClick"
-        WindowState="Maximized">
-    <Grid Name="GrdMain" Margin="5" Background="LightGreen">
+        WindowStartupLocation="CenterScreen"
+        Height="960" Width="960">
+    <Grid Name="GrdMain" Margin="5" Background="PaleGreen">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Name="Cod0" />
             <ColumnDefinition Name="Cod1" />
@@ -27,35 +29,36 @@
         </Grid.RowDefinitions>
         <!-- Combinations stacks -->
         <!-- P1 (bottom) -->
-        <StackPanel Orientation="Horizontal" Grid.Column="1" Grid.Row="6" Grid.ColumnSpan="6" Name="StpCombosP0" />
-        <!-- P2 (right) -->
-        <Grid Grid.Column="6" Grid.Row="0" Grid.RowSpan="6">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="*" />
-                <RowDefinition Height="Auto" />
-            </Grid.RowDefinitions>
-            <StackPanel Orientation="Vertical" Grid.Row="1" Name="StpCombosP1" />
-        </Grid>
-        <!-- P3 (top) -->
-        <Grid Grid.Column="0" Grid.Row="0" Grid.ColumnSpan="6">
+        <Grid Grid.Column="1" Grid.Row="6" Grid.ColumnSpan="6">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*" />
                 <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
-            <StackPanel Orientation="Vertical" Grid.Column="1" Name="StpCombosP2" />
+            <StackPanel Orientation="Horizontal" Grid.Column="1" Name="StpCombosP0" />
         </Grid>
+        <!-- P2 (right) -->
+        <StackPanel Orientation="Vertical" Grid.Column="6" Grid.Row="0" Grid.RowSpan="6" Name="StpCombosP1" />
+        <!-- P3 (top) -->
+        <StackPanel Orientation="Horizontal" Grid.Column="0" Grid.Row="0" Grid.ColumnSpan="6" Name="StpCombosP2" />
         <!-- P4 (left) -->
-        <StackPanel Orientation="Vertical" Grid.Column="0" Grid.Row="1" Grid.RowSpan="6" Name="StpCombosP3" />
+        <Grid Grid.Column="0" Grid.Row="1" Grid.RowSpan="6">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+            <StackPanel Orientation="Vertical" Grid.Row="1" Name="StpCombosP3" />
+        </Grid>
+
+        <!-- Action buttons container -->
+        <StackPanel Orientation="Horizontal" Grid.Column="3" Grid.Row="6">
+            <Button Name="BtnPon" Content="Pon" Height="25" Width="50" Visibility="Collapsed" Click="BtnPon_Click" />
+            <Button Name="BtnChii" Content="Chii" Height="25" Width="50" Visibility="Collapsed" Click="BtnChii_Click" />
+            <Button Name="BtnKan" Content="Kan" Height="25" Width="50" Visibility="Collapsed" Click="BtnKan_Click" />
+        </StackPanel>
 
         <!-- Hands stacks -->
         <!-- P1 (bottom) -->
         <DockPanel Grid.Column="2" Grid.Row="5" Grid.ColumnSpan="3">
-            <!-- Action buttons container -->
-            <StackPanel Orientation="Horizontal" DockPanel.Dock="Right" HorizontalAlignment="Right">
-                <Button Name="BtnPon" Content="Pon" Height="25" Width="50" Visibility="Collapsed" Click="BtnPon_Click" />
-                <Button Name="BtnChii" Content="Chii" Height="25" Width="50" Visibility="Collapsed" Click="BtnChii_Click" />
-                <Button Name="BtnKan" Content="Kan" Height="25" Width="50" Visibility="Collapsed" Click="BtnKan_Click" />
-            </StackPanel>
             <StackPanel Orientation="Horizontal" DockPanel.Dock="Left" Name="StpHandP0" />
             <!-- Tile just picked (separate view) -->
             <StackPanel Orientation="Horizontal" DockPanel.Dock="Left" Name="StpPickP0" Margin="10, 0, 0, 0" />

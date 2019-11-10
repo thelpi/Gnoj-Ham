@@ -23,20 +23,22 @@ namespace Gnoj_HamView
         private const string WINDOW_TITLE = "Gnoj-Ham";
         private const string CONCEALED_TILE_RSC_NAME = "concealed";
 
-        // TODO : customize.
-        private const CpuSpeed CPU_SPEED = CpuSpeed.S200;
-
         private readonly GamePivot _game;
+        private readonly int _cpuSpeedMs;
 
         /// <summary>
         /// Constructor.
         /// </summary>
-        public MainWindow()
+        /// <param name="playerName">Human player name.</param>
+        /// <param name="pointRule">Indicates the initial points count for every players.</param>
+        /// <param name="useRedDoras">Indicates if red doras should be used.</param>
+        /// <param name="cpuSpeed">CPU speed.</param>
+        public MainWindow(string playerName, InitialPointsRulePivot pointRule, bool useRedDoras, CpuSpeed cpuSpeed)
         {
             InitializeComponent();
-
-            // TODO : first screen to personalize informations.
-            _game = new GamePivot("Human", InitialPointsRulePivot.K25, true);
+            
+            _game = new GamePivot(playerName, pointRule, useRedDoras);
+            _cpuSpeedMs = Convert.ToInt32(cpuSpeed.ToString().Replace("S", string.Empty));
 
             FixWindowDimensions();
 
@@ -424,7 +426,7 @@ namespace Gnoj_HamView
                 while (_game.Round.IsCpuSkippable(skipCurrentAction))
                 {
                     skipCurrentAction = false;
-                    Thread.Sleep(Convert.ToInt32(CPU_SPEED.ToString().Replace("S", string.Empty)));
+                    Thread.Sleep(_cpuSpeedMs);
                     if (_game.Round.AutoPickAndDiscard())
                     {
                         Dispatcher.Invoke(() =>
@@ -439,7 +441,7 @@ namespace Gnoj_HamView
                         throw new NotImplementedException();
                     }
                 }
-                if (!_game.Round.IsHumanTurnBeforePick(skipCurrentAction))
+                if (_game.Round.IsHumanTurnBeforePick(skipCurrentAction))
                 {
                     TilePivot pick = _game.Round.Pick();
                     if (pick == null)
@@ -509,16 +511,6 @@ namespace Gnoj_HamView
             A270,
             A180,
             A90
-        }
-
-        // Represents speed of play for CPU. 
-        private enum CpuSpeed
-        {
-            S2000,
-            S1000,
-            S500,
-            S200,
-            S0,
         }
     }
 }
