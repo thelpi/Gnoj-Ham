@@ -394,6 +394,20 @@ namespace Gnoj_Ham
             }
         }
 
+        // Gets the tile corresponding to the specified wind in the purpose to create a sorted list for display.
+        private KeyValuePair<TilePivot, bool> GetTileForSortedListAtSpecifiedWind(WindPivot wind, List<TilePivot> concealedOnly, ref int i)
+        {
+            if (wind == StolenFrom.Value)
+            {
+                return new KeyValuePair<TilePivot, bool>(OpenTile, true);
+            }
+            else
+            {
+                i++;
+                return new KeyValuePair<TilePivot, bool>(concealedOnly[i - 1], false);
+            }
+        }
+
         #endregion Private methods
 
         #region Static methods
@@ -455,43 +469,20 @@ namespace Gnoj_Ham
 
             int i = 0;
 
-            var tiles = new List<KeyValuePair<TilePivot, bool>>();
+            var tiles = new List<KeyValuePair<TilePivot, bool>>
+            {
+                GetTileForSortedListAtSpecifiedWind(ownerWind.Left(), concealedOnly, ref i),
+                GetTileForSortedListAtSpecifiedWind(ownerWind.Opposite(), concealedOnly, ref i)
+            };
 
-            if (ownerWind.Left() == StolenFrom.Value)
-            {
-                tiles.Add(new KeyValuePair<TilePivot, bool>(OpenTile, true));
-            }
-            else
-            {
-                tiles.Add(new KeyValuePair<TilePivot, bool>(concealedOnly[i], false));
-                i++;
-            }
-
-            if (ownerWind.Opposite() == StolenFrom.Value)
-            {
-                tiles.Add(new KeyValuePair<TilePivot, bool>(OpenTile, true));
-            }
-            else
-            {
-                tiles.Add(new KeyValuePair<TilePivot, bool>(concealedOnly[i], false));
-                i++;
-            }
-
+            // For a square, the third tile is never from an opponent.
             if (IsSquare)
             {
                 tiles.Add(new KeyValuePair<TilePivot, bool>(concealedOnly[i], false));
                 i++;
             }
 
-            if (ownerWind.Right() == StolenFrom.Value)
-            {
-                tiles.Add(new KeyValuePair<TilePivot, bool>(OpenTile, true));
-            }
-            else
-            {
-                tiles.Add(new KeyValuePair<TilePivot, bool>(concealedOnly[i], false));
-                i++;
-            }
+            tiles.Add(GetTileForSortedListAtSpecifiedWind(ownerWind.Right(), concealedOnly, ref i));
 
             return tiles;
         }
