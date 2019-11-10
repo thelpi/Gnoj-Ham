@@ -55,9 +55,8 @@ namespace Gnoj_HamView
             if (_game.Round.Discard((sender as Button).Tag as TilePivot))
             {
                 FillHandPanel(_game.Round.PreviousPlayerIndex);
-                AddLatestDiscardToPanel(_game.Round.PreviousPlayerIndex);
+                FillDiscardPanel(_game.Round.PreviousPlayerIndex);
                 BtnChii.Visibility = Visibility.Collapsed;
-                BtnPick.Visibility = Visibility.Collapsed;
                 BtnPon.Visibility = Visibility.Collapsed;
                 BtnKan.Visibility = Visibility.Collapsed;
 
@@ -76,9 +75,8 @@ namespace Gnoj_HamView
             {
                 FillHandPanel(_game.Round.CurrentPlayerIndex);
                 AddLatestCombinationToStack(GamePivot.HUMAN_INDEX);
-                RemoveLatestDiscardFromPanel(_game.Round.PreviousPlayerIndex);
+                FillDiscardPanel(_game.Round.PreviousPlayerIndex);
                 BtnChii.Visibility = Visibility.Collapsed;
-                BtnPick.Visibility = Visibility.Collapsed;
                 BtnPon.Visibility = Visibility.Collapsed;
                 // TODO : is it possible to call kan after a first call ?
                 BtnKan.Visibility = Visibility.Collapsed;
@@ -86,26 +84,6 @@ namespace Gnoj_HamView
             else
             {
                 throw new NotImplementedException();
-            }
-        }
-
-        private void BtnPick_Click(object sender, RoutedEventArgs e)
-        {
-            TilePivot pick = _game.Round.Pick();
-            if (pick == null)
-            {
-                if (!IsEndOfRoundByWallExhaustion())
-                {
-                    throw new NotImplementedException();
-                }
-            }
-            else
-            {
-                StpPickP0.Children.Add(GenerateTileButton(pick, BtnDiscard_Click));
-                BtnChii.Visibility = Visibility.Collapsed;
-                BtnPick.Visibility = Visibility.Collapsed;
-                BtnPon.Visibility = Visibility.Collapsed;
-                BtnKan.Visibility = _game.Round.CanCallKan(GamePivot.HUMAN_INDEX) > 0 ? Visibility.Visible : Visibility.Collapsed;
             }
         }
 
@@ -123,9 +101,8 @@ namespace Gnoj_HamView
                 {
                     FillHandPanel(GamePivot.HUMAN_INDEX);
                     AddLatestCombinationToStack(GamePivot.HUMAN_INDEX);
-                    RemoveLatestDiscardFromPanel(previousPlayerIndex);
+                    FillDiscardPanel(previousPlayerIndex);
                     BtnChii.Visibility = Visibility.Collapsed;
-                    BtnPick.Visibility = Visibility.Collapsed;
                     BtnPon.Visibility = Visibility.Collapsed;
                     // TODO : is it possible to call kan after a first call ?
                     BtnKan.Visibility = Visibility.Collapsed;
@@ -144,7 +121,6 @@ namespace Gnoj_HamView
             if (tileChoices.Keys.Count > 0)
             {
                 BtnChii.Visibility = Visibility.Collapsed;
-                BtnPick.Visibility = Visibility.Collapsed;
                 BtnPon.Visibility = Visibility.Collapsed;
                 BtnKan.Visibility = Visibility.Collapsed;
 
@@ -202,7 +178,6 @@ namespace Gnoj_HamView
                             StpPickP0.Children.Add(GenerateTileButton(compensationTile, BtnDiscard_Click));
                             AddLatestCombinationToStack(GamePivot.HUMAN_INDEX);
                             BtnChii.Visibility = Visibility.Collapsed;
-                            BtnPick.Visibility = Visibility.Collapsed;
                             BtnPon.Visibility = Visibility.Collapsed;
                             BtnKan.Visibility = _game.Round.CanCallKan(GamePivot.HUMAN_INDEX) > 0 ? Visibility.Visible : Visibility.Collapsed;
                         }
@@ -222,9 +197,8 @@ namespace Gnoj_HamView
                         FillHandPanel(GamePivot.HUMAN_INDEX, compensationTile);
                         StpPickP0.Children.Add(GenerateTileButton(compensationTile, BtnDiscard_Click));
                         AddLatestCombinationToStack(GamePivot.HUMAN_INDEX);
-                        RemoveLatestDiscardFromPanel(previousPlayerIndex);
+                        FillDiscardPanel(previousPlayerIndex);
                         BtnChii.Visibility = Visibility.Collapsed;
-                        BtnPick.Visibility = Visibility.Collapsed;
                         BtnPon.Visibility = Visibility.Collapsed;
                         BtnKan.Visibility = _game.Round.CanCallKan(GamePivot.HUMAN_INDEX) > 0 ? Visibility.Visible : Visibility.Collapsed;
                     }
@@ -319,43 +293,39 @@ namespace Gnoj_HamView
             for (int pIndex = 0; pIndex < _game.Players.Count; pIndex++)
             {
                 (FindName($"StpCombosP{pIndex}") as StackPanel).Children.Clear();
-                (FindName($"StpP{pIndex}Discard1") as StackPanel).Children.Clear();
-                (FindName($"StpP{pIndex}Discard2") as StackPanel).Children.Clear();
-                (FindName($"StpP{pIndex}Discard3") as StackPanel).Children.Clear();
                 FillHandPanel(pIndex);
+                FillDiscardPanel(pIndex);
             }
 
             BtnChii.Visibility = BtnChiiVisibility();
-            BtnPick.Visibility = _game.Round.IsHumanPlayer ? Visibility.Visible : Visibility.Collapsed;
             BtnPon.Visibility = Visibility.Collapsed;
             BtnKan.Visibility = _game.Round.CanCallKan(GamePivot.HUMAN_INDEX) > 0 ? Visibility.Visible : Visibility.Collapsed;
         }
 
-        // Adds the last tile discarded to the discard panel of the specified player.
-        private void AddLatestDiscardToPanel(int pIndex)
+        // Rebuilds the discard panel of the specified player.
+        private void FillDiscardPanel(int pIndex)
         {
-            IReadOnlyCollection<TilePivot> discards = _game.Round.Discards.ElementAt(pIndex);
-
-            StackPanel panel = FindName($"StpP{pIndex}Discard{(discards.Count > 12 ? 3 : (discards.Count > 6 ? 2 : 1))}") as StackPanel;
-
-            if (pIndex == 1 || pIndex == 2)
+            for (int r = 1; r <= 3; r++)
             {
-                panel.Children.Insert(0, GenerateTileButton(discards.Last(), angle: (Angle)pIndex));
+                (FindName($"StpP{pIndex}Discard{r}") as StackPanel).Children.Clear();
             }
-            else
+
+            bool reversed = pIndex == 1 || pIndex == 2;
+
+            int i = 0;
+            foreach (TilePivot tile in _game.Round.Discards.ElementAt(pIndex))
             {
-                panel.Children.Add(GenerateTileButton(discards.Last(), angle: (Angle)pIndex));
+                StackPanel panel = FindName($"StpP{pIndex}Discard{(i < 6 ? 1 : (i < 12 ? 2 : 3))}") as StackPanel;
+                if (reversed)
+                {
+                    panel.Children.Insert(0, GenerateTileButton(tile, angle: (Angle)pIndex));
+                }
+                else
+                {
+                    panel.Children.Add(GenerateTileButton(tile, angle: (Angle)pIndex));
+                }
+                i++;
             }
-        }
-
-        // Removes the last tile discarded from the discard panel of the specified player.
-        private void RemoveLatestDiscardFromPanel(int pIndex)
-        {
-            IReadOnlyCollection<TilePivot> discards = _game.Round.Discards.ElementAt(pIndex);
-
-            StackPanel panel = FindName($"StpP{pIndex}Discard{(discards.Count > 12 ? 3 : (discards.Count > 6 ? 2 : 1))}") as StackPanel;
-
-            panel.Children.RemoveAt(pIndex == 1 || pIndex == 2 ? 0 : panel.Children.Count - 1);
         }
 
         // Checks if a round is over by wall exhaustion.
@@ -460,10 +430,9 @@ namespace Gnoj_HamView
                     {
                         Dispatcher.Invoke(() =>
                         {
-                            AddLatestDiscardToPanel(_game.Round.PreviousPlayerIndex);
+                            FillDiscardPanel(_game.Round.PreviousPlayerIndex);
                             FillHandPanel(_game.Round.PreviousPlayerIndex);
                             BtnChii.Visibility = BtnChiiVisibility();
-                            BtnPick.Visibility = _game.Round.IsHumanPlayer ? Visibility.Visible : Visibility.Collapsed;
                             BtnPon.Visibility = _game.Round.CanCallPon(GamePivot.HUMAN_INDEX) ? Visibility.Visible : Visibility.Collapsed;
                             BtnKan.Visibility = _game.Round.CanCallKan(GamePivot.HUMAN_INDEX) > 0 ? Visibility.Visible : Visibility.Collapsed;
                         });
@@ -475,6 +444,31 @@ namespace Gnoj_HamView
                     else
                     {
                         throw new NotImplementedException();
+                    }
+                }
+                if (_game.Round.IsHumanPlayer)
+                {
+                    TilePivot pick = _game.Round.Pick();
+                    if (pick == null)
+                    {
+                        if (_game.Round.IsWallExhaustion)
+                        {
+                            Dispatcher.Invoke(NewRound);
+                        }
+                        else
+                        {
+                            throw new NotImplementedException();
+                        }
+                    }
+                    else
+                    {
+                        Dispatcher.Invoke(() =>
+                        {
+                            StpPickP0.Children.Add(GenerateTileButton(pick, BtnDiscard_Click));
+                            BtnChii.Visibility = Visibility.Collapsed;
+                            BtnPon.Visibility = Visibility.Collapsed;
+                            BtnKan.Visibility = _game.Round.CanCallKan(GamePivot.HUMAN_INDEX) > 0 ? Visibility.Visible : Visibility.Collapsed;
+                        });
                     }
                 }
             });

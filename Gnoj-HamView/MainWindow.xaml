@@ -56,9 +56,7 @@
                 <Button Name="BtnPon" Content="Pon" Height="25" Width="50" Visibility="Collapsed" Click="BtnPon_Click" />
                 <Button Name="BtnChii" Content="Chii" Height="25" Width="50" Visibility="Collapsed" Click="BtnChii_Click" />
                 <Button Name="BtnKan" Content="Kan" Height="25" Width="50" Visibility="Collapsed" Click="BtnKan_Click" />
-                <Button Name="BtnPick" Content="Pick" Height="25" Width="50" Visibility="Collapsed" Click="BtnPick_Click" />
                 <Button Name="BtnRiichi" Content="Riichi" Height="25" Width="50" Visibility="Collapsed" Click="BtnRiichi_Click" />
-                <!--<Button Name="BtnSkip" Content="Skip" Height="25" Width="50" Visibility="Collapsed" Click="BtnSkip_Click" />-->
             </StackPanel>
             <StackPanel Orientation="Horizontal" DockPanel.Dock="Left" Name="StpHandP0" />
             <!-- Tile just picked (separate view) -->

@@ -687,7 +687,11 @@ namespace Gnoj_Ham
 
             if (fromOpenPon == null)
             {
-                CheckTilesForCallAndExtractCombo(_concealedTiles.Where(t => t == tile), 3, tile, stolenFrom);
+                CheckTilesForCallAndExtractCombo(_concealedTiles.Where(t => t == tile),
+                    stolenFrom.HasValue ? 3 : 4,
+                    stolenFrom.HasValue ? tile : null,
+                    stolenFrom
+                );
             }
             else
             {
