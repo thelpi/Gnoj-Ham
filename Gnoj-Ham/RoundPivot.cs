@@ -197,19 +197,19 @@ namespace Gnoj_Ham
         /// <summary>
         /// Tries to pick the next tile from the wall.
         /// </summary>
-        /// <returns><c>True</c> if success; <c>False</c> if failure (ie exhausted wall).</returns>
-        public bool Pick()
+        /// <returns>The tile if success; <c>null</c> if failure (ie exhausted wall).</returns>
+        public TilePivot Pick()
         {
             if (_wallTiles.Count == 0 || _waitForDiscard)
             {
-                return false;
+                return null;
             }
 
             TilePivot tile = _wallTiles.First();
             _wallTiles.Remove(tile);
             _hands[CurrentPlayerIndex].Pick(tile);
             _waitForDiscard = true;
-            return true;
+            return tile;
         }
 
         /// <summary>
@@ -316,7 +316,7 @@ namespace Gnoj_Ham
         /// </returns>
         public bool AutoPickAndDiscard()
         {
-            if (!Pick())
+            if (Pick() == null)
             {
                 return false;
             }

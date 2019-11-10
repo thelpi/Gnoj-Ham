@@ -23,6 +23,9 @@ namespace Gnoj_HamView
 
         private readonly GamePivot _game;
 
+        /// <summary>
+        /// Constructor.
+        /// </summary>
         public MainWindow()
         {
             InitializeComponent();
@@ -45,7 +48,24 @@ namespace Gnoj_HamView
 
             // TODO : first screen to personalize informations.
             _game = new GamePivot("Human", InitialPointsRulePivot.K25, true);
-            
+
+            // Fix the size of every discard panels
+            for (int i = 0; i < _game.Players.Count; i++)
+            {
+                for (int j = 1; j <= 3; j++)
+                {
+                    StackPanel panel = FindName($"StpP{i}Discard{j}") as StackPanel;
+                    if (i % 2 == 0)
+                    {
+                        panel.Height = TILE_HEIGHT + (0.5 * DEFAULT_TILE_MARGIN);
+                    }
+                    else
+                    {
+                        panel.Width = TILE_HEIGHT + (0.5 * DEFAULT_TILE_MARGIN);
+                    }
+                }
+            }
+
             NewRoundRefresh();
         }
 
@@ -56,7 +76,7 @@ namespace Gnoj_HamView
             if (_game.Round.Discard((sender as Button).Tag as TilePivot))
             {
                 FillHandPanel(_game.Round.PreviousPlayerIndex);
-                AddToPlayerDiscard(_game.Round.PreviousPlayerIndex);
+                AddLatestDiscardToPanel(_game.Round.PreviousPlayerIndex);
                 BtnChii.Visibility = BtnChiiVisibility();
                 BtnPick.Visibility = _game.Round.IsHumanPlayer ? Visibility.Visible : Visibility.Collapsed;
                 BtnSkip.Visibility = Visibility.Visible;
@@ -87,7 +107,7 @@ namespace Gnoj_HamView
         {
             if (_game.Round.AutoPickAndDiscard())
             {
-                AddToPlayerDiscard(_game.Round.PreviousPlayerIndex);
+                AddLatestDiscardToPanel(_game.Round.PreviousPlayerIndex);
                 FillHandPanel(_game.Round.PreviousPlayerIndex);
                 BtnChii.Visibility = BtnChiiVisibility();
                 BtnPick.Visibility = _game.Round.IsHumanPlayer ? Visibility.Visible : Visibility.Collapsed;
@@ -102,7 +122,8 @@ namespace Gnoj_HamView
 
         private void BtnPick_Click(object sender, RoutedEventArgs e)
         {
-            if (!_game.Round.Pick())
+            TilePivot pick = _game.Round.Pick();
+            if (pick == null)
             {
                 if (!IsEndOfRoundByWallExhaustion())
                 {
@@ -112,7 +133,7 @@ namespace Gnoj_HamView
             }
             else
             {
-                StpPickP0.Children.Add(GenerateTileButton(_game.Round.Hands.ElementAt(GamePivot.HUMAN_INDEX).ConcealedTiles.Last(), BtnDiscard_Click));
+                StpPickP0.Children.Add(GenerateTileButton(pick, BtnDiscard_Click));
                 BtnChii.Visibility = Visibility.Collapsed;
                 BtnPick.Visibility = Visibility.Collapsed;
                 BtnSkip.Visibility = Visibility.Collapsed;
@@ -210,13 +231,12 @@ namespace Gnoj_HamView
         // Resets and refills every panels at a new round.
         private void NewRoundRefresh()
         {
-            StpCombosP0.Children.Clear();
-            StpCombosP1.Children.Clear();
-            StpCombosP2.Children.Clear();
-            StpCombosP3.Children.Clear();
-
             for (int pIndex = 0; pIndex < _game.Players.Count; pIndex++)
             {
+                (FindName($"StpCombosP{pIndex}") as StackPanel).Children.Clear();
+                (FindName($"StpP{pIndex}Discard1") as StackPanel).Children.Clear();
+                (FindName($"StpP{pIndex}Discard2") as StackPanel).Children.Clear();
+                (FindName($"StpP{pIndex}Discard3") as StackPanel).Children.Clear();
                 FillHandPanel(pIndex);
             }
 
@@ -225,9 +245,21 @@ namespace Gnoj_HamView
             BtnSkip.Visibility = Visibility.Visible;
         }
 
-        private void AddToPlayerDiscard(int pIndex)
+        // Adds the last tile discarded to the discard panel of the specified player.
+        private void AddLatestDiscardToPanel(int pIndex)
         {
-            /*(FindName($"StpDiscardP{pIndex}") as StackPanel).Children.Add(GenerateTileButton(_game.Round.Discards.ElementAt(pIndex).Last()));*/
+            IReadOnlyCollection<TilePivot> discards = _game.Round.Discards.ElementAt(pIndex);
+
+            StackPanel panel = FindName($"StpP{pIndex}Discard{(discards.Count > 12 ? 3 : (discards.Count > 6 ? 2 : 1))}") as StackPanel;
+
+            if (pIndex == 1 || pIndex == 2)
+            {
+                panel.Children.Insert(0, GenerateTileButton(discards.Last(), angle: (Angle)pIndex));
+            }
+            else
+            {
+                panel.Children.Add(GenerateTileButton(discards.Last(), angle: (Angle)pIndex));
+            }
         }
 
         // Checks if a round is over by wall exhaustion.
@@ -279,7 +311,35 @@ namespace Gnoj_HamView
         // Adds to the player stack its last combination.
         private void AddLatestCombinationToStack(int pIndex)
         {
+            StackPanel panel = FindName($"StpCombosP{pIndex}") as StackPanel;
 
+            TileComboPivot combo = _game.Round.Hands.ElementAt(pIndex).DeclaredCombinations.Last();
+
+            panel.Children.Add(CreateCombinationPanel(pIndex, combo));
+        }
+
+        // Creates a panel for the specified combination.
+        private StackPanel CreateCombinationPanel(int pIndex, TileComboPivot combo)
+        {
+            StackPanel panel = new StackPanel
+            {
+                Orientation = (pIndex == 0 || pIndex == 2 ? Orientation.Horizontal : Orientation.Vertical)
+            };
+
+            WindPivot pWind = _game.GetPlayerCurrentWind(pIndex);
+
+            Dictionary<TilePivot, bool> tiles = combo.GetSortedTilesForDisplay(pWind);
+            int i = 0;
+            foreach (TilePivot tile in tiles.Keys)
+            {
+                panel.Children.Add(GenerateTileButton(tile,
+                    null,
+                    (Angle)(tiles[tile] ? (pIndex == 3 ? 0 : pIndex + 1) : pIndex),
+                    combo.IsSquare && combo.IsConcealed && i > 0 && i < 3));
+                i++;
+            }
+
+            return panel;
         }
 
         #endregion Private methods
@@ -288,9 +348,9 @@ namespace Gnoj_HamView
         private enum Angle
         {
             A0,
-            A90,
+            A270,
             A180,
-            A270
+            A90
         }
     }
 }

@@ -435,5 +435,67 @@ namespace Gnoj_Ham
         }
 
         #endregion Static methods
+
+        #region Public methods
+
+        /// <summary>
+        /// Gets the list of tiles from the combination, sorted by wind logic for display.
+        /// </summary>
+        /// <param name="ownerWind">The current wind of the owner.</param>
+        /// <returns>List of tiles; value is <c>True</c> when the tile is the opened one.</returns>
+        public Dictionary<TilePivot, bool> GetSortedTilesForDisplay(WindPivot ownerWind)
+        {
+            if (!StolenFrom.HasValue)
+            {
+                return Tiles.ToDictionary(t => t, t => false);
+            }
+
+            var concealedOnly = new List<TilePivot>(_tiles);
+            concealedOnly.Remove(OpenTile);
+
+            int i = 0;
+
+            var tiles = new Dictionary<TilePivot, bool>();
+
+            if (ownerWind.Left() == StolenFrom.Value)
+            {
+                tiles.Add(OpenTile, true);
+            }
+            else
+            {
+                tiles.Add(concealedOnly[i], false);
+                i++;
+            }
+
+            if (ownerWind.Opposite() == StolenFrom.Value)
+            {
+                tiles.Add(OpenTile, true);
+            }
+            else
+            {
+                tiles.Add(concealedOnly[i], false);
+                i++;
+            }
+
+            if (IsSquare)
+            {
+                tiles.Add(concealedOnly[i], false);
+                i++;
+            }
+
+            if (ownerWind.Right() == StolenFrom.Value)
+            {
+                tiles.Add(OpenTile, true);
+            }
+            else
+            {
+                tiles.Add(concealedOnly[i], false);
+                i++;
+            }
+
+            return tiles;
+        }
+
+        #endregion Public methods
     }
 }
