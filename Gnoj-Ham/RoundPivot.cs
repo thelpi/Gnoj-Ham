@@ -282,31 +282,32 @@ namespace Gnoj_Ham
         /// Checks if calling kan is allowed for the specified player in this context.
         /// </summary>
         /// <param name="playerIndex">The player index.</param>
-        /// <returns><c>True</c> if calling kan is allowed in this context; <c>False otherwise.</c></returns>
-        public bool CanCallKan(int playerIndex)
+        /// <returns>The number of possible kans.</returns>
+        public int CanCallKan(int playerIndex)
         {
             if (_compensationTiles.Count == 0)
             {
-                return false;
+                return 0;
             }
 
             if (CurrentPlayerIndex == playerIndex)
             {
                 if (!_waitForDiscard)
                 {
-                    return false;
+                    return 0;
                 }
-
-                return _hands[playerIndex].ConcealedTiles.GroupBy(t => t).Any(t => t.Count() == 4);
+                
+                return _hands[playerIndex].ConcealedTiles.GroupBy(t => t).Count(t => t.Count() == 4) +
+                    _hands[playerIndex].DeclaredCombinations.Count(c => c.IsBrelan && _hands[playerIndex].ConcealedTiles.Any(t => t == c.OpenTile));
             }
             else
             {
                 if (_waitForDiscard || _discards[PreviousPlayerIndex].Count == 0)
                 {
-                    return false;
+                    return 0;
                 }
 
-                return _hands[playerIndex].ConcealedTiles.Where(t => t == _discards[PreviousPlayerIndex].Last()).Count() >= 3;
+                return _hands[playerIndex].ConcealedTiles.Where(t => t == _discards[PreviousPlayerIndex].Last()).Count() >= 3 ? 1 : 0;
             }
         }
 
@@ -364,33 +365,43 @@ namespace Gnoj_Ham
         /// <returns>The tile picked as compensation; <c>Null</c> if failure.</returns>
         public TilePivot CallKan(int playerIndex, TilePivot tileChoice = null)
         {
-            if (!CanCallKan(playerIndex))
+            if (CanCallKan(playerIndex) == 0)
             {
                 return null;
             }
 
-            if (CurrentPlayerIndex == playerIndex && tileChoice != null
-                && !_hands[playerIndex].ConcealedTiles.GroupBy(t => t).Any(t => t.Count() == 4 && t == tileChoice))
+            TileComboPivot fromPreviousPon = tileChoice == null ? null :
+                _hands[playerIndex].DeclaredCombinations.FirstOrDefault(c => c.IsBrelan && c.OpenTile == tileChoice);
+
+            if (CurrentPlayerIndex == playerIndex
+                && tileChoice != null
+                && !_hands[playerIndex].ConcealedTiles.GroupBy(t => t).Any(t => t.Count() == 4 && t == tileChoice)
+                && fromPreviousPon == null)
             {
                 throw new ArgumentException(Messages.InvalidKanTileChoice, nameof(tileChoice));
             }
 
-            TilePivot compensationTile = PickCompensationTile(playerIndex);
-
             if (CurrentPlayerIndex == playerIndex)
             {
+                // Forces a decision, even if there're several possibilities.
                 if (tileChoice == null)
                 {
-                    tileChoice = _hands[playerIndex].ConcealedTiles.GroupBy(t => t).First(t => t.Count() == 4).Key;
+                    tileChoice = _hands[playerIndex].ConcealedTiles.GroupBy(t => t).FirstOrDefault(t => t.Count() == 4)?.Key;
+                    if (tileChoice == null)
+                    {
+                        tileChoice = _hands[playerIndex].ConcealedTiles.First(t => _hands[playerIndex].DeclaredCombinations.Any(c => c.IsBrelan && c.OpenTile == t));
+                        fromPreviousPon = _hands[playerIndex].DeclaredCombinations.First(c =>  c.OpenTile == tileChoice);
+                    }
                 }
 
-                _hands[playerIndex].DeclareKan(tileChoice, null);
+                _hands[playerIndex].DeclareKan(tileChoice, null, fromPreviousPon);
             }
             else
             {
                 _hands[playerIndex].DeclareKan(
                     _discards[PreviousPlayerIndex].Last(),
-                    _game.GetPlayerCurrentWind(PreviousPlayerIndex)
+                    _game.GetPlayerCurrentWind(PreviousPlayerIndex),
+                    null
                 );
                 _discards[PreviousPlayerIndex].RemoveAt(_discards[PreviousPlayerIndex].Count - 1);
                 CurrentPlayerIndex = playerIndex;
@@ -398,7 +409,7 @@ namespace Gnoj_Ham
             }
 
             _waitForDiscard = true;
-            return compensationTile;
+            return PickCompensationTile();
         }
 
         /// <summary>
@@ -448,16 +459,18 @@ namespace Gnoj_Ham
 
         #region Private methods
 
-        private TilePivot PickCompensationTile(int playerIndex)
+        // Picks a compensation tile (after a kan call) for the current player.
+        private TilePivot PickCompensationTile()
         {
             TilePivot compensationTile = _compensationTiles.First();
             _compensationTiles.RemoveAt(0);
             _deadTreasureTiles.Add(_wallTiles.Last());
             _wallTiles.RemoveAt(_wallTiles.Count - 1);
-            _hands[playerIndex].Pick(compensationTile);
+            _hands[CurrentPlayerIndex].Pick(compensationTile);
             return compensationTile;
         }
 
+        // Computes the next value of "CurrentPlayerIndex".
         private void SetCurrentPlayerIndex()
         {
             CurrentPlayerIndex = CurrentPlayerIndex == 3 ? 0 : CurrentPlayerIndex + 1;

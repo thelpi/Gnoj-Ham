@@ -675,16 +675,37 @@ namespace Gnoj_Ham
         /// </summary>
         /// <param name="tile">The stolen tile.</param>
         /// <param name="stolenFrom">The wind which the tile has been stolen from.</param>
+        /// <param name="fromOpenPon">The <see cref="TileComboPivot"/>, if the kan is called as an override of a previous pon call; <c>Null</c> otherwise.</param>
         /// <exception cref="ArgumentNullException"><paramref name="tile"/> is <c>Null</c>.</exception>
         /// <exception cref="InvalidOperationException"><see cref="Messages.InvalidCall"/></exception>
-        internal void DeclareKan(TilePivot tile, WindPivot? stolenFrom)
+        internal void DeclareKan(TilePivot tile, WindPivot? stolenFrom, TileComboPivot fromOpenPon)
         {
             if (tile == null)
             {
                 throw new ArgumentNullException(nameof(tile));
             }
 
-            CheckTilesForCallAndExtractCombo(_concealedTiles.Where(t => t == tile), 3, tile, stolenFrom);
+            if (fromOpenPon == null)
+            {
+                CheckTilesForCallAndExtractCombo(_concealedTiles.Where(t => t == tile), 3, tile, stolenFrom);
+            }
+            else
+            {
+                int indexOfPon = _declaredCombinations.IndexOf(fromOpenPon);
+                if (indexOfPon < 0 || stolenFrom.HasValue)
+                {
+                    throw new InvalidOperationException(Messages.InvalidCall);
+                }
+
+                var concealedTiles = new List<TilePivot>
+                {
+                    tile
+                };
+                concealedTiles.AddRange(fromOpenPon.Tiles.Where(t => !ReferenceEquals(t, fromOpenPon.OpenTile)));
+
+                _declaredCombinations[indexOfPon] = new TileComboPivot(concealedTiles, fromOpenPon.OpenTile, fromOpenPon.StolenFrom);
+                _concealedTiles.Remove(tile);
+            }
         }
 
         /// <summary>

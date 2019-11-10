@@ -88,7 +88,7 @@ namespace Gnoj_HamView
                 BtnPick.Visibility = _game.Round.IsHumanPlayer ? Visibility.Visible : Visibility.Collapsed;
                 BtnSkip.Visibility = Visibility.Visible;
                 BtnPon.Visibility = _game.Round.CanCallPon(GamePivot.HUMAN_INDEX) ? Visibility.Visible : Visibility.Collapsed;
-                BtnKan.Visibility = _game.Round.CanCallKan(GamePivot.HUMAN_INDEX) ? Visibility.Visible : Visibility.Collapsed;
+                BtnKan.Visibility = _game.Round.CanCallKan(GamePivot.HUMAN_INDEX) > 0 ? Visibility.Visible : Visibility.Collapsed;
             }
             else if (!IsEndOfRoundByWallExhaustion())
             {
@@ -115,18 +115,8 @@ namespace Gnoj_HamView
                 BtnPick.Visibility = Visibility.Collapsed;
                 BtnSkip.Visibility = Visibility.Collapsed;
                 BtnPon.Visibility = Visibility.Collapsed;
-                BtnKan.Visibility = _game.Round.CanCallKan(GamePivot.HUMAN_INDEX) ? Visibility.Visible : Visibility.Collapsed;
+                BtnKan.Visibility = _game.Round.CanCallKan(GamePivot.HUMAN_INDEX) > 0 ? Visibility.Visible : Visibility.Collapsed;
             }
-        }
-
-        private void BtnTsumo_Click(object sender, RoutedEventArgs e)
-        {
-            throw new NotImplementedException();
-        }
-
-        private void BtnRon_Click(object sender, RoutedEventArgs e)
-        {
-            throw new NotImplementedException();
         }
 
         private void BtnPon_Click(object sender, RoutedEventArgs e)
@@ -202,10 +192,75 @@ namespace Gnoj_HamView
 
         private void BtnKan_Click(object sender, RoutedEventArgs e)
         {
-            throw new NotImplementedException();
+            int canCount = _game.Round.CanCallKan(GamePivot.HUMAN_INDEX);
+            if (canCount > 0)
+            {
+                if (_game.Round.IsHumanPlayer)
+                {
+                    if (canCount > 1)
+                    {
+                        // TODO : hardmode !
+                    }
+                    else
+                    {
+                        TilePivot compensationTile = _game.Round.CallKan(GamePivot.HUMAN_INDEX);
+                        if (compensationTile == null)
+                        {
+                            throw new NotImplementedException();
+                        }
+                        else
+                        {
+                            FillHandPanel(GamePivot.HUMAN_INDEX, compensationTile);
+                            StpPickP0.Children.Add(GenerateTileButton(compensationTile, BtnDiscard_Click));
+                            AddLatestCombinationToStack(GamePivot.HUMAN_INDEX);
+                            BtnChii.Visibility = Visibility.Collapsed;
+                            BtnPick.Visibility = Visibility.Collapsed;
+                            BtnSkip.Visibility = Visibility.Collapsed;
+                            BtnPon.Visibility = Visibility.Collapsed;
+                            BtnKan.Visibility = _game.Round.CanCallKan(GamePivot.HUMAN_INDEX) > 0 ? Visibility.Visible : Visibility.Collapsed;
+                        }
+                    }
+                }
+                else
+                {
+                    // Note : this value is stored here because the call to "CallKan" makes it change.
+                    int previousPlayerIndex = _game.Round.PreviousPlayerIndex;
+                    TilePivot compensationTile = _game.Round.CallKan(GamePivot.HUMAN_INDEX);
+                    if (compensationTile == null)
+                    {
+                        throw new NotImplementedException();
+                    }
+                    else
+                    {
+                        FillHandPanel(GamePivot.HUMAN_INDEX, compensationTile);
+                        StpPickP0.Children.Add(GenerateTileButton(compensationTile, BtnDiscard_Click));
+                        AddLatestCombinationToStack(GamePivot.HUMAN_INDEX);
+                        RemoveLatestDiscardFromPanel(previousPlayerIndex);
+                        BtnChii.Visibility = Visibility.Collapsed;
+                        BtnPick.Visibility = Visibility.Collapsed;
+                        BtnSkip.Visibility = Visibility.Collapsed;
+                        BtnPon.Visibility = Visibility.Collapsed;
+                        BtnKan.Visibility = _game.Round.CanCallKan(GamePivot.HUMAN_INDEX) > 0 ? Visibility.Visible : Visibility.Collapsed;
+                    }
+                }
+            }
+            else if (_game.Round.CompensationTiles.Count > 0)
+            {
+                throw new NotImplementedException();
+            }
         }
 
         private void BtnRiichi_Click(object sender, RoutedEventArgs e)
+        {
+            throw new NotImplementedException();
+        }
+
+        private void BtnTsumo_Click(object sender, RoutedEventArgs e)
+        {
+            throw new NotImplementedException();
+        }
+
+        private void BtnRon_Click(object sender, RoutedEventArgs e)
         {
             throw new NotImplementedException();
         }
@@ -251,7 +306,7 @@ namespace Gnoj_HamView
         }
 
         // Clears and refills the hand panel of the specified player index.
-        private void FillHandPanel(int pIndex)
+        private void FillHandPanel(int pIndex, TilePivot excludedTile = null)
         {
             bool isHuman = pIndex == GamePivot.HUMAN_INDEX;
 
@@ -265,7 +320,10 @@ namespace Gnoj_HamView
             panel.Children.Clear();
             foreach (TilePivot tile in _game.Round.Hands.ElementAt(pIndex).ConcealedTiles)
             {
-                panel.Children.Add(GenerateTileButton(tile, isHuman ? BtnDiscard_Click : (RoutedEventHandler)null, (Angle)pIndex, !isHuman));
+                if (excludedTile == null || !ReferenceEquals(excludedTile, tile))
+                {
+                    panel.Children.Add(GenerateTileButton(tile, isHuman ? BtnDiscard_Click : (RoutedEventHandler)null, (Angle)pIndex, !isHuman));
+                }
             }
         }
 
@@ -285,7 +343,7 @@ namespace Gnoj_HamView
             BtnPick.Visibility = _game.Round.IsHumanPlayer ? Visibility.Visible : Visibility.Collapsed;
             BtnSkip.Visibility = Visibility.Visible;
             BtnPon.Visibility = Visibility.Collapsed;
-            BtnKan.Visibility = _game.Round.CanCallKan(GamePivot.HUMAN_INDEX) ? Visibility.Visible : Visibility.Collapsed;
+            BtnKan.Visibility = _game.Round.CanCallKan(GamePivot.HUMAN_INDEX) > 0 ? Visibility.Visible : Visibility.Collapsed;
         }
 
         // Adds the last tile discarded to the discard panel of the specified player.
