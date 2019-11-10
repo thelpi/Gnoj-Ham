@@ -91,6 +91,7 @@ namespace Gnoj_Ham
             Name = name;
             NameEn = nameEn;
             Description = description ?? string.Empty;
+            FanCount = fanCount;
             ConcealedBonusFanCount = concealedBonusFanCount;
             _upgrades = new List<YakuPivot>();
             if (upgrades != null && upgrades.Length > 0)
