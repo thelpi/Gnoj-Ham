@@ -60,10 +60,7 @@ namespace Gnoj_HamView
                 BtnPon.Visibility = Visibility.Collapsed;
                 BtnKan.Visibility = Visibility.Collapsed;
 
-                if (!IsEndOfRoundByWallExhaustion())
-                {
-                    AutoSkip();
-                }
+                AutoSkip();
             }
         }
 
@@ -113,7 +110,7 @@ namespace Gnoj_HamView
                     BtnKan.Visibility = Visibility.Collapsed;
                 }
             }
-            else if (!IsEndOfRoundByWallExhaustion())
+            else
             {
                 throw new NotImplementedException();
             }
@@ -303,7 +300,7 @@ namespace Gnoj_HamView
                 FillDiscardPanel(pIndex);
             }
 
-            BtnChii.Visibility = BtnChiiVisibility();
+            BtnChii.Visibility = _game.Round.IsHumanPlayer && _game.Round.CanCallChii().Keys.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
             BtnPon.Visibility = Visibility.Collapsed;
             BtnKan.Visibility = _game.Round.CanCallKan(GamePivot.HUMAN_INDEX).Count > 0 ? Visibility.Visible : Visibility.Collapsed;
         }
@@ -332,17 +329,6 @@ namespace Gnoj_HamView
                 }
                 i++;
             }
-        }
-
-        // Checks if a round is over by wall exhaustion.
-        private bool IsEndOfRoundByWallExhaustion()
-        {
-            if (_game.Round.IsWallExhaustion)
-            {
-                NewRound();
-                return true;
-            }
-            return false;
         }
 
         // Proceeds to new round.
@@ -379,12 +365,6 @@ namespace Gnoj_HamView
             }
 
             return button;
-        }
-
-        // Recomputes the visibility of "chii" call button.
-        private Visibility BtnChiiVisibility()
-        {
-            return _game.Round.IsHumanPlayer && _game.Round.CanCallChii().Keys.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
         }
 
         // Adds to the player stack its last combination.
@@ -426,7 +406,8 @@ namespace Gnoj_HamView
             Task.Run(() =>
             {
                 // TODO : add "Ron" action when ready.
-                while (!_game.Round.IsHumanPlayer
+                while (!_game.Round.IsWallExhaustion
+                    && !_game.Round.IsHumanPlayer
                     && _game.Round.CanCallKan(GamePivot.HUMAN_INDEX).Count == 0
                     && !_game.Round.CanCallPon(GamePivot.HUMAN_INDEX)
                     && (!_game.Round.IsHumanPlayer || _game.Round.CanCallChii().Keys.Count == 0))
@@ -438,30 +419,24 @@ namespace Gnoj_HamView
                         {
                             FillDiscardPanel(_game.Round.PreviousPlayerIndex);
                             FillHandPanel(_game.Round.PreviousPlayerIndex);
-                            BtnChii.Visibility = BtnChiiVisibility();
+                            BtnChii.Visibility = _game.Round.IsHumanPlayer && _game.Round.CanCallChii().Keys.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
                             BtnPon.Visibility = _game.Round.CanCallPon(GamePivot.HUMAN_INDEX) ? Visibility.Visible : Visibility.Collapsed;
                             BtnKan.Visibility = _game.Round.CanCallKan(GamePivot.HUMAN_INDEX).Count > 0 ? Visibility.Visible : Visibility.Collapsed;
                         });
                     }
-                    else if (_game.Round.IsWallExhaustion)
-                    {
-                        Dispatcher.Invoke(NewRound);
-                    }
-                    else
+                    else if (!_game.Round.IsWallExhaustion)
                     {
                         throw new NotImplementedException();
                     }
                 }
-                if (_game.Round.IsHumanPlayer && _game.Round.CanCallChii().Keys.Count == 0)
+                if (!_game.Round.IsWallExhaustion
+                    && _game.Round.IsHumanPlayer
+                    && _game.Round.CanCallChii().Keys.Count == 0)
                 {
                     TilePivot pick = _game.Round.Pick();
                     if (pick == null)
                     {
-                        if (_game.Round.IsWallExhaustion)
-                        {
-                            Dispatcher.Invoke(NewRound);
-                        }
-                        else
+                        if (!_game.Round.IsWallExhaustion)
                         {
                             throw new NotImplementedException();
                         }
@@ -476,6 +451,10 @@ namespace Gnoj_HamView
                             BtnKan.Visibility = _game.Round.CanCallKan(GamePivot.HUMAN_INDEX).Count > 0 ? Visibility.Visible : Visibility.Collapsed;
                         });
                     }
+                }
+                if (_game.Round.IsWallExhaustion)
+                {
+                    Dispatcher.Invoke(NewRound);
                 }
             });
         }
