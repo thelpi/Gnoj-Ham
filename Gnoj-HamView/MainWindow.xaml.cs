@@ -125,34 +125,7 @@ namespace Gnoj_HamView
 
             if (tileChoices.Keys.Count > 0)
             {
-                BtnChii.Visibility = Visibility.Collapsed;
-                BtnPon.Visibility = Visibility.Collapsed;
-                BtnKan.Visibility = Visibility.Collapsed;
-
-                List<Button> buttons = StpHandP0.Children.OfType<Button>().ToList();
-
-                var clickableButtons = new List<Button>();
-                foreach (TilePivot tile in tileChoices.Keys)
-                {
-                    // Changes the event (and tag) of every buttons concerned by the chii call...
-                    Button buttonClickable = buttons.First(b => b.Tag as TilePivot == tile);
-                    buttonClickable.Click += BtnChiiChoice_Click;
-                    buttonClickable.Click -= BtnDiscard_Click;
-                    buttonClickable.Tag = new KeyValuePair<TilePivot, bool>(tile, tileChoices[tile]);
-                    clickableButtons.Add(buttonClickable);
-                }
-                // ...and disables every buttons not concerned.
-                buttons.Where(b => !clickableButtons.Contains(b)).All(b => { b.IsEnabled = false; return true; });
-
-                if (clickableButtons.Count == 1)
-                {
-                    // Only one possibility : proceeds to make the chii call.
-                    clickableButtons[0].RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent));
-                }
-                else
-                {
-                    // Otherwise, waits for the user choice.
-                }
+                InnerKanOrChiiTileSelection(tileChoices, BtnChiiChoice_Click);
             }
             else
             {
@@ -167,37 +140,7 @@ namespace Gnoj_HamView
             {
                 if (_game.Round.IsHumanPlayer)
                 {
-                    BtnChii.Visibility = Visibility.Collapsed;
-                    BtnPon.Visibility = Visibility.Collapsed;
-                    BtnKan.Visibility = Visibility.Collapsed;
-
-                    List<Button> buttons = StpHandP0.Children.OfType<Button>().ToList();
-                    if (StpPickP0.Children.Count > 0)
-                    {
-                        buttons.Add(StpPickP0.Children[0] as Button);
-                    }
-
-                    var clickableButtons = new List<Button>();
-                    foreach (var tile in kanTiles)
-                    {
-                        // Changes the event of every buttons concerned by the chii call...
-                        Button buttonClickable = buttons.First(b => b.Tag as TilePivot == tile);
-                        buttonClickable.Click += BtnKanChoice_Click;
-                        buttonClickable.Click -= BtnDiscard_Click;
-                        clickableButtons.Add(buttonClickable);
-                    }
-                    // ...and disables every buttons not concerned.
-                    buttons.Where(b => !clickableButtons.Contains(b)).All(b => { b.IsEnabled = false; return true; });
-
-                    if (clickableButtons.Count == 1)
-                    {
-                        // Only one possibility : proceeds to make the kan call.
-                        clickableButtons[0].RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent));
-                    }
-                    else
-                    {
-                        // Otherwise, waits for the user choice.
-                    }
+                    InnerKanOrChiiTileSelection(kanTiles.ToDictionary(t => t, t => false), BtnKanChoice_Click);
                 }
                 else
                 {
@@ -229,7 +172,47 @@ namespace Gnoj_HamView
 
         #region Private methods
 
-        // Inner kan call process.
+        // Inner process for kan and chii tile selection.
+        private void InnerKanOrChiiTileSelection(IDictionary<TilePivot, bool> tileChoices, RoutedEventHandler handler)
+        {
+            BtnChii.Visibility = Visibility.Collapsed;
+            BtnPon.Visibility = Visibility.Collapsed;
+            BtnKan.Visibility = Visibility.Collapsed;
+
+            List<Button> buttons = StpHandP0.Children.OfType<Button>().ToList();
+            if (StpPickP0.Children.Count > 0)
+            {
+                buttons.Add(StpPickP0.Children[0] as Button);
+            }
+
+            var clickableButtons = new List<Button>();
+            foreach (TilePivot tile in tileChoices.Keys)
+            {
+                // Changes the event of every buttons concerned by the chii call...
+                Button buttonClickable = buttons.First(b => b.Tag as TilePivot == tile);
+                buttonClickable.Click += handler;
+                buttonClickable.Click -= BtnDiscard_Click;
+                if (handler == BtnChiiChoice_Click)
+                {
+                    buttonClickable.Tag = new KeyValuePair<TilePivot, bool>(tile, tileChoices[tile]);
+                }
+                clickableButtons.Add(buttonClickable);
+            }
+            // ...and disables every buttons not concerned.
+            buttons.Where(b => !clickableButtons.Contains(b)).All(b => { b.IsEnabled = false; return true; });
+
+            if (clickableButtons.Count == 1)
+            {
+                // Only one possibility : proceeds to make the call.
+                clickableButtons[0].RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent));
+            }
+            else
+            {
+                // Otherwise, waits for the user choice.
+            }
+        }
+
+        // Inner process kan call.
         private void InnerKanCallProcess(TilePivot tile, int? previousPlayerIndex)
         {
             TilePivot compensationTile = _game.Round.CallKan(GamePivot.HUMAN_INDEX, tile);
@@ -469,7 +452,7 @@ namespace Gnoj_HamView
                         throw new NotImplementedException();
                     }
                 }
-                if (_game.Round.IsHumanPlayer)
+                if (_game.Round.IsHumanPlayer && _game.Round.CanCallChii().Keys.Count == 0)
                 {
                     TilePivot pick = _game.Round.Pick();
                     if (pick == null)
