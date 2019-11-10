@@ -89,20 +89,7 @@ namespace Gnoj_HamView
 
         private void BtnKanChoice_Click(object sender, RoutedEventArgs e)
         {
-            TilePivot compensationTile = _game.Round.CallKan(GamePivot.HUMAN_INDEX, (sender as Button).Tag as TilePivot);
-            if (compensationTile == null)
-            {
-                throw new NotImplementedException();
-            }
-            else
-            {
-                FillHandPanel(GamePivot.HUMAN_INDEX, compensationTile);
-                StpPickP0.Children.Add(GenerateTileButton(compensationTile, BtnDiscard_Click));
-                AddLatestCombinationToStack(GamePivot.HUMAN_INDEX);
-                BtnChii.Visibility = Visibility.Collapsed;
-                BtnPon.Visibility = Visibility.Collapsed;
-                BtnKan.Visibility = _game.Round.CanCallKan(GamePivot.HUMAN_INDEX).Count > 0 ? Visibility.Visible : Visibility.Collapsed;
-            }
+            InnerKanCallProcess((sender as Button).Tag as TilePivot, null);
         }
 
         private void BtnPon_Click(object sender, RoutedEventArgs e)
@@ -180,67 +167,41 @@ namespace Gnoj_HamView
             {
                 if (_game.Round.IsHumanPlayer)
                 {
-                    if (kanTiles.Count > 1)
+                    BtnChii.Visibility = Visibility.Collapsed;
+                    BtnPon.Visibility = Visibility.Collapsed;
+                    BtnKan.Visibility = Visibility.Collapsed;
+
+                    List<Button> buttons = StpHandP0.Children.OfType<Button>().ToList();
+                    if (StpPickP0.Children.Count > 0)
                     {
-                        BtnChii.Visibility = Visibility.Collapsed;
-                        BtnPon.Visibility = Visibility.Collapsed;
-                        BtnKan.Visibility = Visibility.Collapsed;
+                        buttons.Add(StpPickP0.Children[0] as Button);
+                    }
 
-                        List<Button> buttons = StpHandP0.Children.OfType<Button>().ToList();
-                        if (StpPickP0.Children.Count > 0)
-                        {
-                            buttons.Add(StpPickP0.Children[0] as Button);
-                        }
+                    var clickableButtons = new List<Button>();
+                    foreach (var tile in kanTiles)
+                    {
+                        // Changes the event of every buttons concerned by the chii call...
+                        Button buttonClickable = buttons.First(b => b.Tag as TilePivot == tile);
+                        buttonClickable.Click += BtnKanChoice_Click;
+                        buttonClickable.Click -= BtnDiscard_Click;
+                        clickableButtons.Add(buttonClickable);
+                    }
+                    // ...and disables every buttons not concerned.
+                    buttons.Where(b => !clickableButtons.Contains(b)).All(b => { b.IsEnabled = false; return true; });
 
-                        var clickableButtons = new List<Button>();
-                        foreach (var tile in kanTiles)
-                        {
-                            // Changes the event of every buttons concerned by the chii call...
-                            Button buttonClickable = buttons.First(b => b.Tag as TilePivot == tile);
-                            buttonClickable.Click += BtnKanChoice_Click;
-                            buttonClickable.Click -= BtnDiscard_Click;
-                            clickableButtons.Add(buttonClickable);
-                        }
-                        // ...and disables every buttons not concerned.
-                        buttons.Where(b => !clickableButtons.Contains(b)).All(b => { b.IsEnabled = false; return true; });
+                    if (clickableButtons.Count == 1)
+                    {
+                        // Only one possibility : proceeds to make the kan call.
+                        clickableButtons[0].RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent));
                     }
                     else
                     {
-                        TilePivot compensationTile = _game.Round.CallKan(GamePivot.HUMAN_INDEX);
-                        if (compensationTile == null)
-                        {
-                            throw new NotImplementedException();
-                        }
-                        else
-                        {
-                            FillHandPanel(GamePivot.HUMAN_INDEX, compensationTile);
-                            StpPickP0.Children.Add(GenerateTileButton(compensationTile, BtnDiscard_Click));
-                            AddLatestCombinationToStack(GamePivot.HUMAN_INDEX);
-                            BtnChii.Visibility = Visibility.Collapsed;
-                            BtnPon.Visibility = Visibility.Collapsed;
-                            BtnKan.Visibility = _game.Round.CanCallKan(GamePivot.HUMAN_INDEX).Count > 0 ? Visibility.Visible : Visibility.Collapsed;
-                        }
+                        // Otherwise, waits for the user choice.
                     }
                 }
                 else
                 {
-                    // Note : this value is stored here because the call to "CallKan" makes it change.
-                    int previousPlayerIndex = _game.Round.PreviousPlayerIndex;
-                    TilePivot compensationTile = _game.Round.CallKan(GamePivot.HUMAN_INDEX);
-                    if (compensationTile == null)
-                    {
-                        throw new NotImplementedException();
-                    }
-                    else
-                    {
-                        FillHandPanel(GamePivot.HUMAN_INDEX, compensationTile);
-                        StpPickP0.Children.Add(GenerateTileButton(compensationTile, BtnDiscard_Click));
-                        AddLatestCombinationToStack(GamePivot.HUMAN_INDEX);
-                        FillDiscardPanel(previousPlayerIndex);
-                        BtnChii.Visibility = Visibility.Collapsed;
-                        BtnPon.Visibility = Visibility.Collapsed;
-                        BtnKan.Visibility = _game.Round.CanCallKan(GamePivot.HUMAN_INDEX).Count > 0 ? Visibility.Visible : Visibility.Collapsed;
-                    }
+                    InnerKanCallProcess(null, _game.Round.PreviousPlayerIndex);
                 }
             }
             else if (_game.Round.CompensationTiles.Count > 0)
@@ -267,6 +228,29 @@ namespace Gnoj_HamView
         #endregion Window events
 
         #region Private methods
+
+        // Inner kan call process.
+        private void InnerKanCallProcess(TilePivot tile, int? previousPlayerIndex)
+        {
+            TilePivot compensationTile = _game.Round.CallKan(GamePivot.HUMAN_INDEX, tile);
+            if (compensationTile == null)
+            {
+                throw new NotImplementedException();
+            }
+            else
+            {
+                FillHandPanel(GamePivot.HUMAN_INDEX, compensationTile);
+                StpPickP0.Children.Add(GenerateTileButton(compensationTile, BtnDiscard_Click));
+                if (previousPlayerIndex.HasValue)
+                {
+                    FillDiscardPanel(previousPlayerIndex.Value);
+                }
+                AddLatestCombinationToStack(GamePivot.HUMAN_INDEX);
+                BtnChii.Visibility = Visibility.Collapsed;
+                BtnPon.Visibility = Visibility.Collapsed;
+                BtnKan.Visibility = _game.Round.CanCallKan(GamePivot.HUMAN_INDEX).Count > 0 ? Visibility.Visible : Visibility.Collapsed;
+            }
+        }
 
         // Fix dimensions of the window and every panels (when it's required).
         private void FixWindowDimensions()
