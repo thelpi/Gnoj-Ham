@@ -297,5 +297,15 @@
   <ItemGroup>
     <None Include="Resources\concealed.png" />
   </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\ledgreen.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\ledred.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

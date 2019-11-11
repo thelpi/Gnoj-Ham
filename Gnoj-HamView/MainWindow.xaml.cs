@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Drawing;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
+using System.Windows.Input;
 using System.Windows.Media;
 using Gnoj_Ham;
 
@@ -158,7 +158,7 @@ namespace Gnoj_HamView
             throw new NotImplementedException();
         }
 
-        private void Window_MouseDoubleClick(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        private void Window_MouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
             if (BtnPon.Visibility == Visibility.Visible
                 || BtnChii.Visibility == Visibility.Visible
@@ -311,9 +311,21 @@ namespace Gnoj_HamView
                 (FindName($"StpCombosP{pIndex}") as StackPanel).Children.Clear();
                 FillHandPanel(pIndex);
                 FillDiscardPanel(pIndex);
+                (FindName($"LblWindP{pIndex}") as Label).Content = _game.GetPlayerCurrentWind(pIndex).ToString();
             }
+            SetPlayersLed();
             SetActionButtonsVisibility(preDiscard: true);
             TsumoManagement(false);
+        }
+
+        // Resets the LED associated to each player.
+        private void SetPlayersLed()
+        {
+            for (int pIndex = 0; pIndex < _game.Players.Count; pIndex++)
+            {
+                (FindName($"ImgLedP{pIndex}") as Image).Source =
+                    (pIndex == _game.Round.CurrentPlayerIndex ? Properties.Resources.ledgreen : Properties.Resources.ledred).ToBitmapImage();
+            }
         }
 
         // Rebuilds the discard panel of the specified player.
@@ -363,13 +375,13 @@ namespace Gnoj_HamView
         {
             string rscName = concealed ? CONCEALED_TILE_RSC_NAME : tile.ToString();
 
-            Bitmap tileBitmap = Properties.Resources.ResourceManager.GetObject(rscName) as Bitmap;
+            System.Drawing.Bitmap tileBitmap = Properties.Resources.ResourceManager.GetObject(rscName) as System.Drawing.Bitmap;
 
             var button = new Button
             {
                 Height = angle == Angle.A0 || angle == Angle.A180 ? TILE_HEIGHT : TILE_WIDTH,
                 Width = angle == Angle.A0 || angle == Angle.A180 ? TILE_WIDTH : TILE_HEIGHT,
-                Content = new System.Windows.Controls.Image
+                Content = new Image
                 {
                     Source = tileBitmap.ToBitmapImage(),
                     LayoutTransform = new RotateTransform(Convert.ToDouble(angle.ToString().Replace("A", string.Empty)))
@@ -426,6 +438,7 @@ namespace Gnoj_HamView
                 while (_game.Round.IsCpuSkippable(skipCurrentAction))
                 {
                     skipCurrentAction = false;
+                    Dispatcher.Invoke(SetPlayersLed);
                     Thread.Sleep(_cpuSpeedMs);
                     if (_game.Round.AutoPickAndDiscard())
                     {
@@ -443,6 +456,7 @@ namespace Gnoj_HamView
                 }
                 if (_game.Round.IsHumanTurnBeforePick(skipCurrentAction))
                 {
+                    Dispatcher.Invoke(SetPlayersLed);
                     TilePivot pick = _game.Round.Pick();
                     if (pick == null)
                     {

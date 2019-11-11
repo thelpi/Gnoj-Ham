@@ -143,5 +143,53 @@
             <StackPanel Orientation="Vertical" Name="StpP3Discard2" />
             <StackPanel Orientation="Vertical" Name="StpP3Discard1" />
         </StackPanel>
+
+        <!-- LED -->
+        <!-- P1 (bottom) -->
+        <StackPanel Orientation="Vertical" VerticalAlignment="Center" HorizontalAlignment="Center" Grid.Row="5" Grid.Column="1">
+            <Image Name="ImgLedP0" Stretch="None" />
+            <Label Name="LblWindP0" HorizontalContentAlignment="Center" />
+        </StackPanel>
+        <!-- P2 (right) -->
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center" Grid.Row="5" Grid.Column="5">
+            <Image Name="ImgLedP1" Stretch="None" />
+            <Label Name="LblWindP1" HorizontalContentAlignment="Center">
+                <Label.LayoutTransform>
+                    <RotateTransform Angle="270" />
+                </Label.LayoutTransform>
+            </Label>
+        </StackPanel>
+        <!-- P3 (top) -->
+        <Grid Grid.Row="1" Grid.Column="5" VerticalAlignment="Center" HorizontalAlignment="Center">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <StackPanel Orientation="Vertical" Grid.Column="1">
+                <Label Name="LblWindP2" HorizontalContentAlignment="Center">
+                    <Label.LayoutTransform>
+                        <RotateTransform Angle="180" />
+                    </Label.LayoutTransform>
+                </Label>
+                <Image Name="ImgLedP2" Stretch="None" />
+            </StackPanel>
+        </Grid>
+        <!-- P4 (left) -->
+        <Grid Grid.Row="1" Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Center">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+            <StackPanel Orientation="Horizontal" Grid.Row="1">
+                <Label Name="LblWindP3" VerticalContentAlignment="Center">
+                    <Label.LayoutTransform>
+                        <RotateTransform Angle="90" />
+                    </Label.LayoutTransform>
+                </Label>
+                <Image Name="ImgLedP3" Stretch="None" />
+            </StackPanel>
+        </Grid>
+    
+        
     </Grid>
 </Window>
