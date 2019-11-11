@@ -17,10 +17,6 @@ namespace Gnoj_HamView
         {
             InitializeComponent();
 
-            // TODO : IConverter.
-            CbbCpuSpeed.ItemsSource = Enum.GetValues(typeof(CpuSpeed));
-            CbbPointsRule.ItemsSource = Enum.GetValues(typeof(InitialPointsRulePivot));
-
             CbbCpuSpeed.SelectedIndex = Settings.Default.DefaultCpuSpeed;
             CbbPointsRule.SelectedIndex = Settings.Default.DefaultPointsRule;
             TxtPlayerName.Text = Settings.Default.DefaultPlayerName;

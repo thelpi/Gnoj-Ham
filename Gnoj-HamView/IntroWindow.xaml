@@ -3,11 +3,20 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:cvt="clr-namespace:Gnoj_HamView.Converters"
+        xmlns:view="clr-namespace:Gnoj_HamView"
+        xmlns:lib="clr-namespace:Gnoj_Ham;assembly=Gnoj-Ham"
         mc:Ignorable="d"
         WindowStartupLocation="CenterScreen"
         SizeToContent="WidthAndHeight"
         Background="Gainsboro"
         Title="Game configuration">
+    <Window.Resources>
+        <cvt:CpuSpeedConverter x:Key="CpuSpeedConverter" />
+        <cvt:InitialPointsRuleConverter x:Key="InitialPointsRuleConverter" />
+        <view:CpuSpeed x:Key="CpuSpeedEnum" />
+        <lib:InitialPointsRulePivot x:Key="InitialPointsRuleEnum" />
+    </Window.Resources>
     <DockPanel Margin="5">
         <StackPanel DockPanel.Dock="Bottom" Margin="0, 10, 0, 0" Orientation="Horizontal" HorizontalAlignment="Right">
             <Button Width="75" Height="25" Content="Start" Name="BtnStart" Click="BtnStart_Click" />
@@ -29,9 +38,9 @@
             <Label Grid.Column="0" Grid.Row="2" HorizontalContentAlignment="Right" VerticalContentAlignment="Center" Content="Use red doras" />
             <Label Grid.Column="0" Grid.Row="3" HorizontalContentAlignment="Right" VerticalContentAlignment="Center" Content="Initial points count" />
             <TextBox Margin="5, 0, 0, 0" Grid.Column="1" Grid.Row="0" Name="TxtPlayerName" Height="25" VerticalContentAlignment="Center" />
-            <ComboBox Margin="5, 0, 0, 0" Grid.Column="1" Grid.Row="1" Name="CbbCpuSpeed" Height="25" VerticalContentAlignment="Center" />
+            <ComboBox Margin="5, 0, 0, 0" Grid.Column="1" Grid.Row="1" Name="CbbCpuSpeed" Height="25" VerticalContentAlignment="Center" ItemsSource="{Binding Source={StaticResource CpuSpeedEnum}, Converter={StaticResource CpuSpeedConverter}}" />
             <CheckBox Margin="5, 0, 0, 0" Grid.Column="1" Grid.Row="2" Name="ChkUseRedDoras" VerticalAlignment="Center" />
-            <ComboBox Margin="5, 0, 0, 0" Grid.Column="1" Grid.Row="3" Name="CbbPointsRule" Height="25" VerticalContentAlignment="Center" />
+            <ComboBox Margin="5, 0, 0, 0" Grid.Column="1" Grid.Row="3" Name="CbbPointsRule" Height="25" VerticalContentAlignment="Center" ItemsSource="{Binding Source={StaticResource InitialPointsRuleEnum}, Converter={StaticResource InitialPointsRuleConverter}}" />
         </Grid>
     </DockPanel>
 </Window>

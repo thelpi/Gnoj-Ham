@@ -67,6 +67,8 @@
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Converters\CpuSpeedConverter.cs" />
+    <Compile Include="Converters\InitialPointsRuleConverter.cs" />
     <Compile Include="CpuSpeed.cs" />
     <Compile Include="GlobalTools.cs" />
     <Compile Include="IntroWindow.xaml.cs">
