@@ -372,7 +372,6 @@ namespace Gnoj_Ham
             List<List<TileComboPivot>> regularCombinationsSequences = IsComplete(concealedTiles, new List<TileComboPivot>(_declaredCombinations));
             if (IsSevenPairs(concealedTiles))
             {
-                // TODO: this LINQ expression might not working.
                 regularCombinationsSequences.Add(new List<TileComboPivot>(concealedTiles.GroupBy(t => t).Select(c => new TileComboPivot(c))));
             }
             bool isThirteenOrphans = IsThirteenOrphans(concealedTiles);

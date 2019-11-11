@@ -616,7 +616,6 @@ namespace Gnoj_Ham
                     CanCallKan(GamePivot.HUMAN_INDEX).Count == 0
                     && !CanCallPon(GamePivot.HUMAN_INDEX)
                     && CanCallChii(GamePivot.HUMAN_INDEX).Keys.Count == 0
-                    // TODO : ron skip
                 ));
         }
 
