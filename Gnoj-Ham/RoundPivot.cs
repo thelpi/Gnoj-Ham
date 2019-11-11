@@ -11,9 +11,11 @@ namespace Gnoj_Ham
     {
         #region Embedded properties
 
-        private bool _stealingInProgress = false;
-        private bool _waitForDiscard = false;
+        private bool _stealingInProgress;
+        private bool _closedKanInProgress;
+        private bool _waitForDiscard;
         private readonly GamePivot _game;
+        private readonly List<int> playerIndexHistory;
 
         private readonly List<TilePivot> _wallTiles;
         private readonly List<HandPivot> _hands;
@@ -22,7 +24,7 @@ namespace Gnoj_Ham
         private readonly List<TilePivot> _uraDoraIndicatorTiles;
         private readonly List<TilePivot> _deadTreasureTiles;
         private readonly List<List<TilePivot>> _discards;
-        private readonly List<int> _riichiPositionInDiscard;
+        private readonly List<Tuple<int, TilePivot, bool>> _riichis;
 
         /// <summary>
         /// Wall tiles.
@@ -102,13 +104,17 @@ namespace Gnoj_Ham
         }
 
         /// <summary>
-        /// Riichi mark in the discard of each player; <c>-1</c> if the player is not riichi.
+        /// Riichi informations of four players. The <see cref="Tuple{T1, T2, T3}"/> contains :
+        /// - The index in the discard.
+        /// - The tile used to call riichi.
+        /// - A boolean indicating a "daburu" riichi, always at index <c>0</c> (but the reverse is not always true).
         /// </summary>
-        public IReadOnlyCollection<int> RiichiPositionInDiscard
+        /// <remarks>The list if filled by default with a tuple [-1 / null / false] for every players.</remarks>
+        public IReadOnlyCollection<Tuple<int, TilePivot, bool>> Riichis
         {
             get
             {
-                return _riichiPositionInDiscard;
+                return _riichis;
             }
         }
 
@@ -179,13 +185,17 @@ namespace Gnoj_Ham
 
             _hands = Enumerable.Range(0, 4).Select(i => new HandPivot(tiles.GetRange(i * 13, 13))).ToList();
             _discards = Enumerable.Range(0, 4).Select(i => new List<TilePivot>()).ToList();
-            _riichiPositionInDiscard = Enumerable.Range(0, 4).Select(i => -1).ToList();
+            _riichis = Enumerable.Range(0, 4).Select(i => new Tuple<int, TilePivot, bool>(-1, null, false)).ToList();
             _wallTiles = tiles.GetRange(52, 70);
             _compensationTiles = tiles.GetRange(122, 4);
             _doraIndicatorTiles = tiles.GetRange(126, 5);
             _uraDoraIndicatorTiles = tiles.GetRange(131, 5);
             _deadTreasureTiles = new List<TilePivot>();
             CurrentPlayerIndex = firstPlayerIndex;
+            _stealingInProgress = false;
+            _closedKanInProgress = false;
+            _waitForDiscard = false;
+            playerIndexHistory = new List<int>();
 
             _game = game;
         }
@@ -420,6 +430,7 @@ namespace Gnoj_Ham
                 }
 
                 _hands[playerIndex].DeclareKan(tileChoice, null, fromPreviousPon);
+                _closedKanInProgress = true;
             }
             else
             {
@@ -452,10 +463,17 @@ namespace Gnoj_Ham
                 return false;
             }
 
+            if (_stealingInProgress || _closedKanInProgress)
+            {
+                playerIndexHistory.Clear();
+            }
+
             _discards[CurrentPlayerIndex].Add(tile);
             _stealingInProgress = false;
+            _closedKanInProgress = false;
             _waitForDiscard = false;
-            SetCurrentPlayerIndex();
+            playerIndexHistory.Insert(0, CurrentPlayerIndex);
+            CurrentPlayerIndex = RelativePlayerIndex(CurrentPlayerIndex, 1);
             return true;
         }
 
@@ -495,9 +513,9 @@ namespace Gnoj_Ham
                     drawType: isKanCompensation ? DrawTypePivot.Compensation : DrawTypePivot.Wall,
                     dominantWind: _game.DominantWind,
                     playerWind: _game.GetPlayerCurrentWind(playerIndex),
-                    isFirstOrLast: IsWallExhaustion ? (bool?)null : false, // TODO : tenhou
-                    isRiichi: _riichiPositionInDiscard[playerIndex] >= 0, // TODO : dabburi-riichi
-                    isIppatsu: _riichiPositionInDiscard[playerIndex] >= 0 && true // TODO : ippatsu
+                    isFirstOrLast: IsWallExhaustion ? (bool?)null : (_discards[playerIndex].Count == 0 && IsUninterruptedHistory(playerIndex)),
+                    isRiichi: _riichis[playerIndex].Item1 >= 0 ? (_riichis[playerIndex].Item3 ? (bool?)null : true) : false,
+                    isIppatsu: _riichis[playerIndex].Item1 >= 0 && _discards[playerIndex].Count > 0 && ReferenceEquals(_discards[playerIndex].Last(), _riichis[playerIndex].Item2) && IsUninterruptedHistory(playerIndex)
                 ));
                 return yakus.OrderByDescending(ys => ys.Sum(y => _hands[CurrentPlayerIndex].IsConcealed ? y.ConcealedFanCount : y.FanCount)).FirstOrDefault() ?? new List<YakuPivot>();
             }
@@ -554,12 +572,30 @@ namespace Gnoj_Ham
             return compensationTile;
         }
 
-        // Computes the next value of "CurrentPlayerIndex".
-        private void SetCurrentPlayerIndex()
+        // Checks there's no call interruption since the latest move of the specified player.
+        private bool IsUninterruptedHistory(int playerIndex)
         {
-            CurrentPlayerIndex = CurrentPlayerIndex == 3 ? 0 : CurrentPlayerIndex + 1;
+            List<int> historySinceLastTime = playerIndexHistory.TakeWhile(i => i != playerIndex).ToList();
+
+            return historySinceLastTime.Count <= 3
+                && Enumerable.Range(0, 3).All(i => historySinceLastTime.Count <= i || historySinceLastTime[i] == RelativePlayerIndex(playerIndex, -i));
         }
 
         #endregion Private methods
+
+        #region Static methods
+
+        /// <summary>
+        /// Computes the N-index player after (or before) the specified player index.
+        /// </summary>
+        /// <param name="playerIndex">The player index.</param>
+        /// <param name="nIndex">The N value.</param>
+        /// <returns>The relative player index.</returns>
+        public static int RelativePlayerIndex(int playerIndex, int nIndex)
+        {
+            return Math.Abs((playerIndex + nIndex) % 4);
+        }
+
+        #endregion Static methods
     }
 }
