@@ -236,7 +236,7 @@ namespace Gnoj_Ham
         /// </returns>
         public Dictionary<TilePivot, bool> CanCallChii(int playerIndex)
         {
-            if (_wallTiles.Count == 0 || CurrentPlayerIndex != playerIndex || _discards[PreviousPlayerIndex].Count == 0 || _waitForDiscard)
+            if (_wallTiles.Count == 0 || CurrentPlayerIndex != playerIndex || _discards[PreviousPlayerIndex].Count == 0 || _waitForDiscard || IsRiichi(playerIndex))
             {
                 return new Dictionary<TilePivot, bool>();
             }
@@ -283,7 +283,7 @@ namespace Gnoj_Ham
         /// <returns><c>True</c> if calling pon is allowed in this context; <c>False otherwise.</c></returns>
         public bool CanCallPon(int playerIndex)
         {
-            if (_wallTiles.Count == 0 || PreviousPlayerIndex == playerIndex || _discards[PreviousPlayerIndex].Count == 0 || _waitForDiscard)
+            if (_wallTiles.Count == 0 || PreviousPlayerIndex == playerIndex || _discards[PreviousPlayerIndex].Count == 0 || _waitForDiscard || IsRiichi(playerIndex))
             {
                 return false;
             }
@@ -302,20 +302,30 @@ namespace Gnoj_Ham
             {
                 return new List<TilePivot>();
             }
-
-            if (CurrentPlayerIndex == playerIndex)
+            
+            if (CurrentPlayerIndex == playerIndex && _waitForDiscard)
             {
-                if (!_waitForDiscard)
-                {
-                    return new List<TilePivot>();
-                }
-
                 IEnumerable<TilePivot> kansFromConcealed =
                     _hands[playerIndex].ConcealedTiles
                                             .GroupBy(t => t)
                                             .Where(t => t.Count() == 4)
                                             .Select(t => t.Key)
                                             .Distinct();
+
+                // If the player is riichi, he can only call a concealed kan:
+                // - on the tile he just picks
+                // - if "disposableForRiichi" contains only this tile
+                if (IsRiichi(playerIndex))
+                {
+                    TilePivot lastPick = _hands[playerIndex].ConcealedTiles.Last();
+
+                    List<TilePivot> disposableForRiichi = ExtractRiichiPossibilities(playerIndex);
+                    if (disposableForRiichi.Any(t => t != lastPick))
+                    {
+                        return new List<TilePivot>();
+                    }
+                    kansFromConcealed = kansFromConcealed.Where(t => t == lastPick);
+                }
 
                 IEnumerable<TilePivot> kansFromPons =
                     _hands[playerIndex].DeclaredCombinations
@@ -325,11 +335,12 @@ namespace Gnoj_Ham
 
                 var everyKans = new List<TilePivot>(kansFromConcealed);
                 everyKans.AddRange(kansFromPons);
+
                 return everyKans;
             }
             else
             {
-                if (_waitForDiscard || PreviousPlayerIndex == playerIndex || _discards[PreviousPlayerIndex].Count == 0)
+                if (_waitForDiscard || PreviousPlayerIndex == playerIndex || _discards[PreviousPlayerIndex].Count == 0 || IsRiichi(playerIndex))
                 {
                     return new List<TilePivot>();
                 }
@@ -556,6 +567,11 @@ namespace Gnoj_Ham
 
             // TODO: if already 3 riichi calls, what to do ?
 
+            return ExtractRiichiPossibilities(playerIndex);
+        }
+
+        private List<TilePivot> ExtractRiichiPossibilities(int playerIndex)
+        {
             List<TilePivot> distinctTilesFromPlayerConcealed = _hands[playerIndex].ConcealedTiles.Distinct().ToList();
             List<TilePivot> distinctTilesFromOverallConcealed = GetConcealedTilesFromPlayerPointOfView(playerIndex).Distinct().ToList();
 
@@ -577,7 +593,18 @@ namespace Gnoj_Ham
                 tempListConcealed.Add(tileToSub);
             }
 
-            return subPossibilities;
+            // Avoids red doras in the list returned.
+            var realSubPossibilities = new List<TilePivot>();
+            foreach (TilePivot tile in subPossibilities.Distinct())
+            {
+                if (tile.IsRedDora)
+                {
+                    TilePivot subTile = _hands[playerIndex].ConcealedTiles.FirstOrDefault(t => t == tile && !t.IsRedDora);
+                    realSubPossibilities.Add(subTile ?? tile);
+                }
+            }
+
+            return realSubPossibilities;
         }
 
         /// <summary>

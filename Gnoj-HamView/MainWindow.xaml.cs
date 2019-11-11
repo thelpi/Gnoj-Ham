@@ -187,7 +187,7 @@ namespace Gnoj_HamView
                 MessageBoxResult mbRes = MessageBox.Show("Declare riichi ?", WINDOW_TITLE, MessageBoxButton.YesNo);
                 if (mbRes == MessageBoxResult.Yes)
                 {
-                    RestrictDiscardWithTilesSelection(tiles.Select(t => new KeyValuePair<TilePivot, bool>(t, false)), BtnRiichiChoice_Click);
+                    RestrictDiscardWithTilesSelection(tiles.ToDictionary(t => t, t => false), BtnRiichiChoice_Click);
                 }
             }
         }
@@ -206,7 +206,7 @@ namespace Gnoj_HamView
         }
 
         // Restrict possible discards on the specified selection of tiles.
-        private void RestrictDiscardWithTilesSelection(IEnumerable<KeyValuePair<TilePivot, bool>> tileChoices, RoutedEventHandler handler)
+        private void RestrictDiscardWithTilesSelection(IDictionary<TilePivot, bool> tileChoices, RoutedEventHandler handler)
         {
             SetActionButtonsVisibility();
 
@@ -220,21 +220,14 @@ namespace Gnoj_HamView
             foreach (KeyValuePair<TilePivot, bool> tileKvp in tileChoices)
             {
                 // Changes the event of every buttons concerned by the call...
-                IEnumerable<Button> buttonsClickable = buttons.Where(b => b.Tag as TilePivot == tileKvp.Key);
-                if (handler != BtnRiichiChoice_Click)
+                Button buttonClickable = buttons.First(b => b.Tag as TilePivot == tileKvp.Key);
+                buttonClickable.Click += handler;
+                buttonClickable.Click -= BtnDiscard_Click;
+                if (handler == BtnChiiChoice_Click)
                 {
-                    buttonsClickable = buttonsClickable.Take(1);
+                    buttonClickable.Tag = tileKvp;
                 }
-                foreach (Button buttonClickable in buttonsClickable)
-                {
-                    buttonClickable.Click += handler;
-                    buttonClickable.Click -= BtnDiscard_Click;
-                    if (handler == BtnChiiChoice_Click)
-                    {
-                        buttonClickable.Tag = tileKvp;
-                    }
-                    clickableButtons.Add(buttonClickable);
-                }
+                clickableButtons.Add(buttonClickable);
             }
             // ...and disables every buttons not concerned.
             buttons.Where(b => !clickableButtons.Contains(b)).All(b => { b.IsEnabled = false; return true; });
@@ -327,7 +320,7 @@ namespace Gnoj_HamView
             {
                 if (excludedTile == null || !ReferenceEquals(excludedTile, tile))
                 {
-                    panel.Children.Add(GenerateTileButton(tile, isHuman ? BtnDiscard_Click : (RoutedEventHandler)null, (Angle)pIndex, !isHuman));
+                    panel.Children.Add(GenerateTileButton(tile, isHuman && _game.Round.Riichis.ElementAt(pIndex).Item1 < 0 ? BtnDiscard_Click : (RoutedEventHandler)null, (Angle)pIndex, !isHuman));
                 }
             }
         }
