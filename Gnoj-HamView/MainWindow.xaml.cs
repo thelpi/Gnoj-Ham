@@ -172,12 +172,12 @@ namespace Gnoj_HamView
 
         #region Private methods
 
-        private void TsumoManagement(bool isKanCompensation)
+        // Manages ron and tsumo call opportunities.
+        private void WinOpeningManagement(List<YakuPivot> yakus, bool tsumo)
         {
-            List<YakuPivot> yakus = _game.Round.CanCallTsumo(GamePivot.HUMAN_INDEX, isKanCompensation);
             if (yakus.Count > 0)
             {
-                var r = MessageBox.Show("Declare tsumo ?", WINDOW_TITLE, MessageBoxButton.YesNo);
+                var r = MessageBox.Show($"Declare {(tsumo ? "tsumo" : "ron")} ?", WINDOW_TITLE, MessageBoxButton.YesNo);
                 if (r == MessageBoxResult.Yes)
                 {
                     NewRound(GamePivot.HUMAN_INDEX, yakus);
@@ -241,7 +241,7 @@ namespace Gnoj_HamView
                 }
                 AddLatestCombinationToStack(GamePivot.HUMAN_INDEX);
                 SetActionButtonsVisibility(preDiscard: true);
-                TsumoManagement(true);
+                WinOpeningManagement(_game.Round.CanCallTsumo(GamePivot.HUMAN_INDEX, true), true);
             }
         }
 
@@ -320,7 +320,7 @@ namespace Gnoj_HamView
             }
             SetPlayersLed();
             SetActionButtonsVisibility(preDiscard: true);
-            TsumoManagement(false);
+            WinOpeningManagement(_game.Round.CanCallTsumo(GamePivot.HUMAN_INDEX, false), true);
         }
 
         // resets the doras panel.
@@ -459,11 +459,13 @@ namespace Gnoj_HamView
                     Thread.Sleep(_cpuSpeedMs);
                     if (_game.Round.AutoPickAndDiscard())
                     {
+                        List<YakuPivot> yakus = _game.Round.CanCallRon(GamePivot.HUMAN_INDEX);
                         Dispatcher.Invoke(() =>
                         {
                             FillDiscardPanel(_game.Round.PreviousPlayerIndex);
                             FillHandPanel(_game.Round.PreviousPlayerIndex);
                             SetActionButtonsVisibility(cpuPlay: true);
+                            WinOpeningManagement(yakus, false);
                         });
                     }
                     else if (!_game.Round.IsWallExhaustion)
@@ -484,11 +486,12 @@ namespace Gnoj_HamView
                     }
                     else
                     {
+                        List<YakuPivot> yakus = _game.Round.CanCallTsumo(GamePivot.HUMAN_INDEX, false);
                         Dispatcher.Invoke(() =>
                         {
                             StpPickP0.Children.Add(GenerateTileButton(pick, BtnDiscard_Click));
                             SetActionButtonsVisibility(preDiscard: true);
-                            TsumoManagement(false);
+                            WinOpeningManagement(yakus, true);
                         });
                     }
                 }

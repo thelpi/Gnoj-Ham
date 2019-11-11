@@ -315,21 +315,21 @@ namespace Gnoj_Ham
                 throw new ArgumentNullException(nameof(context));
             }
 
-            int tilesCount = _concealedTiles.Count + _declaredCombinations.Count * 3 + (context.IsSimulated ? 1 : 0);
-            if (tilesCount != 14)
+            var concealedTiles = new List<TilePivot>(_concealedTiles);
+            if (!context.DrawType.IsSelfDraw())
             {
-                throw new InvalidOperationException(Messages.InvalidHandTilesCount);
+                concealedTiles.Add(context.LatestTile);
             }
 
-            if (!context.IsSimulated && !_concealedTiles.Contains(context.LatestTile))
+            if (!concealedTiles.Contains(context.LatestTile))
             {
                 throw new InvalidOperationException(Messages.InvalidLatestTileContext);
             }
 
-            var concealedTiles = new List<TilePivot>(_concealedTiles);
-            if (context.IsSimulated)
+            int tilesCount = concealedTiles.Count + _declaredCombinations.Count * 3;
+            if (tilesCount != 14)
             {
-                concealedTiles.Add(context.LatestTile);
+                throw new InvalidOperationException(Messages.InvalidHandTilesCount);
             }
 
             // 3 possibilities :

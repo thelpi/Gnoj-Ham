@@ -14,10 +14,6 @@ namespace Gnoj_Ham
         /// </summary>
         public TilePivot LatestTile { get; private set; }
         /// <summary>
-        /// <c>True</c> if <see cref="LatestTile"/> is not actually in the hand (simulation).
-        /// </summary>
-        public bool IsSimulated { get; private set; }
-        /// <summary>
         /// <c>True</c> if <see cref="LatestTile"/> was the last tile of the round (from wall or opponent discard).
         /// </summary>
         public bool IsRoundLastTile { get; private set; }
@@ -61,14 +57,13 @@ namespace Gnoj_Ham
         /// <param name="drawType">The <see cref="DrawType"/> value.</param>
         /// <param name="dominantWind">The <see cref="DominantWind"/> value.</param>
         /// <param name="playerWind">The <see cref="PlayerWind"/> value.</param>
-        /// <param name="isSimulated">Optionnal; the <see cref="IsSimulated"/> value; default value is <c>False</c>.</param>
         /// <param name="isFirstOrLast">Optionnal; indicates a win at the first turn without any call made (<c>True</c>) or at the last tile of the round (<c>Null</c>); default value is <c>False</c>.</param>
         /// <param name="isRiichi">Optionnal; indicates if riichi (<c>True</c>) or riichi at first turn without any call made (<c>Null</c>); default value is <c>False</c>.</param>
         /// <param name="isIppatsu">Optionnal; indicates if it's a win by ippatsu (<paramref name="isRiichi"/> can't be <c>False</c> in such case); default value is <c>False</c>.</param>
         /// <exception cref="ArgumentNullException"><paramref name="latestTile"/> is <c>Null</c>.</exception>
         /// <exception cref="ArgumentException"><see cref="Messages.InvalidContextIppatsuValue"/></exception>
         public WinContextPivot(TilePivot latestTile, DrawTypePivot drawType, WindPivot dominantWind, WindPivot playerWind,
-            bool isSimulated = false, bool? isFirstOrLast = false, bool? isRiichi = false, bool isIppatsu = false)
+            bool? isFirstOrLast = false, bool? isRiichi = false, bool isIppatsu = false)
         {
             if (isRiichi == false && isIppatsu)
             {
@@ -76,7 +71,6 @@ namespace Gnoj_Ham
             }
 
             LatestTile = latestTile ?? throw new ArgumentNullException(nameof(latestTile));
-            IsSimulated = isSimulated;
             IsRoundLastTile = isFirstOrLast == null;
             IsRiichi = isRiichi != false;
             IsFirstTurnRiichi = isRiichi == null;

@@ -12,7 +12,8 @@ namespace Gnoj_Ham
         #region Embedded properties
 
         private bool _stealingInProgress;
-        private bool _closedKanInProgress;
+        private TilePivot _closedKanInProgress;
+        private TilePivot _openedKanInProgress;
         private bool _waitForDiscard;
         private readonly GamePivot _game;
         private readonly List<int> playerIndexHistory;
@@ -193,7 +194,8 @@ namespace Gnoj_Ham
             _deadTreasureTiles = new List<TilePivot>();
             CurrentPlayerIndex = firstPlayerIndex;
             _stealingInProgress = false;
-            _closedKanInProgress = false;
+            _closedKanInProgress = null;
+            _openedKanInProgress = null;
             _waitForDiscard = false;
             playerIndexHistory = new List<int>();
 
@@ -416,6 +418,7 @@ namespace Gnoj_Ham
                 throw new ArgumentException(Messages.InvalidKanTileChoice, nameof(tileChoice));
             }
 
+            bool isClosedKan = false;
             if (CurrentPlayerIndex == playerIndex)
             {
                 // Forces a decision, even if there're several possibilities.
@@ -430,7 +433,7 @@ namespace Gnoj_Ham
                 }
 
                 _hands[playerIndex].DeclareKan(tileChoice, null, fromPreviousPon);
-                _closedKanInProgress = true;
+                isClosedKan = true;
             }
             else
             {
@@ -445,7 +448,18 @@ namespace Gnoj_Ham
             }
 
             _waitForDiscard = true;
-            return PickCompensationTile();
+            TilePivot tile = PickCompensationTile();
+
+            if (isClosedKan)
+            {
+                _closedKanInProgress = tile;
+            }
+            else
+            {
+                _openedKanInProgress = tile;
+            }
+
+            return tile;
         }
 
         /// <summary>
@@ -463,14 +477,15 @@ namespace Gnoj_Ham
                 return false;
             }
 
-            if (_stealingInProgress || _closedKanInProgress)
+            if (_stealingInProgress || _closedKanInProgress != null)
             {
                 playerIndexHistory.Clear();
             }
 
             _discards[CurrentPlayerIndex].Add(tile);
             _stealingInProgress = false;
-            _closedKanInProgress = false;
+            _closedKanInProgress = null;
+            _openedKanInProgress = null;
             _waitForDiscard = false;
             playerIndexHistory.Insert(0, CurrentPlayerIndex);
             CurrentPlayerIndex = RelativePlayerIndex(CurrentPlayerIndex, 1);
@@ -506,23 +521,56 @@ namespace Gnoj_Ham
         /// <returns>The optimal combination of <see cref="YakuPivot"/>; empty list if none.</returns>
         public List<YakuPivot> CanCallTsumo(int playerIndex, bool isKanCompensation)
         {
-            if (CurrentPlayerIndex == playerIndex && _waitForDiscard)
-            {
-                var yakus = _hands[CurrentPlayerIndex].GetYakus(new WinContextPivot(
-                    latestTile: _hands[CurrentPlayerIndex].ConcealedTiles.Last(),
-                    drawType: isKanCompensation ? DrawTypePivot.Compensation : DrawTypePivot.Wall,
-                    dominantWind: _game.DominantWind,
-                    playerWind: _game.GetPlayerCurrentWind(playerIndex),
-                    isFirstOrLast: IsWallExhaustion ? (bool?)null : (_discards[playerIndex].Count == 0 && IsUninterruptedHistory(playerIndex)),
-                    isRiichi: _riichis[playerIndex].Item1 >= 0 ? (_riichis[playerIndex].Item3 ? (bool?)null : true) : false,
-                    isIppatsu: _riichis[playerIndex].Item1 >= 0 && _discards[playerIndex].Count > 0 && ReferenceEquals(_discards[playerIndex].Last(), _riichis[playerIndex].Item2) && IsUninterruptedHistory(playerIndex)
-                ));
-                return yakus.OrderByDescending(ys => ys.Sum(y => _hands[CurrentPlayerIndex].IsConcealed ? y.ConcealedFanCount : y.FanCount)).FirstOrDefault() ?? new List<YakuPivot>();
-            }
-            else
+            if (CurrentPlayerIndex != playerIndex || !_waitForDiscard)
             {
                 return new List<YakuPivot>();
             }
+            
+            List<List<YakuPivot>> yakus = GetYakus(playerIndex,
+                _hands[playerIndex].ConcealedTiles.Last(),
+                isKanCompensation ? DrawTypePivot.Compensation : DrawTypePivot.Wall);
+
+            return GetBestYakusFromList(yakus, _hands[playerIndex].IsConcealed);
+        }
+
+        /// <summary>
+        /// Checks if the hand of the specified player is ready for calling ron.
+        /// </summary>
+        /// <param name="playerIndex">The player index.</param>
+        /// <returns>The optimal combination of <see cref="YakuPivot"/>; empty list if none.</returns>
+        public List<YakuPivot> CanCallRon(int playerIndex)
+        {
+            TilePivot tile = _waitForDiscard ? null : _discards[PreviousPlayerIndex].LastOrDefault();
+            //bool forKokushiOnly = false;
+            bool isChanka = false;
+            if (CurrentPlayerIndex != playerIndex)
+            {
+                if (_closedKanInProgress != null)
+                {
+                    tile = _closedKanInProgress;
+                    //forKokushiOnly = true;
+                    isChanka = true;
+                }
+                else if (_openedKanInProgress != null)
+                {
+                    tile = _openedKanInProgress;
+                    isChanka = true;
+                }
+            }
+
+            if (tile == null)
+            {
+                return new List<YakuPivot>();
+            }
+
+            List<List<YakuPivot>> yakus = GetYakus(playerIndex, tile,
+                isChanka ? DrawTypePivot.OpponentKanCall : DrawTypePivot.OpponentDiscard);
+
+            // Check furiten
+            // Check temporary furiten
+            // Check closed chanta / kokushi
+
+            return GetBestYakusFromList(yakus, _hands[CurrentPlayerIndex].IsConcealed);
         }
 
         /// <summary>
@@ -580,6 +628,20 @@ namespace Gnoj_Ham
             return historySinceLastTime.Count <= 3 && Enumerable.Range(0, 3).All(i => historySinceLastTime.Count <= i || historySinceLastTime[i] == RelativePlayerIndex(playerIndex, -(i + 1)));
         }
 
+        // Creates the context and calls "GetYakus" for the specified player.
+        private List<List<YakuPivot>> GetYakus(int playerIndex, TilePivot tile, DrawTypePivot drawType)
+        {
+            return _hands[playerIndex].GetYakus(new WinContextPivot(
+                latestTile: tile,
+                drawType: drawType,
+                dominantWind: _game.DominantWind,
+                playerWind: _game.GetPlayerCurrentWind(playerIndex),
+                isFirstOrLast: IsWallExhaustion ? (bool?)null : (_discards[playerIndex].Count == 0 && IsUninterruptedHistory(playerIndex)),
+                isRiichi: _riichis[playerIndex].Item1 >= 0 ? (_riichis[playerIndex].Item3 ? (bool?)null : true) : false,
+                isIppatsu: _riichis[playerIndex].Item1 >= 0 && _discards[playerIndex].Count > 0 && ReferenceEquals(_discards[playerIndex].Last(), _riichis[playerIndex].Item2) && IsUninterruptedHistory(playerIndex)
+            ));
+        }
+
         #endregion Private methods
 
         #region Static methods
@@ -610,6 +672,12 @@ namespace Gnoj_Ham
             }
 
             return newIndex;
+        }
+
+        // Gets the best yakus combination from a list of yakus combinations.
+        private static List<YakuPivot> GetBestYakusFromList(List<List<YakuPivot>> yakus, bool concealedHand)
+        {
+            return yakus.OrderByDescending(ys => ys.Sum(y => concealedHand ? y.ConcealedFanCount : y.FanCount)).FirstOrDefault() ?? new List<YakuPivot>();
         }
 
         #endregion Static methods

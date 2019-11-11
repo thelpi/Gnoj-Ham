@@ -20,7 +20,7 @@ namespace Gnoj_Ham
 
         #region Embedded properties
 
-        private bool _isEndOfRoundWithTurningWind;
+        private readonly bool _isEndOfRoundWithTurningWind;
         private readonly bool _withRedDoras;
         private readonly List<PlayerPivot> _players;
 
