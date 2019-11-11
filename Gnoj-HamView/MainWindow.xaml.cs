@@ -306,16 +306,33 @@ namespace Gnoj_HamView
         // Resets and refills every panels at a new round.
         private void NewRoundRefresh()
         {
+            SetDorasPanel();
+            LblDominantWind.Content = _game.DominantWind.ToString().First();
+            LblEastTurnCount.Content = _game.EastIndexTurnCount;
             for (int pIndex = 0; pIndex < _game.Players.Count; pIndex++)
             {
                 (FindName($"StpCombosP{pIndex}") as StackPanel).Children.Clear();
                 FillHandPanel(pIndex);
                 FillDiscardPanel(pIndex);
                 (FindName($"LblWindP{pIndex}") as Label).Content = _game.GetPlayerCurrentWind(pIndex).ToString();
+                (FindName($"LblNameP{pIndex}") as Label).Content = _game.Players.ElementAt(pIndex).Name;
+                (FindName($"LblPointsP{pIndex}") as Label).Content = _game.Players.ElementAt(pIndex).Points;
             }
             SetPlayersLed();
             SetActionButtonsVisibility(preDiscard: true);
             TsumoManagement(false);
+        }
+
+        // resets the doras panel.
+        private void SetDorasPanel()
+        {
+            StpDoras.Children.Clear();
+            
+            int concealedCount = 5 - (1 + (4 - _game.Round.CompensationTiles.Count));
+            for (int i = 4; i >= 0; i--)
+            {
+                StpDoras.Children.Add(GenerateTileButton(_game.Round.DoraIndicatorTiles.ElementAt(i), concealed: 5 - concealedCount <= i));
+            }
         }
 
         // Resets the LED associated to each player.

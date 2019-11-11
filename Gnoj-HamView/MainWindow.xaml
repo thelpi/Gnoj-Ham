@@ -27,6 +27,7 @@
             <RowDefinition Name="Rod5" />
             <RowDefinition Name="Rod6" />
         </Grid.RowDefinitions>
+        
         <!-- Combinations stacks -->
         <!-- P1 (bottom) -->
         <Grid Grid.Column="1" Grid.Row="6" Grid.ColumnSpan="6">
@@ -144,7 +145,7 @@
             <StackPanel Orientation="Vertical" Name="StpP3Discard1" />
         </StackPanel>
 
-        <!-- LED -->
+        <!-- Player infos -->
         <!-- P1 (bottom) -->
         <StackPanel Orientation="Vertical" VerticalAlignment="Center" HorizontalAlignment="Center" Grid.Row="5" Grid.Column="1">
             <Image Name="ImgLedP0" Stretch="None" />
@@ -190,6 +191,32 @@
             </StackPanel>
         </Grid>
     
-        
+        <!-- General informations -->
+        <DockPanel Grid.Row="3" Grid.Column="3" HorizontalAlignment="Center" VerticalAlignment="Center">
+            <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Name="StpDoras" />
+            <Grid DockPanel.Dock="Bottom">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="120" />
+                    <ColumnDefinition Width="60" />
+                    <ColumnDefinition Width="60" />
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="30" />
+                    <RowDefinition Height="30" />
+                    <RowDefinition Height="30" />
+                    <RowDefinition Height="30" />
+                </Grid.RowDefinitions>
+                <Label Grid.Row="0" Grid.Column="0" Name="LblNameP0" />
+                <Label Grid.Row="1" Grid.Column="0" Name="LblNameP1" />
+                <Label Grid.Row="2" Grid.Column="0" Name="LblNameP2" />
+                <Label Grid.Row="3" Grid.Column="0" Name="LblNameP3" />
+                <Label Grid.Row="0" Grid.Column="1" Name="LblPointsP0" />
+                <Label Grid.Row="1" Grid.Column="1" Name="LblPointsP1" />
+                <Label Grid.Row="2" Grid.Column="1" Name="LblPointsP2" />
+                <Label Grid.Row="3" Grid.Column="1" Name="LblPointsP3" />
+                <Label Grid.Row="0" Grid.RowSpan="2" Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="20" Name="LblDominantWind" />
+                <Label Grid.Row="2" Grid.RowSpan="2" Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="20" Name="LblEastTurnCount" />
+            </Grid>
+        </DockPanel>
     </Grid>
 </Window>
