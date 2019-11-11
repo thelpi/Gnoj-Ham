@@ -153,4 +153,7 @@
   <data name="StolenFromNotSpecified" xml:space="preserve">
     <value>The wind which the tile has been stolen is not specified.</value>
   </data>
+  <data name="UnexpectedDiscardFail" xml:space="preserve">
+    <value>The discard post-riichi has failed for an unknow reason.</value>
+  </data>
 </root>

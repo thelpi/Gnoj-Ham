@@ -463,6 +463,30 @@ namespace Gnoj_Ham
         }
 
         /// <summary>
+        /// Proceeds to call riichi.
+        /// </summary>
+        /// <param name="playerIndex">The player index.</param>
+        /// <param name="tile">The discarded tile.</param>
+        /// <exception cref="InvalidOperationException"><see cref="Messages.UnexpectedDiscardFail"/></exception>
+        public bool CallRiichi(int playerIndex, TilePivot tile)
+        {
+            if (!CanCallRiichi(playerIndex).Contains(tile))
+            {
+                return false;
+            }
+
+            _riichis[playerIndex] = new Tuple<int, TilePivot, bool>(_discards[playerIndex].Count, tile,
+                _discards[playerIndex].Count == 0 && IsUninterruptedHistory(playerIndex));
+
+            if (!Discard(tile))
+            {
+                throw new InvalidOperationException(Messages.UnexpectedDiscardFail);
+            }
+
+            return true;
+        }
+
+        /// <summary>
         /// Tries to discard the specified tile for the <see cref="CurrentPlayerIndex"/>.
         /// </summary>
         /// <param name="tile">The tile to discard.</param>
@@ -511,6 +535,49 @@ namespace Gnoj_Ham
             Discard(_hands[CurrentPlayerIndex].ConcealedTiles.Skip(GlobalTools.Randomizer.Next(0, _hands[CurrentPlayerIndex].ConcealedTiles.Count)).First());
 
             return true;
+        }
+
+        /// <summary>
+        /// Checks if the specified player can call riichi.
+        /// </summary>
+        /// <param name="playerIndex">Player index.</param>
+        /// <returns>Tiles the player can discard; empty list if riichi is impossible.</returns>
+        public List<TilePivot> CanCallRiichi(int playerIndex)
+        {
+            if (CurrentPlayerIndex != playerIndex
+                || !_waitForDiscard
+                || IsRiichi(playerIndex)
+                || !_hands[playerIndex].IsConcealed
+                || _wallTiles.Count < 4
+                || _game.Players.ElementAt(playerIndex).Points < 1000)
+            {
+                return new List<TilePivot>();
+            }
+
+            // TODO: if already 3 riichi calls, what to do ?
+
+            List<TilePivot> distinctTilesFromPlayerConcealed = _hands[playerIndex].ConcealedTiles.Distinct().ToList();
+            List<TilePivot> distinctTilesFromOverallConcealed = GetConcealedTilesFromPlayerPointOfView(playerIndex).Distinct().ToList();
+
+            var subPossibilities = new List<TilePivot>();
+
+            foreach (TilePivot tileToSub in distinctTilesFromPlayerConcealed)
+            {
+                var tempListConcealed = new List<TilePivot>(_hands[playerIndex].ConcealedTiles);
+                tempListConcealed.Remove(tileToSub);
+                foreach (TilePivot sub in distinctTilesFromOverallConcealed)
+                {
+                    tempListConcealed.Add(sub);
+                    if (HandPivot.IsCompleteFull(tempListConcealed, _hands[playerIndex].DeclaredCombinations.ToList()))
+                    {
+                        subPossibilities.Add(tileToSub);
+                    }
+                    tempListConcealed.Remove(sub);
+                }
+                tempListConcealed.Add(tileToSub);
+            }
+
+            return subPossibilities;
         }
 
         /// <summary>
@@ -666,9 +733,46 @@ namespace Gnoj_Ham
                 dominantWind: _game.DominantWind,
                 playerWind: _game.GetPlayerCurrentWind(playerIndex),
                 isFirstOrLast: IsWallExhaustion ? (bool?)null : (_discards[playerIndex].Count == 0 && IsUninterruptedHistory(playerIndex)),
-                isRiichi: _riichis[playerIndex].Item1 >= 0 ? (_riichis[playerIndex].Item3 ? (bool?)null : true) : false,
-                isIppatsu: _riichis[playerIndex].Item1 >= 0 && _discards[playerIndex].Count > 0 && ReferenceEquals(_discards[playerIndex].Last(), _riichis[playerIndex].Item2) && IsUninterruptedHistory(playerIndex)
+                isRiichi: IsRiichi(playerIndex) ? (_riichis[playerIndex].Item3 ? (bool?)null : true) : false,
+                isIppatsu: IsRiichi(playerIndex) && _discards[playerIndex].Count > 0 && ReferenceEquals(_discards[playerIndex].Last(), _riichis[playerIndex].Item2) && IsUninterruptedHistory(playerIndex)
             ));
+        }
+
+        // tests if the specified player is riichi.
+        private bool IsRiichi(int playerIndex)
+        {
+            return _riichis[playerIndex].Item1 >= 0;
+        }
+
+        // Gets the concealed tile of the round from the point of view of a specified player.
+        private IReadOnlyCollection<TilePivot> GetConcealedTilesFromPlayerPointOfView(int playerIndex)
+        {
+            // Wall tiles.
+            var tiles = new List<TilePivot>(_wallTiles);
+
+            // Concealed tiles from opponents.
+            Enumerable.Range(0, 4)
+                .Where(i => i != playerIndex)
+                .Select(i => _hands[i].ConcealedTiles)
+                .All(tList =>
+                {
+                    tiles.AddRange(tList);
+                    return true;
+                });
+
+            // Compensation tiles.
+            tiles.AddRange(_compensationTiles);
+
+            // Dead treasure tiles.
+            tiles.AddRange(_deadTreasureTiles);
+
+            // Ura-dora tiles.
+            tiles.AddRange(_uraDoraIndicatorTiles);
+
+            // Dora tiles except when visible.
+            tiles.AddRange(_doraIndicatorTiles.Skip(1 + (4 - _compensationTiles.Count)));
+
+            return tiles;
         }
 
         #endregion Private methods

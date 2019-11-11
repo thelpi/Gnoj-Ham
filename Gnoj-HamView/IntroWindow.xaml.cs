@@ -28,9 +28,9 @@ namespace Gnoj_HamView
             Hide();
             new MainWindow(
                 TxtPlayerName.Text,
-                (InitialPointsRulePivot)CbbPointsRule.SelectedItem,
+                (InitialPointsRulePivot)CbbPointsRule.SelectedIndex,
                 ChkUseRedDoras.IsChecked == true,
-                (CpuSpeed)CbbCpuSpeed.SelectedItem
+                (CpuSpeed)CbbCpuSpeed.SelectedIndex
             ).ShowDialog();
             ShowDialog();
         }

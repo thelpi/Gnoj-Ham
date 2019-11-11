@@ -167,5 +167,14 @@ namespace Gnoj_Ham {
                 return ResourceManager.GetString("StolenFromNotSpecified", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Recherche une chaîne localisée semblable à The discard post-riichi has failed for an unknow reason..
+        /// </summary>
+        internal static string UnexpectedDiscardFail {
+            get {
+                return ResourceManager.GetString("UnexpectedDiscardFail", resourceCulture);
+            }
+        }
     }
 }

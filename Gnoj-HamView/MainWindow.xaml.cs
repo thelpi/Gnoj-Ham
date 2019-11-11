@@ -115,7 +115,7 @@ namespace Gnoj_HamView
 
             if (tileChoices.Keys.Count > 0)
             {
-                InnerKanOrChiiTileSelection(tileChoices, BtnChiiChoice_Click);
+                RestrictDiscardWithTilesSelection(tileChoices, BtnChiiChoice_Click);
             }
             else
             {
@@ -130,7 +130,7 @@ namespace Gnoj_HamView
             {
                 if (_game.Round.IsHumanPlayer)
                 {
-                    InnerKanOrChiiTileSelection(kanTiles.ToDictionary(t => t, t => false), BtnKanChoice_Click);
+                    RestrictDiscardWithTilesSelection(kanTiles.ToDictionary(t => t, t => false), BtnKanChoice_Click);
                 }
                 else
                 {
@@ -143,14 +143,21 @@ namespace Gnoj_HamView
             }
         }
 
-        private void BtnRiichi_Click(object sender, RoutedEventArgs e)
+        private void BtnRiichiChoice_Click(object sender, RoutedEventArgs e)
         {
-            throw new NotImplementedException();
-        }
+            Button button = sender as Button;
 
-        private void BtnTsumo_Click(object sender, RoutedEventArgs e)
-        {
-            throw new NotImplementedException();
+            if (_game.Round.CallRiichi(GamePivot.HUMAN_INDEX, button.Tag as TilePivot))
+            {
+                FillHandPanel(_game.Round.PreviousPlayerIndex);
+                FillDiscardPanel(_game.Round.PreviousPlayerIndex);
+                SetActionButtonsVisibility();
+                AutoSkip();
+            }
+            else
+            {
+                throw new NotImplementedException();
+            }
         }
 
         private void BtnRon_Click(object sender, RoutedEventArgs e)
@@ -172,21 +179,34 @@ namespace Gnoj_HamView
 
         #region Private methods
 
+        // Manages riichii call opportunities.
+        private void RiichiCallManagement(List<TilePivot> tiles)
+        {
+            if (tiles.Count > 0)
+            {
+                MessageBoxResult mbRes = MessageBox.Show("Declare riichi ?", WINDOW_TITLE, MessageBoxButton.YesNo);
+                if (mbRes == MessageBoxResult.Yes)
+                {
+                    RestrictDiscardWithTilesSelection(tiles.Select(t => new KeyValuePair<TilePivot, bool>(t, false)), BtnRiichiChoice_Click);
+                }
+            }
+        }
+
         // Manages ron and tsumo call opportunities.
         private void WinOpeningManagement(List<YakuPivot> yakus, bool tsumo)
         {
             if (yakus.Count > 0)
             {
-                var r = MessageBox.Show($"Declare {(tsumo ? "tsumo" : "ron")} ?", WINDOW_TITLE, MessageBoxButton.YesNo);
-                if (r == MessageBoxResult.Yes)
+                MessageBoxResult mbRes = MessageBox.Show($"Declare {(tsumo ? "tsumo" : "ron")} ?", WINDOW_TITLE, MessageBoxButton.YesNo);
+                if (mbRes == MessageBoxResult.Yes)
                 {
                     NewRound(GamePivot.HUMAN_INDEX, yakus);
                 }
             }
         }
 
-        // Inner process for kan and chii tile selection.
-        private void InnerKanOrChiiTileSelection(IDictionary<TilePivot, bool> tileChoices, RoutedEventHandler handler)
+        // Restrict possible discards on the specified selection of tiles.
+        private void RestrictDiscardWithTilesSelection(IEnumerable<KeyValuePair<TilePivot, bool>> tileChoices, RoutedEventHandler handler)
         {
             SetActionButtonsVisibility();
 
@@ -197,17 +217,24 @@ namespace Gnoj_HamView
             }
 
             var clickableButtons = new List<Button>();
-            foreach (TilePivot tile in tileChoices.Keys)
+            foreach (KeyValuePair<TilePivot, bool> tileKvp in tileChoices)
             {
-                // Changes the event of every buttons concerned by the chii call...
-                Button buttonClickable = buttons.First(b => b.Tag as TilePivot == tile);
-                buttonClickable.Click += handler;
-                buttonClickable.Click -= BtnDiscard_Click;
-                if (handler == BtnChiiChoice_Click)
+                // Changes the event of every buttons concerned by the call...
+                IEnumerable<Button> buttonsClickable = buttons.Where(b => b.Tag as TilePivot == tileKvp.Key);
+                if (handler != BtnRiichiChoice_Click)
                 {
-                    buttonClickable.Tag = new KeyValuePair<TilePivot, bool>(tile, tileChoices[tile]);
+                    buttonsClickable = buttonsClickable.Take(1);
                 }
-                clickableButtons.Add(buttonClickable);
+                foreach (Button buttonClickable in buttonsClickable)
+                {
+                    buttonClickable.Click += handler;
+                    buttonClickable.Click -= BtnDiscard_Click;
+                    if (handler == BtnChiiChoice_Click)
+                    {
+                        buttonClickable.Tag = tileKvp;
+                    }
+                    clickableButtons.Add(buttonClickable);
+                }
             }
             // ...and disables every buttons not concerned.
             buttons.Where(b => !clickableButtons.Contains(b)).All(b => { b.IsEnabled = false; return true; });
@@ -241,7 +268,9 @@ namespace Gnoj_HamView
                 }
                 AddLatestCombinationToStack(GamePivot.HUMAN_INDEX);
                 SetActionButtonsVisibility(preDiscard: true);
+                SetDorasPanel();
                 WinOpeningManagement(_game.Round.CanCallTsumo(GamePivot.HUMAN_INDEX, true), true);
+                RiichiCallManagement(_game.Round.CanCallRiichi(GamePivot.HUMAN_INDEX));
             }
         }
 
@@ -321,6 +350,7 @@ namespace Gnoj_HamView
             SetPlayersLed();
             SetActionButtonsVisibility(preDiscard: true);
             WinOpeningManagement(_game.Round.CanCallTsumo(GamePivot.HUMAN_INDEX, false), true);
+            RiichiCallManagement(_game.Round.CanCallRiichi(GamePivot.HUMAN_INDEX));
         }
 
         // resets the doras panel.
@@ -359,13 +389,18 @@ namespace Gnoj_HamView
             foreach (TilePivot tile in _game.Round.Discards.ElementAt(pIndex))
             {
                 StackPanel panel = FindName($"StpP{pIndex}Discard{(i < 6 ? 1 : (i < 12 ? 2 : 3))}") as StackPanel;
+                Angle angle = (Angle)pIndex;
+                if (i == _game.Round.Riichis.ElementAt(pIndex).Item1)
+                {
+                    angle = (Angle)RoundPivot.RelativePlayerIndex(pIndex, 1);
+                }
                 if (reversed)
                 {
-                    panel.Children.Insert(0, GenerateTileButton(tile, angle: (Angle)pIndex));
+                    panel.Children.Insert(0, GenerateTileButton(tile, angle: angle));
                 }
                 else
                 {
-                    panel.Children.Add(GenerateTileButton(tile, angle: (Angle)pIndex));
+                    panel.Children.Add(GenerateTileButton(tile, angle: angle));
                 }
                 i++;
             }
@@ -486,12 +521,14 @@ namespace Gnoj_HamView
                     }
                     else
                     {
+                        List<TilePivot> tilesRiichi = _game.Round.CanCallRiichi(GamePivot.HUMAN_INDEX);
                         List<YakuPivot> yakus = _game.Round.CanCallTsumo(GamePivot.HUMAN_INDEX, false);
                         Dispatcher.Invoke(() =>
                         {
                             StpPickP0.Children.Add(GenerateTileButton(pick, BtnDiscard_Click));
                             SetActionButtonsVisibility(preDiscard: true);
                             WinOpeningManagement(yakus, true);
+                            RiichiCallManagement(tilesRiichi);
                         });
                     }
                 }
