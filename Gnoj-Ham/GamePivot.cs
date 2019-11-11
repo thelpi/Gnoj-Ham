@@ -127,7 +127,7 @@ namespace Gnoj_Ham
                     throw new NotImplementedException();
                 }
 
-                EastIndex = EastIndex == 3 ? 0 : EastIndex + 1;
+                EastIndex = RoundPivot.RelativePlayerIndex(EastIndex, 1);
                 EastIndexTurnCount = 1;
 
                 if (EastIndex == FirstEastIndex)
@@ -148,6 +148,7 @@ namespace Gnoj_Ham
         /// </summary>
         /// <param name="playerIndex">The player index in <see cref="Players"/>.</param>
         /// <returns>The <see cref="WindPivot"/>.</returns>
+        /// <exception cref="ArgumentOutOfRangeException"><paramref name="playerIndex"/> is out of range.</exception>
         public WindPivot GetPlayerCurrentWind(int playerIndex)
         {
             if (playerIndex < 0 || playerIndex > 3)

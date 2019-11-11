@@ -145,7 +145,7 @@ namespace Gnoj_Ham
         {
             get
             {
-                return CurrentPlayerIndex == 0 ? 3 : CurrentPlayerIndex - 1;
+                return RelativePlayerIndex(CurrentPlayerIndex, -1);
             }
         }
 
@@ -577,8 +577,7 @@ namespace Gnoj_Ham
         {
             List<int> historySinceLastTime = playerIndexHistory.TakeWhile(i => i != playerIndex).ToList();
 
-            return historySinceLastTime.Count <= 3
-                && Enumerable.Range(0, 3).All(i => historySinceLastTime.Count <= i || historySinceLastTime[i] == RelativePlayerIndex(playerIndex, -i));
+            return historySinceLastTime.Count <= 3 && Enumerable.Range(0, 3).All(i => historySinceLastTime.Count <= i || historySinceLastTime[i] == RelativePlayerIndex(playerIndex, -(i + 1)));
         }
 
         #endregion Private methods
@@ -593,7 +592,24 @@ namespace Gnoj_Ham
         /// <returns>The relative player index.</returns>
         public static int RelativePlayerIndex(int playerIndex, int nIndex)
         {
-            return Math.Abs((playerIndex + nIndex) % 4);
+            if (nIndex == 0)
+            {
+                return playerIndex;
+            }
+
+            int nIndexMod = nIndex % 4;
+            int newIndex = playerIndex + nIndexMod;
+
+            if (nIndex > 0 && newIndex > 3)
+            {
+                newIndex = newIndex % 4;
+            }
+            else if (nIndex < 0 && newIndex < 0)
+            {
+                newIndex = 4 - Math.Abs(newIndex % 4);
+            }
+
+            return newIndex;
         }
 
         #endregion Static methods

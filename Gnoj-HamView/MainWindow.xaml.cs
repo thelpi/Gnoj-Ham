@@ -439,7 +439,7 @@ namespace Gnoj_HamView
             {
                 panel.Children.Add(GenerateTileButton(tileKvp.Key,
                     null,
-                    (Angle)(tileKvp.Value ? (pIndex == 3 ? 0 : pIndex + 1) : pIndex),
+                    (Angle)(tileKvp.Value ? RoundPivot.RelativePlayerIndex(pIndex, 1): pIndex),
                     combo.IsSquare && combo.IsConcealed && i > 0 && i < 3));
                 i++;
             }
