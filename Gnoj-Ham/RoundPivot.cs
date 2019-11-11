@@ -541,14 +541,14 @@ namespace Gnoj_Ham
         public List<YakuPivot> CanCallRon(int playerIndex)
         {
             TilePivot tile = _waitForDiscard ? null : _discards[PreviousPlayerIndex].LastOrDefault();
-            //bool forKokushiOnly = false;
+            bool forKokushiOnly = false;
             bool isChanka = false;
             if (CurrentPlayerIndex != playerIndex)
             {
                 if (_closedKanInProgress != null)
                 {
                     tile = _closedKanInProgress;
-                    //forKokushiOnly = true;
+                    forKokushiOnly = true;
                     isChanka = true;
                 }
                 else if (_openedKanInProgress != null)
@@ -566,9 +566,39 @@ namespace Gnoj_Ham
             List<List<YakuPivot>> yakus = GetYakus(playerIndex, tile,
                 isChanka ? DrawTypePivot.OpponentKanCall : DrawTypePivot.OpponentDiscard);
 
-            // Check furiten
-            // Check temporary furiten
-            // Check closed chanta / kokushi
+            if (yakus.Count == 0)
+            {
+                return new List<YakuPivot>();
+            }
+
+            if (forKokushiOnly)
+            {
+                // Ron on closed kan is only possible for kokushi musou.
+                yakus.RemoveAll(ys => !ys.Any(y => y == YakuPivot.KokushiMusou));
+            }
+
+            // Furiten
+            if (_discards[playerIndex].Any(t =>
+                HandPivot.IsCompleteFull(new List<TilePivot>(_hands[playerIndex].ConcealedTiles) { t },
+                    _hands[playerIndex].DeclaredCombinations.ToList())))
+            {
+                return new List<YakuPivot>();
+            }
+
+            // Temporary furiten
+            int i = 0;
+            while (playerIndexHistory[i] == RelativePlayerIndex(playerIndex, -(i + 1))
+                && RelativePlayerIndex(playerIndex, -(i + 1)) != playerIndex)
+            {
+                TilePivot lastFromDiscard = _discards[playerIndexHistory[i]].LastOrDefault();
+                if (lastFromDiscard != null && HandPivot.IsCompleteFull(
+                    new List<TilePivot>(_hands[playerIndex].ConcealedTiles) { lastFromDiscard },
+                    _hands[playerIndex].DeclaredCombinations.ToList()))
+                {
+                    return new List<YakuPivot>();
+                }
+                i++;
+            }
 
             return GetBestYakusFromList(yakus, _hands[CurrentPlayerIndex].IsConcealed);
         }

@@ -69,6 +69,39 @@ namespace Gnoj_Ham
         #region Static methods
 
         /// <summary>
+        /// Checks if the specified tiles from a complete hand.
+        /// </summary>
+        /// <param name="tiles">List of tiles (other than <paramref name="declaredCombinations"/>).</param>
+        /// <param name="declaredCombinations">List of declared combinations.</param>
+        /// <returns><c>True</c> if complete; <c>False</c> otherwise.</returns>
+        public static bool IsCompleteFull(List<TilePivot> tiles, List<TileComboPivot> declaredCombinations)
+        {
+            return IsComplete(tiles, declaredCombinations).Count > 0
+                || IsSevenPairs(tiles)
+                || IsThirteenOrphans(tiles);
+        }
+
+        /// <summary>
+        /// Checks if the specified tiles form a valid "Kokushi musou" (thirteen orphans).
+        /// </summary>
+        /// <param name="tiles">List of tiles.</param>
+        /// <returns><c>True</c> if "Kokushi musou"; <c>False</c> otherwise.</returns>
+        public static bool IsThirteenOrphans(List<TilePivot> tiles)
+        {
+            return tiles != null && tiles.Count == 14 && tiles.Distinct().Count() == 13 && tiles.All(t => t.IsHonorOrTerminal);
+        }
+
+        /// <summary>
+        /// Checks if the specified tiles form a valid "Chiitoitsu" (seven pairs).
+        /// </summary>
+        /// <param name="tiles">List of tiles.</param>
+        /// <returns><c>True</c> if "Chiitoitsu"; <c>False</c> otherwise.</returns>
+        public static bool IsSevenPairs(List<TilePivot> tiles)
+        {
+            return tiles != null && tiles.Count == 14 && tiles.Distinct().Count() == 7;
+        }
+
+        /// <summary>
         /// Checks if the specified tiles form a valid hand (four combinations of three tiles and a pair).
         /// "Kokushi musou" and "Chiitoitsu" must be checked separately.
         /// </summary>
@@ -337,13 +370,12 @@ namespace Gnoj_Ham
             // - hand is concealed and seven pairs (aka "Chiitoitsu"); in that case, we form every pairs and add an element to "regularCombinationsSequences".
             // - hand is concealed and "13 orphans" (aka "Kokushi musou").
             List<List<TileComboPivot>> regularCombinationsSequences = IsComplete(concealedTiles, new List<TileComboPivot>(_declaredCombinations));
-            bool isSevenPairs = concealedTiles.Count == 14 && concealedTiles.Distinct().Count() == 7;
-            if (isSevenPairs)
+            if (IsSevenPairs(concealedTiles))
             {
                 // TODO: this LINQ expression might not working.
                 regularCombinationsSequences.Add(new List<TileComboPivot>(concealedTiles.GroupBy(t => t).Select(c => new TileComboPivot(c))));
             }
-            bool isThirteenOrphans = concealedTiles.Count == 14 && concealedTiles.Distinct().Count() == 13 && concealedTiles.All(t => t.IsHonorOrTerminal);
+            bool isThirteenOrphans = IsThirteenOrphans(concealedTiles);
 
             if (regularCombinationsSequences.Count == 0 && !isThirteenOrphans)
             {
