@@ -135,6 +135,9 @@
   <data name="InvalidDraw" xml:space="preserve">
     <value>A draw can't be made in this context.</value>
   </data>
+  <data name="InvalidEndOfroundPlayer" xml:space="preserve">
+    <value>Winner and/or loser index are invalid.</value>
+  </data>
   <data name="InvalidHandTilesCount" xml:space="preserve">
     <value>The total number of tiles is invalid (should be 14).</value>
   </data>

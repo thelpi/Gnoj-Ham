@@ -26,6 +26,7 @@ namespace Gnoj_Ham
         private readonly List<TilePivot> _deadTreasureTiles;
         private readonly List<List<TilePivot>> _discards;
         private readonly List<Tuple<int, TilePivot, bool>> _riichis;
+        private readonly List<TilePivot> _fullTilesList;
 
         /// <summary>
         /// Wall tiles.
@@ -179,18 +180,15 @@ namespace Gnoj_Ham
                 throw new ArgumentOutOfRangeException(nameof(firstPlayerIndex));
             }
 
-            List<TilePivot> tiles = TilePivot
-                                    .GetCompleteSet(withRedDoras)
-                                    .OrderBy(t => GlobalTools.Randomizer.NextDouble())
-                                    .ToList();
+            _fullTilesList = TilePivot.GetCompleteSet(withRedDoras).OrderBy(t => GlobalTools.Randomizer.NextDouble()).ToList();
 
-            _hands = Enumerable.Range(0, 4).Select(i => new HandPivot(tiles.GetRange(i * 13, 13))).ToList();
+            _hands = Enumerable.Range(0, 4).Select(i => new HandPivot(_fullTilesList.GetRange(i * 13, 13))).ToList();
             _discards = Enumerable.Range(0, 4).Select(i => new List<TilePivot>()).ToList();
             _riichis = Enumerable.Range(0, 4).Select(i => new Tuple<int, TilePivot, bool>(-1, null, false)).ToList();
-            _wallTiles = tiles.GetRange(52, 70);
-            _compensationTiles = tiles.GetRange(122, 4);
-            _doraIndicatorTiles = tiles.GetRange(126, 5);
-            _uraDoraIndicatorTiles = tiles.GetRange(131, 5);
+            _wallTiles = _fullTilesList.GetRange(52, 70);
+            _compensationTiles = _fullTilesList.GetRange(122, 4);
+            _doraIndicatorTiles = _fullTilesList.GetRange(126, 5);
+            _uraDoraIndicatorTiles = _fullTilesList.GetRange(131, 5);
             _deadTreasureTiles = new List<TilePivot>();
             CurrentPlayerIndex = firstPlayerIndex;
             _stealingInProgress = false;
@@ -579,25 +577,17 @@ namespace Gnoj_Ham
 
         private List<TilePivot> ExtractRiichiPossibilities(int playerIndex)
         {
-            List<TilePivot> distinctTilesFromPlayerConcealed = _hands[playerIndex].ConcealedTiles.Distinct().ToList();
             List<TilePivot> distinctTilesFromOverallConcealed = GetConcealedTilesFromPlayerPointOfView(playerIndex).Distinct().ToList();
 
             var subPossibilities = new List<TilePivot>();
-
-            foreach (TilePivot tileToSub in distinctTilesFromPlayerConcealed)
+            foreach (TilePivot tileToSub in _hands[playerIndex].ConcealedTiles.Distinct())
             {
                 var tempListConcealed = new List<TilePivot>(_hands[playerIndex].ConcealedTiles);
                 tempListConcealed.Remove(tileToSub);
-                foreach (TilePivot sub in distinctTilesFromOverallConcealed)
+                if (IsTenpaiInner(tempListConcealed, _hands[playerIndex].DeclaredCombinations, distinctTilesFromOverallConcealed))
                 {
-                    tempListConcealed.Add(sub);
-                    if (HandPivot.IsCompleteFull(tempListConcealed, _hands[playerIndex].DeclaredCombinations.ToList()))
-                    {
-                        subPossibilities.Add(tileToSub);
-                    }
-                    tempListConcealed.Remove(sub);
+                    subPossibilities.Add(tileToSub);
                 }
-                tempListConcealed.Add(tileToSub);
             }
 
             // Avoids red doras in the list returned (if possible).
@@ -736,6 +726,18 @@ namespace Gnoj_Ham
                 );
         }
 
+        /// <summary>
+        /// Checks if the hand of the specified player is tenpai.
+        /// </summary>
+        /// <param name="playerIndex">The player index.</param>
+        /// <returns><c>True</c> if tenpai; <c>False</c> otherwise.</returns>
+        public bool IsTenpai(int playerIndex)
+        {
+            // TODO : there're (maybe) specific rules about it:
+            // for instance, what if I have a single wait on tile "4 circle" but every tiles "4 circle" are already in my hand ?
+            return IsTenpaiInner(_hands[playerIndex].ConcealedTiles, _hands[playerIndex].DeclaredCombinations, _fullTilesList);
+        }
+
         #endregion Public methods
 
         #region Private methods
@@ -846,6 +848,14 @@ namespace Gnoj_Ham
         private static List<YakuPivot> GetBestYakusFromList(List<List<YakuPivot>> yakus, bool concealedHand)
         {
             return yakus.OrderByDescending(ys => ys.Sum(y => concealedHand ? y.ConcealedFanCount : y.FanCount)).FirstOrDefault() ?? new List<YakuPivot>();
+        }
+
+        // Computes if a hand is tenpai (any of notInHandTiles can complete the hand, which must have 13th tiles).
+        private static bool IsTenpaiInner(IEnumerable<TilePivot> concealedTiles, IEnumerable<TileComboPivot> combinations, List<TilePivot> notInHandTiles)
+        {
+            return notInHandTiles.Any(sub =>
+                HandPivot.IsCompleteFull(new List<TilePivot>(concealedTiles) { sub },
+                combinations.ToList()));
         }
 
         #endregion Static methods

@@ -48,6 +48,19 @@ namespace Gnoj_Ham
 
         #endregion Constructors
 
+        #region Public methods
+
+        /// <summary>
+        /// Adds a specified amount of points to the current player.
+        /// </summary>
+        /// <param name="points">The points count to add; might be negative.</param>
+        internal void AddPoints(int points)
+        {
+            Points += points;
+        }
+
+        #endregion Public methods
+
         #region Static methods
 
         /// <summary>

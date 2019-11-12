@@ -20,7 +20,7 @@ namespace Gnoj_Ham
 
         #region Embedded properties
 
-        private readonly bool _isEndOfRoundWithTurningWind;
+        private bool _isEndOfRoundWithTurningWind;
         private readonly bool _withRedDoras;
         private readonly List<PlayerPivot> _players;
 
@@ -46,6 +46,10 @@ namespace Gnoj_Ham
         /// Number of rounds with the current <see cref="EastIndex"/>.
         /// </summary>
         public int EastIndexTurnCount { get; private set; }
+        /// <summary>
+        /// East rank (1, 2, 3, 4).
+        /// </summary>
+        public int EastRank { get; private set; }
         /// <summary>
         /// Current <see cref="RoundPivot"/>.
         /// </summary>
@@ -103,6 +107,7 @@ namespace Gnoj_Ham
             DominantWind = WindPivot.East;
             EastIndexTurnCount = 1;
             EastIndex = FirstEastIndex;
+            EastRank = 1;
             _withRedDoras = withRedDoras;
             _isEndOfRoundWithTurningWind = false;
 
@@ -114,23 +119,88 @@ namespace Gnoj_Ham
         #region Public methods
 
         /// <summary>
-        /// Generates a new round.
+        /// Manages the end of a round.
         /// </summary>
-        /// <exception cref="NotImplementedException">End of game is not implemented yet.</exception>
-        public void NewRound()
+        /// <param name="winnerPlayersIndex">List of winners index with list of yakus for each.</param>
+        /// <param name="loserPlayerIndex">Loser index, if any.</param>
+        /// <exception cref="ArgumentNullException"><paramref name="winnerPlayersIndex"/> is <c>Null</c>.</exception>
+        /// <exception cref="ArgumentException"><see cref="Messages.InvalidEndOfroundPlayer"/></exception>
+        public void EndOfRound(Dictionary<int, List<YakuPivot>> winnerPlayersIndex, int? loserPlayerIndex)
         {
-            if (_isEndOfRoundWithTurningWind)
+            if (winnerPlayersIndex == null)
             {
-                if (DominantWind == WindPivot.South)
+                throw new ArgumentNullException(nameof(winnerPlayersIndex));
+            }
+
+            if (winnerPlayersIndex.Any(w => w.Key < 0 || w.Key > 3 || w.Value == null || w.Value.Count == 0))
+            {
+                throw new ArgumentException(Messages.InvalidEndOfroundPlayer, nameof(winnerPlayersIndex));
+            }
+
+            if ((loserPlayerIndex.HasValue && (loserPlayerIndex.Value < 0 || loserPlayerIndex.Value > 3))
+                || (winnerPlayersIndex.Count > 1 && !loserPlayerIndex.HasValue)
+                || (winnerPlayersIndex.Count == 0 && loserPlayerIndex.HasValue)
+                || (loserPlayerIndex.HasValue && winnerPlayersIndex.ContainsKey(loserPlayerIndex.Value)))
+            {
+                throw new ArgumentException(Messages.InvalidEndOfroundPlayer, nameof(loserPlayerIndex));
+            }
+
+            // Ryuukyoku (no winner).
+            if (winnerPlayersIndex.Count == 0)
+            {
+                List<int> tenpaiPlayersIndex = Enumerable.Range(0, 4).Where(i => Round.IsTenpai(i)).ToList();
+
+                // Wind turns if East is not tenpai.
+                _isEndOfRoundWithTurningWind = !tenpaiPlayersIndex.Any(tpi => GetPlayerCurrentWind(tpi) == WindPivot.East);
+
+                int pointsAdd = 0;
+                int pointsRemove = 0;
+                if (tenpaiPlayersIndex.Count == 1)
                 {
-                    throw new NotImplementedException();
+                    pointsAdd = 3000;
+                    pointsRemove = 1000;
+                }
+                else if (tenpaiPlayersIndex.Count == 2)
+                {
+                    pointsAdd = 1500;
+                    pointsRemove = 1500;
+                }
+                else if (tenpaiPlayersIndex.Count == 3)
+                {
+                    pointsAdd = 1000;
+                    pointsRemove = 3000;
                 }
 
+                tenpaiPlayersIndex.ForEach(i => _players[i].AddPoints(pointsAdd));
+                Enumerable.Range(0, 4).Where(i => !tenpaiPlayersIndex.Contains(i)).ToList().ForEach(i => _players[i].AddPoints(-pointsRemove));
+            }
+            else
+            {
+
+            }
+        }
+
+        /// <summary>
+        /// Generates a new round. <see cref="Round"/> stays <c>Null</c> at the end of the game.
+        /// </summary>
+        public void NewRound()
+        {
+            Round = null;
+
+            if (_isEndOfRoundWithTurningWind)
+            {
                 EastIndex = RoundPivot.RelativePlayerIndex(EastIndex, 1);
                 EastIndexTurnCount = 1;
+                EastRank++;
 
                 if (EastIndex == FirstEastIndex)
                 {
+                    EastRank = 1;
+                    // TODO : west turn if everyone is between 20k and 30k
+                    if (DominantWind == WindPivot.South)
+                    {
+                        return;
+                    }
                     DominantWind = WindPivot.South;
                 }
             }

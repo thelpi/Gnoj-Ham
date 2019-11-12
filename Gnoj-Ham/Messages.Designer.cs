@@ -115,6 +115,15 @@ namespace Gnoj_Ham {
         }
         
         /// <summary>
+        ///   Recherche une chaîne localisée semblable à Winner and/or loser index are invalid..
+        /// </summary>
+        internal static string InvalidEndOfroundPlayer {
+            get {
+                return ResourceManager.GetString("InvalidEndOfroundPlayer", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Recherche une chaîne localisée semblable à The total number of tiles is invalid (should be 14)..
         /// </summary>
         internal static string InvalidHandTilesCount {

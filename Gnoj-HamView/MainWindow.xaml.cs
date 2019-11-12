@@ -200,7 +200,7 @@ namespace Gnoj_HamView
                 MessageBoxResult mbRes = MessageBox.Show($"Declare {(tsumo ? "tsumo" : "ron")} ?", WINDOW_TITLE, MessageBoxButton.YesNo);
                 if (mbRes == MessageBoxResult.Yes)
                 {
-                    NewRound(GamePivot.HUMAN_INDEX, yakus);
+                    NewRound(new Dictionary<int, List<YakuPivot>> { { GamePivot.HUMAN_INDEX, yakus } }, null);
                 }
             }
         }
@@ -330,7 +330,7 @@ namespace Gnoj_HamView
         {
             SetDorasPanel();
             LblDominantWind.Content = _game.DominantWind.ToString().First();
-            LblEastTurnCount.Content = _game.EastIndexTurnCount;
+            LblEastTurnCount.Content = _game.EastRank;
             for (int pIndex = 0; pIndex < _game.Players.Count; pIndex++)
             {
                 (FindName($"StpCombosP{pIndex}") as StackPanel).Children.Clear();
@@ -400,17 +400,16 @@ namespace Gnoj_HamView
         }
 
         // Proceeds to new round.
-        private void NewRound(int playerIndex, List<YakuPivot> yakus)
+        private void NewRound(Dictionary<int, List<YakuPivot>> winners, int? loser)
         {
-            if (yakus.Count == 0)
-            {
-                MessageBox.Show("End of round (Ryuukyoku)", WINDOW_TITLE);
-            }
-            else
-            {
-                MessageBox.Show($"End of round ({_game.Players.ElementAt(playerIndex).Name} wins with {string.Join(" + ", yakus.Select(y => y.Name))})", WINDOW_TITLE);
-            }
+            MessageBox.Show("End of round !");
+            _game.EndOfRound(winners, loser);
             _game.NewRound();
+            if (_game.Round == null)
+            {
+                MessageBox.Show("End of game !");
+                Close();
+            }
             NewRoundRefresh();
             AutoSkip();
         }
@@ -527,7 +526,7 @@ namespace Gnoj_HamView
                 }
                 else if (_game.Round.IsWallExhaustion)
                 {
-                    Dispatcher.Invoke(() => NewRound(-1, new List<YakuPivot>()));
+                    Dispatcher.Invoke(() => NewRound(new Dictionary<int, List<YakuPivot>>(), null));
                 }
             })
             .ContinueWith(task =>
