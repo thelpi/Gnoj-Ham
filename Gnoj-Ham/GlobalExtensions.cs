@@ -150,5 +150,33 @@ namespace Gnoj_Ham
                     return WindPivot.South;
             }
         }
+
+        /// <summary>
+        /// Extension; computes the N-index player after (or before) the specified player index.
+        /// </summary>
+        /// <param name="playerIndex">The player index.</param>
+        /// <param name="nIndex">The N value.</param>
+        /// <returns>The relative player index.</returns>
+        public static int RelativePlayerIndex(this int playerIndex, int nIndex)
+        {
+            if (nIndex == 0)
+            {
+                return playerIndex;
+            }
+
+            int nIndexMod = nIndex % 4;
+            int newIndex = playerIndex + nIndexMod;
+
+            if (nIndex > 0 && newIndex > 3)
+            {
+                newIndex = newIndex % 4;
+            }
+            else if (nIndex < 0 && newIndex < 0)
+            {
+                newIndex = 4 - Math.Abs(newIndex % 4);
+            }
+
+            return newIndex;
+        }
     }
 }

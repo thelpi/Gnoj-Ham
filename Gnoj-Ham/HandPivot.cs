@@ -75,14 +75,14 @@ namespace Gnoj_Ham
         #region Static methods
 
         /// <summary>
-        /// Checks if the specified tiles from a complete hand.
+        /// Checks if the specified list of tiles forms a complete hand.
         /// </summary>
         /// <param name="tiles">List of tiles (other than <paramref name="declaredCombinations"/>).</param>
         /// <param name="declaredCombinations">List of declared combinations.</param>
         /// <returns><c>True</c> if complete; <c>False</c> otherwise.</returns>
         public static bool IsCompleteFull(List<TilePivot> tiles, List<TileComboPivot> declaredCombinations)
         {
-            return IsComplete(tiles, declaredCombinations).Count > 0
+            return IsCompleteBasic(tiles, declaredCombinations).Count > 0
                 || IsSevenPairs(tiles)
                 || IsThirteenOrphans(tiles);
         }
@@ -108,7 +108,7 @@ namespace Gnoj_Ham
         }
 
         /// <summary>
-        /// Checks if the specified tiles form a valid hand (four combinations of three tiles and a pair).
+        /// Checks if the specified tiles form a complete hand (four combinations of three tiles and a pair).
         /// "Kokushi musou" and "Chiitoitsu" must be checked separately.
         /// </summary>
         /// <param name="concealedTiles">List of concealed tiles.</param>
@@ -117,7 +117,7 @@ namespace Gnoj_Ham
         /// <exception cref="ArgumentNullException"><paramref name="concealedTiles"/> is <c>Null</c>.</exception>
         /// <exception cref="ArgumentNullException"><paramref name="declaredCombinations"/> is <c>Null</c>.</exception>
         /// <exception cref="ArgumentException"><see cref="Messages.InvalidHandTilesCount"/></exception>
-        public static List<List<TileComboPivot>> IsComplete(List<TilePivot> concealedTiles, List<TileComboPivot> declaredCombinations)
+        public static List<List<TileComboPivot>> IsCompleteBasic(List<TilePivot> concealedTiles, List<TileComboPivot> declaredCombinations)
         {
             if (declaredCombinations == null)
             {
@@ -375,7 +375,7 @@ namespace Gnoj_Ham
             // - hand is complete (4 combinations and a pair)
             // - hand is concealed and seven pairs (aka "Chiitoitsu"); in that case, we form every pairs and add an element to "regularCombinationsSequences".
             // - hand is concealed and "13 orphans" (aka "Kokushi musou").
-            List<List<TileComboPivot>> regularCombinationsSequences = IsComplete(concealedTiles, new List<TileComboPivot>(_declaredCombinations));
+            List<List<TileComboPivot>> regularCombinationsSequences = IsCompleteBasic(concealedTiles, new List<TileComboPivot>(_declaredCombinations));
             if (IsSevenPairs(concealedTiles))
             {
                 regularCombinationsSequences.Add(new List<TileComboPivot>(concealedTiles.GroupBy(t => t).Select(c => new TileComboPivot(c))));

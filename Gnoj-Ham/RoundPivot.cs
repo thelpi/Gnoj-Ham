@@ -147,7 +147,7 @@ namespace Gnoj_Ham
         {
             get
             {
-                return RelativePlayerIndex(CurrentPlayerIndex, -1);
+                return CurrentPlayerIndex.RelativePlayerIndex(-1);
             }
         }
 
@@ -528,7 +528,7 @@ namespace Gnoj_Ham
             _openedKanInProgress = null;
             _waitForDiscard = false;
             playerIndexHistory.Insert(0, CurrentPlayerIndex);
-            CurrentPlayerIndex = RelativePlayerIndex(CurrentPlayerIndex, 1);
+            CurrentPlayerIndex = CurrentPlayerIndex.RelativePlayerIndex(1);
             return true;
         }
 
@@ -679,8 +679,8 @@ namespace Gnoj_Ham
 
             // Temporary furiten
             int i = 0;
-            while (playerIndexHistory[i] == RelativePlayerIndex(playerIndex, -(i + 1))
-                && RelativePlayerIndex(playerIndex, -(i + 1)) != playerIndex)
+            while (playerIndexHistory[i] == playerIndex.RelativePlayerIndex(-(i + 1))
+                && playerIndex.RelativePlayerIndex(-(i + 1)) != playerIndex)
             {
                 TilePivot lastFromDiscard = _discards[playerIndexHistory[i]].LastOrDefault();
                 if (lastFromDiscard != null && HandPivot.IsCompleteFull(
@@ -758,7 +758,7 @@ namespace Gnoj_Ham
         {
             List<int> historySinceLastTime = playerIndexHistory.TakeWhile(i => i != playerIndex).ToList();
 
-            return historySinceLastTime.Count <= 3 && Enumerable.Range(0, 3).All(i => historySinceLastTime.Count <= i || historySinceLastTime[i] == RelativePlayerIndex(playerIndex, -(i + 1)));
+            return historySinceLastTime.Count <= 3 && Enumerable.Range(0, 3).All(i => historySinceLastTime.Count <= i || historySinceLastTime[i] == playerIndex.RelativePlayerIndex(-(i + 1)));
         }
 
         // Creates the context and calls "GetYakus" for the specified player.
@@ -815,34 +815,6 @@ namespace Gnoj_Ham
         #endregion Private methods
 
         #region Static methods
-
-        /// <summary>
-        /// Computes the N-index player after (or before) the specified player index.
-        /// </summary>
-        /// <param name="playerIndex">The player index.</param>
-        /// <param name="nIndex">The N value.</param>
-        /// <returns>The relative player index.</returns>
-        public static int RelativePlayerIndex(int playerIndex, int nIndex)
-        {
-            if (nIndex == 0)
-            {
-                return playerIndex;
-            }
-
-            int nIndexMod = nIndex % 4;
-            int newIndex = playerIndex + nIndexMod;
-
-            if (nIndex > 0 && newIndex > 3)
-            {
-                newIndex = newIndex % 4;
-            }
-            else if (nIndex < 0 && newIndex < 0)
-            {
-                newIndex = 4 - Math.Abs(newIndex % 4);
-            }
-
-            return newIndex;
-        }
 
         // Gets the best yakus combination from a list of yakus combinations.
         private static List<YakuPivot> GetBestYakusFromList(List<List<YakuPivot>> yakus, bool concealedHand)

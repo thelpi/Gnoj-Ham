@@ -6,7 +6,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace Gnoj_HamUnitTests
 {
     /// <summary>
-    /// Unit tests for the static method <see cref="HandPivot.IsComplete(List{TilePivot}, List{TileComboPivot})"/>.
+    /// Unit tests for the static method <see cref="HandPivot.IsCompleteBasic(List{TilePivot}, List{TileComboPivot})"/>.
     /// </summary>
     [TestClass]
     public class IsComplete_Tests
@@ -39,7 +39,7 @@ namespace Gnoj_HamUnitTests
 
             concealedTiles = concealedTiles.OrderBy(t => GlobalTools.Randomizer.NextDouble()).ToList();
 
-            List<List<TileComboPivot>> result = HandPivot.IsComplete(concealedTiles, new List<TileComboPivot>());
+            List<List<TileComboPivot>> result = HandPivot.IsCompleteBasic(concealedTiles, new List<TileComboPivot>());
 
             Assert.IsNotNull(result);
             Assert.AreEqual(1, result.Count);
@@ -71,7 +71,7 @@ namespace Gnoj_HamUnitTests
 
             concealedTiles = concealedTiles.OrderBy(t => GlobalTools.Randomizer.NextDouble()).ToList();
 
-            List<List<TileComboPivot>> result = HandPivot.IsComplete(concealedTiles, new List<TileComboPivot>
+            List<List<TileComboPivot>> result = HandPivot.IsCompleteBasic(concealedTiles, new List<TileComboPivot>
             {
                 TileComboPivot.BuildSquare(TilePivot.GetTile(tilesSet, FamilyPivot.Dragon, dragon: DragonPivot.White))
             });

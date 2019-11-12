@@ -385,7 +385,7 @@ namespace Gnoj_HamView
                 Angle angle = (Angle)pIndex;
                 if (i == _game.Round.Riichis.ElementAt(pIndex).Item1)
                 {
-                    angle = (Angle)RoundPivot.RelativePlayerIndex(pIndex, 1);
+                    angle = (Angle)pIndex.RelativePlayerIndex(1);
                 }
                 if (reversed)
                 {
@@ -466,7 +466,7 @@ namespace Gnoj_HamView
             {
                 panel.Children.Add(GenerateTileButton(tileKvp.Key,
                     null,
-                    (Angle)(tileKvp.Value ? RoundPivot.RelativePlayerIndex(pIndex, 1): pIndex),
+                    (Angle)(tileKvp.Value ? pIndex.RelativePlayerIndex(1): pIndex),
                     combo.IsSquare && combo.IsConcealed && i > 0 && i < 3));
                 i++;
             }

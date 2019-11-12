@@ -121,6 +121,7 @@ namespace Gnoj_Ham
         /// <summary>
         /// Manages the end of a round.
         /// </summary>
+        /// <remarks><see cref="Round"/> is set to <c>Null</c> to avoid any alteration.</remarks>
         /// <param name="winnerPlayersIndex">List of winners index with list of yakus for each.</param>
         /// <param name="loserPlayerIndex">Loser index, if any.</param>
         /// <exception cref="ArgumentNullException"><paramref name="winnerPlayersIndex"/> is <c>Null</c>.</exception>
@@ -178,6 +179,9 @@ namespace Gnoj_Ham
             {
 
             }
+
+
+            Round = null;
         }
 
         /// <summary>
@@ -185,11 +189,9 @@ namespace Gnoj_Ham
         /// </summary>
         public void NewRound()
         {
-            Round = null;
-
             if (_isEndOfRoundWithTurningWind)
             {
-                EastIndex = RoundPivot.RelativePlayerIndex(EastIndex, 1);
+                EastIndex = EastIndex.RelativePlayerIndex(1);
                 EastIndexTurnCount = 1;
                 EastRank++;
 
