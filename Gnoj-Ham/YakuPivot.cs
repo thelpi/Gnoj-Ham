@@ -370,5 +370,20 @@ namespace Gnoj_Ham
         private const string IIPEIKOU = "Iipeikou";
 
         #endregion
+
+        #region Static methods
+
+        /// <summary>
+        /// Gets the best yakus combination from a list of yakus combinations.
+        /// </summary>
+        /// <param name="yakus">The list of yakus combinations.</param>
+        /// <param name="concealedHand"><c>True</c> if the hand is concealed; <c>False</c> otherwise.</param>
+        /// <returns>The best combination of yakus.</returns>
+        public static List<YakuPivot> GetBestYakusFromList(List<List<YakuPivot>> yakus, bool concealedHand)
+        {
+            return yakus.OrderByDescending(ys => ys.Sum(y => concealedHand ? y.ConcealedFanCount : y.FanCount)).FirstOrDefault() ?? new List<YakuPivot>();
+        }
+
+        #endregion Static methods
     }
 }

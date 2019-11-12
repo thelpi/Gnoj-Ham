@@ -575,36 +575,6 @@ namespace Gnoj_Ham
             return ExtractRiichiPossibilities(playerIndex);
         }
 
-        private List<TilePivot> ExtractRiichiPossibilities(int playerIndex)
-        {
-            List<TilePivot> distinctTilesFromOverallConcealed = GetConcealedTilesFromPlayerPointOfView(playerIndex).Distinct().ToList();
-
-            var subPossibilities = new List<TilePivot>();
-            foreach (TilePivot tileToSub in _hands[playerIndex].ConcealedTiles.Distinct())
-            {
-                var tempListConcealed = new List<TilePivot>(_hands[playerIndex].ConcealedTiles);
-                tempListConcealed.Remove(tileToSub);
-                if (IsTenpaiInner(tempListConcealed, _hands[playerIndex].DeclaredCombinations, distinctTilesFromOverallConcealed))
-                {
-                    subPossibilities.Add(tileToSub);
-                }
-            }
-
-            // Avoids red doras in the list returned (if possible).
-            var realSubPossibilities = new List<TilePivot>();
-            foreach (TilePivot tile in subPossibilities.Distinct())
-            {
-                TilePivot subTile = null;
-                if (tile.IsRedDora)
-                {
-                    subTile = _hands[playerIndex].ConcealedTiles.FirstOrDefault(t => t == tile && !t.IsRedDora);
-                }
-                realSubPossibilities.Add(subTile ?? tile);
-            }
-
-            return realSubPossibilities.Distinct().ToList();
-        }
-
         /// <summary>
         /// Checks if the hand of the specified player is ready for calling tsumo.
         /// </summary>
@@ -622,7 +592,7 @@ namespace Gnoj_Ham
                 _hands[playerIndex].LatestPick,
                 isKanCompensation ? DrawTypePivot.Compensation : DrawTypePivot.Wall);
 
-            return GetBestYakusFromList(yakus, _hands[playerIndex].IsConcealed);
+            return YakuPivot.GetBestYakusFromList(yakus, _hands[playerIndex].IsConcealed);
         }
 
         /// <summary>
@@ -692,7 +662,7 @@ namespace Gnoj_Ham
                 i++;
             }
 
-            return GetBestYakusFromList(yakus, _hands[CurrentPlayerIndex].IsConcealed);
+            return YakuPivot.GetBestYakusFromList(yakus, _hands[CurrentPlayerIndex].IsConcealed);
         }
 
         /// <summary>
@@ -735,12 +705,43 @@ namespace Gnoj_Ham
         {
             // TODO : there're (maybe) specific rules about it:
             // for instance, what if I have a single wait on tile "4 circle" but every tiles "4 circle" are already in my hand ?
-            return IsTenpaiInner(_hands[playerIndex].ConcealedTiles, _hands[playerIndex].DeclaredCombinations, _fullTilesList);
+            return _hands[playerIndex].IsTenpai(_fullTilesList);
         }
 
         #endregion Public methods
 
         #region Private methods
+
+        // Checks if the hand of the specified player is riichi and list tiles which can be discarded.
+        private List<TilePivot> ExtractRiichiPossibilities(int playerIndex)
+        {
+            List<TilePivot> distinctTilesFromOverallConcealed = GetConcealedTilesFromPlayerPointOfView(playerIndex).Distinct().ToList();
+
+            var subPossibilities = new List<TilePivot>();
+            foreach (TilePivot tileToSub in _hands[playerIndex].ConcealedTiles.Distinct())
+            {
+                var tempListConcealed = new List<TilePivot>(_hands[playerIndex].ConcealedTiles);
+                tempListConcealed.Remove(tileToSub);
+                if (HandPivot.IsTenpai(tempListConcealed, _hands[playerIndex].DeclaredCombinations, distinctTilesFromOverallConcealed))
+                {
+                    subPossibilities.Add(tileToSub);
+                }
+            }
+
+            // Avoids red doras in the list returned (if possible).
+            var realSubPossibilities = new List<TilePivot>();
+            foreach (TilePivot tile in subPossibilities.Distinct())
+            {
+                TilePivot subTile = null;
+                if (tile.IsRedDora)
+                {
+                    subTile = _hands[playerIndex].ConcealedTiles.FirstOrDefault(t => t == tile && !t.IsRedDora);
+                }
+                realSubPossibilities.Add(subTile ?? tile);
+            }
+
+            return realSubPossibilities.Distinct().ToList();
+        }
 
         // Picks a compensation tile (after a kan call) for the current player.
         private TilePivot PickCompensationTile()
@@ -813,23 +814,5 @@ namespace Gnoj_Ham
         }
 
         #endregion Private methods
-
-        #region Static methods
-
-        // Gets the best yakus combination from a list of yakus combinations.
-        private static List<YakuPivot> GetBestYakusFromList(List<List<YakuPivot>> yakus, bool concealedHand)
-        {
-            return yakus.OrderByDescending(ys => ys.Sum(y => concealedHand ? y.ConcealedFanCount : y.FanCount)).FirstOrDefault() ?? new List<YakuPivot>();
-        }
-
-        // Computes if a hand is tenpai (any of notInHandTiles can complete the hand, which must have 13th tiles).
-        private static bool IsTenpaiInner(IEnumerable<TilePivot> concealedTiles, IEnumerable<TileComboPivot> combinations, List<TilePivot> notInHandTiles)
-        {
-            return notInHandTiles.Any(sub =>
-                HandPivot.IsCompleteFull(new List<TilePivot>(concealedTiles) { sub },
-                combinations.ToList()));
-        }
-
-        #endregion Static methods
     }
 }

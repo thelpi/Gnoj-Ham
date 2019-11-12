@@ -331,6 +331,38 @@ namespace Gnoj_Ham
             return combinationsSequences;
         }
 
+        /// <summary>
+        /// Computes if a hand is tenpai (any of <paramref name="notInHandTiles"/> can complete the hand, which must have 13th tiles).
+        /// </summary>
+        /// <param name="concealedTiles">Concealed tiles of the hand.</param>
+        /// <param name="combinations">Declared combinations of the hand.</param>
+        /// <param name="notInHandTiles">List of substitution tiles.</param>
+        /// <returns><c>True</c> if tenpai; <c>False</c> otherwise.</returns>
+        /// <exception cref="ArgumentNullException"><paramref name="concealedTiles"/> is <c>Null</c>.</exception>
+        /// <exception cref="ArgumentNullException"><paramref name="combinations"/> is <c>Null</c>.</exception>
+        /// <exception cref="ArgumentNullException"><paramref name="notInHandTiles"/> is <c>Null</c>.</exception>
+        public static bool IsTenpai(IEnumerable<TilePivot> concealedTiles, IEnumerable<TileComboPivot> combinations, List<TilePivot> notInHandTiles)
+        {
+            if (concealedTiles == null)
+            {
+                throw new ArgumentNullException(nameof(concealedTiles));
+            }
+
+            if (notInHandTiles == null)
+            {
+                throw new ArgumentNullException(nameof(notInHandTiles));
+            }
+
+            if (combinations == null)
+            {
+                throw new ArgumentNullException(nameof(combinations));
+            }
+
+            return notInHandTiles.Any(sub =>
+                IsCompleteFull(new List<TilePivot>(concealedTiles) { sub },
+                combinations.ToList()));
+        }
+
         #endregion Static methods
 
         #region Internal methods
@@ -832,6 +864,16 @@ namespace Gnoj_Ham
             LatestPick = tile ?? throw new ArgumentNullException(nameof(tile));
             _concealedTiles.Add(tile);
             _concealedTiles.Sort();
+        }
+
+        /// <summary>
+        /// Checks if the hand is tenpai; hand must contain <c>13</c> tiles.
+        /// </summary>
+        /// <param name="subTiles">List of substitution tiles.</param>
+        /// <returns><c>True</c> if tenpai; <c>False</c> otherwise.</returns>
+        internal bool IsTenpai(List<TilePivot> subTiles)
+        {
+            return IsTenpai(ConcealedTiles, DeclaredCombinations, subTiles);
         }
 
         #endregion Internal methods
