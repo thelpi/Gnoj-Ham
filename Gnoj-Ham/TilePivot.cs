@@ -223,7 +223,7 @@ namespace Gnoj_Ham
         /// <returns>Hashcode of this instance.</returns>
         public override int GetHashCode()
         {
-            return Tuple.Create(Family, Number, Wind, Dragon, IsRedDora).GetHashCode();
+            return Tuple.Create(Family, Number, Wind, Dragon).GetHashCode();
         }
 
         /// <summary>
