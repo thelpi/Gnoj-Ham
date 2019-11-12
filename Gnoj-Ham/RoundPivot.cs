@@ -317,14 +317,12 @@ namespace Gnoj_Ham
                 // - if "disposableForRiichi" contains only this tile
                 if (IsRiichi(playerIndex))
                 {
-                    TilePivot lastPick = _hands[playerIndex].ConcealedTiles.Last();
-
                     List<TilePivot> disposableForRiichi = ExtractRiichiPossibilities(playerIndex);
-                    if (disposableForRiichi.Any(t => t != lastPick))
+                    if (disposableForRiichi.Any(t => t != _hands[playerIndex].LatestPick))
                     {
                         return new List<TilePivot>();
                     }
-                    kansFromConcealed = kansFromConcealed.Where(t => t == lastPick);
+                    kansFromConcealed = kansFromConcealed.Where(t => t == _hands[playerIndex].LatestPick);
                 }
 
                 IEnumerable<TilePivot> kansFromPons =
@@ -486,13 +484,17 @@ namespace Gnoj_Ham
                 return false;
             }
 
-            _riichis[playerIndex] = new Tuple<int, TilePivot, bool>(_discards[playerIndex].Count, tile,
-                _discards[playerIndex].Count == 0 && IsUninterruptedHistory(playerIndex));
+            // Computes before discard, but proceeds after.
+            // Otherwise, the discard will fail.
+            int riichiTurnsCount = _discards[playerIndex].Count;
+            bool isUninterruptedFirstTurn = _discards[playerIndex].Count == 0 && IsUninterruptedHistory(playerIndex);
 
             if (!Discard(tile))
             {
                 throw new InvalidOperationException(Messages.UnexpectedDiscardFail);
             }
+            
+            _riichis[playerIndex] = new Tuple<int, TilePivot, bool>(riichiTurnsCount, tile, isUninterruptedFirstTurn);
 
             return true;
         }
@@ -507,7 +509,12 @@ namespace Gnoj_Ham
         /// </returns>
         public bool Discard(TilePivot tile)
         {
-            if (!_waitForDiscard || !_hands[CurrentPlayerIndex].Discard(tile, _stealingInProgress))
+            if (!_waitForDiscard || (IsRiichi(CurrentPlayerIndex) && !ReferenceEquals(tile, _hands[CurrentPlayerIndex].LatestPick)))
+            {
+                return false;
+            }
+
+            if (!_hands[CurrentPlayerIndex].Discard(tile, _stealingInProgress))
             {
                 return false;
             }
@@ -605,7 +612,7 @@ namespace Gnoj_Ham
                 realSubPossibilities.Add(subTile ?? tile);
             }
 
-            return realSubPossibilities;
+            return realSubPossibilities.Distinct().ToList();
         }
 
         /// <summary>
@@ -622,7 +629,7 @@ namespace Gnoj_Ham
             }
             
             List<List<YakuPivot>> yakus = GetYakus(playerIndex,
-                _hands[playerIndex].ConcealedTiles.Last(),
+                _hands[playerIndex].LatestPick,
                 isKanCompensation ? DrawTypePivot.Compensation : DrawTypePivot.Wall);
 
             return GetBestYakusFromList(yakus, _hands[playerIndex].IsConcealed);

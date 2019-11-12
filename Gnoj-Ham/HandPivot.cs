@@ -35,6 +35,11 @@ namespace Gnoj_Ham
             }
         }
 
+        /// <summary>
+        /// The latest pick; can't be known by <see cref="_concealedTiles"/> (sorted list).
+        /// </summary>
+        public TilePivot LatestPick { get; private set; }
+
         #endregion Embedded properties
 
         #region Inferred properties
@@ -60,6 +65,7 @@ namespace Gnoj_Ham
         /// <param name="tiles">Initial list of <see cref="TilePivot"/> (13).</param>
         internal HandPivot(IEnumerable<TilePivot> tiles)
         {
+            LatestPick = tiles.Last();
             _concealedTiles = tiles.OrderBy(t => t).ToList();
             _declaredCombinations = new List<TileComboPivot>();
         }
@@ -98,7 +104,7 @@ namespace Gnoj_Ham
         /// <returns><c>True</c> if "Chiitoitsu"; <c>False</c> otherwise.</returns>
         public static bool IsSevenPairs(List<TilePivot> tiles)
         {
-            return tiles != null && tiles.Count == 14 && tiles.Distinct().Count() == 7;
+            return tiles != null && tiles.Count == 14 && tiles.Distinct().Count() == 7 && tiles.GroupBy(t => t).All(t => t.Count() == 2);
         }
 
         /// <summary>
@@ -818,16 +824,12 @@ namespace Gnoj_Ham
         /// <exception cref="InvalidOperationException"><see cref="Messages.InvalidDraw"/></exception>
         internal void Pick(TilePivot tile)
         {
-            if (tile == null)
-            {
-                throw new ArgumentNullException(nameof(tile));
-            }
-
             if (_concealedTiles.Count + _declaredCombinations.Count * 3 != 13)
             {
                 throw new InvalidOperationException(Messages.InvalidDraw);
             }
 
+            LatestPick = tile ?? throw new ArgumentNullException(nameof(tile));
             _concealedTiles.Add(tile);
             _concealedTiles.Sort();
         }
