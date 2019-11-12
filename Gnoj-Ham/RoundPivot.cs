@@ -593,15 +593,16 @@ namespace Gnoj_Ham
                 tempListConcealed.Add(tileToSub);
             }
 
-            // Avoids red doras in the list returned.
+            // Avoids red doras in the list returned (if possible).
             var realSubPossibilities = new List<TilePivot>();
             foreach (TilePivot tile in subPossibilities.Distinct())
             {
+                TilePivot subTile = null;
                 if (tile.IsRedDora)
                 {
-                    TilePivot subTile = _hands[playerIndex].ConcealedTiles.FirstOrDefault(t => t == tile && !t.IsRedDora);
-                    realSubPossibilities.Add(subTile ?? tile);
+                    subTile = _hands[playerIndex].ConcealedTiles.FirstOrDefault(t => t == tile && !t.IsRedDora);
                 }
+                realSubPossibilities.Add(subTile ?? tile);
             }
 
             return realSubPossibilities;
