@@ -9,8 +9,9 @@ namespace Gnoj_Ham
     /// </summary>
     public static class ScoreTools
     {
-        // TODO : transform these constants into configuration.
         #region Points chart
+
+        // TODO : transform these constants into configuration.
 
         /// <summary>
         /// Riichi cost.
@@ -70,7 +71,7 @@ namespace Gnoj_Ham
         /// <param name="redDorasCount">Optionnal; red doras count.</param>
         /// <returns>The fan count.</returns>
         /// <exception cref="ArgumentNullException"><paramref name="yakus"/> is <c>Null</c>.</exception>
-        public static int GetFanCount(List<YakuPivot> yakus, bool concealed, int dorasCount = 0, int uraDorasCount = 0, int redDorasCount = 0)
+        public static int GetFanCount(IEnumerable<YakuPivot> yakus, bool concealed, int dorasCount = 0, int uraDorasCount = 0, int redDorasCount = 0)
         {
             if (yakus == null)
             {

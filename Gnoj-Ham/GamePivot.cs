@@ -141,26 +141,30 @@ namespace Gnoj_Ham
         /// Manages the end of a round.
         /// </summary>
         /// <remarks><see cref="Round"/> is set to <c>Null</c> to avoid any alteration.</remarks>
-        /// <param name="winnerPlayersIndex">List of winners index with list of yakus for each.</param>
+        /// <param name="winners">List of winners index.</param>
         /// <param name="loserPlayerIndex">Loser index, if any.</param>
-        /// <exception cref="ArgumentNullException"><paramref name="winnerPlayersIndex"/> is <c>Null</c>.</exception>
+        /// <exception cref="ArgumentNullException"><paramref name="winners"/> is <c>Null</c>.</exception>
         /// <exception cref="ArgumentException"><see cref="Messages.InvalidEndOfroundPlayer"/></exception>
-        public void EndOfRound(Dictionary<int, List<YakuPivot>> winnerPlayersIndex, int? loserPlayerIndex)
+        public void EndOfRound(List<int> winners, int? loserPlayerIndex)
         {
-            if (winnerPlayersIndex == null)
+            // TODO : move to round class
+
+            if (winners == null)
             {
-                throw new ArgumentNullException(nameof(winnerPlayersIndex));
+                throw new ArgumentNullException(nameof(winners));
             }
 
-            if (winnerPlayersIndex.Any(w => w.Key < 0 || w.Key > 3 || w.Value == null || w.Value.Count == 0))
+            if (winners.Any(w => w < 0 || w > 3
+                || Round.Hands.ElementAt(w).Yakus == null
+                || Round.Hands.ElementAt(w).Yakus.Count == 0))
             {
-                throw new ArgumentException(Messages.InvalidEndOfroundPlayer, nameof(winnerPlayersIndex));
+                throw new ArgumentException(Messages.InvalidEndOfroundPlayer, nameof(winners));
             }
 
             if ((loserPlayerIndex.HasValue && (loserPlayerIndex.Value < 0 || loserPlayerIndex.Value > 3))
-                || (winnerPlayersIndex.Count > 1 && !loserPlayerIndex.HasValue)
-                || (winnerPlayersIndex.Count == 0 && loserPlayerIndex.HasValue)
-                || (loserPlayerIndex.HasValue && winnerPlayersIndex.ContainsKey(loserPlayerIndex.Value)))
+                || (winners.Count > 1 && !loserPlayerIndex.HasValue)
+                || (winners.Count == 0 && loserPlayerIndex.HasValue)
+                || (loserPlayerIndex.HasValue && winners.Contains(loserPlayerIndex.Value)))
             {
                 throw new ArgumentException(Messages.InvalidEndOfroundPlayer, nameof(loserPlayerIndex));
             }
@@ -168,7 +172,7 @@ namespace Gnoj_Ham
             var pointsByPlayer = new Dictionary<int, int>();
 
             // Ryuukyoku (no winner).
-            if (winnerPlayersIndex.Count == 0)
+            if (winners.Count == 0)
             {
                 List<int> tenpaiPlayersIndex = Enumerable.Range(0, 4).Where(i => Round.IsTenpai(i)).ToList();
                 List<int> notTenpaiPlayersIndex = Enumerable.Range(0, 4).Except(tenpaiPlayersIndex).ToList();
@@ -187,23 +191,23 @@ namespace Gnoj_Ham
 
                 int eastOrLoserLostCumul = 0;
                 int notEastLostCumul = 0;
-                foreach (int pIndex in winnerPlayersIndex.Keys)
+                foreach (int pIndex in winners)
                 {
                     HandPivot phand = Round.Hands.ElementAt(pIndex);
 
                     int dorasCount = phand.AllTiles.Sum(t => Round.DoraIndicatorTiles.Take(Round.VisibleDorasCount).Count(d => t.IsDoraNext(d)));
-                    int uraDorasCount = winnerPlayersIndex[pIndex].Contains(YakuPivot.Riichi) || winnerPlayersIndex[pIndex].Contains(YakuPivot.DaburuRiichi) ?
+                    int uraDorasCount = phand.Yakus.Contains(YakuPivot.Riichi) || phand.Yakus.Contains(YakuPivot.DaburuRiichi) ?
                         phand.AllTiles.Sum(t => Round.UraDoraIndicatorTiles.Take(Round.VisibleDorasCount).Count(d => t.IsDoraNext(d))) : 0;
                     int redDorasCount = phand.AllTiles.Count(t => t.IsRedDora);
 
                     int fuCount = 0;
-                    int fanCount = ScoreTools.GetFanCount(winnerPlayersIndex[pIndex], phand.IsConcealed, dorasCount, uraDorasCount, redDorasCount);
+                    int fanCount = ScoreTools.GetFanCount(phand.Yakus, phand.IsConcealed, dorasCount, uraDorasCount, redDorasCount);
                     if (fanCount < 5)
                     {
                         fuCount = ScoreTools.GetFuCount(phand, !loserPlayerIndex.HasValue);
                     }
 
-                    Tuple<int, int> finalScore = ScoreTools.GetPoints(fanCount, fuCount, EastIndexTurnCount, winnerPlayersIndex.Count,
+                    Tuple<int, int> finalScore = ScoreTools.GetPoints(fanCount, fuCount, EastIndexTurnCount, winners.Count,
                         !loserPlayerIndex.HasValue, GetPlayerCurrentWind(pIndex), RiichiPendingCount);
                     
                     pointsByPlayer.Add(pIndex, finalScore.Item1 + finalScore.Item2 * 2);
@@ -219,7 +223,7 @@ namespace Gnoj_Ham
                 {
                     for (int pIndex = 0; pIndex < 4; pIndex++)
                     {
-                        if (!winnerPlayersIndex.ContainsKey(pIndex))
+                        if (!winners.Contains(pIndex))
                         {
                             pointsByPlayer.Add(pIndex, GetPlayerCurrentWind(pIndex) == WindPivot.East ? eastOrLoserLostCumul : notEastLostCumul);
                         }

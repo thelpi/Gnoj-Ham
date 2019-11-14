@@ -193,14 +193,14 @@ namespace Gnoj_HamView
         }
 
         // Manages ron and tsumo call opportunities.
-        private void WinOpeningManagement(List<YakuPivot> yakus, bool tsumo)
+        private void WinOpeningManagement(bool tsumo)
         {
-            if (yakus.Count > 0)
+            if (_game.Round.Hands.ElementAt(GamePivot.HUMAN_INDEX).IsComplete)
             {
                 MessageBoxResult mbRes = MessageBox.Show($"Declare {(tsumo ? "tsumo" : "ron")} ?", WINDOW_TITLE, MessageBoxButton.YesNo);
                 if (mbRes == MessageBoxResult.Yes)
                 {
-                    NewRound(new Dictionary<int, List<YakuPivot>> { { GamePivot.HUMAN_INDEX, yakus } }, null);
+                    NewRound(new List<int> { GamePivot.HUMAN_INDEX }, null);
                 }
             }
         }
@@ -262,7 +262,8 @@ namespace Gnoj_HamView
                 AddLatestCombinationToStack(GamePivot.HUMAN_INDEX);
                 SetActionButtonsVisibility(preDiscard: true);
                 SetDorasPanel();
-                WinOpeningManagement(_game.Round.CanCallTsumo(GamePivot.HUMAN_INDEX, true), true);
+                _game.Round.CanCallTsumo(GamePivot.HUMAN_INDEX, false);
+                WinOpeningManagement(true);
                 RiichiCallManagement(_game.Round.CanCallRiichi(GamePivot.HUMAN_INDEX));
             }
         }
@@ -342,7 +343,8 @@ namespace Gnoj_HamView
             }
             SetPlayersLed();
             SetActionButtonsVisibility(preDiscard: true);
-            WinOpeningManagement(_game.Round.CanCallTsumo(GamePivot.HUMAN_INDEX, false), true);
+            _game.Round.CanCallTsumo(GamePivot.HUMAN_INDEX, false);
+            WinOpeningManagement(true);
             RiichiCallManagement(_game.Round.CanCallRiichi(GamePivot.HUMAN_INDEX));
         }
 
@@ -400,7 +402,7 @@ namespace Gnoj_HamView
         }
 
         // Proceeds to new round.
-        private void NewRound(Dictionary<int, List<YakuPivot>> winners, int? loser)
+        private void NewRound(List<int> winners, int? loser)
         {
             MessageBox.Show("End of round !");
             _game.EndOfRound(winners, loser);
@@ -486,13 +488,13 @@ namespace Gnoj_HamView
                     Thread.Sleep(_cpuSpeedMs);
                     if (_game.Round.AutoPickAndDiscard())
                     {
-                        List<YakuPivot> yakus = _game.Round.CanCallRon(GamePivot.HUMAN_INDEX);
+                        _game.Round.CanCallRon(GamePivot.HUMAN_INDEX);
                         Dispatcher.Invoke(() =>
                         {
                             FillDiscardPanel(_game.Round.PreviousPlayerIndex);
                             FillHandPanel(_game.Round.PreviousPlayerIndex);
                             SetActionButtonsVisibility(cpuPlay: true);
-                            WinOpeningManagement(yakus, false);
+                            WinOpeningManagement(false);
                         });
                     }
                     else if (!_game.Round.IsWallExhaustion)
@@ -514,19 +516,19 @@ namespace Gnoj_HamView
                     else
                     {
                         List<TilePivot> tilesRiichi = _game.Round.CanCallRiichi(GamePivot.HUMAN_INDEX);
-                        List<YakuPivot> yakus = _game.Round.CanCallTsumo(GamePivot.HUMAN_INDEX, false);
+                        _game.Round.CanCallTsumo(GamePivot.HUMAN_INDEX, false);
                         Dispatcher.Invoke(() =>
                         {
                             StpPickP0.Children.Add(GenerateTileButton(pick, BtnDiscard_Click));
                             SetActionButtonsVisibility(preDiscard: true);
-                            WinOpeningManagement(yakus, true);
+                            WinOpeningManagement(true);
                             RiichiCallManagement(tilesRiichi);
                         });
                     }
                 }
                 else if (_game.Round.IsWallExhaustion)
                 {
-                    Dispatcher.Invoke(() => NewRound(new Dictionary<int, List<YakuPivot>>(), null));
+                    Dispatcher.Invoke(() => NewRound(new List<int>(), null));
                 }
             })
             .ContinueWith(task =>

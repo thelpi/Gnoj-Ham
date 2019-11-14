@@ -45,6 +45,10 @@ namespace Gnoj_Ham
         /// Draw type for <see cref="LatestTile"/>.
         /// </summary>
         public DrawTypePivot DrawType { get; private set; }
+        /// <summary>
+        /// <c>True</c> if nagashi mangan; <c>False</c> otherwise.
+        /// </summary>
+        public bool IsNagashiMangan { get; private set; }
 
         #endregion Embedded properties
 
@@ -60,7 +64,7 @@ namespace Gnoj_Ham
         /// <param name="isFirstOrLast">Optionnal; indicates a win at the first turn without any call made (<c>True</c>) or at the last tile of the round (<c>Null</c>); default value is <c>False</c>.</param>
         /// <param name="isRiichi">Optionnal; indicates if riichi (<c>True</c>) or riichi at first turn without any call made (<c>Null</c>); default value is <c>False</c>.</param>
         /// <param name="isIppatsu">Optionnal; indicates if it's a win by ippatsu (<paramref name="isRiichi"/> can't be <c>False</c> in such case); default value is <c>False</c>.</param>
-        /// <exception cref="ArgumentNullException"><paramref name="latestTile"/> is <c>Null</c>.</exception>
+        /// /// <exception cref="ArgumentNullException"><paramref name="latestTile"/> is <c>Null</c>.</exception>
         /// <exception cref="ArgumentException"><see cref="Messages.InvalidContextIppatsuValue"/></exception>
         public WinContextPivot(TilePivot latestTile, DrawTypePivot drawType, WindPivot dominantWind, WindPivot playerWind,
             bool? isFirstOrLast = false, bool? isRiichi = false, bool isIppatsu = false)
@@ -79,8 +83,50 @@ namespace Gnoj_Ham
             PlayerWind = playerWind;
             IsFirstTurnDraw = isFirstOrLast == true;
             DrawType = drawType;
+            IsNagashiMangan = false;
+        }
+
+        /// <summary>
+        /// Empty constructor. To use when <see cref="IsNagashiMangan"/> is <c>True</c>.
+        /// Every other properties are at their default value.
+        /// </summary>
+        public WinContextPivot()
+        {
+            // TODO
+            IsNagashiMangan = true;
         }
 
         #endregion Constructors
+
+        #region Public methods
+
+        /// <summary>
+        /// Checks if the context gives the yaku <see cref="YakuPivot.Tenhou"/>.
+        /// </summary>
+        /// <returns><c>True</c> if it gives the yaku; <c>False</c> otherwise.</returns>
+        public bool IsTenhou()
+        {
+            return IsFirstTurnDraw && PlayerWind == WindPivot.East && DrawType.IsSelfDraw();
+        }
+
+        /// <summary>
+        /// Checks if the context gives the yaku <see cref="YakuPivot.Chiihou"/>.
+        /// </summary>
+        /// <returns><c>True</c> if it gives the yaku; <c>False</c> otherwise.</returns>
+        public bool IsChiihou()
+        {
+            return IsFirstTurnDraw && PlayerWind != WindPivot.East && DrawType.IsSelfDraw();
+        }
+
+        /// <summary>
+        /// Checks if the context gives the yaku <see cref="YakuPivot.Renhou"/>.
+        /// </summary>
+        /// <returns><c>True</c> if it gives the yaku; <c>False</c> otherwise.</returns>
+        public bool IsRenhou()
+        {
+            return IsFirstTurnDraw && !DrawType.IsSelfDraw();
+        }
+
+        #endregion Public methods
     }
 }

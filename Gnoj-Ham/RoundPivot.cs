@@ -592,27 +592,27 @@ namespace Gnoj_Ham
         /// </summary>
         /// <param name="playerIndex">The player index.</param>
         /// <param name="isKanCompensation"><c>True</c> if the latest pick comes from a kan compensation.</param>
-        /// <returns>The optimal combination of <see cref="YakuPivot"/>; empty list if none.</returns>
-        public List<YakuPivot> CanCallTsumo(int playerIndex, bool isKanCompensation)
+        /// <returns><c>True</c> if ready for tsumo; <c>False</c> otherwise.</returns>
+        public bool CanCallTsumo(int playerIndex, bool isKanCompensation)
         {
             if (CurrentPlayerIndex != playerIndex || !_waitForDiscard)
             {
-                return new List<YakuPivot>();
+                return false;
             }
 
-            List<List<YakuPivot>> yakus = GetYakus(playerIndex,
+            SetYakus(playerIndex,
                 _hands[playerIndex].LatestPick,
                 isKanCompensation ? DrawTypePivot.Compensation : DrawTypePivot.Wall);
 
-            return YakuPivot.GetBestYakusFromList(yakus, _hands[playerIndex].IsConcealed);
+            return _hands[playerIndex].IsComplete;
         }
 
         /// <summary>
         /// Checks if the hand of the specified player is ready for calling ron.
         /// </summary>
         /// <param name="playerIndex">The player index.</param>
-        /// <returns>The optimal combination of <see cref="YakuPivot"/>; empty list if none.</returns>
-        public List<YakuPivot> CanCallRon(int playerIndex)
+        /// <returns><c>True</c> if ready to call ron; <c>False</c> otherwise.</returns>
+        public bool CanCallRon(int playerIndex)
         {
             TilePivot tile = _waitForDiscard ? null : _discards[PreviousPlayerIndex].LastOrDefault();
             bool forKokushiOnly = false;
@@ -634,21 +634,14 @@ namespace Gnoj_Ham
 
             if (tile == null)
             {
-                return new List<YakuPivot>();
+                return false;
             }
 
-            List<List<YakuPivot>> yakus = GetYakus(playerIndex, tile,
-                isChanka ? DrawTypePivot.OpponentKanCall : DrawTypePivot.OpponentDiscard);
+            SetYakus(playerIndex, tile, forKokushiOnly ? DrawTypePivot.OpponentKanCallConcealed : (isChanka ? DrawTypePivot.OpponentKanCallOpen : DrawTypePivot.OpponentDiscard));
 
-            if (yakus.Count == 0)
+            if (!_hands[playerIndex].IsComplete)
             {
-                return new List<YakuPivot>();
-            }
-
-            if (forKokushiOnly)
-            {
-                // Ron on closed kan is only possible for kokushi musou.
-                yakus.RemoveAll(ys => !ys.Any(y => y == YakuPivot.KokushiMusou));
+                return false;
             }
 
             // Furiten
@@ -656,7 +649,7 @@ namespace Gnoj_Ham
                 HandPivot.IsCompleteFull(new List<TilePivot>(_hands[playerIndex].ConcealedTiles) { t },
                     _hands[playerIndex].DeclaredCombinations.ToList())))
             {
-                return new List<YakuPivot>();
+                return false;
             }
 
             // Temporary furiten
@@ -669,12 +662,12 @@ namespace Gnoj_Ham
                     new List<TilePivot>(_hands[playerIndex].ConcealedTiles) { lastFromDiscard },
                     _hands[playerIndex].DeclaredCombinations.ToList()))
                 {
-                    return new List<YakuPivot>();
+                    return false;
                 }
                 i++;
             }
 
-            return YakuPivot.GetBestYakusFromList(yakus, _hands[CurrentPlayerIndex].IsConcealed);
+            return true;
         }
 
         /// <summary>
@@ -774,10 +767,10 @@ namespace Gnoj_Ham
             return historySinceLastTime.Count <= 3 && Enumerable.Range(0, 3).All(i => historySinceLastTime.Count <= i || historySinceLastTime[i] == playerIndex.RelativePlayerIndex(-(i + 1)));
         }
 
-        // Creates the context and calls "GetYakus" for the specified player.
-        private List<List<YakuPivot>> GetYakus(int playerIndex, TilePivot tile, DrawTypePivot drawType)
+        // Creates the context and calls "SetYakus" for the specified player.
+        private void SetYakus(int playerIndex, TilePivot tile, DrawTypePivot drawType)
         {
-            return _hands[playerIndex].GetYakus(new WinContextPivot(
+            _hands[playerIndex].SetYakus(new WinContextPivot(
                 latestTile: tile,
                 drawType: drawType,
                 dominantWind: _game.DominantWind,

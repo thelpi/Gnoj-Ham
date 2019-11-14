@@ -18,8 +18,12 @@
         /// </summary>
         OpponentDiscard,
         /// <summary>
-        /// From opponent's fourth tile while calling kan.
+        /// From opponent's fourth tile while calling concealed kan.
         /// </summary>
-        OpponentKanCall
+        OpponentKanCallConcealed,
+        /// <summary>
+        /// From opponent's fourth tile while calling opened kan.
+        /// </summary>
+        OpponentKanCallOpen
     }
 }
