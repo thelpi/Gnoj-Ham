@@ -55,6 +55,17 @@ namespace Gnoj_Ham
             }
         }
 
+        /// <summary>
+        /// Inferred; every tiles of the hand; concealed or not; into combination or not.
+        /// </summary>
+        public IReadOnlyCollection<TilePivot> AllTiles
+        {
+            get
+            {
+                return _declaredCombinations.SelectMany(t => t.Tiles).Concat(_concealedTiles).ToList();
+            }
+        }
+
         #endregion Inferred properties
 
         #region Constructors
@@ -880,6 +891,7 @@ namespace Gnoj_Ham
 
         #region Private methods
 
+        // Creates a declared combination from the specified tiles
         private void CheckTilesForCallAndExtractCombo(IEnumerable<TilePivot> tiles, int expectedCount, TilePivot tile, WindPivot? stolenFrom)
         {
             if (tiles.Count() < expectedCount)

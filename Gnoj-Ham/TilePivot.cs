@@ -346,5 +346,64 @@ namespace Gnoj_Ham
         }
 
         #endregion
+
+        #region Public methods
+
+        /// <summary>
+        /// Checks if this instance is dora when compared to another tile.
+        /// </summary>
+        /// <param name="other">The previous tile.</param>
+        /// <returns><c>True</c> if dora; <c>False</c> otherwise.</returns>
+        /// <exception cref="ArgumentNullException"><paramref name="other"/> is <c>Null</c>.</exception>
+        public bool IsDoraNext(TilePivot other)
+        {
+            if (other == null)
+            {
+                throw new ArgumentNullException(nameof(other));
+            }
+
+            if (other.Family != Family || other == this)
+            {
+                return false;
+            }
+
+            switch (Family)
+            {
+                case FamilyPivot.Dragon:
+                    if (other.Dragon.Value == DragonPivot.Red)
+                    {
+                        return Dragon.Value == DragonPivot.White;
+                    }
+                    else if (other.Dragon.Value == DragonPivot.White)
+                    {
+                        return Dragon.Value == DragonPivot.Green;
+                    }
+                    else
+                    {
+                        return Dragon.Value == DragonPivot.Red;
+                    }
+                case FamilyPivot.Wind:
+                    if (other.Wind.Value == WindPivot.East)
+                    {
+                        return Wind.Value == WindPivot.South;
+                    }
+                    else if (other.Wind.Value == WindPivot.South)
+                    {
+                        return Wind.Value == WindPivot.West;
+                    }
+                    else if (other.Wind.Value == WindPivot.West)
+                    {
+                        return Wind.Value == WindPivot.North;
+                    }
+                    else
+                    {
+                        return Wind.Value == WindPivot.East;
+                    }
+                default:
+                    return Number == (other.Number == 9 ? 1 : other.Number + 1);
+            }
+        }
+
+        #endregion Public methods
     }
 }

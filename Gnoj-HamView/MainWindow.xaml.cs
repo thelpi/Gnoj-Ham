@@ -351,7 +351,7 @@ namespace Gnoj_HamView
         {
             StpDoras.Children.Clear();
             
-            int concealedCount = 5 - (1 + (4 - _game.Round.CompensationTiles.Count));
+            int concealedCount = 5 - _game.Round.VisibleDorasCount;
             for (int i = 4; i >= 0; i--)
             {
                 StpDoras.Children.Add(GenerateTileButton(_game.Round.DoraIndicatorTiles.ElementAt(i), concealed: 5 - concealedCount <= i));

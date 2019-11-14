@@ -62,7 +62,7 @@ namespace Gnoj_Ham
             }
         }
         /// <summary>
-        /// Inferred; indicates the count of fans when concealed.
+        /// Inferred; indicates the fan count when concealed.
         /// </summary>
         public int ConcealedFanCount
         {

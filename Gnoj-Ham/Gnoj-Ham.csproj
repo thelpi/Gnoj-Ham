@@ -54,6 +54,7 @@
     </Compile>
     <Compile Include="PlayerPivot.cs" />
     <Compile Include="InitialPointsRulePivot.cs" />
+    <Compile Include="ScoreTools.cs" />
     <Compile Include="TileComboPivot.cs" />
     <Compile Include="TilePivot.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

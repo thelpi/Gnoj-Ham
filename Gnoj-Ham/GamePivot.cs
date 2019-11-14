@@ -47,6 +47,10 @@ namespace Gnoj_Ham
         /// </summary>
         public int EastIndexTurnCount { get; private set; }
         /// <summary>
+        /// Riichi pending count.
+        /// </summary>
+        public int RiichiPendingCount { get; private set; }
+        /// <summary>
         /// East rank (1, 2, 3, 4).
         /// </summary>
         public int EastRank { get; private set; }
@@ -119,6 +123,21 @@ namespace Gnoj_Ham
         #region Public methods
 
         /// <summary>
+        /// Adds a pending riichi.
+        /// </summary>
+        /// <param name="playerIndex">The player index.</param>
+        public void AddPendingRiichi(int playerIndex)
+        {
+            if (playerIndex < 0 || playerIndex > 3)
+            {
+                throw new ArgumentOutOfRangeException(nameof(playerIndex));
+            }
+
+            RiichiPendingCount++;
+            _players[playerIndex].AddPoints(-ScoreTools.RIICHI_COST);
+        }
+
+        /// <summary>
         /// Manages the end of a round.
         /// </summary>
         /// <remarks><see cref="Round"/> is set to <c>Null</c> to avoid any alteration.</remarks>
@@ -146,40 +165,74 @@ namespace Gnoj_Ham
                 throw new ArgumentException(Messages.InvalidEndOfroundPlayer, nameof(loserPlayerIndex));
             }
 
+            var pointsByPlayer = new Dictionary<int, int>();
+
             // Ryuukyoku (no winner).
             if (winnerPlayersIndex.Count == 0)
             {
                 List<int> tenpaiPlayersIndex = Enumerable.Range(0, 4).Where(i => Round.IsTenpai(i)).ToList();
+                List<int> notTenpaiPlayersIndex = Enumerable.Range(0, 4).Except(tenpaiPlayersIndex).ToList();
 
                 // Wind turns if East is not tenpai.
-                _isEndOfRoundWithTurningWind = !tenpaiPlayersIndex.Any(tpi => GetPlayerCurrentWind(tpi) == WindPivot.East);
+                _isEndOfRoundWithTurningWind = notTenpaiPlayersIndex.Any(tpi => GetPlayerCurrentWind(tpi) == WindPivot.East);
+                
+                Tuple<int, int> points = ScoreTools.GetRyuukyokuPoints(tenpaiPlayersIndex.Count);
 
-                int pointsAdd = 0;
-                int pointsRemove = 0;
-                if (tenpaiPlayersIndex.Count == 1)
-                {
-                    pointsAdd = 3000;
-                    pointsRemove = 1000;
-                }
-                else if (tenpaiPlayersIndex.Count == 2)
-                {
-                    pointsAdd = 1500;
-                    pointsRemove = 1500;
-                }
-                else if (tenpaiPlayersIndex.Count == 3)
-                {
-                    pointsAdd = 1000;
-                    pointsRemove = 3000;
-                }
-
-                tenpaiPlayersIndex.ForEach(i => _players[i].AddPoints(pointsAdd));
-                Enumerable.Range(0, 4).Where(i => !tenpaiPlayersIndex.Contains(i)).ToList().ForEach(i => _players[i].AddPoints(-pointsRemove));
+                tenpaiPlayersIndex.ForEach(i => pointsByPlayer.Add(i, points.Item1));
+                notTenpaiPlayersIndex.ForEach(i => pointsByPlayer.Add(i, points.Item2));
             }
             else
             {
+                // TODO : Sekinin barai :-(
 
+                int eastOrLoserLostCumul = 0;
+                int notEastLostCumul = 0;
+                foreach (int pIndex in winnerPlayersIndex.Keys)
+                {
+                    HandPivot phand = Round.Hands.ElementAt(pIndex);
+
+                    int dorasCount = phand.AllTiles.Sum(t => Round.DoraIndicatorTiles.Take(Round.VisibleDorasCount).Count(d => t.IsDoraNext(d)));
+                    int uraDorasCount = winnerPlayersIndex[pIndex].Contains(YakuPivot.Riichi) || winnerPlayersIndex[pIndex].Contains(YakuPivot.DaburuRiichi) ?
+                        phand.AllTiles.Sum(t => Round.UraDoraIndicatorTiles.Take(Round.VisibleDorasCount).Count(d => t.IsDoraNext(d))) : 0;
+                    int redDorasCount = phand.AllTiles.Count(t => t.IsRedDora);
+
+                    int fuCount = 0;
+                    int fanCount = ScoreTools.GetFanCount(winnerPlayersIndex[pIndex], phand.IsConcealed, dorasCount, uraDorasCount, redDorasCount);
+                    if (fanCount < 5)
+                    {
+                        fuCount = ScoreTools.GetFuCount(phand, !loserPlayerIndex.HasValue);
+                    }
+
+                    Tuple<int, int> finalScore = ScoreTools.GetPoints(fanCount, fuCount, EastIndexTurnCount, winnerPlayersIndex.Count,
+                        !loserPlayerIndex.HasValue, GetPlayerCurrentWind(pIndex), RiichiPendingCount);
+                    
+                    pointsByPlayer.Add(pIndex, finalScore.Item1 + finalScore.Item2 * 2);
+                    eastOrLoserLostCumul += finalScore.Item1;
+                    notEastLostCumul += finalScore.Item2;
+                }
+
+                if (loserPlayerIndex.HasValue)
+                {
+                    pointsByPlayer.Add(loserPlayerIndex.Value, eastOrLoserLostCumul);
+                }
+                else
+                {
+                    for (int pIndex = 0; pIndex < 4; pIndex++)
+                    {
+                        if (!winnerPlayersIndex.ContainsKey(pIndex))
+                        {
+                            pointsByPlayer.Add(pIndex, GetPlayerCurrentWind(pIndex) == WindPivot.East ? eastOrLoserLostCumul : notEastLostCumul);
+                        }
+                    }
+                }
+
+                RiichiPendingCount = 0;
             }
 
+            foreach (int pIndex in pointsByPlayer.Keys)
+            {
+                _players[pIndex].AddPoints(pointsByPlayer[pIndex]);
+            }
 
             Round = null;
         }
@@ -199,6 +252,7 @@ namespace Gnoj_Ham
                 {
                     EastRank = 1;
                     // TODO : west turn if everyone is between 20k and 30k
+                    // TODO : Riichi pending ?
                     if (DominantWind == WindPivot.South)
                     {
                         return;

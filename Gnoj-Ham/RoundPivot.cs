@@ -162,6 +162,17 @@ namespace Gnoj_Ham
             }
         }
 
+        /// <summary>
+        /// Inferred; count of visible doras.
+        /// </summary>
+        public int VisibleDorasCount
+        {
+            get
+            {
+                return 1 + (4 - _compensationTiles.Count);
+            }
+        }
+
         #endregion Inferred properties
 
         #region Constructors
@@ -493,6 +504,7 @@ namespace Gnoj_Ham
             }
             
             _riichis[playerIndex] = new Tuple<int, TilePivot, bool>(riichiTurnsCount, tile, isUninterruptedFirstTurn);
+            _game.AddPendingRiichi(playerIndex);
 
             return true;
         }
@@ -565,7 +577,7 @@ namespace Gnoj_Ham
                 || IsRiichi(playerIndex)
                 || !_hands[playerIndex].IsConcealed
                 || _wallTiles.Count < 4
-                || _game.Players.ElementAt(playerIndex).Points < 1000)
+                || _game.Players.ElementAt(playerIndex).Points < ScoreTools.RIICHI_COST)
             {
                 return new List<TilePivot>();
             }
@@ -587,7 +599,7 @@ namespace Gnoj_Ham
             {
                 return new List<YakuPivot>();
             }
-            
+
             List<List<YakuPivot>> yakus = GetYakus(playerIndex,
                 _hands[playerIndex].LatestPick,
                 isKanCompensation ? DrawTypePivot.Compensation : DrawTypePivot.Wall);
