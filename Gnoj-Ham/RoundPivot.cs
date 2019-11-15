@@ -611,8 +611,8 @@ namespace Gnoj_Ham
         /// Checks if the hand of the specified player is ready for calling ron.
         /// </summary>
         /// <param name="playerIndex">The player index.</param>
-        /// <returns><c>True</c> if ready to call ron; <c>False</c> otherwise.</returns>
-        public bool CanCallRon(int playerIndex)
+        /// <returns>Index of the player who suffers the ron; <c>Null</c> if none.</returns>
+        public int? CanCallRon(int playerIndex)
         {
             TilePivot tile = _waitForDiscard ? null : _discards[PreviousPlayerIndex].LastOrDefault();
             bool forKokushiOnly = false;
@@ -634,14 +634,14 @@ namespace Gnoj_Ham
 
             if (tile == null)
             {
-                return false;
+                return null;
             }
 
             SetYakus(playerIndex, tile, forKokushiOnly ? DrawTypePivot.OpponentKanCallConcealed : (isChanka ? DrawTypePivot.OpponentKanCallOpen : DrawTypePivot.OpponentDiscard));
 
             if (!_hands[playerIndex].IsComplete)
             {
-                return false;
+                return null;
             }
 
             // Furiten
@@ -649,7 +649,7 @@ namespace Gnoj_Ham
                 HandPivot.IsCompleteFull(new List<TilePivot>(_hands[playerIndex].ConcealedTiles) { t },
                     _hands[playerIndex].DeclaredCombinations.ToList())))
             {
-                return false;
+                return null;
             }
 
             // Temporary furiten
@@ -662,12 +662,12 @@ namespace Gnoj_Ham
                     new List<TilePivot>(_hands[playerIndex].ConcealedTiles) { lastFromDiscard },
                     _hands[playerIndex].DeclaredCombinations.ToList()))
                 {
-                    return false;
+                    return null;
                 }
                 i++;
             }
 
-            return true;
+            return PreviousPlayerIndex;
         }
 
         /// <summary>
@@ -818,6 +818,139 @@ namespace Gnoj_Ham
             return tiles;
         }
 
+        // Checks for a player with nagashi mangan.
+        private int CheckForNagashiMangan()
+        {
+            for (int i = 0; i < 4; i++)
+            {
+                bool fullTerminalsOrHonors = _discards[i].All(t => t.IsHonorOrTerminal);
+                bool noPlayerStealing = _hands[i].IsConcealed;
+                bool noOpponentStealing = !_hands.Where(h => _hands.IndexOf(h) != i).Any(h => h.DeclaredCombinations.Any(c => c.StolenFrom == _game.GetPlayerCurrentWind(i)));
+                if (fullTerminalsOrHonors && noPlayerStealing && noOpponentStealing)
+                {
+                    _hands[i].SetYakus(new WinContextPivot());
+                    // TODO manage several Nagashi Mangan.
+                    return i;
+                }
+            }
+
+            return -1;
+        }
+
         #endregion Private methods
+
+        #region Internal methods
+
+        /// <summary>
+        /// Manages the end of a round.
+        /// </summary>
+        /// <param name="loserPlayerIndex">Loser index, if any.</param>
+        /// <returns>An instance of <see cref="EndOfRoundInformationsPivot"/>.</returns>
+        /// <exception cref="ArgumentException"><see cref="Messages.InvalidEndOfroundPlayer"/></exception>
+        internal EndOfRoundInformationsPivot EndOfRound(int? loserPlayerIndex)
+        {
+            bool turnWind = false;
+            bool resetsRiichiCount = false;
+
+            List<int> winners = _hands.Where(h => h.IsComplete).Select(w => _hands.IndexOf(w)).ToList();
+
+            if ((loserPlayerIndex.HasValue && (loserPlayerIndex.Value < 0 || loserPlayerIndex.Value > 3))
+                || (winners.Count > 1 && !loserPlayerIndex.HasValue)
+                || (winners.Count == 0 && loserPlayerIndex.HasValue)
+                || (loserPlayerIndex.HasValue && winners.Contains(loserPlayerIndex.Value)))
+            {
+                throw new ArgumentException(Messages.InvalidEndOfroundPlayer, nameof(loserPlayerIndex));
+            }
+
+            if (winners.Count == 0)
+            {
+                int iNagashi = CheckForNagashiMangan();
+                if (iNagashi >= 0)
+                {
+                    winners.Add(iNagashi);
+                }
+            }
+
+            var pointsByPlayer = new Dictionary<int, int>();
+
+            // Ryuukyoku (no winner).
+            if (winners.Count == 0)
+            {
+                List<int> tenpaiPlayersIndex = Enumerable.Range(0, 4).Where(i => IsTenpai(i)).ToList();
+                List<int> notTenpaiPlayersIndex = Enumerable.Range(0, 4).Except(tenpaiPlayersIndex).ToList();
+
+                // Wind turns if East is not tenpai.
+                turnWind = notTenpaiPlayersIndex.Any(tpi => _game.GetPlayerCurrentWind(tpi) == WindPivot.East);
+
+                Tuple<int, int> points = ScoreTools.GetRyuukyokuPoints(tenpaiPlayersIndex.Count);
+
+                tenpaiPlayersIndex.ForEach(i => pointsByPlayer.Add(i, points.Item1));
+                notTenpaiPlayersIndex.ForEach(i => pointsByPlayer.Add(i, points.Item2));
+            }
+            else
+            {
+                turnWind = !winners.Any(w => _game.GetPlayerCurrentWind(w) == WindPivot.East);
+
+                // TODO : Sekinin barai :-(
+
+                int eastOrLoserLostCumul = 0;
+                int notEastLostCumul = 0;
+                foreach (int pIndex in winners)
+                {
+                    HandPivot phand = _hands[pIndex];
+
+                    // HACK : in case of ron, fix the "LatestPick" of the winning hand
+                    if (loserPlayerIndex.HasValue)
+                    {
+                        phand.SetFromRon(_discards[loserPlayerIndex.Value].Last());
+                    }
+
+                    int dorasCount = phand.AllTiles.Sum(t => DoraIndicatorTiles.Take(VisibleDorasCount).Count(d => t.IsDoraNext(d)));
+                    int uraDorasCount = phand.Yakus.Contains(YakuPivot.Riichi) || phand.Yakus.Contains(YakuPivot.DaburuRiichi) ?
+                        phand.AllTiles.Sum(t => UraDoraIndicatorTiles.Take(VisibleDorasCount).Count(d => t.IsDoraNext(d))) : 0;
+                    int redDorasCount = phand.AllTiles.Count(t => t.IsRedDora);
+
+                    int fuCount = 0;
+                    int fanCount = ScoreTools.GetFanCount(phand.Yakus, phand.IsConcealed, dorasCount, uraDorasCount, redDorasCount);
+                    if (fanCount < 5)
+                    {
+                        fuCount = ScoreTools.GetFuCount(phand, !loserPlayerIndex.HasValue, _game.DominantWind, _game.GetPlayerCurrentWind(pIndex));
+                    }
+
+                    Tuple<int, int> finalScore = ScoreTools.GetPoints(fanCount, fuCount, _game.EastIndexTurnCount, winners.Count,
+                        !loserPlayerIndex.HasValue, _game.GetPlayerCurrentWind(pIndex), _game.RiichiPendingCount);
+
+                    pointsByPlayer.Add(pIndex, finalScore.Item1 + finalScore.Item2 * 2);
+                    eastOrLoserLostCumul += finalScore.Item1;
+                    notEastLostCumul += finalScore.Item2;
+                }
+
+                if (loserPlayerIndex.HasValue)
+                {
+                    pointsByPlayer.Add(loserPlayerIndex.Value, eastOrLoserLostCumul);
+                }
+                else
+                {
+                    for (int pIndex = 0; pIndex < 4; pIndex++)
+                    {
+                        if (!winners.Contains(pIndex))
+                        {
+                            pointsByPlayer.Add(pIndex, _game.GetPlayerCurrentWind(pIndex) == WindPivot.East ? eastOrLoserLostCumul : notEastLostCumul);
+                        }
+                    }
+                }
+
+                resetsRiichiCount = true;
+            }
+
+            foreach (int pIndex in pointsByPlayer.Keys)
+            {
+                _game.Players.ElementAt(pIndex).AddPoints(pointsByPlayer[pIndex]);
+            }
+
+            return new EndOfRoundInformationsPivot(resetsRiichiCount, turnWind);
+        }
+
+        #endregion Internal methods
     }
 }

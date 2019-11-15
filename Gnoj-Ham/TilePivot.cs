@@ -404,6 +404,32 @@ namespace Gnoj_Ham
             }
         }
 
+        /// <summary>
+        /// Checks if the tile is on the closed edge of a sequence combination.
+        /// </summary>
+        /// <param name="combo">The combination.</param>
+        /// <returns><c>True</c> if on the closed edge; <c>False</c> otherwise.</returns>
+        public bool TileIsEdgeWait(TileComboPivot combo)
+        {
+            return combo != null && combo.IsSequence && combo.Tiles.Contains(this)
+                && (
+                    (combo.SequenceFirstNumber == 1 && combo.SequenceLastNumber == Number)
+                    || (combo.SequenceLastNumber == 9 && combo.SequenceFirstNumber == Number)
+                );
+        }
+
+        /// <summary>
+        /// Checks if the tile is in the middle of a sequence combination.
+        /// </summary>
+        /// <param name="combo">The combination.</param>
+        /// <returns><c>True</c> if in the middle; <c>False</c> otherwise.</returns>
+        public bool TileIsMiddleWait(TileComboPivot combo)
+        {
+            return combo != null && combo.IsSequence && combo.Tiles.Contains(this)
+                && combo.SequenceFirstNumber != Number
+                && combo.SequenceLastNumber != Number;
+        }
+
         #endregion Public methods
     }
 }

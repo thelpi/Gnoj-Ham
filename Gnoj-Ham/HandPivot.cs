@@ -396,6 +396,21 @@ namespace Gnoj_Ham
                 combinations.ToList()));
         }
 
+        /// <summary>
+        /// Checks if the hand contains a valuable pair (dragon, dominant wind, player wind).
+        /// </summary>
+        /// <param name="combinations">Lsit of combinations.</param>
+        /// <param name="dominantWind">The dominant wind.</param>
+        /// <param name="playerWind">The player wind.</param>
+        /// <returns><c>True</c> if vluable pair in the hand; <c>False</c> otherwise.</returns>
+        public static bool HandWithValuablePair(List<TileComboPivot> combinations, WindPivot dominantWind, WindPivot playerWind)
+        {
+            return combinations != null && combinations.Any(c => c.IsPair && (
+                c.Family == FamilyPivot.Dragon
+                || (c.Family == FamilyPivot.Wind && (c.Tiles.First().Wind == dominantWind || c.Tiles.First().Wind == playerWind))
+            ));
+        }
+
         #endregion Static methods
 
         #region Internal methods
@@ -666,6 +681,20 @@ namespace Gnoj_Ham
             return IsTenpai(ConcealedTiles, DeclaredCombinations, subTiles);
         }
 
+        /// <summary>
+        /// Sets <see cref="LatestPick"/> after a ron.
+        /// </summary>
+        /// <param name="ronTile">The ron tile.</param>
+        internal void SetFromRon(TilePivot ronTile)
+        {
+            if (Yakus == null || YakusCombinations == null || ronTile == null)
+            {
+                return;
+            }
+
+            LatestPick = ronTile;
+        }
+
         #endregion Internal methods
 
         #region Private methods
@@ -685,5 +714,44 @@ namespace Gnoj_Ham
         }
 
         #endregion
+
+        #region Public methods
+
+        /// <summary>
+        /// Checks if the hand has finished on a closed wait.
+        /// </summary>
+        /// <returns><c>True</c> if contains a closed wait; <c>False</c> otherwise.</returns>
+        public bool HandWithClosedWait()
+        {
+            if (YakusCombinations == null)
+            {
+                return false;
+            }
+
+            // The combination with the last pick.
+            TileComboPivot combo = YakusCombinations.FirstOrDefault(c => c.Tiles.Any(t => ReferenceEquals(t, LatestPick)));
+
+            if (combo == null || combo.IsBrelanOrSquare)
+            {
+                return false;
+            }
+
+            // Other concealed (and not declared) combinations with the same tile.
+            List<TileComboPivot> otherCombos =
+                YakusCombinations
+                    .Where(c => c != combo && !DeclaredCombinations.Contains(c) && c.Tiles.Contains(LatestPick))
+                    .ToList();
+
+            // The real "LatestPick" is closed...
+            bool isClosed = combo.IsPair || LatestPick.TileIsMiddleWait(combo) || LatestPick.TileIsEdgeWait(combo);
+
+            // .. but there might be not-closed alternatives with the same tile as "LatestPick" in other combination.
+            bool alternative1 = otherCombos.Any(c => c.IsBrelanOrSquare);
+            bool alternative2 = otherCombos.Any(c => c.IsSequence && !LatestPick.TileIsMiddleWait(c) && !LatestPick.TileIsEdgeWait(c));
+
+            return isClosed && !(alternative1 || alternative2);
+        }
+
+        #endregion Public methods
     }
 }

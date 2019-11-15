@@ -193,14 +193,14 @@ namespace Gnoj_HamView
         }
 
         // Manages ron and tsumo call opportunities.
-        private void WinOpeningManagement(bool tsumo)
+        private void WinOpeningManagement(int? loserPlayerIndex)
         {
             if (_game.Round.Hands.ElementAt(GamePivot.HUMAN_INDEX).IsComplete)
             {
-                MessageBoxResult mbRes = MessageBox.Show($"Declare {(tsumo ? "tsumo" : "ron")} ?", WINDOW_TITLE, MessageBoxButton.YesNo);
+                MessageBoxResult mbRes = MessageBox.Show($"Declare {(!loserPlayerIndex.HasValue ? "tsumo" : "ron")} ?", WINDOW_TITLE, MessageBoxButton.YesNo);
                 if (mbRes == MessageBoxResult.Yes)
                 {
-                    NewRound(new List<int> { GamePivot.HUMAN_INDEX }, null);
+                    NewRound(loserPlayerIndex);
                 }
             }
         }
@@ -263,7 +263,7 @@ namespace Gnoj_HamView
                 SetActionButtonsVisibility(preDiscard: true);
                 SetDorasPanel();
                 _game.Round.CanCallTsumo(GamePivot.HUMAN_INDEX, false);
-                WinOpeningManagement(true);
+                WinOpeningManagement(null);
                 RiichiCallManagement(_game.Round.CanCallRiichi(GamePivot.HUMAN_INDEX));
             }
         }
@@ -344,7 +344,7 @@ namespace Gnoj_HamView
             SetPlayersLed();
             SetActionButtonsVisibility(preDiscard: true);
             _game.Round.CanCallTsumo(GamePivot.HUMAN_INDEX, false);
-            WinOpeningManagement(true);
+            WinOpeningManagement(null);
             RiichiCallManagement(_game.Round.CanCallRiichi(GamePivot.HUMAN_INDEX));
         }
 
@@ -402,15 +402,17 @@ namespace Gnoj_HamView
         }
 
         // Proceeds to new round.
-        private void NewRound(List<int> winners, int? loser)
+        private void NewRound(int? loser)
         {
-            MessageBox.Show("End of round !");
-            _game.EndOfRound(winners, loser);
-            _game.NewRound();
-            if (_game.Round == null)
+            EndOfRoundInformationsPivot endOfRoundInfos = _game.NewRound(loser);
+            if (endOfRoundInfos.EndOfGame)
             {
-                MessageBox.Show("End of game !");
+                // TODO : show real screen
                 Close();
+            }
+            else
+            {
+                // TODO : show real screen
             }
             NewRoundRefresh();
             AutoSkip();
@@ -488,13 +490,13 @@ namespace Gnoj_HamView
                     Thread.Sleep(_cpuSpeedMs);
                     if (_game.Round.AutoPickAndDiscard())
                     {
-                        _game.Round.CanCallRon(GamePivot.HUMAN_INDEX);
+                        int? loserPlayerIndex = _game.Round.CanCallRon(GamePivot.HUMAN_INDEX);
                         Dispatcher.Invoke(() =>
                         {
                             FillDiscardPanel(_game.Round.PreviousPlayerIndex);
                             FillHandPanel(_game.Round.PreviousPlayerIndex);
                             SetActionButtonsVisibility(cpuPlay: true);
-                            WinOpeningManagement(false);
+                            WinOpeningManagement(loserPlayerIndex);
                         });
                     }
                     else if (!_game.Round.IsWallExhaustion)
@@ -521,14 +523,14 @@ namespace Gnoj_HamView
                         {
                             StpPickP0.Children.Add(GenerateTileButton(pick, BtnDiscard_Click));
                             SetActionButtonsVisibility(preDiscard: true);
-                            WinOpeningManagement(true);
+                            WinOpeningManagement(null);
                             RiichiCallManagement(tilesRiichi);
                         });
                     }
                 }
                 else if (_game.Round.IsWallExhaustion)
                 {
-                    Dispatcher.Invoke(() => NewRound(new List<int>(), null));
+                    Dispatcher.Invoke(() => NewRound(null));
                 }
             })
             .ContinueWith(task =>

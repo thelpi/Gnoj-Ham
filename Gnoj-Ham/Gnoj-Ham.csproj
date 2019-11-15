@@ -43,6 +43,7 @@
   <ItemGroup>
     <Compile Include="DragonPivot.cs" />
     <Compile Include="DrawTypePivot.cs" />
+    <Compile Include="EndOfRoundInformationsPivot.cs" />
     <Compile Include="RoundPivot.cs" />
     <Compile Include="GamePivot.cs" />
     <Compile Include="GlobalExtensions.cs" />

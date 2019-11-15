@@ -95,44 +95,46 @@ namespace Gnoj_Ham
         /// </summary>
         /// <param name="hand">The hand.</param>
         /// <param name="isTsumo"><c>True</c> if the winning tile is concealed; <c>False</c> otherwise.</param>
+        /// <param name="dominantWind">The dominant wind;</param>
+        /// <param name="playerWind">The player wind.</param>
         /// <exception cref="ArgumentNullException"><paramref name="hand"/> is <c>Null</c>.</exception>
-        public static int GetFuCount(HandPivot hand, bool isTsumo)
+        public static int GetFuCount(HandPivot hand, bool isTsumo, WindPivot dominantWind, WindPivot playerWind)
         {
             if (hand == null)
             {
                 throw new ArgumentNullException(nameof(hand));
             }
 
-            /*if (isChiitoi)
+            if (hand.Yakus.Any(y => y == YakuPivot.Chiitoitsu))
             {
                 return CHIITOI_FU;
-            }*/
-            
-            int fuCount =
-                hand.DeclaredCombinations.Count(c => c.IsSquare && c.HasTerminalOrHonor) * HONOR_KAN_FU
-                + hand.DeclaredCombinations.Count(c => c.IsSquare && !c.HasTerminalOrHonor) * REGULAR_KAN_FU
-                + hand.DeclaredCombinations.Count(c => c.IsBrelan && c.HasTerminalOrHonor) * HONOR_PON_FU
-                + hand.DeclaredCombinations.Count(c => c.IsBrelan && !c.HasTerminalOrHonor) * REGULAR_PON_FU;
+            }
 
-            /*if (isTsumo && !isPinfu)
+            int fuCount =
+                hand.YakusCombinations.Count(c => c.IsSquare && c.HasTerminalOrHonor) * HONOR_KAN_FU
+                + hand.YakusCombinations.Count(c => c.IsSquare && !c.HasTerminalOrHonor) * REGULAR_KAN_FU
+                + hand.YakusCombinations.Count(c => c.IsBrelan && c.HasTerminalOrHonor) * HONOR_PON_FU
+                + hand.YakusCombinations.Count(c => c.IsBrelan && !c.HasTerminalOrHonor) * REGULAR_PON_FU;
+
+            if (isTsumo && !hand.Yakus.Any(y => y == YakuPivot.Pinfu))
             {
                 fuCount += TSUMO_FU;
-            }*/
+            }
 
-            /*if (hand.LatestTileIsClosedWait)
-            {
-                fuCount += CLOSED_WAIT_FU;
-            }*/
-
-            /*if (hasValuablePair)
+            if (HandPivot.HandWithValuablePair(hand.YakusCombinations, dominantWind, playerWind))
             {
                 fuCount += VALUABLE_PAIR_FU;
-            }*/
+            }
 
-            /*if (fuCount == 0 && !isPinfu)
+            if (hand.HandWithClosedWait())
+            {
+                fuCount += CLOSED_WAIT_FU;
+            }
+
+            if (fuCount == 0 && !hand.Yakus.Any(y => y == YakuPivot.Pinfu))
             {
                 fuCount += OPEN_PINFU_FU;
-            }*/
+            }
 
             return (hand.IsConcealed && !isTsumo ? BASE_CONCEALED_RON_FU : BASE_FU) + fuCount;
         }

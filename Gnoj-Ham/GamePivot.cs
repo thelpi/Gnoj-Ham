@@ -19,8 +19,7 @@ namespace Gnoj_Ham
         #endregion Constants
 
         #region Embedded properties
-
-        private bool _isEndOfRoundWithTurningWind;
+        
         private readonly bool _withRedDoras;
         private readonly List<PlayerPivot> _players;
 
@@ -113,7 +112,6 @@ namespace Gnoj_Ham
             EastIndex = FirstEastIndex;
             EastRank = 1;
             _withRedDoras = withRedDoras;
-            _isEndOfRoundWithTurningWind = false;
 
             Round = new RoundPivot(this, EastIndex, _withRedDoras);
         }
@@ -138,115 +136,20 @@ namespace Gnoj_Ham
         }
 
         /// <summary>
-        /// Manages the end of a round.
+        /// Generates a new round. <see cref="Round"/> stays <c>Null</c> at the end of the game.
         /// </summary>
-        /// <remarks><see cref="Round"/> is set to <c>Null</c> to avoid any alteration.</remarks>
-        /// <param name="winners">List of winners index.</param>
-        /// <param name="loserPlayerIndex">Loser index, if any.</param>
-        /// <exception cref="ArgumentNullException"><paramref name="winners"/> is <c>Null</c>.</exception>
-        /// <exception cref="ArgumentException"><see cref="Messages.InvalidEndOfroundPlayer"/></exception>
-        public void EndOfRound(List<int> winners, int? loserPlayerIndex)
+        /// <param name="loserPlayerIndex">Loser player index; if any, otherwise <c>Null</c>.</param>
+        /// <returns>An instance of <see cref="EndOfRoundInformationsPivot"/>.</returns>
+        public EndOfRoundInformationsPivot NewRound(int? loserPlayerIndex)
         {
-            // TODO : move to round class
+            EndOfRoundInformationsPivot endOfRoundInformations = Round.EndOfRound(loserPlayerIndex);
 
-            if (winners == null)
+            if (endOfRoundInformations.ResetRiichiPendingCount)
             {
-                throw new ArgumentNullException(nameof(winners));
-            }
-
-            if (winners.Any(w => w < 0 || w > 3
-                || Round.Hands.ElementAt(w).Yakus == null
-                || Round.Hands.ElementAt(w).Yakus.Count == 0))
-            {
-                throw new ArgumentException(Messages.InvalidEndOfroundPlayer, nameof(winners));
-            }
-
-            if ((loserPlayerIndex.HasValue && (loserPlayerIndex.Value < 0 || loserPlayerIndex.Value > 3))
-                || (winners.Count > 1 && !loserPlayerIndex.HasValue)
-                || (winners.Count == 0 && loserPlayerIndex.HasValue)
-                || (loserPlayerIndex.HasValue && winners.Contains(loserPlayerIndex.Value)))
-            {
-                throw new ArgumentException(Messages.InvalidEndOfroundPlayer, nameof(loserPlayerIndex));
-            }
-
-            var pointsByPlayer = new Dictionary<int, int>();
-
-            // Ryuukyoku (no winner).
-            if (winners.Count == 0)
-            {
-                List<int> tenpaiPlayersIndex = Enumerable.Range(0, 4).Where(i => Round.IsTenpai(i)).ToList();
-                List<int> notTenpaiPlayersIndex = Enumerable.Range(0, 4).Except(tenpaiPlayersIndex).ToList();
-
-                // Wind turns if East is not tenpai.
-                _isEndOfRoundWithTurningWind = notTenpaiPlayersIndex.Any(tpi => GetPlayerCurrentWind(tpi) == WindPivot.East);
-                
-                Tuple<int, int> points = ScoreTools.GetRyuukyokuPoints(tenpaiPlayersIndex.Count);
-
-                tenpaiPlayersIndex.ForEach(i => pointsByPlayer.Add(i, points.Item1));
-                notTenpaiPlayersIndex.ForEach(i => pointsByPlayer.Add(i, points.Item2));
-            }
-            else
-            {
-                // TODO : Sekinin barai :-(
-
-                int eastOrLoserLostCumul = 0;
-                int notEastLostCumul = 0;
-                foreach (int pIndex in winners)
-                {
-                    HandPivot phand = Round.Hands.ElementAt(pIndex);
-
-                    int dorasCount = phand.AllTiles.Sum(t => Round.DoraIndicatorTiles.Take(Round.VisibleDorasCount).Count(d => t.IsDoraNext(d)));
-                    int uraDorasCount = phand.Yakus.Contains(YakuPivot.Riichi) || phand.Yakus.Contains(YakuPivot.DaburuRiichi) ?
-                        phand.AllTiles.Sum(t => Round.UraDoraIndicatorTiles.Take(Round.VisibleDorasCount).Count(d => t.IsDoraNext(d))) : 0;
-                    int redDorasCount = phand.AllTiles.Count(t => t.IsRedDora);
-
-                    int fuCount = 0;
-                    int fanCount = ScoreTools.GetFanCount(phand.Yakus, phand.IsConcealed, dorasCount, uraDorasCount, redDorasCount);
-                    if (fanCount < 5)
-                    {
-                        fuCount = ScoreTools.GetFuCount(phand, !loserPlayerIndex.HasValue);
-                    }
-
-                    Tuple<int, int> finalScore = ScoreTools.GetPoints(fanCount, fuCount, EastIndexTurnCount, winners.Count,
-                        !loserPlayerIndex.HasValue, GetPlayerCurrentWind(pIndex), RiichiPendingCount);
-                    
-                    pointsByPlayer.Add(pIndex, finalScore.Item1 + finalScore.Item2 * 2);
-                    eastOrLoserLostCumul += finalScore.Item1;
-                    notEastLostCumul += finalScore.Item2;
-                }
-
-                if (loserPlayerIndex.HasValue)
-                {
-                    pointsByPlayer.Add(loserPlayerIndex.Value, eastOrLoserLostCumul);
-                }
-                else
-                {
-                    for (int pIndex = 0; pIndex < 4; pIndex++)
-                    {
-                        if (!winners.Contains(pIndex))
-                        {
-                            pointsByPlayer.Add(pIndex, GetPlayerCurrentWind(pIndex) == WindPivot.East ? eastOrLoserLostCumul : notEastLostCumul);
-                        }
-                    }
-                }
-
                 RiichiPendingCount = 0;
             }
 
-            foreach (int pIndex in pointsByPlayer.Keys)
-            {
-                _players[pIndex].AddPoints(pointsByPlayer[pIndex]);
-            }
-
-            Round = null;
-        }
-
-        /// <summary>
-        /// Generates a new round. <see cref="Round"/> stays <c>Null</c> at the end of the game.
-        /// </summary>
-        public void NewRound()
-        {
-            if (_isEndOfRoundWithTurningWind)
+            if (endOfRoundInformations.ToNextEast)
             {
                 EastIndex = EastIndex.RelativePlayerIndex(1);
                 EastIndexTurnCount = 1;
@@ -259,7 +162,8 @@ namespace Gnoj_Ham
                     // TODO : Riichi pending ?
                     if (DominantWind == WindPivot.South)
                     {
-                        return;
+                        endOfRoundInformations.EndOfGame = true;
+                        return endOfRoundInformations;
                     }
                     DominantWind = WindPivot.South;
                 }
@@ -270,6 +174,8 @@ namespace Gnoj_Ham
             }
 
             Round = new RoundPivot(this, EastIndex, _withRedDoras);
+
+            return endOfRoundInformations;
         }
 
         /// <summary>

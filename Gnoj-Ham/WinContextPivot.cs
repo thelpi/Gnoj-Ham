@@ -92,7 +92,6 @@ namespace Gnoj_Ham
         /// </summary>
         public WinContextPivot()
         {
-            // TODO
             IsNagashiMangan = true;
         }
 

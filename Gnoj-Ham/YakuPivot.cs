@@ -567,10 +567,9 @@ namespace Gnoj_Ham
                 else if (yaku == Pinfu)
                 {
                     addYaku = combinationsSequence.Count(c => c.IsSequence && c.IsConcealed) == 4
-                        && combinationsSequence.Any(c => c.IsSequence && c.Family == context.LatestTile.Family && (
-                            c.SequenceFirstNumber == context.LatestTile.Number
-                            || c.SequenceLastNumber == context.LatestTile.Number
-                        ));
+                        && !HandPivot.HandWithValuablePair(combinationsSequence, context.DominantWind, context.PlayerWind)
+                        && combinationsSequence.Any(c => c.IsSequence && c.Tiles.Contains(context.LatestTile)
+                            && !context.LatestTile.TileIsEdgeWait(c) && !context.LatestTile.TileIsMiddleWait(c));
                 }
                 else if (yaku == Iipeikou)
                 {
