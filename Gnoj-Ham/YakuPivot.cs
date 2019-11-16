@@ -661,7 +661,7 @@ namespace Gnoj_Ham
                 {
                     addYaku = combinationsSequence.All(c => c.IsConcealed)
                         && combinationsSequence.Count(c => c.IsSequence) == 4
-                        && combinationsSequence.Where(c => c.IsSequence).Distinct().Count() == 2;
+                        && combinationsSequence.Where(c => c.IsSequence).Distinct().Count() <= 2;
                 }
                 else if (yaku == Junchan)
                 {

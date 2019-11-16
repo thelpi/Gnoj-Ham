@@ -204,7 +204,11 @@ namespace Gnoj_Ham
                 throw new ArgumentOutOfRangeException(nameof(firstPlayerIndex));
             }
 
+#if DEBUG
             _fullTilesList = TilePivot.GetCompleteSet(withRedDoras).OrderBy(t => 1).ToList();
+#else
+            _fullTilesList = TilePivot.GetCompleteSet(withRedDoras).OrderBy(t => GlobalTools.Randomizer.NextDouble()).ToList();
+#endif
 
             _hands = Enumerable.Range(0, 4).Select(i => new HandPivot(_fullTilesList.GetRange(i * 13, 13))).ToList();
             _discards = Enumerable.Range(0, 4).Select(i => new List<TilePivot>()).ToList();
@@ -224,9 +228,9 @@ namespace Gnoj_Ham
             _game = game;
         }
 
-        #endregion Constructors
+#endregion Constructors
 
-        #region Public methods
+#region Public methods
 
         /// <summary>
         /// Tries to pick the next tile from the wall.
@@ -705,9 +709,9 @@ namespace Gnoj_Ham
             return _hands[playerIndex].IsTenpai(_fullTilesList);
         }
 
-        #endregion Public methods
+#endregion Public methods
 
-        #region Private methods
+#region Private methods
 
         // Checks if the hand of the specified player is riichi and list tiles which can be discarded.
         private List<TilePivot> ExtractRiichiPossibilities(int playerIndex)
@@ -829,9 +833,9 @@ namespace Gnoj_Ham
             return -1;
         }
 
-        #endregion Private methods
+#endregion Private methods
 
-        #region Internal methods
+#region Internal methods
 
         /// <summary>
         /// Manages the end of a round.
@@ -909,12 +913,8 @@ namespace Gnoj_Ham
                         displayUraDoraTiles = true;
                     }
 
-                    int fuCount = 0;
                     int fanCount = ScoreTools.GetFanCount(phand.Yakus, phand.IsConcealed, dorasCount, uraDorasCount, redDorasCount);
-                    if (fanCount < 5)
-                    {
-                        fuCount = ScoreTools.GetFuCount(phand, !loserPlayerIndex.HasValue, _game.DominantWind, _game.GetPlayerCurrentWind(pIndex));
-                    }
+                    int fuCount = ScoreTools.GetFuCount(phand, !loserPlayerIndex.HasValue, _game.DominantWind, _game.GetPlayerCurrentWind(pIndex));
 
                     Tuple<int, int> finalScore = ScoreTools.GetPoints(fanCount, fuCount, _game.EastIndexTurnCount - 1, winners.Count,
                         !loserPlayerIndex.HasValue, _game.GetPlayerCurrentWind(pIndex));
@@ -958,6 +958,6 @@ namespace Gnoj_Ham
                 _game.PendingRiichiCount, DoraIndicatorTiles, UraDoraIndicatorTiles, VisibleDorasCount);
         }
 
-        #endregion Internal methods
+#endregion Internal methods
     }
 }
