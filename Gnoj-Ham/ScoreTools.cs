@@ -218,7 +218,9 @@ namespace Gnoj_Ham
                 fuCount += OPEN_PINFU_FU;
             }
 
-            return (hand.IsConcealed && !isTsumo ? BASE_CONCEALED_RON_FU : BASE_FU) + fuCount;
+            int baseFu = (hand.IsConcealed && !isTsumo ? BASE_CONCEALED_RON_FU : BASE_FU) + fuCount;
+
+            return Convert.ToInt32(Math.Ceiling(baseFu / (decimal)10) * 10);
         }
 
         /// <summary>

@@ -10,7 +10,7 @@
         WindowStartupLocation="CenterScreen"
         SizeToContent="WidthAndHeight"
         Background="Gainsboro"
-        Title="Game configuration">
+        Title="New game">
     <Window.Resources>
         <cvt:CpuSpeedConverter x:Key="CpuSpeedConverter" />
         <cvt:InitialPointsRuleConverter x:Key="InitialPointsRuleConverter" />

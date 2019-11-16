@@ -46,9 +46,9 @@ namespace Gnoj_Ham
         /// </summary>
         public int EastIndexTurnCount { get; private set; }
         /// <summary>
-        /// Riichi pending count.
+        /// Pending riichi count.
         /// </summary>
-        public int RiichiPendingCount { get; private set; }
+        public int PendingRiichiCount { get; private set; }
         /// <summary>
         /// East rank (1, 2, 3, 4).
         /// </summary>
@@ -131,7 +131,7 @@ namespace Gnoj_Ham
                 throw new ArgumentOutOfRangeException(nameof(playerIndex));
             }
 
-            RiichiPendingCount++;
+            PendingRiichiCount++;
             _players[playerIndex].AddPoints(-ScoreTools.RIICHI_COST);
         }
 
@@ -146,7 +146,7 @@ namespace Gnoj_Ham
 
             if (endOfRoundInformations.ResetRiichiPendingCount)
             {
-                RiichiPendingCount = 0;
+                PendingRiichiCount = 0;
             }
 
             if (endOfRoundInformations.ToNextEast)

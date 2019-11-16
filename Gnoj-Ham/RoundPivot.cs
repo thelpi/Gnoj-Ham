@@ -843,6 +843,7 @@ namespace Gnoj_Ham
         {
             bool turnWind = false;
             bool resetsRiichiCount = false;
+            bool displayUraDoraTiles = false;
 
             List<int> winners = _hands.Where(h => h.IsComplete).Select(w => _hands.IndexOf(w)).ToList();
 
@@ -862,8 +863,8 @@ namespace Gnoj_Ham
                     winners.Add(iNagashi);
                 }
             }
-
-            var pointsByPlayer = new Dictionary<int, int>();
+            
+            var playerInfos = new List<EndOfRoundInformationsPivot.PlayerInformationsPivot>();
 
             // Ryuukyoku (no winner).
             if (winners.Count == 0)
@@ -876,8 +877,8 @@ namespace Gnoj_Ham
 
                 Tuple<int, int> points = ScoreTools.GetRyuukyokuPoints(tenpaiPlayersIndex.Count);
 
-                tenpaiPlayersIndex.ForEach(i => pointsByPlayer.Add(i, points.Item1));
-                notTenpaiPlayersIndex.ForEach(i => pointsByPlayer.Add(i, points.Item2));
+                tenpaiPlayersIndex.ForEach(i => playerInfos.Add(new EndOfRoundInformationsPivot.PlayerInformationsPivot(i, points.Item1)));
+                notTenpaiPlayersIndex.ForEach(i => playerInfos.Add(new EndOfRoundInformationsPivot.PlayerInformationsPivot(i, points.Item2)));
             }
             else
             {
@@ -902,6 +903,11 @@ namespace Gnoj_Ham
                         phand.AllTiles.Sum(t => UraDoraIndicatorTiles.Take(VisibleDorasCount).Count(d => t.IsDoraNext(d))) : 0;
                     int redDorasCount = phand.AllTiles.Count(t => t.IsRedDora);
 
+                    if (!displayUraDoraTiles && uraDorasCount > 0)
+                    {
+                        displayUraDoraTiles = true;
+                    }
+
                     int fuCount = 0;
                     int fanCount = ScoreTools.GetFanCount(phand.Yakus, phand.IsConcealed, dorasCount, uraDorasCount, redDorasCount);
                     if (fanCount < 5)
@@ -909,20 +915,24 @@ namespace Gnoj_Ham
                         fuCount = ScoreTools.GetFuCount(phand, !loserPlayerIndex.HasValue, _game.DominantWind, _game.GetPlayerCurrentWind(pIndex));
                     }
 
-                    Tuple<int, int> finalScore = ScoreTools.GetPoints(fanCount, fuCount, _game.EastIndexTurnCount, winners.Count,
+                    Tuple<int, int> finalScore = ScoreTools.GetPoints(fanCount, fuCount, _game.EastIndexTurnCount - 1, winners.Count,
                         !loserPlayerIndex.HasValue, _game.GetPlayerCurrentWind(pIndex));
 
                     // TODO: if RiichiPendingCount si not a multiple of 3, and there're three winners, it doesn't work well !
-                    int riichiPart = _game.RiichiPendingCount * ScoreTools.RIICHI_COST / pointsByPlayer.Count;
+                    int riichiPart = _game.PendingRiichiCount * ScoreTools.RIICHI_COST / winners.Count;
 
-                    pointsByPlayer.Add(pIndex, finalScore.Item1 + finalScore.Item2 * 2 + riichiPart);
-                    eastOrLoserLostCumul += finalScore.Item1;
-                    notEastLostCumul += finalScore.Item2;
+                    playerInfos.Add(new EndOfRoundInformationsPivot.PlayerInformationsPivot(
+                        pIndex, fanCount, fuCount, phand.Yakus, phand.IsConcealed,
+                        finalScore.Item1 + finalScore.Item2 * 2 + riichiPart,
+                        dorasCount, uraDorasCount, redDorasCount));
+
+                    eastOrLoserLostCumul -= finalScore.Item1;
+                    notEastLostCumul -= finalScore.Item2;
                 }
 
                 if (loserPlayerIndex.HasValue)
                 {
-                    pointsByPlayer.Add(loserPlayerIndex.Value, eastOrLoserLostCumul);
+                    playerInfos.Add(new EndOfRoundInformationsPivot.PlayerInformationsPivot(loserPlayerIndex.Value, eastOrLoserLostCumul));
                 }
                 else
                 {
@@ -930,20 +940,20 @@ namespace Gnoj_Ham
                     {
                         if (!winners.Contains(pIndex))
                         {
-                            pointsByPlayer.Add(pIndex, _game.GetPlayerCurrentWind(pIndex) == WindPivot.East ? eastOrLoserLostCumul : notEastLostCumul);
+                            playerInfos.Add(new EndOfRoundInformationsPivot.PlayerInformationsPivot(pIndex, _game.GetPlayerCurrentWind(pIndex) == WindPivot.East ? eastOrLoserLostCumul : notEastLostCumul));
                         }
                     }
                 }
 
                 resetsRiichiCount = true;
             }
-
-            foreach (int pIndex in pointsByPlayer.Keys)
+            
+            foreach (EndOfRoundInformationsPivot.PlayerInformationsPivot p in playerInfos)
             {
-                _game.Players.ElementAt(pIndex).AddPoints(pointsByPlayer[pIndex]);
+                _game.Players.ElementAt(p.Index).AddPoints(p.PointsGain);
             }
 
-            return new EndOfRoundInformationsPivot(resetsRiichiCount, turnWind);
+            return new EndOfRoundInformationsPivot(resetsRiichiCount, turnWind, displayUraDoraTiles, playerInfos, _game.EastIndexTurnCount - 1, _game.PendingRiichiCount);
         }
 
         #endregion Internal methods

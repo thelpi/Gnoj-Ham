@@ -330,6 +330,19 @@ namespace Gnoj_Ham
 
         #region Constants
 
+        /// <summary>
+        /// Dora display name.
+        /// </summary>
+        public const string Dora = "Dora";
+        /// <summary>
+        /// Ura dora display name.
+        /// </summary>
+        public const string UraDora = "Uradora";
+        /// <summary>
+        /// Red dora display name.
+        /// </summary>
+        public const string RedDora = "Akadora";
+
         private const string KOKUSHI_MUSOU = "Kokushi musou";
         private const string DAISANGEN = "Daisangen";
         private const string SUUANKOU = "Suuankou";

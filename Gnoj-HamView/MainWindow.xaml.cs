@@ -17,11 +17,7 @@ namespace Gnoj_HamView
     /// </summary>
     public partial class MainWindow : Window
     {
-        private const int TILE_WIDTH = 45;
-        private const int TILE_HEIGHT = 60;
-        private const int DEFAULT_TILE_MARGIN = 10;
         private const string WINDOW_TITLE = "Gnoj-Ham";
-        private const string CONCEALED_TILE_RSC_NAME = "concealed";
 
         private readonly GamePivot _game;
         private readonly int _cpuSpeedMs;
@@ -254,14 +250,14 @@ namespace Gnoj_HamView
             else
             {
                 FillHandPanel(GamePivot.HUMAN_INDEX, compensationTile);
-                StpPickP0.Children.Add(GenerateTileButton(compensationTile, BtnDiscard_Click));
+                StpPickP0.Children.Add(compensationTile.GenerateTileButton(BtnDiscard_Click));
                 if (previousPlayerIndex.HasValue)
                 {
                     FillDiscardPanel(previousPlayerIndex.Value);
                 }
                 AddLatestCombinationToStack(GamePivot.HUMAN_INDEX);
                 SetActionButtonsVisibility(preDiscard: true);
-                SetDorasPanel();
+                StpDoras.SetDorasPanel(_game.Round.DoraIndicatorTiles, _game.Round.VisibleDorasCount);
                 _game.Round.CanCallTsumo(GamePivot.HUMAN_INDEX, false);
                 WinOpeningManagement(null);
                 RiichiCallManagement(_game.Round.CanCallRiichi(GamePivot.HUMAN_INDEX));
@@ -273,19 +269,19 @@ namespace Gnoj_HamView
         {
             Title = WINDOW_TITLE;
 
-            Cod0.Width = new GridLength(TILE_HEIGHT + DEFAULT_TILE_MARGIN);
-            Cod1.Width = new GridLength(TILE_HEIGHT + DEFAULT_TILE_MARGIN);
-            Cod2.Width = new GridLength((TILE_HEIGHT * 3) + (DEFAULT_TILE_MARGIN * 2));
-            Cod4.Width = new GridLength((TILE_HEIGHT * 3) + (DEFAULT_TILE_MARGIN * 2));
-            Cod5.Width = new GridLength(TILE_HEIGHT + DEFAULT_TILE_MARGIN);
-            Cod6.Width = new GridLength(TILE_HEIGHT + DEFAULT_TILE_MARGIN);
+            Cod0.Width = new GridLength(GraphicTools.TILE_HEIGHT + GraphicTools.DEFAULT_TILE_MARGIN);
+            Cod1.Width = new GridLength(GraphicTools.TILE_HEIGHT + GraphicTools.DEFAULT_TILE_MARGIN);
+            Cod2.Width = new GridLength((GraphicTools.TILE_HEIGHT * 3) + (GraphicTools.DEFAULT_TILE_MARGIN * 2));
+            Cod4.Width = new GridLength((GraphicTools.TILE_HEIGHT * 3) + (GraphicTools.DEFAULT_TILE_MARGIN * 2));
+            Cod5.Width = new GridLength(GraphicTools.TILE_HEIGHT + GraphicTools.DEFAULT_TILE_MARGIN);
+            Cod6.Width = new GridLength(GraphicTools.TILE_HEIGHT + GraphicTools.DEFAULT_TILE_MARGIN);
 
-            Rod0.Height = new GridLength(TILE_HEIGHT + DEFAULT_TILE_MARGIN);
-            Rod1.Height = new GridLength(TILE_HEIGHT + DEFAULT_TILE_MARGIN);
-            Rod2.Height = new GridLength((TILE_HEIGHT * 3) + (DEFAULT_TILE_MARGIN * 2));
-            Rod4.Height = new GridLength((TILE_HEIGHT * 3) + (DEFAULT_TILE_MARGIN * 2));
-            Rod5.Height = new GridLength(TILE_HEIGHT + DEFAULT_TILE_MARGIN);
-            Rod6.Height = new GridLength(TILE_HEIGHT + DEFAULT_TILE_MARGIN);
+            Rod0.Height = new GridLength(GraphicTools.TILE_HEIGHT + GraphicTools.DEFAULT_TILE_MARGIN);
+            Rod1.Height = new GridLength(GraphicTools.TILE_HEIGHT + GraphicTools.DEFAULT_TILE_MARGIN);
+            Rod2.Height = new GridLength((GraphicTools.TILE_HEIGHT * 3) + (GraphicTools.DEFAULT_TILE_MARGIN * 2));
+            Rod4.Height = new GridLength((GraphicTools.TILE_HEIGHT * 3) + (GraphicTools.DEFAULT_TILE_MARGIN * 2));
+            Rod5.Height = new GridLength(GraphicTools.TILE_HEIGHT + GraphicTools.DEFAULT_TILE_MARGIN);
+            Rod6.Height = new GridLength(GraphicTools.TILE_HEIGHT + GraphicTools.DEFAULT_TILE_MARGIN);
 
             for (int i = 0; i < _game.Players.Count; i++)
             {
@@ -294,11 +290,11 @@ namespace Gnoj_HamView
                     StackPanel panel = FindName($"StpP{i}Discard{j}") as StackPanel;
                     if (i % 2 == 0)
                     {
-                        panel.Height = TILE_HEIGHT + (0.5 * DEFAULT_TILE_MARGIN);
+                        panel.Height = GraphicTools.TILE_HEIGHT + (0.5 * GraphicTools.DEFAULT_TILE_MARGIN);
                     }
                     else
                     {
-                        panel.Width = TILE_HEIGHT + (0.5 * DEFAULT_TILE_MARGIN);
+                        panel.Width = GraphicTools.TILE_HEIGHT + (0.5 * GraphicTools.DEFAULT_TILE_MARGIN);
                     }
                 }
             }
@@ -321,7 +317,7 @@ namespace Gnoj_HamView
             {
                 if (excludedTile == null || !ReferenceEquals(excludedTile, tile))
                 {
-                    panel.Children.Add(GenerateTileButton(tile, isHuman && _game.Round.Riichis.ElementAt(pIndex).Item1 < 0 ? BtnDiscard_Click : (RoutedEventHandler)null, (Angle)pIndex, !isHuman));
+                    panel.Children.Add(tile.GenerateTileButton(isHuman && _game.Round.Riichis.ElementAt(pIndex).Item1 < 0 ? BtnDiscard_Click : (RoutedEventHandler)null, (Angle)pIndex, !isHuman));
                 }
             }
         }
@@ -329,7 +325,7 @@ namespace Gnoj_HamView
         // Resets and refills every panels at a new round.
         private void NewRoundRefresh()
         {
-            SetDorasPanel();
+            StpDoras.SetDorasPanel(_game.Round.DoraIndicatorTiles, _game.Round.VisibleDorasCount);
             LblDominantWind.Content = _game.DominantWind.ToString().First();
             LblEastTurnCount.Content = _game.EastRank;
             for (int pIndex = 0; pIndex < _game.Players.Count; pIndex++)
@@ -346,18 +342,6 @@ namespace Gnoj_HamView
             _game.Round.CanCallTsumo(GamePivot.HUMAN_INDEX, false);
             WinOpeningManagement(null);
             RiichiCallManagement(_game.Round.CanCallRiichi(GamePivot.HUMAN_INDEX));
-        }
-
-        // resets the doras panel.
-        private void SetDorasPanel()
-        {
-            StpDoras.Children.Clear();
-            
-            int concealedCount = 5 - _game.Round.VisibleDorasCount;
-            for (int i = 4; i >= 0; i--)
-            {
-                StpDoras.Children.Add(GenerateTileButton(_game.Round.DoraIndicatorTiles.ElementAt(i), concealed: 5 - concealedCount <= i));
-            }
         }
 
         // Resets the LED associated to each player.
@@ -391,11 +375,11 @@ namespace Gnoj_HamView
                 }
                 if (reversed)
                 {
-                    panel.Children.Insert(0, GenerateTileButton(tile, angle: angle));
+                    panel.Children.Insert(0, tile.GenerateTileButton(angle: angle));
                 }
                 else
                 {
-                    panel.Children.Add(GenerateTileButton(tile, angle: angle));
+                    panel.Children.Add(tile.GenerateTileButton(angle: angle));
                 }
                 i++;
             }
@@ -405,44 +389,13 @@ namespace Gnoj_HamView
         private void NewRound(int? loser)
         {
             EndOfRoundInformationsPivot endOfRoundInfos = _game.NewRound(loser);
+            new ScoreWindow(_game, endOfRoundInfos).ShowDialog();
             if (endOfRoundInfos.EndOfGame)
             {
-                // TODO : show real screen
                 Close();
-            }
-            else
-            {
-                // TODO : show real screen
             }
             NewRoundRefresh();
             AutoSkip();
-        }
-
-        // Generates a button which represents a tile.
-        private Button GenerateTileButton(TilePivot tile, RoutedEventHandler handler = null, Angle angle = Angle.A0, bool concealed = false)
-        {
-            string rscName = concealed ? CONCEALED_TILE_RSC_NAME : tile.ToString();
-
-            System.Drawing.Bitmap tileBitmap = Properties.Resources.ResourceManager.GetObject(rscName) as System.Drawing.Bitmap;
-
-            var button = new Button
-            {
-                Height = angle == Angle.A0 || angle == Angle.A180 ? TILE_HEIGHT : TILE_WIDTH,
-                Width = angle == Angle.A0 || angle == Angle.A180 ? TILE_WIDTH : TILE_HEIGHT,
-                Content = new Image
-                {
-                    Source = tileBitmap.ToBitmapImage(),
-                    LayoutTransform = new RotateTransform(Convert.ToDouble(angle.ToString().Replace("A", string.Empty)))
-                },
-                Tag = tile
-            };
-
-            if (handler != null)
-            {
-                button.Click += handler;
-            }
-
-            return button;
         }
 
         // Adds to the player stack its last combination.
@@ -468,8 +421,7 @@ namespace Gnoj_HamView
             int i = 0;
             foreach (KeyValuePair<TilePivot, bool> tileKvp in combo.GetSortedTilesForDisplay(pWind))
             {
-                panel.Children.Add(GenerateTileButton(tileKvp.Key,
-                    null,
+                panel.Children.Add(tileKvp.Key.GenerateTileButton(null,
                     (Angle)(tileKvp.Value ? pIndex.RelativePlayerIndex(1): pIndex),
                     combo.IsSquare && combo.IsConcealed && i > 0 && i < 3));
                 i++;
@@ -521,7 +473,7 @@ namespace Gnoj_HamView
                         _game.Round.CanCallTsumo(GamePivot.HUMAN_INDEX, false);
                         Dispatcher.Invoke(() =>
                         {
-                            StpPickP0.Children.Add(GenerateTileButton(pick, BtnDiscard_Click));
+                            StpPickP0.Children.Add(pick.GenerateTileButton(BtnDiscard_Click));
                             SetActionButtonsVisibility(preDiscard: true);
                             WinOpeningManagement(null);
                             RiichiCallManagement(tilesRiichi);
@@ -570,14 +522,5 @@ namespace Gnoj_HamView
         }
 
         #endregion Private methods
-
-        // Represents tile rotation (depending on the player).
-        private enum Angle
-        {
-            A0,
-            A270,
-            A180,
-            A90
-        }
     }
 }
