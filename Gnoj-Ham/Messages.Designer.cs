@@ -178,6 +178,15 @@ namespace Gnoj_Ham {
         }
         
         /// <summary>
+        ///   Recherche une chaîne localisée semblable à It can&apos;t be more than one winner on a tsumo..
+        /// </summary>
+        internal static string TooManyWinners {
+            get {
+                return ResourceManager.GetString("TooManyWinners", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Recherche une chaîne localisée semblable à The discard post-riichi has failed for an unknow reason..
         /// </summary>
         internal static string UnexpectedDiscardFail {

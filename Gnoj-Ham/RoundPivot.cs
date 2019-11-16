@@ -910,9 +910,12 @@ namespace Gnoj_Ham
                     }
 
                     Tuple<int, int> finalScore = ScoreTools.GetPoints(fanCount, fuCount, _game.EastIndexTurnCount, winners.Count,
-                        !loserPlayerIndex.HasValue, _game.GetPlayerCurrentWind(pIndex), _game.RiichiPendingCount);
+                        !loserPlayerIndex.HasValue, _game.GetPlayerCurrentWind(pIndex));
 
-                    pointsByPlayer.Add(pIndex, finalScore.Item1 + finalScore.Item2 * 2);
+                    // TODO: if RiichiPendingCount si not a multiple of 3, and there're three winners, it doesn't work well !
+                    int riichiPart = _game.RiichiPendingCount * ScoreTools.RIICHI_COST / pointsByPlayer.Count;
+
+                    pointsByPlayer.Add(pIndex, finalScore.Item1 + finalScore.Item2 * 2 + riichiPart);
                     eastOrLoserLostCumul += finalScore.Item1;
                     notEastLostCumul += finalScore.Item2;
                 }

@@ -230,13 +230,21 @@ namespace Gnoj_Ham
         /// <param name="winnerPlayersCount">Number of winners (divide <paramref name="honbaCount"/>).</param>
         /// <param name="isTsumo"><c>True</c> if win by tsumo; <c>False</c> otherwise.</param>
         /// <param name="playerWind">The current player wind.</param>
-        /// <param name="riichiPendingCount">Riichi pending count.</param>
         /// <returns>
         /// - Number of points lost by east players (or one of the three remaining if the winner is east; or the specific loser if ron).
         /// - Number of points lost by the two other players.
         /// </returns>
-        public static Tuple<int, int> GetPoints(int fanCount, int fuCount, int honbaCount, int winnerPlayersCount, bool isTsumo, WindPivot playerWind, int riichiPendingCount)
+        /// <exception cref="ArgumentException"><see cref="Messages.TooManyWinners"/></exception>
+        public static Tuple<int, int> GetPoints(int fanCount, int fuCount, int honbaCount, int winnerPlayersCount, bool isTsumo, WindPivot playerWind)
         {
+            if (winnerPlayersCount > 1 && isTsumo)
+            {
+                throw new ArgumentException(Messages.TooManyWinners, nameof(winnerPlayersCount));
+            }
+
+            int v1 = 0;
+            int v2 = 0;
+
             bool east = playerWind == WindPivot.East;
 
             if ((fanCount == 4 && fuCount >= 40) || (fanCount == 3 && fuCount >= 70))
@@ -254,24 +262,27 @@ namespace Gnoj_Ham
                 }
                 if (isTsumo)
                 {
-                    return new Tuple<int, int>(basePoints * (east ? 1 : 2), basePoints);
+                    v1 = basePoints * (east ? 1 : 2);
+                    v2 = basePoints;
                 }
                 else
                 {
-                    return new Tuple<int, int>(basePoints * 3, 0);
+                    v1 = basePoints * 3;
+                    v2 = 0;
                 }
             }
-
-            if (east)
+            else if (east)
             {
                 var basePts = CHART_EAST.Last(k => k.Item1 <= fanCount && k.Item2 <= fuCount);
                 if (isTsumo)
                 {
-                    return new Tuple<int, int>(basePts.Item4, basePts.Item4);
+                    v1 = basePts.Item4;
+                    v2 = basePts.Item4;
                 }
                 else
                 {
-                    return new Tuple<int, int>(basePts.Item3, 0);
+                    v1 = basePts.Item3;
+                    v2 = 0;
                 }
             }
             else
@@ -279,13 +290,30 @@ namespace Gnoj_Ham
                 var basePts = CHART_OTHER.Last(k => k.Item1 <= fanCount && k.Item2 <= fuCount);
                 if (isTsumo)
                 {
-                    return new Tuple<int, int>(basePts.Item4, basePts.Item5);
+                    v1 = basePts.Item4;
+                    v2 = basePts.Item5;
                 }
                 else
                 {
-                    return new Tuple<int, int>(basePts.Item3, 0);
+                    v1 = basePts.Item3;
+                    v2 = 0;
                 }
             }
+
+            if (honbaCount > 0)
+            {
+                if (isTsumo)
+                {
+                    v1 += honbaCount / 3;
+                    v2 += honbaCount / 3;
+                }
+                else
+                {
+                    v1 += honbaCount / winnerPlayersCount;
+                }
+            }
+
+            return new Tuple<int, int>(v1, v2);
         }
     }
 }
