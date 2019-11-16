@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
@@ -14,9 +15,9 @@ namespace Gnoj_HamView
         /// <summary>
         /// Constructor.
         /// </summary>
-        /// <param name="game">Current game.</param>
+        /// <param name="players">Lsit of players.</param>
         /// <param name="endOfRoundInformations">Informations about end of round.</param>
-        public ScoreWindow(GamePivot game, EndOfRoundInformationsPivot endOfRoundInformations)
+        public ScoreWindow(List<PlayerPivot> players, EndOfRoundInformationsPivot endOfRoundInformations)
         {
             InitializeComponent();
 
@@ -26,8 +27,8 @@ namespace Gnoj_HamView
 
             LblHonba.Content = endOfRoundInformations.HonbaCount;
             LblPendingRiichi.Content = endOfRoundInformations.PendingRiichiCount;
-            StpDoraTiles.SetDorasPanel(game.Round.DoraIndicatorTiles, game.Round.VisibleDorasCount);
-            StpUraDoraTiles.SetDorasPanel(game.Round.UraDoraIndicatorTiles, endOfRoundInformations.DisplayUraDora ? game.Round.VisibleDorasCount : 0);
+            StpDoraTiles.SetDorasPanel(endOfRoundInformations.DoraTiles, endOfRoundInformations.DoraVisibleCount);
+            StpUraDoraTiles.SetDorasPanel(endOfRoundInformations.UraDoraTiles, endOfRoundInformations.DisplayUraDora ? endOfRoundInformations.DoraVisibleCount : 0);
 
             foreach (EndOfRoundInformationsPivot.PlayerInformationsPivot p in endOfRoundInformations.PlayersInfo)
             {
@@ -35,7 +36,7 @@ namespace Gnoj_HamView
                 {
                     StpYakus.Children.Add(new GroupBox
                     {
-                        Header = game.Players.ElementAt(p.Index).Name,
+                        Header = players[p.Index].Name,
                         Content = p.GenerateYakusInfosPanel()
                     });
                 }
@@ -43,8 +44,8 @@ namespace Gnoj_HamView
 
             for (int i = 0; i < 4; i++)
             {
-                (FindName($"LblPlayer{i}") as Label).Content = game.Players.ElementAt(i).Name;
-                (FindName($"LblScore{i}") as Label).Content = game.Players.ElementAt(i).Points;
+                (FindName($"LblPlayer{i}") as Label).Content = players[i].Name;
+                (FindName($"LblScore{i}") as Label).Content = players[i].Points;
 
                 int gain = endOfRoundInformations.PlayersInfo.FirstOrDefault(p => p.Index == i)?.PointsGain ?? 0;
 

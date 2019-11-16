@@ -12,6 +12,8 @@ namespace Gnoj_Ham
         #region Embedded properties
 
         private readonly List<PlayerInformationsPivot> _playersInfo;
+        private readonly List<TilePivot> _doraTiles;
+        private readonly List<TilePivot> _uraDoraTiles;
 
         /// <summary>
         /// <c>True</c> to reset <see cref="GamePivot.PendingRiichiCount"/>.
@@ -38,6 +40,10 @@ namespace Gnoj_Ham
         /// Pending riichi count.
         /// </summary>
         public int PendingRiichiCount { get; private set; }
+        /// <summary>
+        /// Count of dora to display.
+        /// </summary>
+        public int DoraVisibleCount { get; private set; }
 
         /// <summary>
         /// Informations relative to each player.
@@ -47,6 +53,28 @@ namespace Gnoj_Ham
             get
             {
                 return _playersInfo;
+            }
+        }
+
+        /// <summary>
+        /// List of dora indicators for this round.
+        /// </summary>
+        public IReadOnlyCollection<TilePivot> DoraTiles
+        {
+            get
+            {
+                return _doraTiles;
+            }
+        }
+
+        /// <summary>
+        /// List of uradora indicators for this round.
+        /// </summary>
+        public IReadOnlyCollection<TilePivot> UraDoraTiles
+        {
+            get
+            {
+                return _uraDoraTiles;
             }
         }
 
@@ -63,10 +91,14 @@ namespace Gnoj_Ham
         /// <param name="playersInfo">The <see cref="_playersInfo"/> value.</param>
         /// <param name="honbaCount">The <see cref="HonbaCount"/> value.</param>
         /// <param name="pendingRiichiCount">The <see cref="PendingRiichiCount"/> value.</param>
+        /// <param name="doraTiles">The <see cref="_doraTiles"/> value.</param>
+        /// <param name="uraDoraTiles">The <see cref="_uraDoraTiles"/> value.</param>
+        /// <param name="doraVisibleCount">The <see cref="DoraVisibleCount"/> value.</param>
         /// <exception cref="ArgumentNullException"><paramref name="playersInfo"/> is <c>Null</c>.</exception>
         /// <exception cref="ArgumentOutOfRangeException"><paramref name="playersInfo"/> count is beyond <c>4</c>.</exception>
         public EndOfRoundInformationsPivot(bool resetRiichiPendingCount, bool toNextEast, bool displayUraDora,
-            List<PlayerInformationsPivot> playersInfo, int honbaCount, int pendingRiichiCount)
+            List<PlayerInformationsPivot> playersInfo, int honbaCount, int pendingRiichiCount,
+            IEnumerable<TilePivot> doraTiles, IEnumerable<TilePivot> uraDoraTiles, int doraVisibleCount)
         {
             if (playersInfo == null)
             {
@@ -84,6 +116,9 @@ namespace Gnoj_Ham
             _playersInfo = playersInfo;
             HonbaCount = honbaCount;
             PendingRiichiCount = pendingRiichiCount;
+            _doraTiles = new List<TilePivot>(doraTiles ?? new List<TilePivot>());
+            _uraDoraTiles = new List<TilePivot>(uraDoraTiles ?? new List<TilePivot>());
+            DoraVisibleCount = doraVisibleCount;
         }
 
         #endregion Constructors

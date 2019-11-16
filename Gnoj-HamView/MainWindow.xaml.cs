@@ -389,7 +389,7 @@ namespace Gnoj_HamView
         private void NewRound(int? loser)
         {
             EndOfRoundInformationsPivot endOfRoundInfos = _game.NewRound(loser);
-            new ScoreWindow(_game, endOfRoundInfos).ShowDialog();
+            new ScoreWindow(_game.Players.ToList(), endOfRoundInfos).ShowDialog();
             if (endOfRoundInfos.EndOfGame)
             {
                 Close();

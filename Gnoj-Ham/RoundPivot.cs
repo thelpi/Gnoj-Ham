@@ -204,7 +204,7 @@ namespace Gnoj_Ham
                 throw new ArgumentOutOfRangeException(nameof(firstPlayerIndex));
             }
 
-            _fullTilesList = TilePivot.GetCompleteSet(withRedDoras).OrderBy(t => GlobalTools.Randomizer.NextDouble()).ToList();
+            _fullTilesList = TilePivot.GetCompleteSet(withRedDoras).OrderBy(t => 1).ToList();
 
             _hands = Enumerable.Range(0, 4).Select(i => new HandPivot(_fullTilesList.GetRange(i * 13, 13))).ToList();
             _discards = Enumerable.Range(0, 4).Select(i => new List<TilePivot>()).ToList();
@@ -898,12 +898,13 @@ namespace Gnoj_Ham
                         phand.SetFromRon(_discards[loserPlayerIndex.Value].Last());
                     }
 
+                    bool isRiichi = phand.Yakus.Contains(YakuPivot.Riichi) || phand.Yakus.Contains(YakuPivot.DaburuRiichi);
+
                     int dorasCount = phand.AllTiles.Sum(t => DoraIndicatorTiles.Take(VisibleDorasCount).Count(d => t.IsDoraNext(d)));
-                    int uraDorasCount = phand.Yakus.Contains(YakuPivot.Riichi) || phand.Yakus.Contains(YakuPivot.DaburuRiichi) ?
-                        phand.AllTiles.Sum(t => UraDoraIndicatorTiles.Take(VisibleDorasCount).Count(d => t.IsDoraNext(d))) : 0;
+                    int uraDorasCount = isRiichi ? phand.AllTiles.Sum(t => UraDoraIndicatorTiles.Take(VisibleDorasCount).Count(d => t.IsDoraNext(d))) : 0;
                     int redDorasCount = phand.AllTiles.Count(t => t.IsRedDora);
 
-                    if (!displayUraDoraTiles && uraDorasCount > 0)
+                    if (isRiichi)
                     {
                         displayUraDoraTiles = true;
                     }
@@ -953,7 +954,8 @@ namespace Gnoj_Ham
                 _game.Players.ElementAt(p.Index).AddPoints(p.PointsGain);
             }
 
-            return new EndOfRoundInformationsPivot(resetsRiichiCount, turnWind, displayUraDoraTiles, playerInfos, _game.EastIndexTurnCount - 1, _game.PendingRiichiCount);
+            return new EndOfRoundInformationsPivot(resetsRiichiCount, turnWind, displayUraDoraTiles, playerInfos, _game.EastIndexTurnCount - 1,
+                _game.PendingRiichiCount, DoraIndicatorTiles, UraDoraIndicatorTiles, VisibleDorasCount);
         }
 
         #endregion Internal methods
