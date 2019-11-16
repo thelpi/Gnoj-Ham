@@ -134,13 +134,13 @@ namespace Gnoj_Ham
                         new YakuPivot(RENHOU, "Hand of man", 0, "Ron on first turn, no other call made.", 13),
                         // Depending on rules, might be ignored.
                         new YakuPivot(NAGASHI_MANGAN, "Discard mangan", 0, "Round ending in Ryuukyoku: the discard of the player contains only terminals and honors. No call has been made by the player, nor by opponents on player's discards.", 5),
-                        new YakuPivot(CHINIISOU, "Flush", 5, "One family only.", 6),
+                        new YakuPivot(CHINIISOU, "Flush", 5, "One family only.", 1),
                         new YakuPivot(JUNCHAN, "Terminal in each meld", 2, "Terminal in every combinations.", 3),
                         new YakuPivot(RYANPEIKOU, "Two sets of identical sequences", 0, "Double iipeikou. Must be concealed.", 3),
                         // Note : concealed kans are allowed for dealer.
                         new YakuPivot(DABURU_RIICHI, "Double ready", 0, "Riichi at first turn. No call made. Must be concealed.", 2),
-                        new YakuPivot(SANSHOKU_DOUJUN, "Three colored straight", 1, "The same sequence in each family.", 2),
-                        new YakuPivot(ITTSU, "Straight", 1, "Three sequences 123, 456 and 789 in the same family.", 2),
+                        new YakuPivot(SANSHOKU_DOUJUN, "Three colored straight", 1, "The same sequence in each family.", 1),
+                        new YakuPivot(ITTSU, "Straight", 1, "Three sequences 123, 456 and 789 in the same family.", 1),
                         new YakuPivot(TOITOI, "All triplets", 2, "Each combination except the pair is a brelan (or a square)."),
                         new YakuPivot(SANANKOU, "Three concealed triplets", 2, "Three concealed brelans (or squares)."),
                         new YakuPivot(SANSHOKU_DOUKOU, "Three colored triplets", 2, "The same brelan (or squares) in each family."),
@@ -159,8 +159,8 @@ namespace Gnoj_Ham
                         new YakuPivot(MENZEN_TSUMO, "Self draw", 0, "Win by tsumo. Must be concealed.", 1),
                         new YakuPivot(PINFU, "All sequences", 0, "Fourth sequences. Last tile is winning on both side of a sequence. Must be concealed.", 1)
                     };
-                    _yakus.Add(new YakuPivot(HONIISOU, "Half flush", 2, "Only one family and honors.", 3, _yakus.Find(y => y.Name == CHINIISOU)));
-                    _yakus.Add(new YakuPivot(CHANTA, "Terminal or honor in each group", 1, "At least one terminal or honor in every combinations.", 2, _yakus.Find(y => y.Name == JUNCHAN), _yakus.Find(y => y.Name == HONROUTOU)));
+                    _yakus.Add(new YakuPivot(HONIISOU, "Half flush", 2, "Only one family and honors.", 1, _yakus.Find(y => y.Name == CHINIISOU)));
+                    _yakus.Add(new YakuPivot(CHANTA, "Terminal or honor in each group", 1, "At least one terminal or honor in every combinations.", 1, _yakus.Find(y => y.Name == JUNCHAN), _yakus.Find(y => y.Name == HONROUTOU)));
                     _yakus.Add(new YakuPivot(RIICHI, "Ready hand", 0, "Win after declaring a tenpai hand. Must be concealed.", 1, _yakus.Find(y => y.Name == DABURU_RIICHI)));
                     _yakus.Add(new YakuPivot(IIPEIKOU, "Identical sequences", 0, "Twice the same sequence in one family. Must be concealed.", 1, _yakus.Find(y => y.Name == RYANPEIKOU)));
                     _yakus.Add(new YakuPivot(SHOUSUUSHII, "Little four winds", 13, "Brelan of three wind type, and a pair of the fourth wind.", 0, _yakus.Find(y => y.Name == DAISUUSHII)));
