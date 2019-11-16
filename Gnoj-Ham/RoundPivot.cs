@@ -691,6 +691,7 @@ namespace Gnoj_Ham
         {
             return !IsWallExhaustion
                 && IsHumanPlayer
+                && !_waitForDiscard
                 && (
                     skipCurrentAction
                     || _game.Round.CanCallChii(GamePivot.HUMAN_INDEX).Keys.Count == 0

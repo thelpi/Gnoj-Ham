@@ -450,17 +450,15 @@ namespace Gnoj_Ham
                 && playerIndex.RelativePlayerIndex(-(i + 1)) != playerIndex)
             {
                 // The tile discarded by the latest player is the tile we ron !
-                if (i == 0)
+                if (i > 0)
                 {
-                    continue;
-                }
-
-                TilePivot lastFromDiscard = currentRound.Discards.ElementAt(currentRound.PlayerIndexHistory.ElementAt(i)).LastOrDefault();
-                if (lastFromDiscard != null && IsCompleteFull(new List<TilePivot>(ConcealedTiles) { lastFromDiscard }, DeclaredCombinations.ToList()))
-                {
-                    Yakus = null;
-                    YakusCombinations = null;
-                    return true;
+                    TilePivot lastFromDiscard = currentRound.Discards.ElementAt(currentRound.PlayerIndexHistory.ElementAt(i)).LastOrDefault();
+                    if (lastFromDiscard != null && IsCompleteFull(new List<TilePivot>(ConcealedTiles) { lastFromDiscard }, DeclaredCombinations.ToList()))
+                    {
+                        Yakus = null;
+                        YakusCombinations = null;
+                        return true;
+                    }
                 }
                 i++;
             }
