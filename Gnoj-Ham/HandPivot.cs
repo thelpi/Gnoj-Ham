@@ -416,6 +416,59 @@ namespace Gnoj_Ham
         #region Internal methods
 
         /// <summary>
+        /// Checks if <see cref="Yakus"/> and <see cref="YakusCombinations"/> have to be cancelled because of the furiten rule.
+        /// </summary>
+        /// <param name="discard">The discard of the current player.</param>
+        /// <returns><c>True</c> if furiten; <c>False</c> otherwise.</returns>
+        internal bool CancelYakusIfFuriten(IEnumerable<TilePivot> discard)
+        {
+            if (discard != null && discard.Any(t => IsCompleteFull(new List<TilePivot>(ConcealedTiles) { t }, DeclaredCombinations.ToList())))
+            {
+                Yakus = null;
+                YakusCombinations = null;
+                return true;
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Checks if <see cref="Yakus"/> and <see cref="YakusCombinations"/> have to be cancelled because of the temporary furiten rule.
+        /// </summary>
+        /// <param name="currentRound">The current round</param>
+        /// <param name="playerIndex">The player index of the hand.</param>
+        /// <returns><c>True</c> if temporary furiten; <c>False</c> otherwise.</returns>
+        internal bool CancelYakusIfTemporaryFuriten(RoundPivot currentRound, int playerIndex)
+        {
+            if (currentRound == null)
+            {
+                return false;
+            }
+            
+            int i = 0;
+            while (currentRound.PlayerIndexHistory.ElementAt(i) == playerIndex.RelativePlayerIndex(-(i + 1))
+                && playerIndex.RelativePlayerIndex(-(i + 1)) != playerIndex)
+            {
+                // The tile discarded by the latest player is the tile we ron !
+                if (i == 0)
+                {
+                    continue;
+                }
+
+                TilePivot lastFromDiscard = currentRound.Discards.ElementAt(currentRound.PlayerIndexHistory.ElementAt(i)).LastOrDefault();
+                if (lastFromDiscard != null && IsCompleteFull(new List<TilePivot>(ConcealedTiles) { lastFromDiscard }, DeclaredCombinations.ToList()))
+                {
+                    Yakus = null;
+                    YakusCombinations = null;
+                    return true;
+                }
+                i++;
+            }
+
+            return false;
+        }
+
+        /// <summary>
         /// Computes and sets properties <see cref="Yakus"/> and <see cref="YakusCombinations"/>.
         /// </summary>
         /// <param name="context">The winning context.</param>

@@ -34,6 +34,88 @@ namespace Gnoj_Ham
         private const int BASE_FU = 20;
         private const int BASE_CONCEALED_RON_FU = 30;
 
+        // Minimal fan count / point lost by each opponent (x2 for east, or x3 for ron on a single player)
+        private static readonly Dictionary<int, int> OVER_FOUR_FAN = new Dictionary<int, int>
+        {
+            { 5, 2000 },
+            { 6, 3000 },
+            { 8, 4000 },
+            { 11, 6000 },
+            { 13, 8000 },
+        };
+
+        // Minimal fan count / Minimal fu count / points lost by the ron opponent / points lost by east if tsumo / points lost by others if tsumo
+        private static readonly List<Tuple<int, int, int, int, int>> CHART_OTHER = new List<Tuple<int, int, int, int, int>>
+        {
+            // 1-20 and 1-25 are impossible
+            new Tuple<int, int, int, int, int>(1, 030, 1000, 0500, 0300),
+            new Tuple<int, int, int, int, int>(1, 040, 1300, 0700, 0400),
+            new Tuple<int, int, int, int, int>(1, 050, 1600, 0800, 0400),
+            new Tuple<int, int, int, int, int>(1, 060, 2000, 1000, 0500),
+            new Tuple<int, int, int, int, int>(1, 070, 2300, 1200, 0600),
+            new Tuple<int, int, int, int, int>(1, 080, 2600, 1300, 0700),
+            new Tuple<int, int, int, int, int>(1, 090, 2900, 1500, 0800),
+            new Tuple<int, int, int, int, int>(1, 100, 3200, 1600, 0800),
+            new Tuple<int, int, int, int, int>(1, 110, 3600, 1800, 0900),
+            new Tuple<int, int, int, int, int>(2, 020, 1300, 0700, 0400),
+            // 2 fans chiitoi is impossible in tsumo.
+            new Tuple<int, int, int, int, int>(2, 025, 1600, 0000, 0000),
+            new Tuple<int, int, int, int, int>(2, 030, 2000, 1000, 0500),
+            new Tuple<int, int, int, int, int>(2, 040, 2600, 1300, 0700),
+            new Tuple<int, int, int, int, int>(2, 050, 3200, 1600, 0800),
+            new Tuple<int, int, int, int, int>(2, 060, 3900, 2000, 1000),
+            new Tuple<int, int, int, int, int>(2, 070, 4500, 2300, 1200),
+            new Tuple<int, int, int, int, int>(2, 080, 5200, 2600, 1300),
+            new Tuple<int, int, int, int, int>(2, 090, 5800, 2900, 1500),
+            new Tuple<int, int, int, int, int>(2, 100, 6400, 3200, 1600),
+            new Tuple<int, int, int, int, int>(2, 110, 7100, 3600, 1800),
+            new Tuple<int, int, int, int, int>(3, 020, 2600, 1300, 0700),
+            new Tuple<int, int, int, int, int>(3, 025, 3200, 1600, 0800),
+            new Tuple<int, int, int, int, int>(3, 030, 3900, 2000, 1000),
+            new Tuple<int, int, int, int, int>(3, 040, 5200, 2600, 1300),
+            new Tuple<int, int, int, int, int>(3, 050, 6400, 3200, 1600),
+            new Tuple<int, int, int, int, int>(3, 060, 7700, 3900, 2000),
+            new Tuple<int, int, int, int, int>(4, 020, 5200, 2800, 1300),
+            new Tuple<int, int, int, int, int>(4, 025, 6400, 3200, 1800),
+            new Tuple<int, int, int, int, int>(4, 030, 7700, 3900, 2000)
+        };
+
+        // Minimal fan count / Minimal fu count / points lost by the ron opponent / points lost by east if tsumo / points lost by others if tsumo
+        private static readonly List<Tuple<int, int, int, int>> CHART_EAST = new List<Tuple<int, int, int, int>>
+        {
+            // 1-20 and 1-25 are impossible
+            new Tuple<int, int, int, int>(1, 030, 1500, 0500),
+            new Tuple<int, int, int, int>(1, 040, 2000, 0700),
+            new Tuple<int, int, int, int>(1, 050, 2400, 0800),
+            new Tuple<int, int, int, int>(1, 060, 2900, 1000),
+            new Tuple<int, int, int, int>(1, 070, 3400, 1200),
+            new Tuple<int, int, int, int>(1, 080, 3900, 1300),
+            new Tuple<int, int, int, int>(1, 090, 4400, 1500),
+            new Tuple<int, int, int, int>(1, 100, 4800, 1600),
+            new Tuple<int, int, int, int>(1, 110, 5300, 1800),
+            new Tuple<int, int, int, int>(2, 020, 2000, 0700),
+            // 2 fans chiitoi is impossible in tsumo.
+            new Tuple<int, int, int, int>(2, 025, 2400, 0000),
+            new Tuple<int, int, int, int>(2, 030, 2900, 1000),
+            new Tuple<int, int, int, int>(2, 040, 3900, 1300),
+            new Tuple<int, int, int, int>(2, 050, 4800, 1600),
+            new Tuple<int, int, int, int>(2, 060, 5800, 2000),
+            new Tuple<int, int, int, int>(2, 070, 6800, 2300),
+            new Tuple<int, int, int, int>(2, 080, 7700, 2600),
+            new Tuple<int, int, int, int>(2, 090, 8700, 2900),
+            new Tuple<int, int, int, int>(2, 100, 9600, 3200),
+            new Tuple<int, int, int, int>(2, 110, 10600, 3600),
+            new Tuple<int, int, int, int>(3, 020, 3900, 1300),
+            new Tuple<int, int, int, int>(3, 025, 4800, 1600),
+            new Tuple<int, int, int, int>(3, 030, 5800, 2000),
+            new Tuple<int, int, int, int>(3, 040, 7700, 2600),
+            new Tuple<int, int, int, int>(3, 050, 9600, 3200),
+            new Tuple<int, int, int, int>(3, 060, 10600, 3900),
+            new Tuple<int, int, int, int>(4, 020, 7700, 2600),
+            new Tuple<int, int, int, int>(4, 025, 9600, 3200),
+            new Tuple<int, int, int, int>(4, 030, 11600, 3900)
+        };
+
         #endregion Points chart
 
         /// <summary>
@@ -155,8 +237,55 @@ namespace Gnoj_Ham
         /// </returns>
         public static Tuple<int, int> GetPoints(int fanCount, int fuCount, int honbaCount, int winnerPlayersCount, bool isTsumo, WindPivot playerWind, int riichiPendingCount)
         {
-            // TODO
-            throw new NotImplementedException();
+            bool east = playerWind == WindPivot.East;
+
+            if ((fanCount == 4 && fuCount >= 40) || (fanCount == 3 && fuCount >= 70))
+            {
+                fanCount = 5;
+            }
+
+            if (fanCount > 4)
+            {
+                int basePoints = OVER_FOUR_FAN.Last(k => k.Key <= fanCount).Value * (east ? 2 : 1);
+                // in case of several yakumans.
+                if (fanCount > 13)
+                {
+                    basePoints += (basePoints * ((fanCount - 13) / 13));
+                }
+                if (isTsumo)
+                {
+                    return new Tuple<int, int>(basePoints * (east ? 1 : 2), basePoints);
+                }
+                else
+                {
+                    return new Tuple<int, int>(basePoints * 3, 0);
+                }
+            }
+
+            if (east)
+            {
+                var basePts = CHART_EAST.Last(k => k.Item1 <= fanCount && k.Item2 <= fuCount);
+                if (isTsumo)
+                {
+                    return new Tuple<int, int>(basePts.Item4, basePts.Item4);
+                }
+                else
+                {
+                    return new Tuple<int, int>(basePts.Item3, 0);
+                }
+            }
+            else
+            {
+                var basePts = CHART_OTHER.Last(k => k.Item1 <= fanCount && k.Item2 <= fuCount);
+                if (isTsumo)
+                {
+                    return new Tuple<int, int>(basePts.Item4, basePts.Item5);
+                }
+                else
+                {
+                    return new Tuple<int, int>(basePts.Item3, 0);
+                }
+            }
         }
     }
 }

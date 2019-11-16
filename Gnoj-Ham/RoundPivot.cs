@@ -16,7 +16,7 @@ namespace Gnoj_Ham
         private TilePivot _openedKanInProgress;
         private bool _waitForDiscard;
         private readonly GamePivot _game;
-        private readonly List<int> playerIndexHistory;
+        private readonly List<int> _playerIndexHistory;
 
         private readonly List<TilePivot> _wallTiles;
         private readonly List<HandPivot> _hands;
@@ -27,6 +27,19 @@ namespace Gnoj_Ham
         private readonly List<List<TilePivot>> _discards;
         private readonly List<Tuple<int, TilePivot, bool>> _riichis;
         private readonly List<TilePivot> _fullTilesList;
+
+        /// <summary>
+        /// History of the latest players to player.
+        /// First on the list is the latest to play.
+        /// The list is cleared when a jump (call) is made.
+        /// </summary>
+        public IReadOnlyCollection<int> PlayerIndexHistory
+        {
+            get
+            {
+                return _playerIndexHistory;
+            }
+        }
 
         /// <summary>
         /// Wall tiles.
@@ -206,7 +219,7 @@ namespace Gnoj_Ham
             _closedKanInProgress = null;
             _openedKanInProgress = null;
             _waitForDiscard = false;
-            playerIndexHistory = new List<int>();
+            _playerIndexHistory = new List<int>();
 
             _game = game;
         }
@@ -531,7 +544,7 @@ namespace Gnoj_Ham
 
             if (_stealingInProgress || _closedKanInProgress != null)
             {
-                playerIndexHistory.Clear();
+                _playerIndexHistory.Clear();
             }
 
             _discards[CurrentPlayerIndex].Add(tile);
@@ -539,7 +552,7 @@ namespace Gnoj_Ham
             _closedKanInProgress = null;
             _openedKanInProgress = null;
             _waitForDiscard = false;
-            playerIndexHistory.Insert(0, CurrentPlayerIndex);
+            _playerIndexHistory.Insert(0, CurrentPlayerIndex);
             CurrentPlayerIndex = CurrentPlayerIndex.RelativePlayerIndex(1);
             return true;
         }
@@ -639,32 +652,11 @@ namespace Gnoj_Ham
 
             SetYakus(playerIndex, tile, forKokushiOnly ? DrawTypePivot.OpponentKanCallConcealed : (isChanka ? DrawTypePivot.OpponentKanCallOpen : DrawTypePivot.OpponentDiscard));
 
-            if (!_hands[playerIndex].IsComplete)
+            if (!_hands[playerIndex].IsComplete
+                || _hands[playerIndex].CancelYakusIfFuriten(_discards[playerIndex])
+                || _hands[playerIndex].CancelYakusIfTemporaryFuriten(this, playerIndex))
             {
                 return null;
-            }
-
-            // Furiten
-            if (_discards[playerIndex].Any(t =>
-                HandPivot.IsCompleteFull(new List<TilePivot>(_hands[playerIndex].ConcealedTiles) { t },
-                    _hands[playerIndex].DeclaredCombinations.ToList())))
-            {
-                return null;
-            }
-
-            // Temporary furiten
-            int i = 0;
-            while (playerIndexHistory[i] == playerIndex.RelativePlayerIndex(-(i + 1))
-                && playerIndex.RelativePlayerIndex(-(i + 1)) != playerIndex)
-            {
-                TilePivot lastFromDiscard = _discards[playerIndexHistory[i]].LastOrDefault();
-                if (lastFromDiscard != null && HandPivot.IsCompleteFull(
-                    new List<TilePivot>(_hands[playerIndex].ConcealedTiles) { lastFromDiscard },
-                    _hands[playerIndex].DeclaredCombinations.ToList()))
-                {
-                    return null;
-                }
-                i++;
             }
 
             return PreviousPlayerIndex;
@@ -762,7 +754,7 @@ namespace Gnoj_Ham
         // Checks there's no call interruption since the latest move of the specified player.
         private bool IsUninterruptedHistory(int playerIndex)
         {
-            List<int> historySinceLastTime = playerIndexHistory.TakeWhile(i => i != playerIndex).ToList();
+            List<int> historySinceLastTime = _playerIndexHistory.TakeWhile(i => i != playerIndex).ToList();
 
             return historySinceLastTime.Count <= 3 && Enumerable.Range(0, 3).All(i => historySinceLastTime.Count <= i || historySinceLastTime[i] == playerIndex.RelativePlayerIndex(-(i + 1)));
         }
