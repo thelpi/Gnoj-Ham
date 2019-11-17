@@ -419,10 +419,20 @@ namespace Gnoj_Ham
         /// Checks if <see cref="Yakus"/> and <see cref="YakusCombinations"/> have to be cancelled because of the furiten rule.
         /// </summary>
         /// <param name="discard">The discard of the current player.</param>
+        /// <param name="opponentDiscards">
+        /// Aggregation of discards from opponents since the riichi call; includes tiles stolen by another opponent and tiles used to call opened kan.
+        /// </param>
         /// <returns><c>True</c> if furiten; <c>False</c> otherwise.</returns>
-        internal bool CancelYakusIfFuriten(IEnumerable<TilePivot> discard)
+        internal bool CancelYakusIfFuriten(IEnumerable<TilePivot> discard, IEnumerable<TilePivot> opponentDiscards)
         {
-            if (discard != null && discard.Any(t => IsCompleteFull(new List<TilePivot>(ConcealedTiles) { t }, DeclaredCombinations.ToList())))
+            if (discard?.Any(t => IsCompleteFull(new List<TilePivot>(ConcealedTiles) { t }, DeclaredCombinations.ToList())) == true)
+            {
+                Yakus = null;
+                YakusCombinations = null;
+                return true;
+            }
+
+            if (opponentDiscards?.Any(t => IsCompleteFull(new List<TilePivot>(ConcealedTiles) { t }, DeclaredCombinations.ToList())) == true)
             {
                 Yakus = null;
                 YakusCombinations = null;

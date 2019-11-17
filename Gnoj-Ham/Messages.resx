@@ -132,6 +132,9 @@
   <data name="InvalidContextIppatsuValue" xml:space="preserve">
     <value>Ippatsu impossible if not riichi.</value>
   </data>
+  <data name="InvalidDiscardRank" xml:space="preserve">
+    <value>The discard rank should be 0 in this context.</value>
+  </data>
   <data name="InvalidDraw" xml:space="preserve">
     <value>A draw can't be made in this context.</value>
   </data>
@@ -146,6 +149,9 @@
   </data>
   <data name="InvalidLatestTileContext" xml:space="preserve">
     <value>The specified latest tile should be include in the current hand.</value>
+  </data>
+  <data name="InvalidOpponentsVirtualDiscardRank" xml:space="preserve">
+    <value>The dictionnary opponents virtual discard rank should contains 3 keys and, values above -1.</value>
   </data>
   <data name="InvalidPlayerName" xml:space="preserve">
     <value>The name of the human player is invalid.</value>

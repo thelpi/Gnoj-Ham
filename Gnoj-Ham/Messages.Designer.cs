@@ -106,6 +106,15 @@ namespace Gnoj_Ham {
         }
         
         /// <summary>
+        ///   Recherche une chaîne localisée semblable à The discard rank should be 0 in this context..
+        /// </summary>
+        internal static string InvalidDiscardRank {
+            get {
+                return ResourceManager.GetString("InvalidDiscardRank", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Recherche une chaîne localisée semblable à A draw can&apos;t be made in this context..
         /// </summary>
         internal static string InvalidDraw {
@@ -147,6 +156,15 @@ namespace Gnoj_Ham {
         internal static string InvalidLatestTileContext {
             get {
                 return ResourceManager.GetString("InvalidLatestTileContext", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Recherche une chaîne localisée semblable à The dictionnary opponents virtual discard rank should contains 3 keys and, values above -1..
+        /// </summary>
+        internal static string InvalidOpponentsVirtualDiscardRank {
+            get {
+                return ResourceManager.GetString("InvalidOpponentsVirtualDiscardRank", resourceCulture);
             }
         }
         

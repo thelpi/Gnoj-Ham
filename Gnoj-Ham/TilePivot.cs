@@ -276,28 +276,29 @@ namespace Gnoj_Ham
                 {
                     foreach (DragonPivot dragon in Enum.GetValues(typeof(DragonPivot)).Cast<DragonPivot>())
                     {
-                        tiles.Add(new TilePivot(dragon), 4);
+                        for (int i = 0; i < 4; i++)
+                        {
+                            tiles.Add(new TilePivot(dragon));
+                        }
                     }
                 }
                 else if (family == FamilyPivot.Wind)
                 {
                     foreach (WindPivot wind in Enum.GetValues(typeof(WindPivot)).Cast<WindPivot>())
                     {
-                        tiles.Add(new TilePivot(wind), 4);
+                        for (int i = 0; i < 4; i++)
+                        {
+                            tiles.Add(new TilePivot(wind));
+                        }
                     }
                 }
                 else
                 {
                     for (byte j = 1; j <= 9; j++)
                     {
-                        if (withRedDoras && j == 5)
+                        for (int i = 0; i < 4; i++)
                         {
-                            tiles.Add(new TilePivot(family, j), 3);
-                            tiles.Add(new TilePivot(family, j, true));
-                        }
-                        else
-                        {
-                            tiles.Add(new TilePivot(family, j), 4);
+                            tiles.Add(new TilePivot(family, j, withRedDoras && j == 5 && i == 3));
                         }
                     }
                 }

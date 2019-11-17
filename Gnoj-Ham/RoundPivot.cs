@@ -17,7 +17,6 @@ namespace Gnoj_Ham
         private bool _waitForDiscard;
         private readonly GamePivot _game;
         private readonly List<int> _playerIndexHistory;
-
         private readonly List<TilePivot> _wallTiles;
         private readonly List<HandPivot> _hands;
         private readonly List<TilePivot> _compensationTiles;
@@ -25,7 +24,8 @@ namespace Gnoj_Ham
         private readonly List<TilePivot> _uraDoraIndicatorTiles;
         private readonly List<TilePivot> _deadTreasureTiles;
         private readonly List<List<TilePivot>> _discards;
-        private readonly List<Tuple<int, TilePivot, bool>> _riichis;
+        private readonly List<List<TilePivot>> _virtualDiscards;
+        private readonly List<RiichiPivot> _riichis;
         private readonly List<TilePivot> _fullTilesList;
 
         /// <summary>
@@ -119,13 +119,10 @@ namespace Gnoj_Ham
         }
 
         /// <summary>
-        /// Riichi informations of four players. The <see cref="Tuple{T1, T2, T3}"/> contains :
-        /// - The index in the discard.
-        /// - The tile used to call riichi.
-        /// - A boolean indicating a "daburu" riichi, always at index <c>0</c> (but the reverse is not always true).
+        /// Riichi informations of four players.
         /// </summary>
-        /// <remarks>The list if filled by default with a tuple [-1 / null / false] for every players.</remarks>
-        public IReadOnlyCollection<Tuple<int, TilePivot, bool>> Riichis
+        /// <remarks>The list if filled by default with <c>Null</c> for every players.</remarks>
+        public IReadOnlyCollection<RiichiPivot> Riichis
         {
             get
             {
@@ -212,7 +209,8 @@ namespace Gnoj_Ham
 
             _hands = Enumerable.Range(0, 4).Select(i => new HandPivot(_fullTilesList.GetRange(i * 13, 13))).ToList();
             _discards = Enumerable.Range(0, 4).Select(i => new List<TilePivot>()).ToList();
-            _riichis = Enumerable.Range(0, 4).Select(i => new Tuple<int, TilePivot, bool>(-1, null, false)).ToList();
+            _virtualDiscards = Enumerable.Range(0, 4).Select(i => new List<TilePivot>()).ToList();
+            _riichis = Enumerable.Range(0, 4).Select(i => (RiichiPivot)null).ToList();
             _wallTiles = _fullTilesList.GetRange(52, 70);
             _compensationTiles = _fullTilesList.GetRange(122, 4);
             _doraIndicatorTiles = _fullTilesList.GetRange(126, 5);
@@ -468,6 +466,10 @@ namespace Gnoj_Ham
                 }
 
                 _hands[playerIndex].DeclareKan(tileChoice, null, fromPreviousPon);
+                if (fromPreviousPon != null)
+                {
+                    _virtualDiscards[playerIndex].Add(tileChoice);
+                }
                 isClosedKan = true;
             }
             else
@@ -520,7 +522,8 @@ namespace Gnoj_Ham
                 throw new InvalidOperationException(Messages.UnexpectedDiscardFail);
             }
             
-            _riichis[playerIndex] = new Tuple<int, TilePivot, bool>(riichiTurnsCount, tile, isUninterruptedFirstTurn);
+            _riichis[playerIndex] = new RiichiPivot(riichiTurnsCount, isUninterruptedFirstTurn, tile,
+                Enumerable.Range(0, 4).Where(i => i != playerIndex).Select(i => new KeyValuePair<int, int>(i, _virtualDiscards[i].Count)).ToDictionary(kvp => kvp.Key, kvp => kvp.Value));
             _game.AddPendingRiichi(playerIndex);
 
             return true;
@@ -552,6 +555,7 @@ namespace Gnoj_Ham
             }
 
             _discards[CurrentPlayerIndex].Add(tile);
+            _virtualDiscards[CurrentPlayerIndex].Add(tile);
             _stealingInProgress = false;
             _closedKanInProgress = null;
             _openedKanInProgress = null;
@@ -657,7 +661,7 @@ namespace Gnoj_Ham
             SetYakus(playerIndex, tile, forKokushiOnly ? DrawTypePivot.OpponentKanCallConcealed : (isChanka ? DrawTypePivot.OpponentKanCallOpen : DrawTypePivot.OpponentDiscard));
 
             if (!_hands[playerIndex].IsComplete
-                || _hands[playerIndex].CancelYakusIfFuriten(_discards[playerIndex])
+                || _hands[playerIndex].CancelYakusIfFuriten(_discards[playerIndex], GetTilesFromVirtualDiscardsAtRank(playerIndex, tile))
                 || _hands[playerIndex].CancelYakusIfTemporaryFuriten(this, playerIndex))
             {
                 return null;
@@ -723,29 +727,50 @@ namespace Gnoj_Ham
                 throw new ArgumentOutOfRangeException(nameof(playerIndex));
             }
 
-            return _riichis[playerIndex].Item1 >= 0;
+            return _riichis[playerIndex] != null;
         }
 
         /// <summary>
-        /// Checks if the riichi tile rank for the specified player is equals to <paramref name="tileIndex"/>.
+        /// Checks, for a specified player, if the specified rank is the one when the riichi call has been made.
         /// </summary>
-        /// <param name="playerIndex">Player index.</param>
-        /// <param name="tileIndex">The tile index to check.</param>
-        /// <returns><c>True</c> if riichi at the specified index; <c>False</c> otherwise.</returns>
-        /// <exception cref="ArgumentOutOfRangeException"><paramref name="playerIndex"/> is out of range.</exception>
-        public bool IsRiichiDiscardRank(int playerIndex, int tileIndex)
+        /// <param name="playerIndex">The player index.</param>
+        /// <param name="rank">The rank.</param>
+        /// <returns><c>True</c> if the specified rank is the riichi one.</returns>
+        public bool IsRiichiRank(int playerIndex, int rank)
         {
             if (playerIndex < 0 || playerIndex > 3)
             {
                 throw new ArgumentOutOfRangeException(nameof(playerIndex));
             }
 
-            return Riichis.ElementAt(playerIndex).Item1 == tileIndex;
+            return _riichis[playerIndex] != null && _riichis[playerIndex].DiscardRank == rank;
         }
 
         #endregion Public methods
 
         #region Private methods
+
+        // Gets every tiles from every opponents virtual discards after the riichi call of the specified player.
+        private List<TilePivot> GetTilesFromVirtualDiscardsAtRank(int riichiPlayerIndex, TilePivot exceptTile)
+        {
+            var fullList = new List<TilePivot>();
+
+            if (_riichis[riichiPlayerIndex] == null)
+            {
+                return fullList;
+            }
+
+            for (int i = 0; i < 4; i++)
+            {
+                if (i != riichiPlayerIndex)
+                {
+                    int opponentRank = _riichis[riichiPlayerIndex].OpponentsVirtualDiscardRank[i];
+                    fullList.AddRange(_virtualDiscards[i].Skip(opponentRank));
+                }
+            }
+
+            return fullList.Where(t => !ReferenceEquals(t, exceptTile)).ToList();
+        }
 
         // Checks if the hand of the specified player is riichi and list tiles which can be discarded.
         private List<TilePivot> ExtractRiichiPossibilities(int playerIndex)
@@ -806,8 +831,8 @@ namespace Gnoj_Ham
                 dominantWind: _game.DominantWind,
                 playerWind: _game.GetPlayerCurrentWind(playerIndex),
                 isFirstOrLast: IsWallExhaustion ? (bool?)null : (_discards[playerIndex].Count == 0 && IsUninterruptedHistory(playerIndex)),
-                isRiichi: IsRiichi(playerIndex) ? (_riichis[playerIndex].Item3 ? (bool?)null : true) : false,
-                isIppatsu: IsRiichi(playerIndex) && _discards[playerIndex].Count > 0 && ReferenceEquals(_discards[playerIndex].Last(), _riichis[playerIndex].Item2) && IsUninterruptedHistory(playerIndex)
+                isRiichi: IsRiichi(playerIndex) ? (_riichis[playerIndex].IsDaburu ? (bool?)null : true) : false,
+                isIppatsu: IsRiichi(playerIndex) && _discards[playerIndex].Count > 0 && ReferenceEquals(_discards[playerIndex].Last(), _riichis[playerIndex].Tile) && IsUninterruptedHistory(playerIndex)
             ));
         }
 
@@ -986,6 +1011,6 @@ namespace Gnoj_Ham
                 _game.PendingRiichiCount, DoraIndicatorTiles, UraDoraIndicatorTiles, VisibleDorasCount);
         }
 
-#endregion Internal methods
+        #endregion Internal methods
     }
 }

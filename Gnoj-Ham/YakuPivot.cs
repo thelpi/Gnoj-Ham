@@ -678,7 +678,10 @@ namespace Gnoj_Ham
 
                 if (addYaku)
                 {
-                    yakus.Add(yaku, occurences);
+                    for (int i = 0; i < occurences; i++)
+                    {
+                        yakus.Add(yaku);
+                    }
                 }
             }
 

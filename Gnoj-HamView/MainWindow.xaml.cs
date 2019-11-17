@@ -384,7 +384,7 @@ namespace Gnoj_HamView
             {
                 StackPanel panel = FindName($"StpP{pIndex}Discard{(i < 6 ? 1 : (i < 12 ? 2 : 3))}") as StackPanel;
                 Angle angle = (Angle)pIndex;
-                if (_game.Round.IsRiichiDiscardRank(pIndex, i))
+                if (_game.Round.IsRiichiRank(pIndex, i))
                 {
                     angle = (Angle)pIndex.RelativePlayerIndex(1);
                 }
