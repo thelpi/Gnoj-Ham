@@ -32,7 +32,7 @@ namespace Gnoj_HamView
 
             foreach (EndOfRoundInformationsPivot.PlayerInformationsPivot p in endOfRoundInformations.PlayersInfo)
             {
-                if (p.Yakus.Count > 0)
+                if (p.Yakus?.Count > 0)
                 {
                     StpYakus.Children.Add(new GroupBox
                     {

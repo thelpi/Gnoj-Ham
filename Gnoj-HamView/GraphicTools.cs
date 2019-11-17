@@ -93,6 +93,22 @@ namespace Gnoj_HamView
         /// <returns>A panel with informations about hand value.</returns>
         internal static DockPanel GenerateYakusInfosPanel(this EndOfRoundInformationsPivot.PlayerInformationsPivot p)
         {
+            var handPanel = new StackPanel
+            {
+                Orientation = Orientation.Horizontal,
+                Height = TILE_HEIGHT + (0.5 * DEFAULT_TILE_MARGIN),
+                HorizontalAlignment = HorizontalAlignment.Center
+            };
+            foreach (Tuple<TilePivot, bool, bool> tile in p.GetFullHandForDisplay())
+            {
+                Button b = GenerateTileButton(tile.Item1, null, (tile.Item2 ? Angle.A90 : Angle.A0), false);
+                if (tile.Item3)
+                {
+                    b.Margin = new Thickness(5, 0, 0, 0);
+                }
+                handPanel.Children.Add(b);
+            }
+
             var gridYakus = new Grid();
             gridYakus.ColumnDefinitions.Add(new ColumnDefinition());
             gridYakus.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(50) });
@@ -163,6 +179,7 @@ namespace Gnoj_HamView
                 VerticalAlignment = VerticalAlignment.Center
             };
 
+            handPanel.SetValue(DockPanel.DockProperty, Dock.Top);
             gridYakus.SetValue(DockPanel.DockProperty, Dock.Top);
             separator.SetValue(DockPanel.DockProperty, Dock.Bottom);
             gridPoints.SetValue(DockPanel.DockProperty, Dock.Bottom);
@@ -170,6 +187,7 @@ namespace Gnoj_HamView
             var boxPanel = new DockPanel();
             boxPanel.Children.Add(separator);
             boxPanel.Children.Add(gridPoints);
+            boxPanel.Children.Add(handPanel);
             boxPanel.Children.Add(gridYakus);
             return boxPanel;
         }

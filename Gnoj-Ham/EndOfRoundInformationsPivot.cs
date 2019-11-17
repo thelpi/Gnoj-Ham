@@ -160,8 +160,8 @@ namespace Gnoj_Ham
         public class PlayerInformationsPivot
         {
             #region Embedded properties
-
-            private readonly List<YakuPivot> _yakus;
+            
+            private readonly HandPivot _hand;
 
             /// <summary>
             /// Index in <see cref="GamePivot.Players"/>.
@@ -175,10 +175,6 @@ namespace Gnoj_Ham
             /// Fu count.
             /// </summary>
             public int FuCount { get; private set; }
-            /// <summary>
-            /// <c>True</c> if concealed hand; <c>False</c> otherwise.
-            /// </summary>
-            public bool Concealed { get; private set; }
             /// <summary>
             /// Points gain for this round (might be negative).
             /// </summary>
@@ -196,18 +192,33 @@ namespace Gnoj_Ham
             /// </summary>
             public int RedDoraCount { get; private set; }
 
+            #endregion Embedded properties
+
+            #region Inferred properties
+
             /// <summary>
-            /// List of yakus in the hand.
+            /// Inferred; list of yakus in the hand.
             /// </summary>
             public IReadOnlyCollection<YakuPivot> Yakus
             {
                 get
                 {
-                    return _yakus;
+                    return _hand?.Yakus;
                 }
             }
 
-            #endregion Embedded properties
+            /// <summary>
+            /// Inferred; <c>True</c> if concealed hand; <c>False</c> otherwise.
+            /// </summary>
+            public bool Concealed
+            {
+                get
+                {
+                    return _hand?.IsConcealed == true;
+                }
+            }
+
+            #endregion Inferred properties
 
             #region Constructors
 
@@ -217,24 +228,22 @@ namespace Gnoj_Ham
             /// <param name="index">The <see cref="Index"/> value.</param>
             /// <param name="fanCount">The <see cref="FanCount"/> value.</param>
             /// <param name="fuCount">The <see cref="FuCount"/> value.</param>
-            /// <param name="yakus">The <see cref="_yakus"/> value.</param>
-            /// <param name="concealed">The <see cref="Concealed"/> value.</param>
+            /// <param name="hand">The <see cref="_hand"/> value.</param>
             /// <param name="pointsGain">The <see cref="PointsGain"/> value.</param>
             /// <param name="doraCount">The <see cref="DoraCount"/> value.</param>
             /// <param name="uraDoraCount">The <see cref="UraDoraCount"/> value.</param>
             /// <param name="redDoraCount">The <see cref="RedDoraCount"/> value.</param>
-            public PlayerInformationsPivot(int index, int fanCount, int fuCount, IEnumerable<YakuPivot> yakus, bool concealed,
+            public PlayerInformationsPivot(int index, int fanCount, int fuCount, HandPivot hand,
                 int pointsGain, int doraCount, int uraDoraCount, int redDoraCount)
             {
                 Index = index;
                 FanCount = fanCount;
                 FuCount = fuCount;
-                Concealed = concealed;
                 PointsGain = pointsGain;
                 DoraCount = doraCount;
                 UraDoraCount = uraDoraCount;
                 RedDoraCount = redDoraCount;
-                _yakus = new List<YakuPivot>(yakus ?? new List<YakuPivot>());
+                _hand = hand;
             }
 
             /// <summary>
@@ -243,9 +252,34 @@ namespace Gnoj_Ham
             /// <param name="index">The <see cref="Index"/> value.</param>
             /// <param name="pointsGain">The <see cref="PointsGain"/> value.</param>
             public PlayerInformationsPivot(int index, int pointsGain)
-                : this(index, 0, 0, null, false, pointsGain, 0, 0, 0) { }
+                : this(index, 0, 0, null, pointsGain, 0, 0, 0) { }
 
             #endregion Constructors
+
+            #region Public methods
+
+            /// <summary>
+            /// Gets tiles from the hand (if <see cref="_hand"/> not <c>Null</c>) ordered for display on the score screen.
+            /// </summary>
+            /// <returns>The list of tiles;
+            /// the <see cref="Tuple{T1, T2, T3}.Item2"/> indicates if the tile should be displayed leaned.
+            /// the <see cref="Tuple{T1, T2, T3}.Item3"/> indicates if the tile should be displayed apart.
+            /// </returns>
+            public List<Tuple<TilePivot, bool, bool>> GetFullHandForDisplay()
+            {
+                List<Tuple<TilePivot, bool, bool>> r = new List<Tuple<TilePivot, bool, bool>>();
+
+                if (_hand != null)
+                {
+                    r.AddRange(_hand.AllTiles.Select(t => new Tuple<TilePivot, bool, bool>(t,
+                        _hand.DeclaredCombinations.Any(c => ReferenceEquals(c.OpenTile, t)),
+                        ReferenceEquals(_hand.LatestPick, t))));
+                }
+
+                return r.OrderBy(tuple => tuple.Item3).ToList();
+            }
+
+            #endregion Public methods
         }
     }
 }

@@ -201,8 +201,8 @@ namespace Gnoj_Ham
                 throw new ArgumentOutOfRangeException(nameof(firstPlayerIndex));
             }
 
-            _fullTilesList = TilePivot.GetCompleteSet(withRedDoras).OrderBy(t => 1).ToList();
-            //_fullTilesList = TilePivot.GetCompleteSet(withRedDoras).OrderBy(t => GlobalTools.Randomizer.NextDouble()).ToList();
+            //_fullTilesList = TilePivot.GetCompleteSet(withRedDoras).OrderBy(t => 1).ToList();
+            _fullTilesList = TilePivot.GetCompleteSet(withRedDoras).OrderBy(t => GlobalTools.Randomizer.NextDouble()).ToList();
 
             _hands = Enumerable.Range(0, 4).Select(i => new HandPivot(_fullTilesList.GetRange(i * 13, 13))).ToList();
             _discards = Enumerable.Range(0, 4).Select(i => new List<TilePivot>()).ToList();
@@ -969,7 +969,7 @@ namespace Gnoj_Ham
                     int riichiPart = _game.PendingRiichiCount * ScoreTools.RIICHI_COST / winners.Count;
 
                     playerInfos.Add(new EndOfRoundInformationsPivot.PlayerInformationsPivot(
-                        pIndex, fanCount, fuCount, phand.Yakus, phand.IsConcealed,
+                        pIndex, fanCount, fuCount, phand,
                         finalScore.Item1 + finalScore.Item2 * 2 + riichiPart,
                         dorasCount, uraDorasCount, redDorasCount));
 
