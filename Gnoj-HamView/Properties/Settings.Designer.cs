@@ -58,5 +58,17 @@ namespace Gnoj_HamView.Properties {
                 return ((int)(this["DefaultCpuSpeed"]));
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool DefaultRiichiAutoDiscard {
+            get {
+                return ((bool)(this["DefaultRiichiAutoDiscard"]));
+            }
+            set {
+                this["DefaultRiichiAutoDiscard"] = value;
+            }
+        }
     }
 }

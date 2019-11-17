@@ -14,5 +14,8 @@
     <Setting Name="DefaultCpuSpeed" Type="System.Int32" Scope="Application">
       <Value Profile="(Default)">3</Value>
     </Setting>
+    <Setting Name="DefaultRiichiAutoDiscard" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">True</Value>
+    </Setting>
   </Settings>
 </SettingsFile>

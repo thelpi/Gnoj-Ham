@@ -21,6 +21,7 @@ namespace Gnoj_HamView
             CbbPointsRule.SelectedIndex = Settings.Default.DefaultPointsRule;
             TxtPlayerName.Text = Settings.Default.DefaultPlayerName;
             ChkUseRedDoras.IsChecked = Settings.Default.DefaultUseRedDoras;
+            ChkRiichiAutoDiscard.IsChecked = Settings.Default.DefaultRiichiAutoDiscard;
         }
 
         private void BtnStart_Click(object sender, RoutedEventArgs e)
@@ -30,7 +31,8 @@ namespace Gnoj_HamView
                 TxtPlayerName.Text,
                 (InitialPointsRulePivot)CbbPointsRule.SelectedIndex,
                 ChkUseRedDoras.IsChecked == true,
-                (CpuSpeed)CbbCpuSpeed.SelectedIndex
+                (CpuSpeed)CbbCpuSpeed.SelectedIndex,
+                ChkRiichiAutoDiscard.IsChecked == true
             ).ShowDialog();
             ShowDialog();
         }

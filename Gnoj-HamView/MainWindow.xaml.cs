@@ -20,6 +20,7 @@ namespace Gnoj_HamView
 
         private readonly GamePivot _game;
         private readonly int _cpuSpeedMs;
+        private readonly bool _riichiAutoDiscard;
 
         /// <summary>
         /// Constructor.
@@ -28,12 +29,14 @@ namespace Gnoj_HamView
         /// <param name="pointRule">Indicates the initial points count for every players.</param>
         /// <param name="useRedDoras">Indicates if red doras should be used.</param>
         /// <param name="cpuSpeed">CPU speed.</param>
-        public MainWindow(string playerName, InitialPointsRulePivot pointRule, bool useRedDoras, CpuSpeed cpuSpeed)
+        /// <param name="riichiAutoDiscard">Auto-dicard when riichi.</param>
+        public MainWindow(string playerName, InitialPointsRulePivot pointRule, bool useRedDoras, CpuSpeed cpuSpeed, bool riichiAutoDiscard)
         {
             InitializeComponent();
             
             _game = new GamePivot(playerName, pointRule, useRedDoras);
             _cpuSpeedMs = Convert.ToInt32(cpuSpeed.ToString().Replace("S", string.Empty));
+            _riichiAutoDiscard = riichiAutoDiscard;
 
             FixWindowDimensions();
 
@@ -322,7 +325,7 @@ namespace Gnoj_HamView
             {
                 if (excludedTile == null || !ReferenceEquals(excludedTile, tile))
                 {
-                    panel.Children.Add(tile.GenerateTileButton(isHuman && _game.Round.IsRiichiDiscardRank(pIndex, -1) ?
+                    panel.Children.Add(tile.GenerateTileButton(isHuman && !_game.Round.IsRiichi(pIndex) ?
                         BtnDiscard_Click : (RoutedEventHandler)null, (Angle)pIndex, !isHuman));
                 }
             }
@@ -504,6 +507,7 @@ namespace Gnoj_HamView
                 {
                     List<TilePivot> tilesRiichi = _game.Round.CanCallRiichi(GamePivot.HUMAN_INDEX);
                     _game.Round.CanCallTsumo(GamePivot.HUMAN_INDEX, false);
+                    bool riichiIsAutoPlayable = false;
                     Dispatcher.Invoke(() =>
                     {
                         StpPickP0.Children.Add(pick.GenerateTileButton(BtnDiscard_Click));
@@ -512,11 +516,26 @@ namespace Gnoj_HamView
                         {
                             ronPlayerId = null;
                         }
-                        else
+                        else if (tilesRiichi.Count > 0)
                         {
                             RiichiCallManagement(tilesRiichi);
                         }
+                        else
+                        {
+                            riichiIsAutoPlayable = _riichiAutoDiscard
+                                && _game.Round.IsRiichi(GamePivot.HUMAN_INDEX)
+                                && BtnKan.Visibility == Visibility.Collapsed
+                                && StpPickP0.Children.Count > 0;
+                        }
                     });
+                    if (riichiIsAutoPlayable)
+                    {
+                        Thread.Sleep(_cpuSpeedMs);
+                        Dispatcher.Invoke(() =>
+                        {
+                            (StpPickP0.Children[0] as Button).RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent));
+                        });
+                    }
                 }
             }
             else if (_game.Round.IsWallExhaustion)

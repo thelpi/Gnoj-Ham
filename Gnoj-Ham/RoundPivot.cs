@@ -233,23 +233,6 @@ namespace Gnoj_Ham
         #region Public methods
 
         /// <summary>
-        /// Checks if the riichi tile rank for the specified player is equals to <paramref name="tileIndex"/>.
-        /// </summary>
-        /// <param name="playerIndex">Player index.</param>
-        /// <param name="tileIndex">The tile index to check.</param>
-        /// <returns><c>True</c> if riichi at the specified index; <c>False</c> otherwise.</returns>
-        /// <exception cref="ArgumentOutOfRangeException"><paramref name="playerIndex"/> is out of range.</exception>
-        public bool IsRiichiDiscardRank(int playerIndex, int tileIndex)
-        {
-            if (playerIndex < 0 || playerIndex > 3)
-            {
-                throw new ArgumentOutOfRangeException(nameof(playerIndex));
-            }
-
-            return Riichis.ElementAt(playerIndex).Item1 == tileIndex;
-        }
-
-        /// <summary>
         /// Tries to pick the next tile from the wall.
         /// </summary>
         /// <returns>The tile if success; <c>null</c> if failure (ie exhausted wall).</returns>
@@ -727,7 +710,40 @@ namespace Gnoj_Ham
             return _hands[playerIndex].IsTenpai(_fullTilesList);
         }
 
-#endregion Public methods
+        /// <summary>
+        /// Checks if the specified player is riichi.
+        /// </summary>
+        /// <param name="playerIndex">Player index.</param>
+        /// <returns><c>True</c> if riichi; <c>False</c> otherwise.</returns>
+        /// <exception cref="ArgumentOutOfRangeException"><paramref name="playerIndex"/> is out of range.</exception>
+        public bool IsRiichi(int playerIndex)
+        {
+            if (playerIndex < 0 || playerIndex > 3)
+            {
+                throw new ArgumentOutOfRangeException(nameof(playerIndex));
+            }
+
+            return _riichis[playerIndex].Item1 >= 0;
+        }
+
+        /// <summary>
+        /// Checks if the riichi tile rank for the specified player is equals to <paramref name="tileIndex"/>.
+        /// </summary>
+        /// <param name="playerIndex">Player index.</param>
+        /// <param name="tileIndex">The tile index to check.</param>
+        /// <returns><c>True</c> if riichi at the specified index; <c>False</c> otherwise.</returns>
+        /// <exception cref="ArgumentOutOfRangeException"><paramref name="playerIndex"/> is out of range.</exception>
+        public bool IsRiichiDiscardRank(int playerIndex, int tileIndex)
+        {
+            if (playerIndex < 0 || playerIndex > 3)
+            {
+                throw new ArgumentOutOfRangeException(nameof(playerIndex));
+            }
+
+            return Riichis.ElementAt(playerIndex).Item1 == tileIndex;
+        }
+
+        #endregion Public methods
 
         #region Private methods
 
@@ -793,12 +809,6 @@ namespace Gnoj_Ham
                 isRiichi: IsRiichi(playerIndex) ? (_riichis[playerIndex].Item3 ? (bool?)null : true) : false,
                 isIppatsu: IsRiichi(playerIndex) && _discards[playerIndex].Count > 0 && ReferenceEquals(_discards[playerIndex].Last(), _riichis[playerIndex].Item2) && IsUninterruptedHistory(playerIndex)
             ));
-        }
-
-        // tests if the specified player is riichi.
-        private bool IsRiichi(int playerIndex)
-        {
-            return _riichis[playerIndex].Item1 >= 0;
         }
 
         // Gets the concealed tile of the round from the point of view of a specified player.
