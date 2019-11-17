@@ -201,11 +201,8 @@ namespace Gnoj_Ham
                 throw new ArgumentOutOfRangeException(nameof(firstPlayerIndex));
             }
 
-#if DEBUG
-            _fullTilesList = TilePivot.GetCompleteSet(withRedDoras).OrderBy(t => 1).ToList();
-#else
+            //_fullTilesList = TilePivot.GetCompleteSet(withRedDoras).OrderBy(t => 1).ToList();
             _fullTilesList = TilePivot.GetCompleteSet(withRedDoras).OrderBy(t => GlobalTools.Randomizer.NextDouble()).ToList();
-#endif
 
             _hands = Enumerable.Range(0, 4).Select(i => new HandPivot(_fullTilesList.GetRange(i * 13, 13))).ToList();
             _discards = Enumerable.Range(0, 4).Select(i => new List<TilePivot>()).ToList();
@@ -698,7 +695,11 @@ namespace Gnoj_Ham
                 && !_waitForDiscard
                 && (
                     skipCurrentAction
-                    || _game.Round.CanCallChii(GamePivot.HUMAN_INDEX).Keys.Count == 0
+                    || (
+                        _game.Round.CanCallChii(GamePivot.HUMAN_INDEX).Keys.Count == 0
+                        && !_game.Round.CanCallPon(GamePivot.HUMAN_INDEX)
+                        && _game.Round.CanCallKan(GamePivot.HUMAN_INDEX).Count == 0
+                    )
                 );
         }
 
