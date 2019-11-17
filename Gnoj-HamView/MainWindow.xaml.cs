@@ -271,6 +271,12 @@ namespace Gnoj_HamView
             }
             else
             {
+                // TODO : ne marche pas car basé sur PreviousPlayerIndex au lieu de CurrentPlayerIndex !!!
+                if (CheckRonForEveryPlayer())
+                {
+                    NewRound(true);
+                }
+
                 FillHandPanel(GamePivot.HUMAN_INDEX, compensationTile);
                 StpPickP0.Children.Add(compensationTile.GenerateTileButton(BtnDiscard_Click));
                 if (previousPlayerIndex.HasValue)
@@ -465,12 +471,29 @@ namespace Gnoj_HamView
             return panel;
         }
 
-        // Proceeds to skip CPU moves while human can't interact (asynchronous call).
+        // Auto-play the round while there's no reason for the player to interact; asynchronous.
         private async void AutoPlayAsync(bool skipCurrentAction = false)
         {
             bool? isRon = await Task.Run(() =>
             {
-                return AutoSkipInternal(skipCurrentAction);
+                while (_game.Round.IsCpuSkippable(skipCurrentAction))
+                {
+                    bool? endAction = CpuTurnAutoPlay();
+                    if (endAction.HasValue)
+                    {
+                        return endAction.Value;
+                    }
+                }
+                if (_game.Round.IsHumanSkippable(skipCurrentAction))
+                {
+                    return HumanTurnAutoPlay();
+                }
+                else if (_game.Round.IsWallExhaustion)
+                {
+                    return false;
+                }
+
+                return null;
             });
 
             if (isRon.HasValue)
@@ -478,96 +501,96 @@ namespace Gnoj_HamView
                 NewRound(isRon.Value);
             }
         }
-
-        // AutoSkip internal content (run asynchronously).
-        private bool? AutoSkipInternal(bool skipCurrentAction)
+        
+        // Auto-play when it's CPU turn
+        private bool? CpuTurnAutoPlay()
         {
-            while (_game.Round.IsCpuSkippable(skipCurrentAction))
+            bool? endAction = null;
+
+            Dispatcher.Invoke(SetPlayersLed);
+            Thread.Sleep(_cpuSpeedMs);
+            TilePivot pick = _game.Round.Pick();
+            if (pick != null)
             {
-                skipCurrentAction = false;
-                Dispatcher.Invoke(SetPlayersLed);
-                Thread.Sleep(_cpuSpeedMs);
-                TilePivot pick = _game.Round.Pick();
-                if (pick != null)
+                if (_game.Round.CanCallTsumo(false))
                 {
-                    if (_game.Round.CanCallTsumo(false))
+                    if (TsumoOrRonCallManagement(_game.Round.CurrentPlayerIndex, false))
                     {
-                        if (TsumoOrRonCallManagement(_game.Round.CurrentPlayerIndex, false))
-                        {
-                            return null;
-                        }
-                        else
-                        {
-                            throw new NotImplementedException();
-                        }
+                        endAction = false;
                     }
                     else
-                    {
-                        _game.Round.RandomDiscard();
-                        Dispatcher.Invoke(() =>
-                        {
-                            FillDiscardPanel(_game.Round.PreviousPlayerIndex);
-                            FillHandPanel(_game.Round.PreviousPlayerIndex);
-                            SetActionButtonsVisibility(cpuPlay: true);
-                        });
-                        if (CheckRonForEveryPlayer())
-                        {
-                            return true;
-                        }
-                    }
-                }
-                else if (!_game.Round.IsWallExhaustion)
-                {
-                    throw new NotImplementedException();
-                }
-            }
-            if (_game.Round.IsHumanTurnBeforePick(skipCurrentAction))
-            {
-                Dispatcher.Invoke(SetPlayersLed);
-                TilePivot pick = _game.Round.Pick();
-                if (pick == null)
-                {
-                    if (!_game.Round.IsWallExhaustion)
                     {
                         throw new NotImplementedException();
                     }
                 }
                 else
                 {
-                    List<TilePivot> tilesRiichi = _game.Round.CanCallRiichi(GamePivot.HUMAN_INDEX);
-                    _game.Round.CanCallTsumo(false);
+                    _game.Round.RandomDiscard();
                     Dispatcher.Invoke(() =>
                     {
-                        StpPickP0.Children.Add(pick.GenerateTileButton(BtnDiscard_Click));
-                        SetActionButtonsVisibility(preDiscard: true);
+                        FillDiscardPanel(_game.Round.PreviousPlayerIndex);
+                        FillHandPanel(_game.Round.PreviousPlayerIndex);
+                        SetActionButtonsVisibility(cpuPlay: true);
                     });
-                    if (TsumoOrRonCallManagement(GamePivot.HUMAN_INDEX, false))
+                    if (CheckRonForEveryPlayer())
                     {
-                        return false;
-                    }
-                    if (tilesRiichi.Count > 0)
-                    {
-                        Dispatcher.Invoke(() =>
-                        {
-                            RiichiCallManagement(tilesRiichi);
-                        });
-                    }
-                    else if (_riichiAutoDiscard && _game.Round.HumanCanAutoDiscard())
-                    {
-                        Thread.Sleep(_cpuSpeedMs);
-                        Dispatcher.Invoke(() =>
-                        {
-                            (StpPickP0.Children[0] as Button).RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent));
-                        });
+                        endAction = true;
                     }
                 }
             }
-            else if (_game.Round.IsWallExhaustion)
+            else if (!_game.Round.IsWallExhaustion)
             {
-                return false;
+                throw new NotImplementedException();
             }
 
-            return null;
+            return endAction;
+        }
+
+        // Auto-play when it's human turn
+        private bool? HumanTurnAutoPlay()
+        {
+            bool? endAction = null;
+
+            Dispatcher.Invoke(SetPlayersLed);
+            TilePivot pick = _game.Round.Pick();
+            if (pick == null)
+            {
+                if (!_game.Round.IsWallExhaustion)
+                {
+                    throw new NotImplementedException();
+                }
+            }
+            else
+            {
+                List<TilePivot> tilesRiichi = _game.Round.CanCallRiichi(GamePivot.HUMAN_INDEX);
+                _game.Round.CanCallTsumo(false);
+                Dispatcher.Invoke(() =>
+                {
+                    StpPickP0.Children.Add(pick.GenerateTileButton(BtnDiscard_Click));
+                    SetActionButtonsVisibility(preDiscard: true);
+                });
+                if (TsumoOrRonCallManagement(GamePivot.HUMAN_INDEX, false))
+                {
+                    endAction = false;
+                }
+                else if (tilesRiichi.Count > 0)
+                {
+                    Dispatcher.Invoke(() =>
+                    {
+                        RiichiCallManagement(tilesRiichi);
+                    });
+                }
+                else if (_riichiAutoDiscard && _game.Round.HumanCanAutoDiscard())
+                {
+                    Thread.Sleep(_cpuSpeedMs);
+                    Dispatcher.Invoke(() =>
+                    {
+                        (StpPickP0.Children[0] as Button).RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent));
+                    });
+                }
+            }
+
+            return endAction;
         }
 
         // Sets the Visibility property of every action buttons

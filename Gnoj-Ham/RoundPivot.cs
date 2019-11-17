@@ -680,7 +680,7 @@ namespace Gnoj_Ham
         /// </summary>
         /// <param name="skipCurrentAction"><c>True</c> to force call skip.</param>
         /// <returns><c>True</c> if the context is human player before pick.</returns>
-        public bool IsHumanTurnBeforePick(bool skipCurrentAction)
+        public bool IsHumanSkippable(bool skipCurrentAction)
         {
             return !IsWallExhaustion
                 && IsHumanPlayer
