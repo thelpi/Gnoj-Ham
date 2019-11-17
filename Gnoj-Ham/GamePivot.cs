@@ -138,11 +138,11 @@ namespace Gnoj_Ham
         /// <summary>
         /// Generates a new round. <see cref="Round"/> stays <c>Null</c> at the end of the game.
         /// </summary>
-        /// <param name="loserPlayerIndex">Loser player index; if any, otherwise <c>Null</c>.</param>
+        /// <param name="ronPlayerIndex">Index of player who suffers from a ron call (if any), otherwise <c>Null</c>.</param>
         /// <returns>An instance of <see cref="EndOfRoundInformationsPivot"/>.</returns>
-        public EndOfRoundInformationsPivot NewRound(int? loserPlayerIndex)
+        public EndOfRoundInformationsPivot NewRound(int? ronPlayerIndex)
         {
-            EndOfRoundInformationsPivot endOfRoundInformations = Round.EndOfRound(loserPlayerIndex);
+            EndOfRoundInformationsPivot endOfRoundInformations = Round.EndOfRound(ronPlayerIndex);
 
             if (endOfRoundInformations.ResetRiichiPendingCount)
             {

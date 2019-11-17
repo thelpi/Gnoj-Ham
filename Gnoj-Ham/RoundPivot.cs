@@ -834,17 +834,17 @@ namespace Gnoj_Ham
             return -1;
         }
 
-#endregion Private methods
+        #endregion Private methods
 
-#region Internal methods
+        #region Internal methods
 
         /// <summary>
         /// Manages the end of a round.
         /// </summary>
-        /// <param name="loserPlayerIndex">Loser index, if any.</param>
+        /// <param name="ronPlayerIndex">Index of player who suffers from a ron call (if any), otherwise <c>Null</c>.</param>
         /// <returns>An instance of <see cref="EndOfRoundInformationsPivot"/>.</returns>
         /// <exception cref="ArgumentException"><see cref="Messages.InvalidEndOfroundPlayer"/></exception>
-        internal EndOfRoundInformationsPivot EndOfRound(int? loserPlayerIndex)
+        internal EndOfRoundInformationsPivot EndOfRound(int? ronPlayerIndex)
         {
             bool turnWind = false;
             bool resetsRiichiCount = false;
@@ -852,12 +852,12 @@ namespace Gnoj_Ham
 
             List<int> winners = _hands.Where(h => h.IsComplete).Select(w => _hands.IndexOf(w)).ToList();
 
-            if ((loserPlayerIndex.HasValue && (loserPlayerIndex.Value < 0 || loserPlayerIndex.Value > 3))
-                || (winners.Count > 1 && !loserPlayerIndex.HasValue)
-                || (winners.Count == 0 && loserPlayerIndex.HasValue)
-                || (loserPlayerIndex.HasValue && winners.Contains(loserPlayerIndex.Value)))
+            if ((ronPlayerIndex.HasValue && (ronPlayerIndex.Value < 0 || ronPlayerIndex.Value > 3))
+                || (winners.Count > 1 && !ronPlayerIndex.HasValue)
+                || (winners.Count == 0 && ronPlayerIndex.HasValue)
+                || (ronPlayerIndex.HasValue && winners.Contains(ronPlayerIndex.Value)))
             {
-                throw new ArgumentException(Messages.InvalidEndOfroundPlayer, nameof(loserPlayerIndex));
+                throw new ArgumentException(Messages.InvalidEndOfroundPlayer, nameof(ronPlayerIndex));
             }
 
             if (winners.Count == 0)
@@ -898,9 +898,9 @@ namespace Gnoj_Ham
                     HandPivot phand = _hands[pIndex];
 
                     // HACK : in case of ron, fix the "LatestPick" of the winning hand
-                    if (loserPlayerIndex.HasValue)
+                    if (ronPlayerIndex.HasValue)
                     {
-                        phand.SetFromRon(_discards[loserPlayerIndex.Value].Last());
+                        phand.SetFromRon(_discards[ronPlayerIndex.Value].Last());
                     }
 
                     bool isRiichi = phand.Yakus.Contains(YakuPivot.Riichi) || phand.Yakus.Contains(YakuPivot.DaburuRiichi);
@@ -915,10 +915,10 @@ namespace Gnoj_Ham
                     }
 
                     int fanCount = ScoreTools.GetFanCount(phand.Yakus, phand.IsConcealed, dorasCount, uraDorasCount, redDorasCount);
-                    int fuCount = ScoreTools.GetFuCount(phand, !loserPlayerIndex.HasValue, _game.DominantWind, _game.GetPlayerCurrentWind(pIndex));
+                    int fuCount = ScoreTools.GetFuCount(phand, !ronPlayerIndex.HasValue, _game.DominantWind, _game.GetPlayerCurrentWind(pIndex));
 
                     Tuple<int, int> finalScore = ScoreTools.GetPoints(fanCount, fuCount, _game.EastIndexTurnCount - 1, winners.Count,
-                        !loserPlayerIndex.HasValue, _game.GetPlayerCurrentWind(pIndex));
+                        !ronPlayerIndex.HasValue, _game.GetPlayerCurrentWind(pIndex));
 
                     // TODO: if RiichiPendingCount si not a multiple of 3, and there're three winners, it doesn't work well !
                     int riichiPart = _game.PendingRiichiCount * ScoreTools.RIICHI_COST / winners.Count;
@@ -932,9 +932,9 @@ namespace Gnoj_Ham
                     notEastLostCumul -= finalScore.Item2;
                 }
 
-                if (loserPlayerIndex.HasValue)
+                if (ronPlayerIndex.HasValue)
                 {
-                    playerInfos.Add(new EndOfRoundInformationsPivot.PlayerInformationsPivot(loserPlayerIndex.Value, eastOrLoserLostCumul));
+                    playerInfos.Add(new EndOfRoundInformationsPivot.PlayerInformationsPivot(ronPlayerIndex.Value, eastOrLoserLostCumul));
                 }
                 else
                 {
