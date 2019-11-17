@@ -201,8 +201,8 @@ namespace Gnoj_Ham
                 throw new ArgumentOutOfRangeException(nameof(firstPlayerIndex));
             }
 
-            //_fullTilesList = TilePivot.GetCompleteSet(withRedDoras).OrderBy(t => 1).ToList();
-            _fullTilesList = TilePivot.GetCompleteSet(withRedDoras).OrderBy(t => GlobalTools.Randomizer.NextDouble()).ToList();
+            _fullTilesList = TilePivot.GetCompleteSet(withRedDoras).OrderBy(t => 1).ToList();
+            //_fullTilesList = TilePivot.GetCompleteSet(withRedDoras).OrderBy(t => GlobalTools.Randomizer.NextDouble()).ToList();
 
             _hands = Enumerable.Range(0, 4).Select(i => new HandPivot(_fullTilesList.GetRange(i * 13, 13))).ToList();
             _discards = Enumerable.Range(0, 4).Select(i => new List<TilePivot>()).ToList();
@@ -563,24 +563,17 @@ namespace Gnoj_Ham
         }
 
         /// <summary>
-        /// Proceeds to default action for the current player: picks a tile from the wall and discard a random one.
+        /// Proceeds to discard a random tile for the current player.
         /// </summary>
         /// <returns>
         /// <c>False</c> if the wall is exhausted, or a move is not expected in this context;
         /// <c>True</c> otherwise.
         /// </returns>
-        public bool AutoPickAndDiscard()
+        public void RandomDiscard()
         {
-            if (Pick() == null)
-            {
-                return false;
-            }
-
             // Discards a random tile.
             // Can't fail as it's never from a stolen call.
             Discard(_hands[CurrentPlayerIndex].ConcealedTiles.Skip(GlobalTools.Randomizer.Next(0, _hands[CurrentPlayerIndex].ConcealedTiles.Count)).First());
-
-            return true;
         }
 
         /// <summary>
@@ -606,23 +599,22 @@ namespace Gnoj_Ham
         }
 
         /// <summary>
-        /// Checks if the hand of the specified player is ready for calling tsumo.
+        /// Checks if the hand of the current player is ready for calling tsumo.
         /// </summary>
-        /// <param name="playerIndex">The player index.</param>
         /// <param name="isKanCompensation"><c>True</c> if the latest pick comes from a kan compensation.</param>
         /// <returns><c>True</c> if ready for tsumo; <c>False</c> otherwise.</returns>
-        public bool CanCallTsumo(int playerIndex, bool isKanCompensation)
+        public bool CanCallTsumo(bool isKanCompensation)
         {
-            if (CurrentPlayerIndex != playerIndex || !_waitForDiscard)
+            if (!_waitForDiscard)
             {
                 return false;
             }
 
-            SetYakus(playerIndex,
-                _hands[playerIndex].LatestPick,
+            SetYakus(CurrentPlayerIndex,
+                _hands[CurrentPlayerIndex].LatestPick,
                 isKanCompensation ? DrawTypePivot.Compensation : DrawTypePivot.Wall);
 
-            return _hands[playerIndex].IsComplete;
+            return _hands[CurrentPlayerIndex].IsComplete;
         }
 
         /// <summary>

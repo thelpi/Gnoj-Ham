@@ -306,12 +306,12 @@ namespace Gnoj_Ham
             {
                 if (isTsumo)
                 {
-                    v1 += honbaCount / 3;
-                    v2 += honbaCount / 3;
+                    v1 += (honbaCount * HONBA_VALUE) / 3;
+                    v2 += (honbaCount * HONBA_VALUE) / 3;
                 }
                 else
                 {
-                    v1 += honbaCount / winnerPlayersCount;
+                    v1 += (honbaCount * HONBA_VALUE) / winnerPlayersCount;
                 }
             }
 

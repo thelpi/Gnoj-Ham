@@ -193,16 +193,13 @@ namespace Gnoj_HamView
         }
 
         // Manages ron and tsumo call opportunities.
-        private bool TsumoOrRonCallManagement(bool ron)
+        private bool TsumoOrRonCallManagement(int playerIndex, bool ron)
         {
-            if (_game.Round.Hands.ElementAt(GamePivot.HUMAN_INDEX).IsComplete)
-            {
-                if (_autoTsumoRon || MessageBox.Show($"Declare {(ron ? "ron" : "tsumo")} ?", WINDOW_TITLE, MessageBoxButton.YesNo) == MessageBoxResult.Yes)
-                {
-                    return true;
-                }
-            }
-            return false;
+            return _game.Round.Hands.ElementAt(playerIndex).IsComplete && (
+                _autoTsumoRon
+                || playerIndex != GamePivot.HUMAN_INDEX
+                || MessageBox.Show($"Declare {(ron ? "ron" : "tsumo")} ?", WINDOW_TITLE, MessageBoxButton.YesNo) == MessageBoxResult.Yes
+            );
         }
 
         // Restrict possible discards on the specified selection of tiles.
@@ -262,8 +259,8 @@ namespace Gnoj_HamView
                 AddLatestCombinationToStack(GamePivot.HUMAN_INDEX);
                 SetActionButtonsVisibility(preDiscard: true);
                 StpDoras.SetDorasPanel(_game.Round.DoraIndicatorTiles, _game.Round.VisibleDorasCount);
-                _game.Round.CanCallTsumo(GamePivot.HUMAN_INDEX, false);
-                if (TsumoOrRonCallManagement(false))
+                _game.Round.CanCallTsumo(false);
+                if (TsumoOrRonCallManagement(GamePivot.HUMAN_INDEX, false))
                 {
                     NewRound();
                 }
@@ -350,8 +347,8 @@ namespace Gnoj_HamView
             }
             SetPlayersLed();
             SetActionButtonsVisibility(preDiscard: true);
-            _game.Round.CanCallTsumo(GamePivot.HUMAN_INDEX, false);
-            if (TsumoOrRonCallManagement(false))
+            _game.Round.CanCallTsumo(false);
+            if (TsumoOrRonCallManagement(_game.Round.CurrentPlayerIndex, false))
             {
                 NewRound();
             }
@@ -471,22 +468,34 @@ namespace Gnoj_HamView
                 skipCurrentAction = false;
                 Dispatcher.Invoke(SetPlayersLed);
                 Thread.Sleep(_cpuSpeedMs);
-                if (_game.Round.AutoPickAndDiscard())
+                TilePivot pick = _game.Round.Pick();
+                if (pick != null)
                 {
-                    int? potentialRonPlayerId = _game.Round.CanCallRon(GamePivot.HUMAN_INDEX);
-                    Dispatcher.Invoke(() =>
+                    if (_game.Round.CanCallTsumo(false))
                     {
-                        FillDiscardPanel(_game.Round.PreviousPlayerIndex);
-                        FillHandPanel(_game.Round.PreviousPlayerIndex);
-                        SetActionButtonsVisibility(cpuPlay: true);
-                        if (TsumoOrRonCallManagement(true))
+                        if (TsumoOrRonCallManagement(_game.Round.CurrentPlayerIndex, false))
                         {
-                            ronPlayerId = potentialRonPlayerId;
+                            return null;
                         }
-                    });
-                    if (!ronPlayerId.HasValue || ronPlayerId >= 0)
+                        else
+                        {
+                            throw new NotImplementedException();
+                        }
+                    }
+                    else
                     {
-                        return ronPlayerId;
+                        _game.Round.RandomDiscard();
+                        int? potentialRonPlayerId = _game.Round.CanCallRon(GamePivot.HUMAN_INDEX);
+                        Dispatcher.Invoke(() =>
+                        {
+                            FillDiscardPanel(_game.Round.PreviousPlayerIndex);
+                            FillHandPanel(_game.Round.PreviousPlayerIndex);
+                            SetActionButtonsVisibility(cpuPlay: true);
+                        });
+                        if (TsumoOrRonCallManagement(GamePivot.HUMAN_INDEX, true))
+                        {
+                            return potentialRonPlayerId;
+                        }
                     }
                 }
                 else if (!_game.Round.IsWallExhaustion)
@@ -508,13 +517,13 @@ namespace Gnoj_HamView
                 else
                 {
                     List<TilePivot> tilesRiichi = _game.Round.CanCallRiichi(GamePivot.HUMAN_INDEX);
-                    _game.Round.CanCallTsumo(GamePivot.HUMAN_INDEX, false);
+                    _game.Round.CanCallTsumo(false);
                     bool riichiIsAutoPlayable = false;
                     Dispatcher.Invoke(() =>
                     {
                         StpPickP0.Children.Add(pick.GenerateTileButton(BtnDiscard_Click));
                         SetActionButtonsVisibility(preDiscard: true);
-                        if (TsumoOrRonCallManagement(false))
+                        if (TsumoOrRonCallManagement(GamePivot.HUMAN_INDEX, false))
                         {
                             ronPlayerId = null;
                         }
