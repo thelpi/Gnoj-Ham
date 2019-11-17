@@ -47,7 +47,7 @@ namespace Gnoj_HamView
 
             ContentRendered += delegate(object sender, EventArgs evt)
             {
-                AutoSkipAsync();
+                AutoPlayAsync();
             };
         }
 
@@ -60,7 +60,11 @@ namespace Gnoj_HamView
                 FillHandPanel(_game.Round.PreviousPlayerIndex);
                 FillDiscardPanel(_game.Round.PreviousPlayerIndex);
                 SetActionButtonsVisibility();
-                AutoSkipAsync();
+                if (CheckRonForEveryPlayer())
+                {
+                    NewRound(true);
+                }
+                AutoPlayAsync();
             }
         }
 
@@ -153,7 +157,7 @@ namespace Gnoj_HamView
                 FillHandPanel(_game.Round.PreviousPlayerIndex);
                 FillDiscardPanel(_game.Round.PreviousPlayerIndex);
                 SetActionButtonsVisibility();
-                AutoSkipAsync();
+                AutoPlayAsync();
             }
             else
             {
@@ -167,7 +171,7 @@ namespace Gnoj_HamView
                 || BtnChii.Visibility == Visibility.Visible
                 || BtnKan.Visibility == Visibility.Visible)
             {
-                AutoSkipAsync(true);
+                AutoPlayAsync(true);
             }
             else if (StpPickP0.Children.Count > 0)
             {
@@ -178,6 +182,23 @@ namespace Gnoj_HamView
         #endregion Window events
 
         #region Private methods
+
+        // Checks ron possibilities for every players except "PreviousPlayerIndex".
+        private bool CheckRonForEveryPlayer()
+        {
+            var callingRonPlayers = new List<int>();
+            for (int i = 0; i < 4; i++)
+            {
+                if (i != _game.Round.PreviousPlayerIndex)
+                {
+                    if (_game.Round.CanCallRon(i))
+                    {
+                        callingRonPlayers.Add(i);
+                    }
+                }
+            }
+            return callingRonPlayers.Any(i => TsumoOrRonCallManagement(i, true));
+        }
 
         // Manages riichii call opportunities.
         private void RiichiCallManagement(List<TilePivot> tiles)
@@ -262,7 +283,7 @@ namespace Gnoj_HamView
                 _game.Round.CanCallTsumo(false);
                 if (TsumoOrRonCallManagement(GamePivot.HUMAN_INDEX, false))
                 {
-                    NewRound();
+                    NewRound(false);
                 }
                 else
                 {
@@ -350,7 +371,7 @@ namespace Gnoj_HamView
             _game.Round.CanCallTsumo(false);
             if (TsumoOrRonCallManagement(_game.Round.CurrentPlayerIndex, false))
             {
-                NewRound();
+                NewRound(false);
             }
             else
             {
@@ -400,16 +421,16 @@ namespace Gnoj_HamView
         }
 
         // Proceeds to new round.
-        private void NewRound(int? ronPlayerIndex = null)
+        private void NewRound(bool isRon)
         {
-            EndOfRoundInformationsPivot endOfRoundInfos = _game.NewRound(ronPlayerIndex);
+            EndOfRoundInformationsPivot endOfRoundInfos = _game.NextRound(isRon);
             new ScoreWindow(_game.Players.ToList(), endOfRoundInfos).ShowDialog();
             if (endOfRoundInfos.EndOfGame)
             {
                 Close();
             }
             NewRoundRefresh();
-            AutoSkipAsync();
+            AutoPlayAsync();
         }
 
         // Adds to the player stack its last combination.
@@ -445,24 +466,22 @@ namespace Gnoj_HamView
         }
 
         // Proceeds to skip CPU moves while human can't interact (asynchronous call).
-        private async void AutoSkipAsync(bool skipCurrentAction = false)
+        private async void AutoPlayAsync(bool skipCurrentAction = false)
         {
-            int? ronPlayerIndex = await Task.Run(() =>
+            bool? isRon = await Task.Run(() =>
             {
                 return AutoSkipInternal(skipCurrentAction);
             });
 
-            if (!ronPlayerIndex.HasValue || ronPlayerIndex.Value >= 0)
+            if (isRon.HasValue)
             {
-                NewRound(ronPlayerIndex);
+                NewRound(isRon.Value);
             }
         }
 
         // AutoSkip internal content (run asynchronously).
-        private int? AutoSkipInternal(bool skipCurrentAction)
+        private bool? AutoSkipInternal(bool skipCurrentAction)
         {
-            int? ronPlayerId = -1;
-
             while (_game.Round.IsCpuSkippable(skipCurrentAction))
             {
                 skipCurrentAction = false;
@@ -491,20 +510,9 @@ namespace Gnoj_HamView
                             FillHandPanel(_game.Round.PreviousPlayerIndex);
                             SetActionButtonsVisibility(cpuPlay: true);
                         });
-                        var callingRonPlayers = new List<int>();
-                        for (int i = 0; i < 4; i++)
+                        if (CheckRonForEveryPlayer())
                         {
-                            if (i != _game.Round.PreviousPlayerIndex)
-                            {
-                                if (_game.Round.CanCallRon(i))
-                                {
-                                    callingRonPlayers.Add(i);
-                                }
-                            }
-                        }
-                        if (callingRonPlayers.Any(i => TsumoOrRonCallManagement(i, true)))
-                        {
-                            return _game.Round.PreviousPlayerIndex;
+                            return true;
                         }
                     }
                 }
@@ -528,28 +536,23 @@ namespace Gnoj_HamView
                 {
                     List<TilePivot> tilesRiichi = _game.Round.CanCallRiichi(GamePivot.HUMAN_INDEX);
                     _game.Round.CanCallTsumo(false);
-                    bool riichiIsAutoPlayable = false;
                     Dispatcher.Invoke(() =>
                     {
                         StpPickP0.Children.Add(pick.GenerateTileButton(BtnDiscard_Click));
                         SetActionButtonsVisibility(preDiscard: true);
-                        if (TsumoOrRonCallManagement(GamePivot.HUMAN_INDEX, false))
-                        {
-                            ronPlayerId = null;
-                        }
-                        else if (tilesRiichi.Count > 0)
+                    });
+                    if (TsumoOrRonCallManagement(GamePivot.HUMAN_INDEX, false))
+                    {
+                        return false;
+                    }
+                    if (tilesRiichi.Count > 0)
+                    {
+                        Dispatcher.Invoke(() =>
                         {
                             RiichiCallManagement(tilesRiichi);
-                        }
-                        else
-                        {
-                            riichiIsAutoPlayable = _riichiAutoDiscard
-                                && _game.Round.IsRiichi(GamePivot.HUMAN_INDEX)
-                                && BtnKan.Visibility == Visibility.Collapsed
-                                && StpPickP0.Children.Count > 0;
-                        }
-                    });
-                    if (riichiIsAutoPlayable)
+                        });
+                    }
+                    else if (_riichiAutoDiscard && _game.Round.HumanCanAutoDiscard())
                     {
                         Thread.Sleep(_cpuSpeedMs);
                         Dispatcher.Invoke(() =>
@@ -561,10 +564,10 @@ namespace Gnoj_HamView
             }
             else if (_game.Round.IsWallExhaustion)
             {
-                ronPlayerId = null;
+                return false;
             }
 
-            return ronPlayerId;
+            return null;
         }
 
         // Sets the Visibility property of every action buttons
