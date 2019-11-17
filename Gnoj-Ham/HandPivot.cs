@@ -84,7 +84,13 @@ namespace Gnoj_Ham
         {
             get
             {
-                return _declaredCombinations.SelectMany(t => t.Tiles).Concat(_concealedTiles).ToList();
+                List<TilePivot> allTiles = _declaredCombinations.SelectMany(t => t.Tiles).Concat(_concealedTiles).ToList();
+                if (LatestPick != null && !allTiles.Any(t => ReferenceEquals(t, LatestPick)))
+                {
+                    allTiles.Add(LatestPick);
+                }
+
+                return allTiles;
             }
         }
 
@@ -221,17 +227,17 @@ namespace Gnoj_Ham
                 combinationsSequence.AddRange(declaredCombinations);
             }
 
-            // Filters duplicates sequences
-            combinationsSequences.RemoveAll(cs1 =>
-                combinationsSequences.Exists(cs2 =>
-                    combinationsSequences.IndexOf(cs2) < combinationsSequences.IndexOf(cs1)
-                    && cs1.IsBijection(cs2)));
-
             // Filters invalid sequences :
             // - Doesn't contain exactly 5 combinations.
             // - Doesn't contain a pair.
             // - Contains more than one pair.
             combinationsSequences.RemoveAll(cs => cs.Count() != 5 || cs.Count(c => c.IsPair) != 1);
+
+            // Filters duplicates sequences
+            combinationsSequences.RemoveAll(cs1 =>
+                combinationsSequences.Exists(cs2 =>
+                    combinationsSequences.IndexOf(cs2) < combinationsSequences.IndexOf(cs1)
+                    && cs1.IsBijection(cs2)));
 
             return combinationsSequences;
         }
