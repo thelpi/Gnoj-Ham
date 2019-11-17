@@ -163,6 +163,10 @@ namespace Gnoj_HamView
             {
                 AutoSkipAsync(true);
             }
+            else if (StpPickP0.Children.Count > 0)
+            {
+                (StpPickP0.Children[0] as Button).RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent));
+            }
         }
 
         #endregion Window events
