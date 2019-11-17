@@ -524,7 +524,6 @@ namespace Gnoj_Ham
             if (IsThirteenOrphans(concealedTiles))
             {
                 var yakus = new List<YakuPivot>() { YakuPivot.KokushiMusou };
-                // HACK : this section is duplicated with the one in "YakuPivot.GetYakus()".
                 if (context.IsTenhou())
                 {
                     yakus.Add(YakuPivot.Tenhou);

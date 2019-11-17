@@ -11,8 +11,6 @@ namespace Gnoj_Ham
     {
         #region Points chart
 
-        // TODO : transform these constants into configuration.
-
         /// <summary>
         /// Riichi cost.
         /// </summary>

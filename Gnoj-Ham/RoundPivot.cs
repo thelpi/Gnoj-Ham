@@ -860,9 +860,11 @@ namespace Gnoj_Ham
             return tiles;
         }
 
-        // Checks for a player with nagashi mangan.
-        private int CheckForNagashiMangan()
+        // Checks for players with nagashi mangan.
+        private List<int> CheckForNagashiMangan()
         {
+            var playerIndexList = new List<int>();
+
             for (int i = 0; i < 4; i++)
             {
                 bool fullTerminalsOrHonors = _discards[i].All(t => t.IsHonorOrTerminal);
@@ -871,12 +873,11 @@ namespace Gnoj_Ham
                 if (fullTerminalsOrHonors && noPlayerStealing && noOpponentStealing)
                 {
                     _hands[i].SetYakus(new WinContextPivot());
-                    // TODO manage several Nagashi Mangan.
-                    return i;
+                    playerIndexList.Add(i);
                 }
             }
 
-            return -1;
+            return playerIndexList;
         }
 
         #endregion Private methods
@@ -907,10 +908,10 @@ namespace Gnoj_Ham
 
             if (winners.Count == 0)
             {
-                int iNagashi = CheckForNagashiMangan();
-                if (iNagashi >= 0)
+                List<int> iNagashiList = CheckForNagashiMangan();
+                if (iNagashiList.Count > 0)
                 {
-                    winners.Add(iNagashi);
+                    winners.AddRange(iNagashiList);
                 }
             }
             
@@ -934,7 +935,7 @@ namespace Gnoj_Ham
             {
                 turnWind = !winners.Any(w => _game.GetPlayerCurrentWind(w) == WindPivot.East);
 
-                // TODO : Sekinin barai :-(
+                // TODO : Sekinin barai
 
                 int eastOrLoserLostCumul = 0;
                 int notEastLostCumul = 0;
@@ -942,7 +943,7 @@ namespace Gnoj_Ham
                 {
                     HandPivot phand = _hands[pIndex];
 
-                    // HACK : in case of ron, fix the "LatestPick" of the winning hand
+                    // In case of ron, fix the "LatestPick" property of the winning hand
                     if (ronPlayerIndex.HasValue)
                     {
                         phand.SetFromRon(_discards[ronPlayerIndex.Value].Last());

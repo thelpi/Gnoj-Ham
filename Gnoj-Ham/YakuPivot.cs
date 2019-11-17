@@ -686,7 +686,7 @@ namespace Gnoj_Ham
             }
 
             // Remove yakus with existant upgrade.
-            // HACK it might not working if there are several level of upgrades.
+            // It works because Upgrades is not recursive.
             yakus.RemoveAll(y => y.Upgrades.Any(yu => yakus.Contains(yu)));
 
             // On a concealed chanka, only Kokushi is allowed.
