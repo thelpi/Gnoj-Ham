@@ -155,11 +155,6 @@ namespace Gnoj_HamView
             }
         }
 
-        private void BtnRon_Click(object sender, RoutedEventArgs e)
-        {
-            throw new NotImplementedException();
-        }
-
         private void Window_MouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
             if (BtnPon.Visibility == Visibility.Visible
@@ -323,7 +318,8 @@ namespace Gnoj_HamView
             {
                 if (excludedTile == null || !ReferenceEquals(excludedTile, tile))
                 {
-                    panel.Children.Add(tile.GenerateTileButton(isHuman && _game.Round.Riichis.ElementAt(pIndex).Item1 < 0 ? BtnDiscard_Click : (RoutedEventHandler)null, (Angle)pIndex, !isHuman));
+                    panel.Children.Add(tile.GenerateTileButton(isHuman && _game.Round.IsRiichiDiscardRank(pIndex, -1) ?
+                        BtnDiscard_Click : (RoutedEventHandler)null, (Angle)pIndex, !isHuman));
                 }
             }
         }
@@ -381,7 +377,7 @@ namespace Gnoj_HamView
             {
                 StackPanel panel = FindName($"StpP{pIndex}Discard{(i < 6 ? 1 : (i < 12 ? 2 : 3))}") as StackPanel;
                 Angle angle = (Angle)pIndex;
-                if (i == _game.Round.Riichis.ElementAt(pIndex).Item1)
+                if (_game.Round.IsRiichiDiscardRank(pIndex, i))
                 {
                     angle = (Angle)pIndex.RelativePlayerIndex(1);
                 }
@@ -435,7 +431,7 @@ namespace Gnoj_HamView
             {
                 panel.Children.Add(tileKvp.Key.GenerateTileButton(null,
                     (Angle)(tileKvp.Value ? pIndex.RelativePlayerIndex(1): pIndex),
-                    combo.IsSquare && combo.IsConcealed && i > 0 && i < 3));
+                    combo.IsConcealedDisplay(i)));
                 i++;
             }
 

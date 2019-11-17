@@ -453,6 +453,16 @@ namespace Gnoj_Ham
         #region Public methods
 
         /// <summary>
+        /// Checks if the specified tile index must be displayed as concealed (aka tiles 2 and 3 from a square).
+        /// </summary>
+        /// <param name="i">The tile index.</param>
+        /// <returns><c>True</c> if concealed display; <c>False</c> otherwise.</returns>
+        public bool IsConcealedDisplay(int i)
+        {
+            return IsSquare && IsConcealed && i > 0 && i < 3;
+        }
+
+        /// <summary>
         /// Gets the list of tiles from the combination, sorted by wind logic for display.
         /// </summary>
         /// <param name="ownerWind">The current wind of the owner.</param>

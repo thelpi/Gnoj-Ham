@@ -80,6 +80,22 @@ namespace Gnoj_Ham
 
         #endregion Embedded properties
 
+        #region Inferred properties
+
+
+        /// <summary>
+        /// Inferred; count of uradora to display.
+        /// </summary>
+        public int UraDoraVisibleCount
+        {
+            get
+            {
+                return DisplayUraDora ? DoraVisibleCount : 0;
+            }
+        }
+
+        #endregion Inferred properties
+
         #region Constructors
 
         /// <summary>
@@ -122,6 +138,21 @@ namespace Gnoj_Ham
         }
 
         #endregion Constructors
+
+        #region Public methods
+
+        /// <summary>
+        /// Get the <see cref="PlayerInformationsPivot.PointsGain"/> of the specified player index.
+        /// </summary>
+        /// <param name="playerIndex">Player index.</param>
+        /// <param name="defaultValue">Optionnal, value to return if player not found; default value is <c>0</c>.</param>
+        /// <returns>The points gain.</returns>
+        public int GetPlayerPointsGain(int playerIndex, int defaultValue = 0)
+        {
+            return PlayersInfo.FirstOrDefault(p => p.Index == playerIndex)?.PointsGain ?? defaultValue;
+        }
+
+        #endregion Public methods
 
         /// <summary>
         /// Represents informations relative to one player at the end of the round.

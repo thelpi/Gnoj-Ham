@@ -28,7 +28,7 @@ namespace Gnoj_HamView
             LblHonba.Content = endOfRoundInformations.HonbaCount;
             LblPendingRiichi.Content = endOfRoundInformations.PendingRiichiCount;
             StpDoraTiles.SetDorasPanel(endOfRoundInformations.DoraTiles, endOfRoundInformations.DoraVisibleCount);
-            StpUraDoraTiles.SetDorasPanel(endOfRoundInformations.UraDoraTiles, endOfRoundInformations.DisplayUraDora ? endOfRoundInformations.DoraVisibleCount : 0);
+            StpUraDoraTiles.SetDorasPanel(endOfRoundInformations.UraDoraTiles, endOfRoundInformations.UraDoraVisibleCount);
 
             foreach (EndOfRoundInformationsPivot.PlayerInformationsPivot p in endOfRoundInformations.PlayersInfo)
             {
@@ -47,7 +47,7 @@ namespace Gnoj_HamView
                 (FindName($"LblPlayer{i}") as Label).Content = players[i].Name;
                 (FindName($"LblScore{i}") as Label).Content = players[i].Points;
 
-                int gain = endOfRoundInformations.PlayersInfo.FirstOrDefault(p => p.Index == i)?.PointsGain ?? 0;
+                int gain = endOfRoundInformations.GetPlayerPointsGain(i);
 
                 Label lblGain = (FindName($"LblGain{i}") as Label);
 

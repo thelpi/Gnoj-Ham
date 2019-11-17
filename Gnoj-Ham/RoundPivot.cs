@@ -228,9 +228,26 @@ namespace Gnoj_Ham
             _game = game;
         }
 
-#endregion Constructors
+        #endregion Constructors
 
-#region Public methods
+        #region Public methods
+
+        /// <summary>
+        /// Checks if the riichi tile rank for the specified player is equals to <paramref name="tileIndex"/>.
+        /// </summary>
+        /// <param name="playerIndex">Player index.</param>
+        /// <param name="tileIndex">The tile index to check.</param>
+        /// <returns><c>True</c> if riichi at the specified index; <c>False</c> otherwise.</returns>
+        /// <exception cref="ArgumentOutOfRangeException"><paramref name="playerIndex"/> is out of range.</exception>
+        public bool IsRiichiDiscardRank(int playerIndex, int tileIndex)
+        {
+            if (playerIndex < 0 || playerIndex > 3)
+            {
+                throw new ArgumentOutOfRangeException(nameof(playerIndex));
+            }
+
+            return Riichis.ElementAt(playerIndex).Item1 == tileIndex;
+        }
 
         /// <summary>
         /// Tries to pick the next tile from the wall.
@@ -712,7 +729,7 @@ namespace Gnoj_Ham
 
 #endregion Public methods
 
-#region Private methods
+        #region Private methods
 
         // Checks if the hand of the specified player is riichi and list tiles which can be discarded.
         private List<TilePivot> ExtractRiichiPossibilities(int playerIndex)

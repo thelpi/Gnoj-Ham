@@ -1,9 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing;
+using System.Drawing.Imaging;
+using System.IO;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
+using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 using Gnoj_Ham;
 
@@ -43,13 +47,13 @@ namespace Gnoj_HamView
         {
             string rscName = concealed ? CONCEALED_TILE_RSC_NAME : tile.ToString();
 
-            System.Drawing.Bitmap tileBitmap = Properties.Resources.ResourceManager.GetObject(rscName) as System.Drawing.Bitmap;
+            Bitmap tileBitmap = Properties.Resources.ResourceManager.GetObject(rscName) as Bitmap;
 
             var button = new Button
             {
                 Height = angle == Angle.A0 || angle == Angle.A180 ? TILE_HEIGHT : TILE_WIDTH,
                 Width = angle == Angle.A0 || angle == Angle.A180 ? TILE_WIDTH : TILE_HEIGHT,
-                Content = new Image
+                Content = new System.Windows.Controls.Image
                 {
                     Source = tileBitmap.ToBitmapImage(),
                     LayoutTransform = new RotateTransform(Convert.ToDouble(angle.ToString().Replace("A", string.Empty)))
@@ -134,7 +138,7 @@ namespace Gnoj_HamView
             {
                 VerticalAlignment = VerticalAlignment.Center,
                 Content = p.PointsGain,
-                Foreground = Brushes.Red
+                Foreground = System.Windows.Media.Brushes.Red
             };
             gainLbl.SetValue(Grid.RowProperty, 0);
             gainLbl.SetValue(Grid.ColumnProperty, 2);
@@ -153,7 +157,7 @@ namespace Gnoj_HamView
 
             var separator = new Line
             {
-                Fill =  Brushes.Black,
+                Fill = System.Windows.Media.Brushes.Black,
                 Height = 2,
                 Width = 200,
                 VerticalAlignment = VerticalAlignment.Center
@@ -170,6 +174,7 @@ namespace Gnoj_HamView
             return boxPanel;
         }
 
+        // Adds a yaku to the grid.
         private static void AddGridRowYaku(this Grid gridTop, int i, string yakuName, int yakuFanCount)
         {
             gridTop.RowDefinitions.Add(new RowDefinition { Height = new GridLength(30) });
@@ -188,13 +193,42 @@ namespace Gnoj_HamView
                 VerticalAlignment = VerticalAlignment.Center,
                 HorizontalAlignment = HorizontalAlignment.Left,
                 Content = yakuFanCount,
-                Foreground = Brushes.Red
+                Foreground = System.Windows.Media.Brushes.Red
             };
             lblYakuFanCount.SetValue(Grid.ColumnProperty, 1);
             lblYakuFanCount.SetValue(Grid.RowProperty, i);
 
             gridTop.Children.Add(lblYakuName);
             gridTop.Children.Add(lblYakuFanCount);
+        }
+
+        /// <summary>
+        /// Extension; transfoms a <see cref="Bitmap"/> to a <see cref="BitmapImage"/>.
+        /// </summary>
+        /// <param name="bitmap">The <see cref="Bitmap"/> to transform.</param>
+        /// <returns>The converted <see cref="BitmapImage"/>.</returns>
+        /// <exception cref="ArgumentNullException"><paramref name="bitmap"/> is <c>Null</c>.</exception>
+        internal static BitmapImage ToBitmapImage(this Bitmap bitmap)
+        {
+            if (bitmap == null)
+            {
+                throw new ArgumentNullException(nameof(bitmap));
+            }
+
+            using (var memory = new MemoryStream())
+            {
+                bitmap.Save(memory, ImageFormat.Png);
+                memory.Position = 0;
+
+                var bitmapImage = new BitmapImage();
+                bitmapImage.BeginInit();
+                bitmapImage.StreamSource = memory;
+                bitmapImage.CacheOption = BitmapCacheOption.OnLoad;
+                bitmapImage.EndInit();
+                bitmapImage.Freeze();
+
+                return bitmapImage;
+            }
         }
     }
 }
