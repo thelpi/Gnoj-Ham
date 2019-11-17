@@ -20,6 +20,7 @@ namespace Gnoj_HamView
 
         private readonly GamePivot _game;
         private readonly int _cpuSpeedMs;
+        private readonly bool _autoTsumoRon;
         private readonly bool _riichiAutoDiscard;
 
         /// <summary>
@@ -29,13 +30,15 @@ namespace Gnoj_HamView
         /// <param name="pointRule">Indicates the initial points count for every players.</param>
         /// <param name="useRedDoras">Indicates if red doras should be used.</param>
         /// <param name="cpuSpeed">CPU speed.</param>
-        /// <param name="riichiAutoDiscard">Auto-dicard when riichi.</param>
-        public MainWindow(string playerName, InitialPointsRulePivot pointRule, bool useRedDoras, CpuSpeed cpuSpeed, bool riichiAutoDiscard)
+        /// <param name="autoTsumoRon">Auto call for tsumo and ron.</param>
+        /// <param name="riichiAutoDiscard">Auto-discard when riichi.</param>
+        public MainWindow(string playerName, InitialPointsRulePivot pointRule, bool useRedDoras, CpuSpeed cpuSpeed, bool autoTsumoRon, bool riichiAutoDiscard)
         {
             InitializeComponent();
             
             _game = new GamePivot(playerName, pointRule, useRedDoras);
             _cpuSpeedMs = Convert.ToInt32(cpuSpeed.ToString().Replace("S", string.Empty));
+            _autoTsumoRon = autoTsumoRon;
             _riichiAutoDiscard = riichiAutoDiscard;
 
             FixWindowDimensions();
@@ -194,8 +197,7 @@ namespace Gnoj_HamView
         {
             if (_game.Round.Hands.ElementAt(GamePivot.HUMAN_INDEX).IsComplete)
             {
-                MessageBoxResult mbRes = MessageBox.Show($"Declare {(ron ? "ron" : "tsumo")} ?", WINDOW_TITLE, MessageBoxButton.YesNo);
-                if (mbRes == MessageBoxResult.Yes)
+                if (_autoTsumoRon || MessageBox.Show($"Declare {(ron ? "ron" : "tsumo")} ?", WINDOW_TITLE, MessageBoxButton.YesNo) == MessageBoxResult.Yes)
                 {
                     return true;
                 }

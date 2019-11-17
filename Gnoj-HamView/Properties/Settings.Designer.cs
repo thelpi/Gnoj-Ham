@@ -59,15 +59,21 @@ namespace Gnoj_HamView.Properties {
             }
         }
         
-        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("True")]
         public bool DefaultRiichiAutoDiscard {
             get {
                 return ((bool)(this["DefaultRiichiAutoDiscard"]));
             }
-            set {
-                this["DefaultRiichiAutoDiscard"] = value;
+        }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool DefaultAutoTsumoRon {
+            get {
+                return ((bool)(this["DefaultAutoTsumoRon"]));
             }
         }
     }

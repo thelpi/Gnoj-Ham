@@ -21,6 +21,7 @@ namespace Gnoj_HamView
             CbbPointsRule.SelectedIndex = Settings.Default.DefaultPointsRule;
             TxtPlayerName.Text = Settings.Default.DefaultPlayerName;
             ChkUseRedDoras.IsChecked = Settings.Default.DefaultUseRedDoras;
+            ChkAutoTsumoRon.IsChecked = Settings.Default.DefaultAutoTsumoRon;
             ChkRiichiAutoDiscard.IsChecked = Settings.Default.DefaultRiichiAutoDiscard;
         }
 
@@ -32,6 +33,7 @@ namespace Gnoj_HamView
                 (InitialPointsRulePivot)CbbPointsRule.SelectedIndex,
                 ChkUseRedDoras.IsChecked == true,
                 (CpuSpeed)CbbCpuSpeed.SelectedIndex,
+                ChkAutoTsumoRon.IsChecked == true,
                 ChkRiichiAutoDiscard.IsChecked == true
             ).ShowDialog();
             ShowDialog();
