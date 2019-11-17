@@ -621,8 +621,8 @@ namespace Gnoj_Ham
         /// Checks if the hand of the specified player is ready for calling ron.
         /// </summary>
         /// <param name="playerIndex">The player index.</param>
-        /// <returns>Index of the player who suffers the ron; <c>Null</c> if none.</returns>
-        public int? CanCallRon(int playerIndex)
+        /// <returns><c>True</c> if calling ron is possible; <c>False</c> otherwise.</returns>
+        public bool CanCallRon(int playerIndex)
         {
             TilePivot tile = _waitForDiscard ? null : _discards[PreviousPlayerIndex].LastOrDefault();
             bool forKokushiOnly = false;
@@ -644,7 +644,7 @@ namespace Gnoj_Ham
 
             if (tile == null)
             {
-                return null;
+                return false;
             }
 
             SetYakus(playerIndex, tile, forKokushiOnly ? DrawTypePivot.OpponentKanCallConcealed : (isChanka ? DrawTypePivot.OpponentKanCallOpen : DrawTypePivot.OpponentDiscard));
@@ -653,10 +653,10 @@ namespace Gnoj_Ham
                 || _hands[playerIndex].CancelYakusIfFuriten(_discards[playerIndex], GetTilesFromVirtualDiscardsAtRank(playerIndex, tile))
                 || _hands[playerIndex].CancelYakusIfTemporaryFuriten(this, playerIndex))
             {
-                return null;
+                return false;
             }
 
-            return PreviousPlayerIndex;
+            return true;
         }
 
         /// <summary>
@@ -928,7 +928,7 @@ namespace Gnoj_Ham
 
                 Tuple<int, int> points = ScoreTools.GetRyuukyokuPoints(tenpaiPlayersIndex.Count);
 
-                tenpaiPlayersIndex.ForEach(i => playerInfos.Add(new EndOfRoundInformationsPivot.PlayerInformationsPivot(i, points.Item1)));
+                tenpaiPlayersIndex.ForEach(i => playerInfos.Add(new EndOfRoundInformationsPivot.PlayerInformationsPivot(i, 0, 0, _hands[i], points.Item1, 0, 0, 0)));
                 notTenpaiPlayersIndex.ForEach(i => playerInfos.Add(new EndOfRoundInformationsPivot.PlayerInformationsPivot(i, points.Item2)));
             }
             else

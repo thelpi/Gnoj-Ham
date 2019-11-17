@@ -93,131 +93,24 @@ namespace Gnoj_HamView
         /// <returns>A panel with informations about hand value.</returns>
         internal static DockPanel GenerateYakusInfosPanel(this EndOfRoundInformationsPivot.PlayerInformationsPivot p)
         {
-            var handPanel = new StackPanel
-            {
-                Orientation = Orientation.Horizontal,
-                Height = TILE_HEIGHT + (0.5 * DEFAULT_TILE_MARGIN),
-                HorizontalAlignment = HorizontalAlignment.Center
-            };
-            foreach (Tuple<TilePivot, bool, bool> tile in p.GetFullHandForDisplay())
-            {
-                Button b = GenerateTileButton(tile.Item1, null, (tile.Item2 ? Angle.A90 : Angle.A0), false);
-                if (tile.Item3)
-                {
-                    b.Margin = new Thickness(5, 0, 0, 0);
-                }
-                handPanel.Children.Add(b);
-            }
-
-            var gridYakus = new Grid();
-            gridYakus.ColumnDefinitions.Add(new ColumnDefinition());
-            gridYakus.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(50) });
-            int i = 0;
-            foreach (var yaku in p.Yakus.GroupBy(y => y))
-            {
-                gridYakus.AddGridRowYaku(i, yaku.Key.Name, (p.Concealed ? yaku.Key.ConcealedFanCount : yaku.Key.FanCount) * yaku.Count());
-                i++;
-            }
-            if (p.DoraCount > 0)
-            {
-                gridYakus.AddGridRowYaku(i, YakuPivot.Dora, p.DoraCount);
-                i++;
-            }
-            if (p.UraDoraCount > 0)
-            {
-                gridYakus.AddGridRowYaku(i, YakuPivot.UraDora, p.UraDoraCount);
-                i++;
-            }
-            if (p.RedDoraCount > 0)
-            {
-                gridYakus.AddGridRowYaku(i, YakuPivot.RedDora, p.RedDoraCount);
-                i++;
-            }
-
-            var fanLbl = new Label
-            {
-                VerticalAlignment = VerticalAlignment.Center,
-                Content = p.FanCount
-            };
-            fanLbl.SetValue(Grid.RowProperty, 0);
-            fanLbl.SetValue(Grid.ColumnProperty, 0);
-
-            var fuLbl = new Label
-            {
-                VerticalAlignment = VerticalAlignment.Center,
-                Content = p.FuCount
-            };
-            fuLbl.SetValue(Grid.RowProperty, 0);
-            fuLbl.SetValue(Grid.ColumnProperty, 1);
-
-            var gainLbl = new Label
-            {
-                VerticalAlignment = VerticalAlignment.Center,
-                Content = p.PointsGain,
-                Foreground = System.Windows.Media.Brushes.Red
-            };
-            gainLbl.SetValue(Grid.RowProperty, 0);
-            gainLbl.SetValue(Grid.ColumnProperty, 2);
-
-            var gridPoints = new Grid
-            {
-                HorizontalAlignment = HorizontalAlignment.Right
-            };
-            gridPoints.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(50) });
-            gridPoints.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(50) });
-            gridPoints.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(100) });
-            gridPoints.RowDefinitions.Add(new RowDefinition { Height = new GridLength(30) });
-            gridPoints.Children.Add(fanLbl);
-            gridPoints.Children.Add(fuLbl);
-            gridPoints.Children.Add(gainLbl);
-
-            var separator = new Line
-            {
-                Fill = System.Windows.Media.Brushes.Black,
-                Height = 2,
-                Width = 200,
-                VerticalAlignment = VerticalAlignment.Center
-            };
-
-            handPanel.SetValue(DockPanel.DockProperty, Dock.Top);
-            gridYakus.SetValue(DockPanel.DockProperty, Dock.Top);
-            separator.SetValue(DockPanel.DockProperty, Dock.Bottom);
-            gridPoints.SetValue(DockPanel.DockProperty, Dock.Bottom);
-
             var boxPanel = new DockPanel();
-            boxPanel.Children.Add(separator);
-            boxPanel.Children.Add(gridPoints);
-            boxPanel.Children.Add(handPanel);
-            boxPanel.Children.Add(gridYakus);
+
+            Line separator = SeparatorForScoreDisplay(p);
+            if (separator != null)
+            {
+                boxPanel.Children.Add(separator);
+            }
+
+            boxPanel.Children.Add(PointsGridForScoreDisplay(p));
+            boxPanel.Children.Add(HandPanelForScoreDisplay(p));
+
+            Grid gridYakus = YakusGridForScoreDisplay(p);
+            if (gridYakus != null)
+            {
+                boxPanel.Children.Add(gridYakus);
+            }
+
             return boxPanel;
-        }
-
-        // Adds a yaku to the grid.
-        private static void AddGridRowYaku(this Grid gridTop, int i, string yakuName, int yakuFanCount)
-        {
-            gridTop.RowDefinitions.Add(new RowDefinition { Height = new GridLength(30) });
-
-            var lblYakuName = new Label
-            {
-                VerticalAlignment = VerticalAlignment.Center,
-                HorizontalAlignment = HorizontalAlignment.Right,
-                Content = yakuName
-            };
-            lblYakuName.SetValue(Grid.ColumnProperty, 0);
-            lblYakuName.SetValue(Grid.RowProperty, i);
-
-            var lblYakuFanCount = new Label
-            {
-                VerticalAlignment = VerticalAlignment.Center,
-                HorizontalAlignment = HorizontalAlignment.Left,
-                Content = yakuFanCount,
-                Foreground = System.Windows.Media.Brushes.Red
-            };
-            lblYakuFanCount.SetValue(Grid.ColumnProperty, 1);
-            lblYakuFanCount.SetValue(Grid.RowProperty, i);
-
-            gridTop.Children.Add(lblYakuName);
-            gridTop.Children.Add(lblYakuFanCount);
         }
 
         /// <summary>
@@ -248,5 +141,187 @@ namespace Gnoj_HamView
                 return bitmapImage;
             }
         }
+
+        #region Private methods
+
+        private static Grid PointsGridForScoreDisplay(EndOfRoundInformationsPivot.PlayerInformationsPivot p)
+        {
+            var gridPoints = new Grid
+            {
+                HorizontalAlignment = HorizontalAlignment.Right
+            };
+            gridPoints.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(50) });
+            gridPoints.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(50) });
+            gridPoints.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(100) });
+            gridPoints.RowDefinitions.Add(new RowDefinition { Height = new GridLength(30) });
+
+            Label fanLbl = FanlabelForScoreDisplay(p);
+            if (fanLbl != null)
+            {
+                gridPoints.Children.Add(fanLbl);
+            }
+
+            Label fuLbl = FuLabelForScopreDisplay(p);
+            if (fuLbl != null)
+            {
+                gridPoints.Children.Add(fuLbl);
+            }
+            gridPoints.Children.Add(GainLabelForScoreDisplay(p));
+
+            gridPoints.SetValue(DockPanel.DockProperty, Dock.Bottom);
+            return gridPoints;
+        }
+
+        private static Label GainLabelForScoreDisplay(EndOfRoundInformationsPivot.PlayerInformationsPivot p)
+        {
+            var gainLbl = new Label
+            {
+                VerticalAlignment = VerticalAlignment.Center,
+                Content = p.PointsGain,
+                Foreground = System.Windows.Media.Brushes.Red
+            };
+            gainLbl.SetValue(Grid.RowProperty, 0);
+            gainLbl.SetValue(Grid.ColumnProperty, 2);
+            return gainLbl;
+        }
+
+        private static Line SeparatorForScoreDisplay(EndOfRoundInformationsPivot.PlayerInformationsPivot p)
+        {
+            if (p.Yakus == null || p.Yakus.Count == 0)
+            {
+                return null;
+            }
+
+            Line separator = new Line
+            {
+                Fill = System.Windows.Media.Brushes.Black,
+                Height = 2,
+                Width = 200,
+                VerticalAlignment = VerticalAlignment.Center
+            };
+            separator.SetValue(DockPanel.DockProperty, Dock.Bottom);
+            return separator;
+        }
+
+        private static Label FuLabelForScopreDisplay(EndOfRoundInformationsPivot.PlayerInformationsPivot p)
+        {
+            if (p.Yakus == null || p.Yakus.Count == 0)
+            {
+                return null;
+            }
+
+            Label fuLbl = new Label
+            {
+                VerticalAlignment = VerticalAlignment.Center,
+                Content = p.FuCount
+            };
+            fuLbl.SetValue(Grid.RowProperty, 0);
+            fuLbl.SetValue(Grid.ColumnProperty, 1);
+            return fuLbl;
+        }
+
+        private static Label FanlabelForScoreDisplay(EndOfRoundInformationsPivot.PlayerInformationsPivot p)
+        {
+            if (p.Yakus == null || p.Yakus.Count == 0)
+            {
+                return null;
+            }
+
+            Label fanLbl = new Label
+            {
+                VerticalAlignment = VerticalAlignment.Center,
+                Content = p.FanCount
+            };
+            fanLbl.SetValue(Grid.RowProperty, 0);
+            fanLbl.SetValue(Grid.ColumnProperty, 0);
+            return fanLbl;
+        }
+
+        private static Grid YakusGridForScoreDisplay(EndOfRoundInformationsPivot.PlayerInformationsPivot p)
+        {
+            if (p.Yakus == null || p.Yakus.Count == 0)
+            {
+                return null;
+            }
+
+            Grid gridYakus = new Grid();
+            gridYakus.ColumnDefinitions.Add(new ColumnDefinition());
+            gridYakus.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(50) });
+            int i = 0;
+            foreach (var yaku in p.Yakus.GroupBy(y => y))
+            {
+                gridYakus.AddGridRowYaku(i, yaku.Key.Name, (p.Concealed ? yaku.Key.ConcealedFanCount : yaku.Key.FanCount) * yaku.Count());
+                i++;
+            }
+            if (p.DoraCount > 0)
+            {
+                gridYakus.AddGridRowYaku(i, YakuPivot.Dora, p.DoraCount);
+                i++;
+            }
+            if (p.UraDoraCount > 0)
+            {
+                gridYakus.AddGridRowYaku(i, YakuPivot.UraDora, p.UraDoraCount);
+                i++;
+            }
+            if (p.RedDoraCount > 0)
+            {
+                gridYakus.AddGridRowYaku(i, YakuPivot.RedDora, p.RedDoraCount);
+                i++;
+            }
+
+            gridYakus.SetValue(DockPanel.DockProperty, Dock.Top);
+            return gridYakus;
+        }
+
+        private static StackPanel HandPanelForScoreDisplay(EndOfRoundInformationsPivot.PlayerInformationsPivot p)
+        {
+            var handPanel = new StackPanel
+            {
+                Orientation = Orientation.Horizontal,
+                Height = TILE_HEIGHT + (0.5 * DEFAULT_TILE_MARGIN),
+                HorizontalAlignment = HorizontalAlignment.Center
+            };
+            foreach (Tuple<TilePivot, bool, bool> tile in p.GetFullHandForDisplay())
+            {
+                Button b = GenerateTileButton(tile.Item1, null, (tile.Item2 ? Angle.A90 : Angle.A0), false);
+                if (tile.Item3)
+                {
+                    b.Margin = new Thickness(5, 0, 0, 0);
+                }
+                handPanel.Children.Add(b);
+            }
+            handPanel.SetValue(DockPanel.DockProperty, Dock.Top);
+            return handPanel;
+        }
+
+        // Adds a yaku to the grid.
+        private static void AddGridRowYaku(this Grid gridTop, int i, string yakuName, int yakuFanCount)
+        {
+            gridTop.RowDefinitions.Add(new RowDefinition { Height = new GridLength(30) });
+
+            var lblYakuName = new Label
+            {
+                VerticalAlignment = VerticalAlignment.Center,
+                HorizontalAlignment = HorizontalAlignment.Right,
+                Content = yakuName
+            };
+            lblYakuName.SetValue(Grid.ColumnProperty, 0);
+            lblYakuName.SetValue(Grid.RowProperty, i);
+
+            var lblYakuFanCount = new Label
+            {
+                VerticalAlignment = VerticalAlignment.Center,
+                HorizontalAlignment = HorizontalAlignment.Left,
+                Content = yakuFanCount,
+                Foreground = System.Windows.Media.Brushes.Red
+            };
+            lblYakuFanCount.SetValue(Grid.ColumnProperty, 1);
+            lblYakuFanCount.SetValue(Grid.RowProperty, i);
+
+            gridTop.Children.Add(lblYakuName);
+            gridTop.Children.Add(lblYakuFanCount);
+        }
+
+        #endregion Private methods
     }
 }

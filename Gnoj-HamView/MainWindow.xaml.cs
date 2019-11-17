@@ -485,16 +485,26 @@ namespace Gnoj_HamView
                     else
                     {
                         _game.Round.RandomDiscard();
-                        int? potentialRonPlayerId = _game.Round.CanCallRon(GamePivot.HUMAN_INDEX);
                         Dispatcher.Invoke(() =>
                         {
                             FillDiscardPanel(_game.Round.PreviousPlayerIndex);
                             FillHandPanel(_game.Round.PreviousPlayerIndex);
                             SetActionButtonsVisibility(cpuPlay: true);
                         });
-                        if (TsumoOrRonCallManagement(GamePivot.HUMAN_INDEX, true))
+                        var callingRonPlayers = new List<int>();
+                        for (int i = 0; i < 4; i++)
                         {
-                            return potentialRonPlayerId;
+                            if (i != _game.Round.PreviousPlayerIndex)
+                            {
+                                if (_game.Round.CanCallRon(i))
+                                {
+                                    callingRonPlayers.Add(i);
+                                }
+                            }
+                        }
+                        if (callingRonPlayers.Any(i => TsumoOrRonCallManagement(i, true)))
+                        {
+                            return _game.Round.PreviousPlayerIndex;
                         }
                     }
                 }
