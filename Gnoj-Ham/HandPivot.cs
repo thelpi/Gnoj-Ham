@@ -462,7 +462,8 @@ namespace Gnoj_Ham
             }
             
             int i = 0;
-            while (currentRound.PlayerIndexHistory.ElementAt(i) == playerIndex.RelativePlayerIndex(-(i + 1))
+            while (currentRound.PlayerIndexHistory.Count < i
+                && currentRound.PlayerIndexHistory.ElementAt(i) == playerIndex.RelativePlayerIndex(-(i + 1))
                 && playerIndex.RelativePlayerIndex(-(i + 1)) != playerIndex)
             {
                 // The tile discarded by the latest player is the tile we ron !

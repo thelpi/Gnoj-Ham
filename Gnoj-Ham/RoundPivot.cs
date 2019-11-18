@@ -29,9 +29,9 @@ namespace Gnoj_Ham
         private readonly List<TilePivot> _fullTilesList;
 
         /// <summary>
-        /// History of the latest players to player.
+        /// History of the latest players to play.
         /// First on the list is the latest to play.
-        /// The list is cleared when a jump (call) is made.
+        /// The list is cleared when a jump (ie a call) is made.
         /// </summary>
         public IReadOnlyCollection<int> PlayerIndexHistory
         {
