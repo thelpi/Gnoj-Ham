@@ -651,22 +651,6 @@ namespace Gnoj_Ham
         }
 
         /// <summary>
-        /// Indicates if the context is a skippable move from a CPU player.
-        /// </summary>
-        /// <param name="skipCurrentAction"><c>True</c> to force call skip.</param>
-        /// <returns><c>True</c> if skippable; <c>False</c> otherwise.</returns>
-        public bool IsCpuSkippable(bool skipCurrentAction)
-        {
-            return !IsWallExhaustion
-                && !IsHumanPlayer
-                && (skipCurrentAction || (
-                    CanCallChii(GamePivot.HUMAN_INDEX).Keys.Count == 0
-                    && !CanCallPon(GamePivot.HUMAN_INDEX)
-                    && CanCallKan(GamePivot.HUMAN_INDEX).Count == 0
-                ));
-        }
-
-        /// <summary>
         /// Indicates if the context is human player ready to pick.
         /// </summary>
         /// <param name="skipCurrentAction"><c>True</c> to force call skip.</param>
@@ -676,11 +660,7 @@ namespace Gnoj_Ham
             return !IsWallExhaustion
                 && IsHumanPlayer
                 && !_waitForDiscard
-                && (skipCurrentAction || (
-                    CanCallChii(GamePivot.HUMAN_INDEX).Keys.Count == 0
-                    && !CanCallPon(GamePivot.HUMAN_INDEX)
-                    && CanCallKan(GamePivot.HUMAN_INDEX).Count == 0
-                ));
+                && (skipCurrentAction || SkippableCallForAllPlayer());
         }
 
         /// <summary>
@@ -909,6 +889,20 @@ namespace Gnoj_Ham
             }
 
             return playerIndexList;
+        }
+
+        // Checks if pon / chii / kan calls are skippable for the specified player.
+        private bool SkippableCallForPlayer(int playerIndex)
+        {
+            return CanCallKan(playerIndex).Count == 0
+                && !CanCallPon(playerIndex)
+                && CanCallChii(playerIndex).Keys.Count == 0;
+        }
+
+        // Checks if pon / chii / kan calls are skippable for every player except "PreviousPlayerIndex" (who just discard).
+        private bool SkippableCallForAllPlayer()
+        {
+            return Enumerable.Range(0, 4).Where(i => i != PreviousPlayerIndex).All(SkippableCallForPlayer);
         }
 
         #endregion Private methods

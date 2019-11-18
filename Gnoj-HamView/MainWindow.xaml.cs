@@ -60,19 +60,13 @@ namespace Gnoj_HamView
 
         private void BtnDiscard_Click(object sender, RoutedEventArgs e)
         {
-            if (_game.Round.Discard((sender as Button).Tag as TilePivot))
+            TilePivot discard = (sender as Button).Tag as TilePivot;
+            if (_game.Round.Discard(discard))
             {
                 FillHandPanel(_game.Round.PreviousPlayerIndex);
                 FillDiscardPanel(_game.Round.PreviousPlayerIndex);
                 SetActionButtonsVisibility();
-                if (CheckRonForEveryPlayer(_game.Round.PreviousPlayerIndex))
-                {
-                    NewRound(_game.Round.PreviousPlayerIndex);
-                }
-                else
-                {
-                    AutoPlayAsync();
-                }
+                AutoPlayAsync();
             }
         }
 
@@ -483,19 +477,25 @@ namespace Gnoj_HamView
         {
             Tuple<bool, int?> result = await Task.Run(() =>
             {
-                while (_game.Round.IsCpuSkippable(skipCurrentAction))
+                while (!_game.Round.IsWallExhaustion)
                 {
                     Tuple<bool, int?> endAction = CpuTurnAutoPlay();
                     if (endAction.Item1)
                     {
                         return endAction;
                     }
+                    else if (endAction.Item2.HasValue)
+                    {
+                        break;
+                    }
                 }
+
                 if (_game.Round.IsHumanSkippable(skipCurrentAction))
                 {
                     return HumanTurnAutoPlay();
                 }
-                else if (_game.Round.IsWallExhaustion)
+
+                if (_game.Round.IsWallExhaustion)
                 {
                     return new Tuple<bool, int?>(true, null);
                 }
@@ -512,25 +512,84 @@ namespace Gnoj_HamView
         // Auto-play when it's CPU turn
         private Tuple<bool, int?> CpuTurnAutoPlay()
         {
-            Tuple<bool, int?> endAction = new Tuple<bool, int?>(false, null);
-
-            Dispatcher.Invoke(SetPlayersLed);
-            Thread.Sleep(_cpuSpeedMs);
-            TilePivot pick = _game.Round.Pick();
-            if (pick != null)
+            if (CheckRonForEveryPlayer(_game.Round.PreviousPlayerIndex))
             {
-                if (_game.Round.CanCallTsumo(false))
+                return new Tuple<bool, int?>(true, _game.Round.PreviousPlayerIndex);
+            }
+            else
+            {
+                bool callMadeByOpponent = false;
+                for (int i = _game.Round.CurrentPlayerIndex; i < _game.Round.CurrentPlayerIndex + 4; i++)
                 {
-                    if (TsumoOrRonCallManagement(_game.Round.CurrentPlayerIndex, false))
+                    int realI = i >= 4 ? i - 4 : i;
+                    if (realI != _game.Round.PreviousPlayerIndex)
                     {
-                        endAction = new Tuple<bool, int?>(true, null);
-                    }
-                    else
-                    {
-                        throw new NotImplementedException();
+                        if (_game.Round.CanCallKan(realI).Count > 0)
+                        {
+                            if (realI == GamePivot.HUMAN_INDEX)
+                            {
+                                return new Tuple<bool, int?>(false, GamePivot.HUMAN_INDEX);
+                            }
+                            else
+                            {
+                                Dispatcher.Invoke(SetPlayersLed);
+                                Thread.Sleep(_cpuSpeedMs);
+                                int previousPlayerIndex = _game.Round.PreviousPlayerIndex;
+                                TilePivot compensationTile = _game.Round.CallKan(realI);
+                                if (compensationTile == null)
+                                {
+                                    throw new NotImplementedException();
+                                }
+                                else if (CheckRonForEveryPlayer(_game.Round.CurrentPlayerIndex))
+                                {
+                                    _game.Round.UndoPickCompensationTile();
+                                    return new Tuple<bool, int?>(true, _game.Round.CurrentPlayerIndex);
+                                }
+                                Dispatcher.Invoke(() =>
+                                {
+                                    FillHandPanel(_game.Round.CurrentPlayerIndex, compensationTile);
+                                    StpPickP0.Children.Add(compensationTile.GenerateTileButton(BtnDiscard_Click));
+                                    FillDiscardPanel(previousPlayerIndex);
+                                    AddLatestCombinationToStack(_game.Round.CurrentPlayerIndex);
+                                    SetActionButtonsVisibility(preDiscard: true, cpuPlay: true);
+                                    StpDoras.SetDorasPanel(_game.Round.DoraIndicatorTiles, _game.Round.VisibleDorasCount);
+                                });
+                                _game.Round.CanCallTsumo(false);
+                                if (TsumoOrRonCallManagement(_game.Round.CurrentPlayerIndex, false))
+                                {
+                                    return new Tuple<bool, int?>(true, null);
+                                }
+                                callMadeByOpponent = true;
+                                break;
+                            }
+                        }
+                        else if (_game.Round.CanCallPon(realI))
+                        {
+                            if (realI == GamePivot.HUMAN_INDEX)
+                            {
+                                return new Tuple<bool, int?>(false, GamePivot.HUMAN_INDEX);
+                            }
+                            else
+                            {
+                                Dispatcher.Invoke(SetPlayersLed);
+                                Thread.Sleep(_cpuSpeedMs);
+                                int previousPlayerIndex = _game.Round.PreviousPlayerIndex;
+                                _game.Round.CallPon(realI);
+                                callMadeByOpponent = true;
+                                Dispatcher.Invoke(() =>
+                                {
+                                    FillHandPanel(_game.Round.CurrentPlayerIndex);
+                                    AddLatestCombinationToStack(_game.Round.CurrentPlayerIndex);
+                                    FillDiscardPanel(previousPlayerIndex);
+                                    SetActionButtonsVisibility(cpuPlay: true);
+                                });
+                                break;
+                            }
+                        }
                     }
                 }
-                else
+                // TODO : chii call
+                if (callMadeByOpponent)
                 {
                     _game.Round.RandomDiscard();
                     Dispatcher.Invoke(() =>
@@ -539,18 +598,44 @@ namespace Gnoj_HamView
                         FillHandPanel(_game.Round.PreviousPlayerIndex);
                         SetActionButtonsVisibility(cpuPlay: true);
                     });
-                    if (CheckRonForEveryPlayer(_game.Round.PreviousPlayerIndex))
+                }
+                else
+                {
+                    Dispatcher.Invoke(SetPlayersLed);
+                    Thread.Sleep(_cpuSpeedMs);
+                    TilePivot pick = _game.Round.Pick();
+                    if (pick != null)
                     {
-                        endAction = new Tuple<bool, int?>(true, _game.Round.PreviousPlayerIndex);
+                        if (_game.Round.CanCallTsumo(false))
+                        {
+                            if (TsumoOrRonCallManagement(_game.Round.CurrentPlayerIndex, false))
+                            {
+                                return new Tuple<bool, int?>(true, null);
+                            }
+                            else
+                            {
+                                throw new NotImplementedException();
+                            }
+                        }
+                        else
+                        {
+                            _game.Round.RandomDiscard();
+                            Dispatcher.Invoke(() =>
+                            {
+                                FillDiscardPanel(_game.Round.PreviousPlayerIndex);
+                                FillHandPanel(_game.Round.PreviousPlayerIndex);
+                                SetActionButtonsVisibility(cpuPlay: true);
+                            });
+                        }
+                    }
+                    else if (!_game.Round.IsWallExhaustion)
+                    {
+                        throw new NotImplementedException();
                     }
                 }
             }
-            else if (!_game.Round.IsWallExhaustion)
-            {
-                throw new NotImplementedException();
-            }
 
-            return endAction;
+            return new Tuple<bool, int?>(false, _game.Round.IsHumanPlayer ? 0 : (int?)null);
         }
 
         // Auto-play when it's human turn
