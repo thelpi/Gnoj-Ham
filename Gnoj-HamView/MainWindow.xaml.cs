@@ -60,11 +60,14 @@ namespace Gnoj_HamView
                 FillHandPanel(_game.Round.PreviousPlayerIndex);
                 FillDiscardPanel(_game.Round.PreviousPlayerIndex);
                 SetActionButtonsVisibility();
-                if (CheckRonForEveryPlayer())
+                if (CheckRonForEveryPlayer(_game.Round.PreviousPlayerIndex))
                 {
-                    NewRound(true);
+                    NewRound(_game.Round.PreviousPlayerIndex);
                 }
-                AutoPlayAsync();
+                else
+                {
+                    AutoPlayAsync();
+                }
             }
         }
 
@@ -183,13 +186,13 @@ namespace Gnoj_HamView
 
         #region Private methods
 
-        // Checks ron possibilities for every players except "PreviousPlayerIndex".
-        private bool CheckRonForEveryPlayer()
+        // Checks ron possibilities for every players except the one specified.
+        private bool CheckRonForEveryPlayer(int onPlayerId)
         {
             var callingRonPlayers = new List<int>();
             for (int i = 0; i < 4; i++)
             {
-                if (i != _game.Round.PreviousPlayerIndex)
+                if (i != onPlayerId)
                 {
                     if (_game.Round.CanCallRon(i))
                     {
@@ -269,14 +272,13 @@ namespace Gnoj_HamView
             {
                 throw new NotImplementedException();
             }
+            else if (CheckRonForEveryPlayer(_game.Round.CurrentPlayerIndex))
+            {
+                _game.Round.UndoPickCompensationTile();
+                NewRound(_game.Round.CurrentPlayerIndex);
+            }
             else
             {
-                // TODO : ne marche pas car basé sur PreviousPlayerIndex au lieu de CurrentPlayerIndex !!!
-                if (CheckRonForEveryPlayer())
-                {
-                    NewRound(true);
-                }
-
                 FillHandPanel(GamePivot.HUMAN_INDEX, compensationTile);
                 StpPickP0.Children.Add(compensationTile.GenerateTileButton(BtnDiscard_Click));
                 if (previousPlayerIndex.HasValue)
@@ -289,7 +291,7 @@ namespace Gnoj_HamView
                 _game.Round.CanCallTsumo(false);
                 if (TsumoOrRonCallManagement(GamePivot.HUMAN_INDEX, false))
                 {
-                    NewRound(false);
+                    NewRound(null);
                 }
                 else
                 {
@@ -377,7 +379,7 @@ namespace Gnoj_HamView
             _game.Round.CanCallTsumo(false);
             if (TsumoOrRonCallManagement(_game.Round.CurrentPlayerIndex, false))
             {
-                NewRound(false);
+                NewRound(null);
             }
             else
             {
@@ -427,9 +429,9 @@ namespace Gnoj_HamView
         }
 
         // Proceeds to new round.
-        private void NewRound(bool isRon)
+        private void NewRound(int? ronPlayerIndex)
         {
-            EndOfRoundInformationsPivot endOfRoundInfos = _game.NextRound(isRon);
+            EndOfRoundInformationsPivot endOfRoundInfos = _game.NextRound(ronPlayerIndex);
             new ScoreWindow(_game.Players.ToList(), endOfRoundInfos).ShowDialog();
             if (endOfRoundInfos.EndOfGame)
             {
@@ -474,14 +476,14 @@ namespace Gnoj_HamView
         // Auto-play the round while there's no reason for the player to interact; asynchronous.
         private async void AutoPlayAsync(bool skipCurrentAction = false)
         {
-            bool? isRon = await Task.Run(() =>
+            Tuple<bool, int?> result = await Task.Run(() =>
             {
                 while (_game.Round.IsCpuSkippable(skipCurrentAction))
                 {
-                    bool? endAction = CpuTurnAutoPlay();
-                    if (endAction.HasValue)
+                    Tuple<bool, int?> endAction = CpuTurnAutoPlay();
+                    if (endAction.Item1)
                     {
-                        return endAction.Value;
+                        return endAction;
                     }
                 }
                 if (_game.Round.IsHumanSkippable(skipCurrentAction))
@@ -490,22 +492,22 @@ namespace Gnoj_HamView
                 }
                 else if (_game.Round.IsWallExhaustion)
                 {
-                    return false;
+                    return new Tuple<bool, int?>(true, null);
                 }
 
-                return null;
+                return new Tuple<bool, int?>(false, null);
             });
 
-            if (isRon.HasValue)
+            if (result.Item1)
             {
-                NewRound(isRon.Value);
+                NewRound(result.Item2);
             }
         }
         
         // Auto-play when it's CPU turn
-        private bool? CpuTurnAutoPlay()
+        private Tuple<bool, int?> CpuTurnAutoPlay()
         {
-            bool? endAction = null;
+            Tuple<bool, int?> endAction = new Tuple<bool, int?>(false, null);
 
             Dispatcher.Invoke(SetPlayersLed);
             Thread.Sleep(_cpuSpeedMs);
@@ -516,7 +518,7 @@ namespace Gnoj_HamView
                 {
                     if (TsumoOrRonCallManagement(_game.Round.CurrentPlayerIndex, false))
                     {
-                        endAction = false;
+                        endAction = new Tuple<bool, int?>(true, null);
                     }
                     else
                     {
@@ -532,9 +534,9 @@ namespace Gnoj_HamView
                         FillHandPanel(_game.Round.PreviousPlayerIndex);
                         SetActionButtonsVisibility(cpuPlay: true);
                     });
-                    if (CheckRonForEveryPlayer())
+                    if (CheckRonForEveryPlayer(_game.Round.PreviousPlayerIndex))
                     {
-                        endAction = true;
+                        endAction = new Tuple<bool, int?>(true, _game.Round.PreviousPlayerIndex);
                     }
                 }
             }
@@ -547,9 +549,9 @@ namespace Gnoj_HamView
         }
 
         // Auto-play when it's human turn
-        private bool? HumanTurnAutoPlay()
+        private Tuple<bool, int?> HumanTurnAutoPlay()
         {
-            bool? endAction = null;
+            Tuple<bool, int?> endAction = new Tuple<bool, int?>(false, null);
 
             Dispatcher.Invoke(SetPlayersLed);
             TilePivot pick = _game.Round.Pick();
@@ -571,7 +573,7 @@ namespace Gnoj_HamView
                 });
                 if (TsumoOrRonCallManagement(GamePivot.HUMAN_INDEX, false))
                 {
-                    endAction = false;
+                    endAction = new Tuple<bool, int?>(true, null);
                 }
                 else if (tilesRiichi.Count > 0)
                 {

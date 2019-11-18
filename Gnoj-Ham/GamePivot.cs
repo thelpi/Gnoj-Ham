@@ -139,11 +139,11 @@ namespace Gnoj_Ham
         /// Manages the end of the current round and generates a new one.
         /// <see cref="Round"/> stays <c>Null</c> at the end of the game.
         /// </summary>
-        /// <param name="isRon"><c>True</c> if the round ends on a ron call; <c>False</c> otherwise.</param>
+        /// <param name="ronPlayerIndex">The player index on who the call has been made; <c>Null</c> if tsumo or ryuukyoku.</param>
         /// <returns>An instance of <see cref="EndOfRoundInformationsPivot"/>.</returns>
-        public EndOfRoundInformationsPivot NextRound(bool isRon)
+        public EndOfRoundInformationsPivot NextRound(int? ronPlayerIndex)
         {
-            EndOfRoundInformationsPivot endOfRoundInformations = Round.EndOfRound(isRon);
+            EndOfRoundInformationsPivot endOfRoundInformations = Round.EndOfRound(ronPlayerIndex);
 
             if (endOfRoundInformations.ResetRiichiPendingCount)
             {

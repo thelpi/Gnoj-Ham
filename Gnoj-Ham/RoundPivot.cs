@@ -482,18 +482,8 @@ namespace Gnoj_Ham
             }
 
             _waitForDiscard = true;
-            TilePivot tile = PickCompensationTile();
 
-            if (isClosedKan)
-            {
-                _closedKanInProgress = tile;
-            }
-            else
-            {
-                _openedKanInProgress = tile;
-            }
-
-            return tile;
+            return PickCompensationTile(isClosedKan);
         }
 
         /// <summary>
@@ -750,6 +740,25 @@ namespace Gnoj_Ham
                 && _waitForDiscard;
         }
 
+        /// <summary>
+        /// Undoes the pick of a compensation tile after a kan.
+        /// </summary>
+        public void UndoPickCompensationTile()
+        {
+            TilePivot compensationTile = _closedKanInProgress ?? _openedKanInProgress;
+            if (compensationTile == null)
+            {
+                return;
+            }
+            
+            _compensationTiles.Insert(0, compensationTile);
+
+            _wallTiles.Add(_deadTreasureTiles.Last());
+            _deadTreasureTiles.RemoveAt(_deadTreasureTiles.Count - 1);
+
+            // We could remove the compensation tile from the CurrentPlayerIndex hand, but it's not very useful in this context.
+        }
+
         #endregion Public methods
 
         #region Private methods
@@ -808,13 +817,26 @@ namespace Gnoj_Ham
         }
 
         // Picks a compensation tile (after a kan call) for the current player.
-        private TilePivot PickCompensationTile()
+        private TilePivot PickCompensationTile(bool isClosedKan)
         {
             TilePivot compensationTile = _compensationTiles.First();
             _compensationTiles.RemoveAt(0);
+
             _deadTreasureTiles.Add(_wallTiles.Last());
+
             _wallTiles.RemoveAt(_wallTiles.Count - 1);
+
             _hands[CurrentPlayerIndex].Pick(compensationTile);
+
+            if (isClosedKan)
+            {
+                _closedKanInProgress = compensationTile;
+            }
+            else
+            {
+                _openedKanInProgress = compensationTile;
+            }
+
             return compensationTile;
         }
 
@@ -898,9 +920,9 @@ namespace Gnoj_Ham
         /// <summary>
         /// Manages the end of a round.
         /// </summary>
-        /// <param name="isRon"><c>True</c> if the round ends on a ron call; <c>False</c> otherwise.</param>
+        /// <param name="ronPlayerIndex">The player index on who the call has been made; <c>Null</c> if tsumo or ryuukyoku.</param>
         /// <returns>An instance of <see cref="EndOfRoundInformationsPivot"/>.</returns>
-        internal EndOfRoundInformationsPivot EndOfRound(bool isRon)
+        internal EndOfRoundInformationsPivot EndOfRound(int? ronPlayerIndex)
         {
             bool turnWind = false;
             bool resetsRiichiCount = false;
@@ -946,9 +968,9 @@ namespace Gnoj_Ham
                     HandPivot phand = _hands[pIndex];
 
                     // In case of ron, fix the "LatestPick" property of the winning hand
-                    if (isRon)
+                    if (ronPlayerIndex.HasValue)
                     {
-                        phand.SetFromRon(_discards[PreviousPlayerIndex].Last());
+                        phand.SetFromRon(_discards[ronPlayerIndex.Value].Last());
                     }
 
                     bool isRiichi = phand.Yakus.Contains(YakuPivot.Riichi) || phand.Yakus.Contains(YakuPivot.DaburuRiichi);
@@ -963,10 +985,10 @@ namespace Gnoj_Ham
                     }
 
                     int fanCount = ScoreTools.GetFanCount(phand.Yakus, phand.IsConcealed, dorasCount, uraDorasCount, redDorasCount);
-                    int fuCount = ScoreTools.GetFuCount(phand, !isRon, _game.DominantWind, _game.GetPlayerCurrentWind(pIndex));
+                    int fuCount = ScoreTools.GetFuCount(phand, !ronPlayerIndex.HasValue, _game.DominantWind, _game.GetPlayerCurrentWind(pIndex));
 
                     Tuple<int, int> finalScore = ScoreTools.GetPoints(fanCount, fuCount, _game.EastIndexTurnCount - 1, winners.Count,
-                        !isRon, _game.GetPlayerCurrentWind(pIndex));
+                        !ronPlayerIndex.HasValue, _game.GetPlayerCurrentWind(pIndex));
 
                     // TODO: if RiichiPendingCount si not a multiple of 3, and there're three winners, it doesn't work well !
                     int riichiPart = _game.PendingRiichiCount * ScoreTools.RIICHI_COST / winners.Count;
@@ -980,9 +1002,9 @@ namespace Gnoj_Ham
                     notEastLostCumul -= finalScore.Item2;
                 }
 
-                if (isRon)
+                if (ronPlayerIndex.HasValue)
                 {
-                    playerInfos.Add(new EndOfRoundInformationsPivot.PlayerInformationsPivot(PreviousPlayerIndex, eastOrLoserLostCumul));
+                    playerInfos.Add(new EndOfRoundInformationsPivot.PlayerInformationsPivot(ronPlayerIndex.Value, eastOrLoserLostCumul));
                 }
                 else
                 {
