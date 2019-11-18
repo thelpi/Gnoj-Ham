@@ -22,6 +22,7 @@ namespace Gnoj_HamView
         private readonly int _cpuSpeedMs;
         private readonly bool _autoTsumoRon;
         private readonly bool _riichiAutoDiscard;
+        private readonly bool _debugMode;
 
         /// <summary>
         /// Constructor.
@@ -32,14 +33,18 @@ namespace Gnoj_HamView
         /// <param name="cpuSpeed">CPU speed.</param>
         /// <param name="autoTsumoRon">Auto call for tsumo and ron.</param>
         /// <param name="riichiAutoDiscard">Auto-discard when riichi.</param>
-        public MainWindow(string playerName, InitialPointsRulePivot pointRule, bool useRedDoras, CpuSpeed cpuSpeed, bool autoTsumoRon, bool riichiAutoDiscard)
+        /// <param name="debugMode"><c>True</c> to display the opponent tiles.</param>
+        /// <param name="sortedDraw"><c>True</c> to not randomize the tile draw.</param>
+        public MainWindow(string playerName, InitialPointsRulePivot pointRule, bool useRedDoras, CpuSpeed cpuSpeed, bool autoTsumoRon,
+            bool riichiAutoDiscard, bool debugMode, bool sortedDraw)
         {
             InitializeComponent();
             
-            _game = new GamePivot(playerName, pointRule, useRedDoras);
+            _game = new GamePivot(playerName, pointRule, useRedDoras, sortedDraw);
             _cpuSpeedMs = Convert.ToInt32(cpuSpeed.ToString().Replace("S", string.Empty));
             _autoTsumoRon = autoTsumoRon;
             _riichiAutoDiscard = riichiAutoDiscard;
+            _debugMode = debugMode;
 
             FixWindowDimensions();
 
@@ -354,7 +359,7 @@ namespace Gnoj_HamView
                 if (excludedTile == null || !ReferenceEquals(excludedTile, tile))
                 {
                     panel.Children.Add(tile.GenerateTileButton(isHuman && !_game.Round.IsRiichi(pIndex) ?
-                        BtnDiscard_Click : (RoutedEventHandler)null, (Angle)pIndex, !isHuman));
+                        BtnDiscard_Click : (RoutedEventHandler)null, (Angle)pIndex, !isHuman && !_debugMode));
                 }
             }
         }

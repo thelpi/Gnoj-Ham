@@ -192,17 +192,20 @@ namespace Gnoj_Ham
         /// </summary>
         /// <param name="game">The <see cref="GamePivot"/>.</param>
         /// <param name="firstPlayerIndex">The initial <see cref="CurrentPlayerIndex"/> value.</param>
-        /// <param name="withRedDoras">Optionnal; indicates if the set used for the game should contain red doras; default value is <c>False</c>.</param>
         /// <exception cref="ArgumentOutOfRangeException"><paramref name="firstPlayerIndex"/> value should be between <c>0</c> and <c>3</c>.</exception>
-        internal RoundPivot(GamePivot game, int firstPlayerIndex, bool withRedDoras = false)
+        internal RoundPivot(GamePivot game, int firstPlayerIndex)
         {
             if (firstPlayerIndex < 0 || firstPlayerIndex > 3)
             {
                 throw new ArgumentOutOfRangeException(nameof(firstPlayerIndex));
             }
 
-            //_fullTilesList = TilePivot.GetCompleteSet(withRedDoras).OrderBy(t => 1).ToList();
-            _fullTilesList = TilePivot.GetCompleteSet(withRedDoras).OrderBy(t => GlobalTools.Randomizer.NextDouble()).ToList();
+            _game = game;
+            
+            _fullTilesList = TilePivot
+                                .GetCompleteSet(_game.WithRedDoras)
+                                .OrderBy(t => _game.SortedDraw ? 1 : GlobalTools.Randomizer.NextDouble())
+                                .ToList();
 
             _hands = Enumerable.Range(0, 4).Select(i => new HandPivot(_fullTilesList.GetRange(i * 13, 13))).ToList();
             _discards = Enumerable.Range(0, 4).Select(i => new List<TilePivot>()).ToList();
@@ -219,8 +222,6 @@ namespace Gnoj_Ham
             _openedKanInProgress = null;
             _waitForDiscard = false;
             _playerIndexHistory = new List<int>();
-
-            _game = game;
         }
 
         #endregion Constructors
@@ -659,9 +660,9 @@ namespace Gnoj_Ham
             return !IsWallExhaustion
                 && !IsHumanPlayer
                 && (skipCurrentAction || (
-                    CanCallKan(GamePivot.HUMAN_INDEX).Count == 0
+                    CanCallChii(GamePivot.HUMAN_INDEX).Keys.Count == 0
                     && !CanCallPon(GamePivot.HUMAN_INDEX)
-                    && CanCallChii(GamePivot.HUMAN_INDEX).Keys.Count == 0
+                    && CanCallKan(GamePivot.HUMAN_INDEX).Count == 0
                 ));
         }
 
@@ -675,14 +676,11 @@ namespace Gnoj_Ham
             return !IsWallExhaustion
                 && IsHumanPlayer
                 && !_waitForDiscard
-                && (
-                    skipCurrentAction
-                    || (
-                        _game.Round.CanCallChii(GamePivot.HUMAN_INDEX).Keys.Count == 0
-                        && !_game.Round.CanCallPon(GamePivot.HUMAN_INDEX)
-                        && _game.Round.CanCallKan(GamePivot.HUMAN_INDEX).Count == 0
-                    )
-                );
+                && (skipCurrentAction || (
+                    CanCallChii(GamePivot.HUMAN_INDEX).Keys.Count == 0
+                    && !CanCallPon(GamePivot.HUMAN_INDEX)
+                    && CanCallKan(GamePivot.HUMAN_INDEX).Count == 0
+                ));
         }
 
         /// <summary>

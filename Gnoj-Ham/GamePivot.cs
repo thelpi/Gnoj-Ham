@@ -20,7 +20,6 @@ namespace Gnoj_Ham
 
         #region Embedded properties
         
-        private readonly bool _withRedDoras;
         private readonly List<PlayerPivot> _players;
 
         /// <summary>
@@ -57,6 +56,14 @@ namespace Gnoj_Ham
         /// Current <see cref="RoundPivot"/>.
         /// </summary>
         public RoundPivot Round { get; private set; }
+        /// <summary>
+        /// Debug option to not randomize the tile draw.
+        /// </summary>
+        public bool SortedDraw { get; private set; }
+        /// <summary>
+        /// <c>True</c> if akadora are used; <c>False</c> otherwise.
+        /// </summary>
+        public bool WithRedDoras { get; private set; }
 
         #endregion Embedded properties
 
@@ -103,17 +110,19 @@ namespace Gnoj_Ham
         /// </summary>
         /// <param name="humanPlayerName">The name of the human player; other players will be <see cref="PlayerPivot.IsCpu"/>.</param>
         /// <param name="initialPointsRule">The rule for initial points count.</param>
-        /// <param name="withRedDoras">Optionnal; indicates if the set used for the game should contain red doras; default value is <c>False</c>.</param>
-        public GamePivot(string humanPlayerName, InitialPointsRulePivot initialPointsRule, bool withRedDoras = false)
+        /// <param name="withRedDoras">Optionnal; the <see cref="WithRedDoras"/> value; default value is <c>False</c>.</param>
+        /// <param name="sortedDraw">Optionnal; the <see cref="SortedDraw"/> value; default value is <c>False</c>.</param>
+        public GamePivot(string humanPlayerName, InitialPointsRulePivot initialPointsRule, bool withRedDoras = false, bool sortedDraw = false)
         {
             _players = PlayerPivot.GetFourPlayers(humanPlayerName, initialPointsRule);
             DominantWind = WindPivot.East;
             EastIndexTurnCount = 1;
             EastIndex = FirstEastIndex;
             EastRank = 1;
-            _withRedDoras = withRedDoras;
+            WithRedDoras = withRedDoras;
+            SortedDraw = sortedDraw;
 
-            Round = new RoundPivot(this, EastIndex, _withRedDoras);
+            Round = new RoundPivot(this, EastIndex);
         }
 
         #endregion Constructors
@@ -174,7 +183,7 @@ namespace Gnoj_Ham
                 EastIndexTurnCount++;
             }
 
-            Round = new RoundPivot(this, EastIndex, _withRedDoras);
+            Round = new RoundPivot(this, EastIndex);
 
             return endOfRoundInformations;
         }

@@ -23,6 +23,8 @@ namespace Gnoj_HamView
             ChkUseRedDoras.IsChecked = Settings.Default.DefaultUseRedDoras;
             ChkAutoTsumoRon.IsChecked = Settings.Default.DefaultAutoTsumoRon;
             ChkRiichiAutoDiscard.IsChecked = Settings.Default.DefaultRiichiAutoDiscard;
+            ChkDebugMode.IsChecked = Settings.Default.DefaultDebugMode;
+            ChkSortedDraw.IsChecked = Settings.Default.DefaultSortedDraw;
         }
 
         private void BtnStart_Click(object sender, RoutedEventArgs e)
@@ -34,7 +36,9 @@ namespace Gnoj_HamView
                 ChkUseRedDoras.IsChecked == true,
                 (CpuSpeed)CbbCpuSpeed.SelectedIndex,
                 ChkAutoTsumoRon.IsChecked == true,
-                ChkRiichiAutoDiscard.IsChecked == true
+                ChkRiichiAutoDiscard.IsChecked == true,
+                ChkDebugMode.IsChecked == true,
+                ChkSortedDraw.IsChecked == true
             ).ShowDialog();
             ShowDialog();
         }

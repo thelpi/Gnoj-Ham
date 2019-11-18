@@ -76,5 +76,23 @@ namespace Gnoj_HamView.Properties {
                 return ((bool)(this["DefaultAutoTsumoRon"]));
             }
         }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool DefaultSortedDraw {
+            get {
+                return ((bool)(this["DefaultSortedDraw"]));
+            }
+        }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool DefaultDebugMode {
+            get {
+                return ((bool)(this["DefaultDebugMode"]));
+            }
+        }
     }
 }
