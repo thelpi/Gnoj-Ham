@@ -651,19 +651,6 @@ namespace Gnoj_Ham
         }
 
         /// <summary>
-        /// Indicates if the context is human player ready to pick.
-        /// </summary>
-        /// <param name="skipCurrentAction"><c>True</c> to force call skip.</param>
-        /// <returns><c>True</c> if the context is human player before pick.</returns>
-        public bool IsHumanSkippable(bool skipCurrentAction)
-        {
-            return !IsWallExhaustion
-                && IsHumanPlayer
-                && !_waitForDiscard
-                && (skipCurrentAction || SkippableCallForAllPlayer());
-        }
-
-        /// <summary>
         /// Checks if the hand of the specified player is tenpai.
         /// </summary>
         /// <param name="playerIndex">The player index.</param>
@@ -735,6 +722,95 @@ namespace Gnoj_Ham
             _deadTreasureTiles.RemoveAt(_deadTreasureTiles.Count - 1);
 
             // We could remove the compensation tile from the CurrentPlayerIndex hand, but it's not very useful in this context.
+        }
+
+        /// <summary>
+        /// Checks if a priority call can be made by the specified player.
+        /// </summary>
+        /// <param name="playerIndex">Player index.</param>
+        /// <returns><c>True</c> if call available; <c>False otherwise</c>.</returns>
+        public bool CanCallPonOrKan(int playerIndex)
+        {
+            return CanCallKan(playerIndex).Count > 0 || CanCallPon(playerIndex);
+        }
+
+        /// <summary>
+        /// Checks if a kan call can be made by any opponent of the human player.
+        /// </summary>
+        /// <param name="concealed"><c>True</c> to check only concealed kan (or from a previous pon); <c>False</c> to check the opposite; <c>Null</c> for both.</param>
+        /// <returns>The player index who can make the kan call, and the possible tiles; <c>Null</c> is none.</returns>
+        public Tuple<int, List<TilePivot>> OpponentsCanCallKan(bool? concealed)
+        {
+            for (int i = 0; i < 4; i++)
+            {
+                if (i != GamePivot.HUMAN_INDEX)
+                {
+                    List<TilePivot> kanTiles = CanCallKanWithChoices(i, concealed);
+                    if (kanTiles.Count > 0)
+                    {
+                        return new Tuple<int, List<TilePivot>>(i, kanTiles);
+                    }
+                }
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Similar to <see cref="CanCallKan(int)"/> but with the list of possible tiles depending on <paramref name="concealed"/>.
+        /// </summary>
+        /// <param name="playerId">The player index.</param>
+        /// <param name="concealed"><c>True</c> to check only concealed kan (or from a previous pon); <c>False</c> to check the opposite; <c>Null</c> for both.</param>
+        /// <returns>List of possible tiles.</returns>
+        public List<TilePivot> CanCallKanWithChoices(int playerId, bool? concealed)
+        {
+            List<TilePivot> tiles = CanCallKan(playerId);
+            if (concealed == true)
+            {
+                tiles = tiles.Where(t => _hands[playerId].ConcealedTiles.Count(ct => t == ct) == 4
+                    || _hands[playerId].DeclaredCombinations.Any(ct => ct.IsBrelan && t == ct.OpenTile)).ToList();
+            }
+            else if (concealed == false)
+            {
+                tiles = tiles.Where(t => _hands[playerId].ConcealedTiles.Count(ct => t == ct) == 3).ToList();
+            }
+
+            return tiles;
+        }
+
+        /// <summary>
+        /// Checks if a pon call can be made by any opponent of the human player.
+        /// </summary>
+        /// <returns>The player index who can make the pon call; <c>-1</c> is none.</returns>
+        public int OpponentsCanCallPon()
+        {
+            List<int> opponentsIndex = Enumerable.Range(0, 4).Where(i =>
+            {
+                return i != GamePivot.HUMAN_INDEX && CanCallPon(i);
+            }).ToList();
+
+            return opponentsIndex.Count > 0 ? opponentsIndex[0] : -1;
+        }
+
+        /// <summary>
+        /// Checks if a chii call can be made by any opponent of the human player.
+        /// </summary>
+        /// <returns>same type of return than the method <see cref="CanCallChii(int)"/>, for the opponent who can call chii.</returns>
+        public Dictionary<TilePivot, bool> OpponentsCanCallChii()
+        {
+            for (int i = 0; i < 4; i++)
+            {
+                if (i != GamePivot.HUMAN_INDEX)
+                {
+                    Dictionary<TilePivot, bool> chiiTiles = CanCallChii(i);
+                    if (chiiTiles.Count > 0)
+                    {
+                        return chiiTiles;
+                    }
+                }
+            }
+
+            return new Dictionary<TilePivot, bool>();
         }
 
         #endregion Public methods
@@ -889,20 +965,6 @@ namespace Gnoj_Ham
             }
 
             return playerIndexList;
-        }
-
-        // Checks if pon / chii / kan calls are skippable for the specified player.
-        private bool SkippableCallForPlayer(int playerIndex)
-        {
-            return CanCallKan(playerIndex).Count == 0
-                && !CanCallPon(playerIndex)
-                && CanCallChii(playerIndex).Keys.Count == 0;
-        }
-
-        // Checks if pon / chii / kan calls are skippable for every player except "PreviousPlayerIndex" (who just discard).
-        private bool SkippableCallForAllPlayer()
-        {
-            return Enumerable.Range(0, 4).Where(i => i != PreviousPlayerIndex).All(SkippableCallForPlayer);
         }
 
         #endregion Private methods
