@@ -277,7 +277,7 @@ namespace Gnoj_HamView
         {
             bool endOfRound = false;
             int? ronPlayerId = null;
-            int? middleOfKanPlayerId = null;
+            Tuple<int, TilePivot, int?> kanInProgress = null;
 
             await Task.Run(() =>
             {
@@ -286,12 +286,17 @@ namespace Gnoj_HamView
                     if (CheckCallRonForEveryone())
                     {
                         endOfRound = true;
-                        ronPlayerId = middleOfKanPlayerId ?? _game.Round.PreviousPlayerIndex;
-                        if (middleOfKanPlayerId.HasValue)
+                        ronPlayerId = kanInProgress != null ? kanInProgress.Item1 : _game.Round.PreviousPlayerIndex;
+                        if (kanInProgress != null)
                         {
                             _game.Round.UndoPickCompensationTile();
                         }
                         break;
+                    }
+
+                    if (kanInProgress != null)
+                    {
+                        OpponentContinueCallKan(kanInProgress.Item2, kanInProgress.Item3);
                     }
 
                     if (!skipCurrentAction && _game.Round.CanCallPonOrKan(GamePivot.HUMAN_INDEX))
@@ -305,8 +310,9 @@ namespace Gnoj_HamView
                         TilePivot kanTilePick = OpponentDecideCallKan(opponentPlayerIdWithTiles.Item1, opponentPlayerIdWithTiles.Item2);
                         if (kanTilePick != null)
                         {
-                            OpponentBeginCallKan(opponentPlayerIdWithTiles.Item1, kanTilePick, false);
-                            middleOfKanPlayerId = opponentPlayerIdWithTiles.Item1;
+                            int currentPlayerId = _game.Round.CurrentPlayerIndex;
+                            TilePivot compensationTile = OpponentBeginCallKan(opponentPlayerIdWithTiles.Item1, kanTilePick, false, false);
+                            kanInProgress = new Tuple<int, TilePivot, int?>(opponentPlayerIdWithTiles.Item1, compensationTile, currentPlayerId);
                             continue;
                         }
                     }
@@ -329,17 +335,17 @@ namespace Gnoj_HamView
                     Dictionary<TilePivot, bool> chiiTiles = _game.Round.OpponentsCanCallChii();
                     if (chiiTiles.Count > 0)
                     {
-                        TilePivot chiiTilePick = OpponentDecideCallChii(chiiTiles);
-                        if (chiiTilePick != null)
+                        KeyValuePair<TilePivot, bool> chiiTilePick = OpponentDecideCallChii(chiiTiles);
+                        if (chiiTilePick.Key != null)
                         {
                             OpponentCallChiiAndDiscard(chiiTilePick);
                             continue;
                         }
                     }
 
-                    if (middleOfKanPlayerId.HasValue)
+                    if (kanInProgress != null)
                     {
-                        if (OpponentAfterPick(ref middleOfKanPlayerId))
+                        if (OpponentAfterPick(ref kanInProgress))
                         {
                             break;
                         }
@@ -360,7 +366,7 @@ namespace Gnoj_HamView
                     else
                     {
                         OpponentPick();
-                        if (OpponentAfterPick(ref middleOfKanPlayerId))
+                        if (OpponentAfterPick(ref kanInProgress))
                         {
                             endOfRound = true;
                             break;
@@ -473,11 +479,27 @@ namespace Gnoj_HamView
 
         #region CPU actions
 
+        // Intermediate phase when an opponent call kan.
+        private void OpponentContinueCallKan(TilePivot compensationTile, int? previousPlayerIndex)
+        {
+            Dispatcher.Invoke(() =>
+            {
+                FillHandPanel(_game.Round.CurrentPlayerIndex, compensationTile);
+                StpPickP0.Children.Add(compensationTile.GenerateTileButton(null, (Angle)_game.Round.CurrentPlayerIndex, !_debugMode));
+                if (previousPlayerIndex.HasValue)
+                {
+                    FillDiscardPanel(previousPlayerIndex.Value);
+                }
+                AddLatestCombinationToStack(_game.Round.CurrentPlayerIndex);
+                SetActionButtonsVisibility(cpuPlay: true);
+                StpDoras.SetDorasPanel(_game.Round.DoraIndicatorTiles, _game.Round.VisibleDorasCount);
+            });
+        }
+
         // Proceeds to pick for the current opponent.
         private void OpponentPick()
         {
             TilePivot pick = _game.Round.Pick();
-
             Dispatcher.Invoke(() =>
             {
                 SetPlayersLed();
@@ -487,27 +509,60 @@ namespace Gnoj_HamView
         }
 
         // Proceeds to call chii then discard for the current opponent.
-        private void OpponentCallChiiAndDiscard(TilePivot chiiTilePick)
+        private void OpponentCallChiiAndDiscard(KeyValuePair<TilePivot, bool> chiiTilePick)
         {
-            throw new NotImplementedException();
+            _game.Round.CallChii(_game.Round.CurrentPlayerIndex, chiiTilePick.Value ? chiiTilePick.Key.Number - 1 : chiiTilePick.Key.Number);
+            Dispatcher.Invoke(() =>
+            {
+                SetPlayersLed();
+                FillHandPanel(_game.Round.CurrentPlayerIndex);
+                AddLatestCombinationToStack(_game.Round.CurrentPlayerIndex);
+                FillDiscardPanel(_game.Round.PreviousPlayerIndex);
+                SetActionButtonsVisibility(cpuPlay: true);
+            });
+            OpponentDiscard(OpponentDecideDiscard());
         }
 
         // Proceeds to call pon then discard for an opponent.
         private void OpponentCallPonAndDiscard(int opponentPlayerId)
         {
-            throw new NotImplementedException();
+            // Note : this value is stored here because the call to "CallPon" makes it change.
+            int previousPlayerIndex = _game.Round.PreviousPlayerIndex;
+            _game.Round.CallPon(opponentPlayerId);
+            Dispatcher.Invoke(() =>
+            {
+                SetPlayersLed();
+                FillHandPanel(opponentPlayerId);
+                AddLatestCombinationToStack(opponentPlayerId);
+                FillDiscardPanel(previousPlayerIndex);
+                SetActionButtonsVisibility(cpuPlay: true);
+            });
+            OpponentDiscard(OpponentDecideDiscard());
         }
 
         // Proceeds to call a kan for an opponent.
-        private void OpponentBeginCallKan(int playerId, TilePivot kanTilePick, bool concealedKan)
+        private TilePivot OpponentBeginCallKan(int playerId, TilePivot kanTilePick, bool concealedKan, bool fromPreviousKan)
         {
-            throw new NotImplementedException();
+            if (fromPreviousKan)
+            {
+                Thread.Sleep(_cpuSpeedMs);
+            }
+
+            TilePivot compensationTile = _game.Round.CallKan(playerId, kanTilePick);
+            Dispatcher.Invoke(() =>
+            {
+                if (!concealedKan)
+                {
+                    SetPlayersLed();
+                }
+            });
+            return compensationTile;
         }
 
         // Manages every possible moves for the current opponent after his pick.
-        private bool OpponentAfterPick(ref int? middleOfKanPlayerId)
+        private bool OpponentAfterPick(ref Tuple<int, TilePivot, int?> kanInProgress)
         {
-            if (_game.Round.CanCallTsumo(middleOfKanPlayerId.HasValue) && OpponentDecideCallTsumo())
+            if (_game.Round.CanCallTsumo(kanInProgress != null) && OpponentDecideCallTsumo())
             {
                 return true;
             }
@@ -518,18 +573,26 @@ namespace Gnoj_HamView
                 TilePivot kanTilePick = OpponentDecideCallKan(_game.Round.CurrentPlayerIndex, kanTiles);
                 if (kanTilePick != null)
                 {
-                    OpponentBeginCallKan(_game.Round.CurrentPlayerIndex, kanTilePick, true);
-                    middleOfKanPlayerId = _game.Round.CurrentPlayerIndex;
+                    // TODO : timer
+                    TilePivot compensationTile = OpponentBeginCallKan(_game.Round.CurrentPlayerIndex, kanTilePick, true, kanInProgress != null);
+                    kanInProgress = new Tuple<int, TilePivot, int?>(_game.Round.CurrentPlayerIndex, compensationTile, null);
                     return false;
                 }
             }
 
-            if (_game.Round.CanCallRiichi(_game.Round.CurrentPlayerIndex).Count > 0 && OpponentDecideCallRiichi())
+            kanInProgress = null;
+
+            List<TilePivot> riichiTiles = _game.Round.CanCallRiichi(_game.Round.CurrentPlayerIndex);
+            if (riichiTiles.Count > 0)
             {
-                OpponentCallRiichi();
+                TilePivot riichiTile = OpponentDecideCallRiichi(riichiTiles);
+                if (riichiTile != null)
+                {
+                    OpponentCallRiichiAndDiscard(riichiTile);
+                    return false;
+                }
             }
 
-            middleOfKanPlayerId = null;
             OpponentDiscard(OpponentDecideDiscard());
             return false;
         }
@@ -550,9 +613,15 @@ namespace Gnoj_HamView
         }
 
         // Proceeds to call riichi for the current opponent.
-        private void OpponentCallRiichi()
+        private void OpponentCallRiichiAndDiscard(TilePivot riichiTile)
         {
-            throw new NotImplementedException();
+            _game.Round.CallRiichi(_game.Round.CurrentPlayerIndex, riichiTile);
+            Dispatcher.Invoke(() =>
+            {
+                FillHandPanel(_game.Round.PreviousPlayerIndex);
+                FillDiscardPanel(_game.Round.PreviousPlayerIndex);
+                SetActionButtonsVisibility(cpuPlay: true);
+            });
         }
 
         #endregion CPU actions
@@ -573,10 +642,10 @@ namespace Gnoj_HamView
         }
 
         // Computes the riichi decision for the current opponent.
-        private bool OpponentDecideCallRiichi()
+        private TilePivot OpponentDecideCallRiichi(List<TilePivot> riichiTiles)
         {
             // TODO
-            return true;
+            return riichiTiles.First();
         }
 
         // Computes the tsumo decision for the current opponent.
@@ -601,10 +670,10 @@ namespace Gnoj_HamView
         }
 
         // Computes the chii decision for the current opponent.
-        private TilePivot OpponentDecideCallChii(Dictionary<TilePivot, bool> chiiTiles)
+        private KeyValuePair<TilePivot, bool> OpponentDecideCallChii(Dictionary<TilePivot, bool> chiiTiles)
         {
             // TODO
-            return chiiTiles.Keys.First();
+            return chiiTiles.First();
         }
 
         #endregion CPU decisions
@@ -748,7 +817,13 @@ namespace Gnoj_HamView
             WindPivot pWind = _game.GetPlayerCurrentWind(pIndex);
 
             int i = 0;
-            foreach (KeyValuePair<TilePivot, bool> tileKvp in combo.GetSortedTilesForDisplay(pWind))
+            List<KeyValuePair<TilePivot, bool>> tilesKvp = combo.GetSortedTilesForDisplay(pWind);
+            if (pIndex > 0 && pIndex < 3)
+            {
+                tilesKvp.Reverse();
+            }
+
+            foreach (KeyValuePair<TilePivot, bool> tileKvp in tilesKvp)
             {
                 panel.Children.Add(tileKvp.Key.GenerateTileButton(null,
                     (Angle)(tileKvp.Value ? pIndex.RelativePlayerIndex(1) : pIndex),
