@@ -58,6 +58,19 @@ namespace Gnoj_HamView
 
         #region Window events
 
+        // Happens when the count of tiles in the wall changes.
+        private void OnNotifyWallCount(object sender, EventArgs e)
+        {
+            Dispatcher.Invoke(() =>
+            {
+                LblWallTilesLeft.Content = _game.Round.WallTiles.Count;
+                if (_game.Round.WallTiles.Count <= 4)
+                {
+                    LblWallTilesLeft.Foreground = System.Windows.Media.Brushes.Red;
+                }
+            });
+        }
+
         private void BtnDiscard_Click(object sender, RoutedEventArgs e)
         {
             TilePivot discard = (sender as Button).Tag as TilePivot;
@@ -77,7 +90,7 @@ namespace Gnoj_HamView
             if (_game.Round.CallChii(GamePivot.HUMAN_INDEX, tag.Value ? tag.Key.Number - 1 : tag.Key.Number))
             {
                 FillHandPanel(_game.Round.CurrentPlayerIndex);
-                AddLatestCombinationToStack(GamePivot.HUMAN_INDEX);
+                FillCombinationStack(GamePivot.HUMAN_INDEX);
                 FillDiscardPanel(_game.Round.PreviousPlayerIndex);
                 SetActionButtonsVisibility();
             }
@@ -105,7 +118,7 @@ namespace Gnoj_HamView
                 else
                 {
                     FillHandPanel(GamePivot.HUMAN_INDEX);
-                    AddLatestCombinationToStack(GamePivot.HUMAN_INDEX);
+                    FillCombinationStack(GamePivot.HUMAN_INDEX);
                     FillDiscardPanel(previousPlayerIndex);
                     SetActionButtonsVisibility();
                 }
@@ -241,7 +254,7 @@ namespace Gnoj_HamView
                 {
                     FillDiscardPanel(previousPlayerIndex.Value);
                 }
-                AddLatestCombinationToStack(GamePivot.HUMAN_INDEX);
+                FillCombinationStack(GamePivot.HUMAN_INDEX);
                 SetActionButtonsVisibility(preDiscard: true);
                 StpDoras.SetDorasPanel(_game.Round.DoraIndicatorTiles, _game.Round.VisibleDorasCount);
                 if (HumanCallTsumo(true))
@@ -485,12 +498,12 @@ namespace Gnoj_HamView
             Dispatcher.Invoke(() =>
             {
                 FillHandPanel(_game.Round.CurrentPlayerIndex, compensationTile);
-                StpPickP0.Children.Add(compensationTile.GenerateTileButton(null, (Angle)_game.Round.CurrentPlayerIndex, !_debugMode));
+                (FindName($"StpPickP{_game.Round.CurrentPlayerIndex}") as StackPanel).Children.Add(compensationTile.GenerateTileButton(null, (Angle)_game.Round.CurrentPlayerIndex, !_debugMode));
                 if (previousPlayerIndex.HasValue)
                 {
                     FillDiscardPanel(previousPlayerIndex.Value);
                 }
-                AddLatestCombinationToStack(_game.Round.CurrentPlayerIndex);
+                FillCombinationStack(_game.Round.CurrentPlayerIndex);
                 SetActionButtonsVisibility(cpuPlay: true);
                 StpDoras.SetDorasPanel(_game.Round.DoraIndicatorTiles, _game.Round.VisibleDorasCount);
             });
@@ -516,7 +529,7 @@ namespace Gnoj_HamView
             {
                 SetPlayersLed();
                 FillHandPanel(_game.Round.CurrentPlayerIndex);
-                AddLatestCombinationToStack(_game.Round.CurrentPlayerIndex);
+                FillCombinationStack(_game.Round.CurrentPlayerIndex);
                 FillDiscardPanel(_game.Round.PreviousPlayerIndex);
                 SetActionButtonsVisibility(cpuPlay: true);
             });
@@ -533,7 +546,7 @@ namespace Gnoj_HamView
             {
                 SetPlayersLed();
                 FillHandPanel(opponentPlayerId);
-                AddLatestCombinationToStack(opponentPlayerId);
+                FillCombinationStack(opponentPlayerId);
                 FillDiscardPanel(previousPlayerIndex);
                 SetActionButtonsVisibility(cpuPlay: true);
             });
@@ -739,8 +752,11 @@ namespace Gnoj_HamView
         // Resets and refills every panels at a new round.
         private void NewRoundRefresh()
         {
+            _game.Round.NotifyWallCount += OnNotifyWallCount;
+            OnNotifyWallCount(null, null);
+
             StpDoras.SetDorasPanel(_game.Round.DoraIndicatorTiles, _game.Round.VisibleDorasCount);
-            LblDominantWind.Content = _game.DominantWind.ToString().First();
+            LblDominantWind.Content = _game.DominantWind.ToWindDisplay();
             LblEastTurnCount.Content = _game.EastRank;
             for (int pIndex = 0; pIndex < _game.Players.Count; pIndex++)
             {
@@ -749,7 +765,7 @@ namespace Gnoj_HamView
                 FillDiscardPanel(pIndex);
                 (FindName($"LblWindP{pIndex}") as Label).Content = _game.GetPlayerCurrentWind(pIndex).ToString();
                 (FindName($"LblNameP{pIndex}") as Label).Content = _game.Players.ElementAt(pIndex).Name;
-                (FindName($"LblPointsP{pIndex}") as Label).Content = _game.Players.ElementAt(pIndex).Points;
+                (FindName($"LblPointsP{pIndex}") as Label).Content = $"{_game.Players.ElementAt(pIndex).Points / 1000}k";
             }
             SetPlayersLed();
             SetActionButtonsVisibility(preDiscard: true);
@@ -797,13 +813,15 @@ namespace Gnoj_HamView
         }
 
         // Adds to the player stack its last combination.
-        private void AddLatestCombinationToStack(int pIndex)
+        private void FillCombinationStack(int pIndex)
         {
             StackPanel panel = FindName($"StpCombosP{pIndex}") as StackPanel;
 
-            TileComboPivot combo = _game.Round.Hands.ElementAt(pIndex).DeclaredCombinations.Last();
-
-            panel.Children.Add(CreateCombinationPanel(pIndex, combo));
+            panel.Children.Clear();
+            foreach (TileComboPivot combo in _game.Round.Hands.ElementAt(pIndex).DeclaredCombinations)
+            {
+                panel.Children.Add(CreateCombinationPanel(pIndex, combo));
+            }
         }
 
         // Creates a panel for the specified combination.

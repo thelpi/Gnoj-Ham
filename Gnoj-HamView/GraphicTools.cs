@@ -142,6 +142,29 @@ namespace Gnoj_HamView
             }
         }
 
+        /// <summary>
+        /// Gets a japanese caracter which represents the specified wind.
+        /// </summary>
+        /// <param name="wind">The wind to display.</param>
+        /// <returns>The associated japanese caracter.</returns>
+        /// <exception cref="NotImplementedException">The wind is not implemented.</exception>
+        internal static string ToWindDisplay(this WindPivot wind)
+        {
+            switch (wind)
+            {
+                case WindPivot.East:
+                    return "東";
+                case WindPivot.South:
+                    return "南";
+                case WindPivot.West:
+                    return "西";
+                case WindPivot.North:
+                    return "北";
+                default:
+                    throw new NotImplementedException();
+            }
+        }
+
         #region Private methods
 
         private static Grid PointsGridForScoreDisplay(EndOfRoundInformationsPivot.PlayerInformationsPivot p)

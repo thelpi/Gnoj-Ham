@@ -52,20 +52,20 @@
 
         <!-- Action buttons container -->
         <StackPanel Orientation="Horizontal" Grid.Column="3" Grid.Row="6">
-            <Button Name="BtnPon" Content="Pon" Height="25" Width="50" Visibility="Collapsed" Click="BtnPon_Click" />
-            <Button Name="BtnChii" Content="Chii" Height="25" Width="50" Visibility="Collapsed" Click="BtnChii_Click" />
-            <Button Name="BtnKan" Content="Kan" Height="25" Width="50" Visibility="Collapsed" Click="BtnKan_Click" />
+            <Button Name="BtnPon" Content="PON !" FontWeight="ExtraBold" Height="28" Width="75" Visibility="Collapsed" Click="BtnPon_Click" />
+            <Button Name="BtnChii" Content="CHII !" FontWeight="ExtraBold" Height="28" Width="75" Visibility="Collapsed" Click="BtnChii_Click" />
+            <Button Name="BtnKan" Content="KAN !" FontWeight="ExtraBold" Height="28" Width="75" Visibility="Visible" Click="BtnKan_Click" />
         </StackPanel>
 
         <!-- Hands stacks -->
         <!-- P1 (bottom) -->
-        <DockPanel Grid.Column="2" Grid.Row="5" Grid.ColumnSpan="3">
+        <DockPanel Grid.Column="2" Grid.Row="5" Grid.ColumnSpan="4">
             <StackPanel Orientation="Horizontal" DockPanel.Dock="Left" Name="StpHandP0" />
             <!-- Tile just picked (separate view) -->
-            <StackPanel Orientation="Horizontal" DockPanel.Dock="Left" Name="StpPickP0" Margin="10, 0, 0, 0" />
+            <StackPanel Orientation="Horizontal" DockPanel.Dock="Left" Name="StpPickP0" Margin="5, 0, 0, 0" />
         </DockPanel>
         <!-- P2 (right) -->
-        <Grid Grid.Column="5" Grid.Row="2" Grid.RowSpan="3" >
+        <Grid Grid.Column="5" Grid.Row="1" Grid.RowSpan="4" >
             <Grid.RowDefinitions>
                 <RowDefinition Height="*" />
                 <RowDefinition Height="Auto" />
@@ -73,11 +73,11 @@
             <DockPanel Grid.Row="1">
                 <StackPanel Orientation="Vertical" DockPanel.Dock="Bottom" Name="StpHandP1" />
                 <!-- Tile just picked (separate view) -->
-                <StackPanel Orientation="Vertical" DockPanel.Dock="Bottom" Name="StpPickP1" Margin="0, 0, 0, 10" />
+                <StackPanel Orientation="Vertical" DockPanel.Dock="Bottom" Name="StpPickP1" Margin="0, 0, 0, 5" />
             </DockPanel>
         </Grid>
         <!-- P3 (top) -->
-        <Grid Grid.Column="2" Grid.Row="1" Grid.ColumnSpan="3">
+        <Grid Grid.Column="1" Grid.Row="1" Grid.ColumnSpan="4">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*" />
                 <ColumnDefinition Width="Auto" />
@@ -85,14 +85,14 @@
             <DockPanel Grid.Row="1">
                 <StackPanel Orientation="Horizontal" DockPanel.Dock="Right" Name="StpHandP2" />
                 <!-- Tile just picked (separate view) -->
-                <StackPanel Orientation="Horizontal" DockPanel.Dock="Right" Name="StpPickP2" Margin="0, 0, 10, 0" />
+                <StackPanel Orientation="Horizontal" DockPanel.Dock="Right" Name="StpPickP2" Margin="0, 0, 5, 0" HorizontalAlignment="Right" />
             </DockPanel>
         </Grid>
         <!-- P4 (left) -->
-        <DockPanel Grid.Column="1" Grid.Row="2" Grid.RowSpan="3">
+        <DockPanel Grid.Column="1" Grid.Row="2" Grid.RowSpan="4">
             <StackPanel Orientation="Vertical" DockPanel.Dock="Top" Name="StpHandP3" />
             <!-- Tile just picked (separate view) -->
-            <StackPanel Orientation="Vertical" DockPanel.Dock="Top" Name="StpPickP3" Margin="0, 10, 0, 0" />
+            <StackPanel Orientation="Vertical" DockPanel.Dock="Top" Name="StpPickP3" Margin="0, 5, 0, 0" />
         </DockPanel>
 
         <!-- Discards -->
@@ -206,9 +206,10 @@
         <!-- General informations -->
         <DockPanel Grid.Row="3" Grid.Column="3" HorizontalAlignment="Center" VerticalAlignment="Center">
             <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Name="StpDoras" />
-            <Grid DockPanel.Dock="Bottom">
+            <Grid DockPanel.Dock="Bottom" Margin="0, 5, 0, 0">
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="120" />
+                    <ColumnDefinition Width="90" />
+                    <ColumnDefinition Width="45" />
                     <ColumnDefinition Width="60" />
                     <ColumnDefinition Width="60" />
                 </Grid.ColumnDefinitions>
@@ -228,6 +229,7 @@
                 <Label Grid.Row="3" Grid.Column="1" Name="LblPointsP3" />
                 <Label Grid.Row="0" Grid.RowSpan="2" Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="20" Name="LblDominantWind" />
                 <Label Grid.Row="2" Grid.RowSpan="2" Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="20" Name="LblEastTurnCount" />
+                <Label Grid.Row="0" Grid.RowSpan="5" Grid.Column="3" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="20" Name="LblWallTilesLeft" />
             </Grid>
         </DockPanel>
     </Grid>
