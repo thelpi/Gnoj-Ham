@@ -527,15 +527,12 @@ namespace Gnoj_Ham
         /// </returns>
         public bool Discard(TilePivot tile)
         {
-            if (!_waitForDiscard || (IsRiichi(CurrentPlayerIndex) && !ReferenceEquals(tile, _hands[CurrentPlayerIndex].LatestPick)))
+            if (!CanDiscard(tile))
             {
                 return false;
             }
 
-            if (!_hands[CurrentPlayerIndex].Discard(tile, _stealingInProgress))
-            {
-                return false;
-            }
+            _hands[CurrentPlayerIndex].Discard(tile, _stealingInProgress);
 
             if (_stealingInProgress || _closedKanInProgress != null)
             {
@@ -554,17 +551,16 @@ namespace Gnoj_Ham
         }
 
         /// <summary>
-        /// Proceeds to discard a random tile for the current player.
+        /// Gets the first discardable tile from the concealed hand of the current player.
         /// </summary>
-        /// <returns>
-        /// <c>False</c> if the wall is exhausted, or a move is not expected in this context;
-        /// <c>True</c> otherwise.
-        /// </returns>
-        public void RandomDiscard()
+        /// <returns>The tile.</returns>
+        public TilePivot GetFirstDiscardableTile()
         {
-            // Discards a random tile.
-            // Can't fail as it's never from a stolen call.
-            Discard(_hands[CurrentPlayerIndex].ConcealedTiles.Skip(GlobalTools.Randomizer.Next(0, _hands[CurrentPlayerIndex].ConcealedTiles.Count)).First());
+            // TODO : Useless when the IA is ready.
+            return _hands[CurrentPlayerIndex]
+                .ConcealedTiles
+                .Where(t => CanDiscard(t))
+                .First();
         }
 
         /// <summary>
@@ -816,6 +812,22 @@ namespace Gnoj_Ham
         #endregion Public methods
 
         #region Private methods
+
+        // Checks if the specified tile can be discarded for the current player.
+        private bool CanDiscard(TilePivot tile)
+        {
+            if (!_waitForDiscard || (IsRiichi(CurrentPlayerIndex) && !ReferenceEquals(tile, _hands[CurrentPlayerIndex].LatestPick)))
+            {
+                return false;
+            }
+
+            if (!_hands[CurrentPlayerIndex].CanDiscardTile(tile, _stealingInProgress))
+            {
+                return false;
+            }
+
+            return true;
+        }
 
         // Gets every tiles from every opponents virtual discards after the riichi call of the specified player.
         private List<TilePivot> GetTilesFromVirtualDiscardsAtRank(int riichiPlayerIndex, TilePivot exceptTile)

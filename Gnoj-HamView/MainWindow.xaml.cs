@@ -186,7 +186,7 @@ namespace Gnoj_HamView
         #region Human decisions
 
         // Manages riichii call opportunities.
-        private void RiichiCallManagement(List<TilePivot> tiles)
+        private void HumanCallRiichi(List<TilePivot> tiles)
         {
             if (tiles.Count > 0 && MessageBox.Show("Declare riichi ?", WINDOW_TITLE, MessageBoxButton.YesNo) == MessageBoxResult.Yes)
             {
@@ -250,7 +250,7 @@ namespace Gnoj_HamView
                 }
                 else
                 {
-                    RiichiCallManagement(_game.Round.CanCallRiichi(GamePivot.HUMAN_INDEX));
+                    HumanCallRiichi(_game.Round.CanCallRiichi(GamePivot.HUMAN_INDEX));
                 }
             }
         }
@@ -393,134 +393,6 @@ namespace Gnoj_HamView
             return ronCalled;
         }
 
-        /*private Tuple<bool, int?> CpuTurnAutoPlay()
-        {
-            if (CheckRonForEveryPlayer(_game.Round.PreviousPlayerIndex))
-            {
-                return new Tuple<bool, int?>(true, _game.Round.PreviousPlayerIndex);
-            }
-            else
-            {
-                bool callMadeByOpponent = false;
-                for (int i = _game.Round.CurrentPlayerIndex; i < _game.Round.CurrentPlayerIndex + 4; i++)
-                {
-                    int realI = i >= 4 ? i - 4 : i;
-                    if (realI != _game.Round.PreviousPlayerIndex)
-                    {
-                        if (_game.Round.CanCallKan(realI).Count > 0)
-                        {
-                            if (realI == GamePivot.HUMAN_INDEX)
-                            {
-                                return new Tuple<bool, int?>(false, GamePivot.HUMAN_INDEX);
-                            }
-                            else
-                            {
-                                Dispatcher.Invoke(SetPlayersLed);
-                                Thread.Sleep(_cpuSpeedMs);
-                                int previousPlayerIndex = _game.Round.PreviousPlayerIndex;
-                                TilePivot compensationTile = _game.Round.CallKan(realI);
-                                if (compensationTile == null)
-                                {
-                                    throw new NotImplementedException();
-                                }
-                                else if (CheckRonForEveryPlayer(_game.Round.CurrentPlayerIndex))
-                                {
-                                    _game.Round.UndoPickCompensationTile();
-                                    return new Tuple<bool, int?>(true, _game.Round.CurrentPlayerIndex);
-                                }
-                                Dispatcher.Invoke(() =>
-                                {
-                                    FillHandPanel(_game.Round.CurrentPlayerIndex, compensationTile);
-                                    StpPickP0.Children.Add(compensationTile.GenerateTileButton(BtnDiscard_Click));
-                                    FillDiscardPanel(previousPlayerIndex);
-                                    AddLatestCombinationToStack(_game.Round.CurrentPlayerIndex);
-                                    SetActionButtonsVisibility(preDiscard: true, cpuPlay: true);
-                                    StpDoras.SetDorasPanel(_game.Round.DoraIndicatorTiles, _game.Round.VisibleDorasCount);
-                                });
-                                _game.Round.CanCallTsumo(false);
-                                if (TsumoOrRonCallManagement(_game.Round.CurrentPlayerIndex, false))
-                                {
-                                    return new Tuple<bool, int?>(true, null);
-                                }
-                                callMadeByOpponent = true;
-                                break;
-                            }
-                        }
-                        else if (_game.Round.CanCallPon(realI))
-                        {
-                            if (realI == GamePivot.HUMAN_INDEX)
-                            {
-                                return new Tuple<bool, int?>(false, GamePivot.HUMAN_INDEX);
-                            }
-                            else
-                            {
-                                Dispatcher.Invoke(SetPlayersLed);
-                                Thread.Sleep(_cpuSpeedMs);
-                                int previousPlayerIndex = _game.Round.PreviousPlayerIndex;
-                                _game.Round.CallPon(realI);
-                                callMadeByOpponent = true;
-                                Dispatcher.Invoke(() =>
-                                {
-                                    FillHandPanel(_game.Round.CurrentPlayerIndex);
-                                    AddLatestCombinationToStack(_game.Round.CurrentPlayerIndex);
-                                    FillDiscardPanel(previousPlayerIndex);
-                                    SetActionButtonsVisibility(cpuPlay: true);
-                                });
-                                break;
-                            }
-                        }
-                    }
-                }
-                // TODO : chii call
-                if (callMadeByOpponent)
-                {
-                    _game.Round.RandomDiscard();
-                    Dispatcher.Invoke(() =>
-                    {
-                        FillDiscardPanel(_game.Round.PreviousPlayerIndex);
-                        FillHandPanel(_game.Round.PreviousPlayerIndex);
-                        SetActionButtonsVisibility(cpuPlay: true);
-                    });
-                }
-                else
-                {
-                    Dispatcher.Invoke(SetPlayersLed);
-                    Thread.Sleep(_cpuSpeedMs);
-                    TilePivot pick = _game.Round.Pick();
-                    if (pick != null)
-                    {
-                        if (_game.Round.CanCallTsumo(false))
-                        {
-                            if (TsumoOrRonCallManagement(_game.Round.CurrentPlayerIndex, false))
-                            {
-                                return new Tuple<bool, int?>(true, null);
-                            }
-                            else
-                            {
-                                throw new NotImplementedException();
-                            }
-                        }
-                        else
-                        {
-                            _game.Round.RandomDiscard();
-                            Dispatcher.Invoke(() =>
-                            {
-                                FillDiscardPanel(_game.Round.PreviousPlayerIndex);
-                                FillHandPanel(_game.Round.PreviousPlayerIndex);
-                                SetActionButtonsVisibility(cpuPlay: true);
-                            });
-                        }
-                    }
-                    else if (!_game.Round.IsWallExhaustion)
-                    {
-                        throw new NotImplementedException();
-                    }
-                }
-            }
-
-            return new Tuple<bool, int?>(false, _game.Round.IsHumanPlayer ? 0 : (int?)null);
-        }*/
-
         // Proceeds to autoplay for human player.
         private void HumanAutoPlay(out bool newRound)
         {
@@ -546,7 +418,7 @@ namespace Gnoj_HamView
             {
                 Dispatcher.Invoke(() =>
                 {
-                    RiichiCallManagement(tilesRiichi);
+                    HumanCallRiichi(tilesRiichi);
                 });
             }
             else if (_riichiAutoDiscard && _game.Round.HumanCanAutoDiscard())
@@ -556,6 +428,44 @@ namespace Gnoj_HamView
                 {
                     (StpPickP0.Children[0] as Button).RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent));
                 });
+            }
+        }
+
+        // Restrict possible discards on the specified selection of tiles.
+        private void RestrictDiscardWithTilesSelection(IDictionary<TilePivot, bool> tileChoices, RoutedEventHandler handler)
+        {
+            SetActionButtonsVisibility();
+
+            List<Button> buttons = StpHandP0.Children.OfType<Button>().ToList();
+            if (StpPickP0.Children.Count > 0)
+            {
+                buttons.Add(StpPickP0.Children[0] as Button);
+            }
+
+            var clickableButtons = new List<Button>();
+            foreach (KeyValuePair<TilePivot, bool> tileKvp in tileChoices)
+            {
+                // Changes the event of every buttons concerned by the call...
+                Button buttonClickable = buttons.First(b => b.Tag as TilePivot == tileKvp.Key);
+                buttonClickable.Click += handler;
+                buttonClickable.Click -= BtnDiscard_Click;
+                if (handler == BtnChiiChoice_Click)
+                {
+                    buttonClickable.Tag = tileKvp;
+                }
+                clickableButtons.Add(buttonClickable);
+            }
+            // ...and disables every buttons not concerned.
+            buttons.Where(b => !clickableButtons.Contains(b)).All(b => { b.IsEnabled = false; return true; });
+
+            if (clickableButtons.Count == 1)
+            {
+                // Only one possibility : proceeds to make the call.
+                clickableButtons[0].RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent));
+            }
+            else
+            {
+                // Otherwise, waits for the user choice.
             }
         }
 
@@ -597,7 +507,7 @@ namespace Gnoj_HamView
         // Manages every possible moves for the current opponent after his pick.
         private bool OpponentAfterPick(ref int? middleOfKanPlayerId)
         {
-            if (_game.Round.CanCallTsumo(middleOfKanPlayerId.HasValue) && OpponentDecideTsumo())
+            if (_game.Round.CanCallTsumo(middleOfKanPlayerId.HasValue) && OpponentDecideCallTsumo())
             {
                 return true;
             }
@@ -614,20 +524,29 @@ namespace Gnoj_HamView
                 }
             }
 
-            if (_game.Round.CanCallRiichi(_game.Round.CurrentPlayerIndex).Count > 0 && OpponentDecideRiichi())
+            if (_game.Round.CanCallRiichi(_game.Round.CurrentPlayerIndex).Count > 0 && OpponentDecideCallRiichi())
             {
                 OpponentCallRiichi();
             }
 
             middleOfKanPlayerId = null;
-            OpponentDiscard();
+            OpponentDiscard(OpponentDecideDiscard());
             return false;
         }
 
         // Proceeds to discard for the current opponent.
-        private void OpponentDiscard()
+        private void OpponentDiscard(TilePivot discardTile)
         {
-            throw new NotImplementedException();
+            if (_game.Round.Discard(discardTile))
+            {
+                Thread.Sleep(_cpuSpeedMs);
+                Dispatcher.Invoke(() =>
+                {
+                    FillHandPanel(_game.Round.PreviousPlayerIndex);
+                    FillDiscardPanel(_game.Round.PreviousPlayerIndex);
+                    SetActionButtonsVisibility(cpuPlay: true);
+                });
+            }
         }
 
         // Proceeds to call riichi for the current opponent.
@@ -640,6 +559,12 @@ namespace Gnoj_HamView
 
         #region CPU decisions
 
+        private TilePivot OpponentDecideDiscard()
+        {
+            // TODO
+            return _game.Round.GetFirstDiscardableTile();
+        }
+
         // Computes the pon decision for an opponent.
         private bool OpponentDecideCallPon(int opponentPlayerId)
         {
@@ -648,14 +573,14 @@ namespace Gnoj_HamView
         }
 
         // Computes the riichi decision for the current opponent.
-        private bool OpponentDecideRiichi()
+        private bool OpponentDecideCallRiichi()
         {
             // TODO
             return true;
         }
 
         // Computes the tsumo decision for the current opponent.
-        private bool OpponentDecideTsumo()
+        private bool OpponentDecideCallTsumo()
         {
             // TODO
             return true;
@@ -685,44 +610,6 @@ namespace Gnoj_HamView
         #endregion CPU decisions
 
         #region Graphic tools
-
-        // Restrict possible discards on the specified selection of tiles.
-        private void RestrictDiscardWithTilesSelection(IDictionary<TilePivot, bool> tileChoices, RoutedEventHandler handler)
-        {
-            SetActionButtonsVisibility();
-
-            List<Button> buttons = StpHandP0.Children.OfType<Button>().ToList();
-            if (StpPickP0.Children.Count > 0)
-            {
-                buttons.Add(StpPickP0.Children[0] as Button);
-            }
-
-            var clickableButtons = new List<Button>();
-            foreach (KeyValuePair<TilePivot, bool> tileKvp in tileChoices)
-            {
-                // Changes the event of every buttons concerned by the call...
-                Button buttonClickable = buttons.First(b => b.Tag as TilePivot == tileKvp.Key);
-                buttonClickable.Click += handler;
-                buttonClickable.Click -= BtnDiscard_Click;
-                if (handler == BtnChiiChoice_Click)
-                {
-                    buttonClickable.Tag = tileKvp;
-                }
-                clickableButtons.Add(buttonClickable);
-            }
-            // ...and disables every buttons not concerned.
-            buttons.Where(b => !clickableButtons.Contains(b)).All(b => { b.IsEnabled = false; return true; });
-
-            if (clickableButtons.Count == 1)
-            {
-                // Only one possibility : proceeds to make the call.
-                clickableButtons[0].RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent));
-            }
-            else
-            {
-                // Otherwise, waits for the user choice.
-            }
-        }
 
         // Fix dimensions of the window and every panels (when it's required).
         private void FixWindowDimensions()

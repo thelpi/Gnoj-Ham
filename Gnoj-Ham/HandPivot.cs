@@ -670,7 +670,7 @@ namespace Gnoj_Ham
         }
 
         /// <summary>
-        /// Tries to discard the specified tile.
+        /// Checks if a tile can be discarded, but does not discard it.
         /// </summary>
         /// <param name="tile">The tile to discard; should obviously be contained in <see cref="_concealedTiles"/>.</param>
         /// <param name="afterStealing">Optionnal; indicates if the discard is made after stealing a tile; the default value is <c>False</c>.</param>
@@ -678,7 +678,7 @@ namespace Gnoj_Ham
         /// <exception cref="ArgumentNullException"><paramref name="tile"/> is <c>Null</c>.</exception>
         /// <exception cref="InvalidOperationException"><see cref="Messages.ImpossibleDiscard"/></exception>
         /// <exception cref="ArgumentException"><see cref="Messages.ImpossibleStealingArgument"/></exception>
-        internal bool Discard(TilePivot tile, bool afterStealing = false)
+        internal bool CanDiscardTile(TilePivot tile, bool afterStealing = false)
         {
             if (tile == null)
             {
@@ -714,6 +714,25 @@ namespace Gnoj_Ham
                 {
                     return false;
                 }
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Tries to discard the specified tile.
+        /// </summary>
+        /// <param name="tile">The tile to discard; should obviously be contained in <see cref="_concealedTiles"/>.</param>
+        /// <param name="afterStealing">Optionnal; indicates if the discard is made after stealing a tile; the default value is <c>False</c>.</param>
+        /// <returns><c>False</c> if the discard is forbidden by the tile stolen; <c>True</c> otherwise.</returns>
+        /// <exception cref="ArgumentNullException"><paramref name="tile"/> is <c>Null</c>.</exception>
+        /// <exception cref="InvalidOperationException"><see cref="Messages.ImpossibleDiscard"/></exception>
+        /// <exception cref="ArgumentException"><see cref="Messages.ImpossibleStealingArgument"/></exception>
+        internal bool Discard(TilePivot tile, bool afterStealing = false)
+        {
+            if (!CanDiscardTile(tile, afterStealing))
+            {
+                return false;
             }
 
             _concealedTiles.Remove(tile);
