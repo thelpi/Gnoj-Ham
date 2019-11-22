@@ -136,9 +136,9 @@ namespace Gnoj_Ham
         public int CurrentPlayerIndex { get; private set; }
 
         /// <summary>
-        /// Event triggered when the tiles count in the wall changes.
+        /// IA manager.
         /// </summary>
-        public event EventHandler NotifyWallCount;
+        public IaManagerPivot IaManager { get; private set; }
 
         #endregion Embedded properties
 
@@ -190,6 +190,15 @@ namespace Gnoj_Ham
 
         #endregion Inferred properties
 
+        #region Events
+
+        /// <summary>
+        /// Event triggered when the tiles count in the wall changes.
+        /// </summary>
+        public event EventHandler NotifyWallCount;
+
+        #endregion Events
+
         #region Constructors
 
         /// <summary>
@@ -227,6 +236,7 @@ namespace Gnoj_Ham
             _openedKanInProgress = null;
             _waitForDiscard = false;
             _playerIndexHistory = new List<int>();
+            IaManager = new IaManagerPivot(this);
         }
 
         #endregion Constructors
@@ -557,19 +567,6 @@ namespace Gnoj_Ham
         }
 
         /// <summary>
-        /// Gets the first discardable tile from the concealed hand of the current player.
-        /// </summary>
-        /// <returns>The tile.</returns>
-        public TilePivot GetFirstDiscardableTile()
-        {
-            // TODO : Useless when the IA is ready.
-            return _hands[CurrentPlayerIndex]
-                .ConcealedTiles
-                .Where(t => CanDiscard(t))
-                .First();
-        }
-
-        /// <summary>
         /// Checks if the specified player can call riichi.
         /// </summary>
         /// <param name="playerIndex">Player index.</param>
@@ -819,22 +816,6 @@ namespace Gnoj_Ham
 
         #region Private methods
 
-        // Checks if the specified tile can be discarded for the current player.
-        private bool CanDiscard(TilePivot tile)
-        {
-            if (!_waitForDiscard || (IsRiichi(CurrentPlayerIndex) && !ReferenceEquals(tile, _hands[CurrentPlayerIndex].LatestPick)))
-            {
-                return false;
-            }
-
-            if (!_hands[CurrentPlayerIndex].CanDiscardTile(tile, _stealingInProgress))
-            {
-                return false;
-            }
-
-            return true;
-        }
-
         // Gets every tiles from every opponents virtual discards after the riichi call of the specified player.
         private List<TilePivot> GetTilesFromVirtualDiscardsAtRank(int riichiPlayerIndex, TilePivot exceptTile)
         {
@@ -990,6 +971,26 @@ namespace Gnoj_Ham
         #endregion Private methods
 
         #region Internal methods
+
+        /// <summary>
+        /// Checks if the specified tile is allowed for discard for the current player.
+        /// </summary>
+        /// <param name="tile">The tile to check.</param>
+        /// <returns></returns>
+        internal bool CanDiscard(TilePivot tile)
+        {
+            if (!_waitForDiscard || (IsRiichi(CurrentPlayerIndex) && !ReferenceEquals(tile, _hands[CurrentPlayerIndex].LatestPick)))
+            {
+                return false;
+            }
+
+            if (!_hands[CurrentPlayerIndex].CanDiscardTile(tile, _stealingInProgress))
+            {
+                return false;
+            }
+
+            return true;
+        }
 
         /// <summary>
         /// Manages the end of a round.
