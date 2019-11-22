@@ -35,12 +35,14 @@ namespace Gnoj_HamView
         /// <param name="riichiAutoDiscard">Auto-discard when riichi.</param>
         /// <param name="debugMode"><c>True</c> to display the opponent tiles.</param>
         /// <param name="sortedDraw"><c>True</c> to not randomize the tile draw.</param>
+        /// <param name="useNagashiMangan"><c>True</c> to use the yaku 'Nagashi Mangan'.</param>
+        /// <param name="useRenhou"><c>True</c> to use the yakuman 'Renhou'.</param>
         public MainWindow(string playerName, InitialPointsRulePivot pointRule, bool useRedDoras, CpuSpeed cpuSpeed, bool autoTsumoRon,
-            bool riichiAutoDiscard, bool debugMode, bool sortedDraw)
+            bool riichiAutoDiscard, bool debugMode, bool sortedDraw, bool useNagashiMangan, bool useRenhou)
         {
             InitializeComponent();
             
-            _game = new GamePivot(playerName, pointRule, useRedDoras, sortedDraw);
+            _game = new GamePivot(playerName, pointRule, useRedDoras, sortedDraw, useNagashiMangan, useRenhou);
             _cpuSpeedMs = Convert.ToInt32(cpuSpeed.ToString().Replace("S", string.Empty));
             _autoTsumoRon = autoTsumoRon;
             _riichiAutoDiscard = riichiAutoDiscard;
@@ -524,7 +526,10 @@ namespace Gnoj_HamView
         // Proceeds to call chii then discard for the current opponent.
         private void OpponentCallChiiAndDiscard(KeyValuePair<TilePivot, bool> chiiTilePick)
         {
+            InvokeOverlay("Chii");
+
             _game.Round.CallChii(_game.Round.CurrentPlayerIndex, chiiTilePick.Value ? chiiTilePick.Key.Number - 1 : chiiTilePick.Key.Number);
+            Thread.Sleep(_cpuSpeedMs);
             Dispatcher.Invoke(() =>
             {
                 SetPlayersLed();
@@ -539,9 +544,12 @@ namespace Gnoj_HamView
         // Proceeds to call pon then discard for an opponent.
         private void OpponentCallPonAndDiscard(int opponentPlayerId)
         {
+            InvokeOverlay("Pon");
+
             // Note : this value is stored here because the call to "CallPon" makes it change.
             int previousPlayerIndex = _game.Round.PreviousPlayerIndex;
             _game.Round.CallPon(opponentPlayerId);
+            Thread.Sleep(_cpuSpeedMs);
             Dispatcher.Invoke(() =>
             {
                 SetPlayersLed();
@@ -556,12 +564,10 @@ namespace Gnoj_HamView
         // Proceeds to call a kan for an opponent.
         private TilePivot OpponentBeginCallKan(int playerId, TilePivot kanTilePick, bool concealedKan, bool fromPreviousKan)
         {
-            if (fromPreviousKan)
-            {
-                Thread.Sleep(_cpuSpeedMs);
-            }
+            InvokeOverlay("Kan");
 
             TilePivot compensationTile = _game.Round.CallKan(playerId, kanTilePick);
+            Thread.Sleep(_cpuSpeedMs);
             Dispatcher.Invoke(() =>
             {
                 if (!concealedKan)
@@ -586,7 +592,6 @@ namespace Gnoj_HamView
                 TilePivot kanTilePick = OpponentDecideCallKan(_game.Round.CurrentPlayerIndex, kanTiles);
                 if (kanTilePick != null)
                 {
-                    // TODO : timer
                     TilePivot compensationTile = OpponentBeginCallKan(_game.Round.CurrentPlayerIndex, kanTilePick, true, kanInProgress != null);
                     kanInProgress = new Tuple<int, TilePivot, int?>(_game.Round.CurrentPlayerIndex, compensationTile, null);
                     return false;
@@ -628,7 +633,10 @@ namespace Gnoj_HamView
         // Proceeds to call riichi for the current opponent.
         private void OpponentCallRiichiAndDiscard(TilePivot riichiTile)
         {
+            InvokeOverlay("Riichi");
+
             _game.Round.CallRiichi(_game.Round.CurrentPlayerIndex, riichiTile);
+            Thread.Sleep(_cpuSpeedMs);
             Dispatcher.Invoke(() =>
             {
                 FillHandPanel(_game.Round.PreviousPlayerIndex);
@@ -692,6 +700,21 @@ namespace Gnoj_HamView
         #endregion CPU decisions
 
         #region Graphic tools
+
+        // Displays the call overlay.
+        private void InvokeOverlay(string callName)
+        {
+            Dispatcher.Invoke(() =>
+            {
+                GrdOverlayCall.Visibility = Visibility.Visible;
+                BtnOpponentCall.Content = $"{callName} !";
+            });
+            Thread.Sleep(_cpuSpeedMs);
+            Dispatcher.Invoke(() =>
+            {
+                GrdOverlayCall.Visibility = Visibility.Collapsed;
+            });
+        }
 
         // Fix dimensions of the window and every panels (when it's required).
         private void FixWindowDimensions()

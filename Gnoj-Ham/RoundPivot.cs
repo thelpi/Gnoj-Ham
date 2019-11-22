@@ -931,7 +931,8 @@ namespace Gnoj_Ham
                 playerWind: _game.GetPlayerCurrentWind(playerIndex),
                 isFirstOrLast: IsWallExhaustion ? (bool?)null : (_discards[playerIndex].Count == 0 && IsUninterruptedHistory(playerIndex)),
                 isRiichi: IsRiichi(playerIndex) ? (_riichis[playerIndex].IsDaburu ? (bool?)null : true) : false,
-                isIppatsu: IsRiichi(playerIndex) && _discards[playerIndex].Count > 0 && ReferenceEquals(_discards[playerIndex].Last(), _riichis[playerIndex].Tile) && IsUninterruptedHistory(playerIndex)
+                isIppatsu: IsRiichi(playerIndex) && _discards[playerIndex].Count > 0 && ReferenceEquals(_discards[playerIndex].Last(), _riichis[playerIndex].Tile) && IsUninterruptedHistory(playerIndex),
+                useRenhou: _game.UseRenhou
             ));
         }
 
@@ -1003,7 +1004,7 @@ namespace Gnoj_Ham
 
             List<int> winners = _hands.Where(h => h.IsComplete).Select(w => _hands.IndexOf(w)).ToList();
 
-            if (winners.Count == 0)
+            if (winners.Count == 0 && _game.UseNagashiMangan)
             {
                 List<int> iNagashiList = CheckForNagashiMangan();
                 if (iNagashiList.Count > 0)

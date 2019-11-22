@@ -22,38 +22,67 @@
             <Button Width="75" Height="25" Content="Start" Name="BtnStart" Click="BtnStart_Click" />
             <Button Width="75" Height="25" Content="Quit" Name="BtnQuit" Click="BtnQuit_Click" Margin="10, 0, 0, 0" />
         </StackPanel>
-        <Grid DockPanel.Dock="Top">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="150" />
-                <ColumnDefinition Width="150" />
-            </Grid.ColumnDefinitions>
-            <Grid.RowDefinitions>
-                <RowDefinition Height="30" />
-                <RowDefinition Height="30" />
-                <RowDefinition Height="30" />
-                <RowDefinition Height="30" />
-                <RowDefinition Height="30" />
-                <RowDefinition Height="30" />
-                <RowDefinition Height="30" />
-                <RowDefinition Height="30" />
-                <RowDefinition Height="30" />
-            </Grid.RowDefinitions>
-            <Label Grid.Column="0" Grid.Row="0" HorizontalContentAlignment="Right" VerticalContentAlignment="Center" Content="Player name" />
-            <Label Grid.Column="0" Grid.Row="1" HorizontalContentAlignment="Right" VerticalContentAlignment="Center" Content="CPU speed" />
-            <Label Grid.Column="0" Grid.Row="2" HorizontalContentAlignment="Right" VerticalContentAlignment="Center" Content="Use red doras" />
-            <Label Grid.Column="0" Grid.Row="3" HorizontalContentAlignment="Right" VerticalContentAlignment="Center" Content="Initial points count" />
-            <Label Grid.Column="0" Grid.Row="4" HorizontalContentAlignment="Right" VerticalContentAlignment="Center" Content="Auto tsumo/ron" />
-            <Label Grid.Column="0" Grid.Row="5" HorizontalContentAlignment="Right" VerticalContentAlignment="Center" Content="Riichi auto-discard" />
-            <Label Grid.Column="0" Grid.Row="6" HorizontalContentAlignment="Right" VerticalContentAlignment="Center" Content="Debug mode" />
-            <Label Grid.Column="0" Grid.Row="7" HorizontalContentAlignment="Right" VerticalContentAlignment="Center" Content="Sorted draw" />
-            <TextBox Margin="5, 0, 0, 0" Grid.Column="1" Grid.Row="0" Name="TxtPlayerName" Height="25" VerticalContentAlignment="Center" />
-            <ComboBox Margin="5, 0, 0, 0" Grid.Column="1" Grid.Row="1" Name="CbbCpuSpeed" Height="25" VerticalContentAlignment="Center" ItemsSource="{Binding Source={StaticResource CpuSpeedEnum}, Converter={StaticResource CpuSpeedConverter}}" />
-            <CheckBox Margin="5, 0, 0, 0" Grid.Column="1" Grid.Row="2" Name="ChkUseRedDoras" VerticalAlignment="Center" />
-            <ComboBox Margin="5, 0, 0, 0" Grid.Column="1" Grid.Row="3" Name="CbbPointsRule" Height="25" VerticalContentAlignment="Center" ItemsSource="{Binding Source={StaticResource InitialPointsRuleEnum}, Converter={StaticResource InitialPointsRuleConverter}}" />
-            <CheckBox Margin="5, 0, 0, 0" Grid.Column="1" Grid.Row="4" Name="ChkAutoTsumoRon" VerticalAlignment="Center" />
-            <CheckBox Margin="5, 0, 0, 0" Grid.Column="1" Grid.Row="5" Name="ChkRiichiAutoDiscard" VerticalAlignment="Center" />
-            <CheckBox Margin="5, 0, 0, 0" Grid.Column="1" Grid.Row="6" Name="ChkDebugMode" VerticalAlignment="Center" />
-            <CheckBox Margin="5, 0, 0, 0" Grid.Column="1" Grid.Row="7" Name="ChkSortedDraw" VerticalAlignment="Center" />
-        </Grid>
+        <StackPanel Orientation="Vertical" DockPanel.Dock="Top">
+            <GroupBox Padding="5"  Header="Interface">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="150" />
+                        <ColumnDefinition Width="150" />
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="30" />
+                        <RowDefinition Height="30" />
+                        <RowDefinition Height="30" />
+                        <RowDefinition Height="30" />
+                    </Grid.RowDefinitions>
+                    <Label Grid.Column="0" Grid.Row="0" HorizontalContentAlignment="Right" VerticalContentAlignment="Center" Content="Player name" />
+                    <Label Grid.Column="0" Grid.Row="1" HorizontalContentAlignment="Right" VerticalContentAlignment="Center" Content="CPU speed" />
+                    <Label Grid.Column="0" Grid.Row="2" HorizontalContentAlignment="Right" VerticalContentAlignment="Center" Content="Auto tsumo/ron" />
+                    <Label Grid.Column="0" Grid.Row="3" HorizontalContentAlignment="Right" VerticalContentAlignment="Center" Content="Riichi auto-discard" />
+                    <TextBox Margin="5, 0, 0, 0" Grid.Column="1" Grid.Row="0" Name="TxtPlayerName" Height="25" VerticalContentAlignment="Center" />
+                    <ComboBox Margin="5, 0, 0, 0" Grid.Column="1" Grid.Row="1" Name="CbbCpuSpeed" Height="25" VerticalContentAlignment="Center" ItemsSource="{Binding Source={StaticResource CpuSpeedEnum}, Converter={StaticResource CpuSpeedConverter}}" />
+                    <CheckBox Margin="5, 0, 0, 0" Grid.Column="1" Grid.Row="2" Name="ChkAutoTsumoRon" VerticalAlignment="Center" />
+                    <CheckBox Margin="5, 0, 0, 0" Grid.Column="1" Grid.Row="3" Name="ChkRiichiAutoDiscard" VerticalAlignment="Center" />
+                </Grid>
+            </GroupBox>
+            <GroupBox Padding="5"  Header="Rules" Margin="0, 10, 0, 0">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="150" />
+                        <ColumnDefinition Width="150" />
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="30" />
+                        <RowDefinition Height="30" />
+                        <RowDefinition Height="30" />
+                        <RowDefinition Height="30" />
+                    </Grid.RowDefinitions>
+                    <Label Grid.Column="0" Grid.Row="0" HorizontalContentAlignment="Right" VerticalContentAlignment="Center" Content="Use red doras" />
+                    <Label Grid.Column="0" Grid.Row="1" HorizontalContentAlignment="Right" VerticalContentAlignment="Center" Content="Initial points count" />
+                    <Label Grid.Column="0" Grid.Row="2" HorizontalContentAlignment="Right" VerticalContentAlignment="Center" Content="Use nagashi mangan" />
+                    <Label Grid.Column="0" Grid.Row="3" HorizontalContentAlignment="Right" VerticalContentAlignment="Center" Content="Use renhou" />
+                    <CheckBox Margin="5, 0, 0, 0" Grid.Column="1" Grid.Row="0" Name="ChkUseRedDoras" VerticalAlignment="Center" />
+                    <ComboBox Margin="5, 0, 0, 0" Grid.Column="1" Grid.Row="1" Name="CbbPointsRule" Height="25" VerticalContentAlignment="Center" ItemsSource="{Binding Source={StaticResource InitialPointsRuleEnum}, Converter={StaticResource InitialPointsRuleConverter}}" />
+                    <CheckBox Margin="5, 0, 0, 0" Grid.Column="1" Grid.Row="2" Name="ChkUseNagashiMangan" VerticalAlignment="Center" />
+                    <CheckBox Margin="5, 0, 0, 0" Grid.Column="1" Grid.Row="3" Name="ChkUseRenhou" VerticalAlignment="Center" />
+                </Grid>
+            </GroupBox>
+            <GroupBox Padding="5" Header="Debug" Margin="0, 10, 0, 0">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="150" />
+                        <ColumnDefinition Width="150" />
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="30" />
+                        <RowDefinition Height="30" />
+                    </Grid.RowDefinitions>
+                    <Label Grid.Column="0" Grid.Row="0" HorizontalContentAlignment="Right" VerticalContentAlignment="Center" Content="Debug mode" />
+                    <Label Grid.Column="0" Grid.Row="1" HorizontalContentAlignment="Right" VerticalContentAlignment="Center" Content="Sorted draw" />
+                    <CheckBox Margin="5, 0, 0, 0" Grid.Column="1" Grid.Row="0" Name="ChkDebugMode" VerticalAlignment="Center" />
+                    <CheckBox Margin="5, 0, 0, 0" Grid.Column="1" Grid.Row="1" Name="ChkSortedDraw" VerticalAlignment="Center" />
+                </Grid>
+            </GroupBox>
+        </StackPanel>
     </DockPanel>
 </Window>

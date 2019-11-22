@@ -9,6 +9,9 @@ namespace Gnoj_Ham
     {
         #region Embedded properties
 
+        // Use the yakuman 'Renhou' or not.
+        private readonly bool _useRenhou;
+
         /// <summary>
         /// The latest tile (from self-draw or not).
         /// </summary>
@@ -64,10 +67,11 @@ namespace Gnoj_Ham
         /// <param name="isFirstOrLast">Optionnal; indicates a win at the first turn without any call made (<c>True</c>) or at the last tile of the round (<c>Null</c>); default value is <c>False</c>.</param>
         /// <param name="isRiichi">Optionnal; indicates if riichi (<c>True</c>) or riichi at first turn without any call made (<c>Null</c>); default value is <c>False</c>.</param>
         /// <param name="isIppatsu">Optionnal; indicates if it's a win by ippatsu (<paramref name="isRiichi"/> can't be <c>False</c> in such case); default value is <c>False</c>.</param>
-        /// /// <exception cref="ArgumentNullException"><paramref name="latestTile"/> is <c>Null</c>.</exception>
+        /// <param name="useRenhou">Optionnal; the <see cref="UseRenhou"/> value; default value is <c>False</c>.</param>
+        /// <exception cref="ArgumentNullException"><paramref name="latestTile"/> is <c>Null</c>.</exception>
         /// <exception cref="ArgumentException"><see cref="Messages.InvalidContextIppatsuValue"/></exception>
         public WinContextPivot(TilePivot latestTile, DrawTypePivot drawType, WindPivot dominantWind, WindPivot playerWind,
-            bool? isFirstOrLast = false, bool? isRiichi = false, bool isIppatsu = false)
+            bool? isFirstOrLast = false, bool? isRiichi = false, bool isIppatsu = false, bool useRenhou = false)
         {
             if (isRiichi == false && isIppatsu)
             {
@@ -83,6 +87,7 @@ namespace Gnoj_Ham
             PlayerWind = playerWind;
             IsFirstTurnDraw = isFirstOrLast == true;
             DrawType = drawType;
+            _useRenhou = useRenhou;
             IsNagashiMangan = false;
         }
 
@@ -123,7 +128,7 @@ namespace Gnoj_Ham
         /// <returns><c>True</c> if it gives the yaku; <c>False</c> otherwise.</returns>
         public bool IsRenhou()
         {
-            return IsFirstTurnDraw && !DrawType.IsSelfDraw();
+            return IsFirstTurnDraw && !DrawType.IsSelfDraw() && _useRenhou;
         }
 
         #endregion Public methods

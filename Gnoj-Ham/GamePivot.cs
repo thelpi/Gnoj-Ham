@@ -64,6 +64,14 @@ namespace Gnoj_Ham
         /// <c>True</c> if akadora are used; <c>False</c> otherwise.
         /// </summary>
         public bool WithRedDoras { get; private set; }
+        /// <summary>
+        /// Indicates if the yaku <see cref="YakuPivot.NagashiMangan"/> is used or not.
+        /// </summary>
+        public bool UseNagashiMangan { get; private set; }
+        /// <summary>
+        /// Indicates if the yakuman <see cref="YakuPivot.Renhou"/> is used or not.
+        /// </summary>
+        public bool UseRenhou { get; private set; }
 
         #endregion Embedded properties
 
@@ -112,7 +120,10 @@ namespace Gnoj_Ham
         /// <param name="initialPointsRule">The rule for initial points count.</param>
         /// <param name="withRedDoras">Optionnal; the <see cref="WithRedDoras"/> value; default value is <c>False</c>.</param>
         /// <param name="sortedDraw">Optionnal; the <see cref="SortedDraw"/> value; default value is <c>False</c>.</param>
-        public GamePivot(string humanPlayerName, InitialPointsRulePivot initialPointsRule, bool withRedDoras = false, bool sortedDraw = false)
+        /// <param name="useNagashiMangan">Optionnal; the <see cref="UseNagashiMangan"/> value; default value is <c>False</c>.</param>
+        /// <param name="useRenhou">Optionnal; the <see cref="UseRenhou"/> value; default value is <c>False</c>.</param>
+        public GamePivot(string humanPlayerName, InitialPointsRulePivot initialPointsRule, bool withRedDoras = false, bool sortedDraw = false,
+            bool useNagashiMangan = false, bool useRenhou = false)
         {
             _players = PlayerPivot.GetFourPlayers(humanPlayerName, initialPointsRule);
             DominantWind = WindPivot.East;
@@ -121,6 +132,8 @@ namespace Gnoj_Ham
             EastRank = 1;
             WithRedDoras = withRedDoras;
             SortedDraw = sortedDraw;
+            UseNagashiMangan = useNagashiMangan;
+            UseRenhou = useRenhou;
 
             Round = new RoundPivot(this, EastIndex);
         }

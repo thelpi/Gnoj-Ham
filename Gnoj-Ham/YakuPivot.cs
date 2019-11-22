@@ -406,7 +406,7 @@ namespace Gnoj_Ham
 
         /// <summary>
         /// Computes the list of yakus available with this sequence of combinations.
-        /// If the list contains one or several yakumans, it can't contain any regular yakus (excepted if the only yakuman of the list is the optionnal <see cref="Renhou"/>).
+        /// If the list contains one or several yakumans, it can't contain any regular yakus.
         /// Two <see cref="YakuPivot"/> are not computed :
         /// <list type="bullet">
         /// <item><see cref="KokushiMusou"/></item>
@@ -516,9 +516,8 @@ namespace Gnoj_Ham
             // Remove yakumans with existant upgrade (it's an overkill as the only known case is "Shousuushii" vs. "Daisuushii").
             yakus.RemoveAll(y => y.Upgrades.Any(yu => yakus.Contains(yu)));
 
-            // The only yakuman is the optionnal one: we continue to figure what we can do with this hand.
-            // Otherwise, we only return yakumans.
-            if (yakus.Count > 1 || (yakus.Count == 1 && yakus[0] != Renhou))
+            // Only return yakumans if any.
+            if (yakus.Count >= 1)
             {
                 return yakus;
             }
