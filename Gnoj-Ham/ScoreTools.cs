@@ -267,7 +267,7 @@ namespace Gnoj_Ham
                 }
                 else
                 {
-                    v1 = basePoints * 3;
+                    v1 = basePoints * (east ? 3 : 4);
                     v2 = 0;
                 }
             }

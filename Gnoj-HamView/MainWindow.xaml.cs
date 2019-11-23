@@ -393,7 +393,11 @@ namespace Gnoj_HamView
             {
                 ronCalled = true;
             }
-            ronCalled = _game.Round.IaManager.RonDecision(ronCalled);
+            if (_game.Round.IaManager.RonDecision(ronCalled))
+            {
+                InvokeOverlay("Ron");
+                ronCalled = true;
+            }
             return ronCalled;
         }
 
@@ -566,6 +570,7 @@ namespace Gnoj_HamView
         {
             if (_game.Round.IaManager.TsumoDecision(kanInProgress != null))
             {
+                InvokeOverlay("Tsumo");
                 return true;
             }
 
