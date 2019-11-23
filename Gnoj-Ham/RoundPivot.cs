@@ -15,7 +15,6 @@ namespace Gnoj_Ham
         private TilePivot _closedKanInProgress;
         private TilePivot _openedKanInProgress;
         private bool _waitForDiscard;
-        private readonly GamePivot _game;
         private readonly List<int> _playerIndexHistory;
         private readonly List<TilePivot> _wallTiles;
         private readonly List<HandPivot> _hands;
@@ -140,6 +139,11 @@ namespace Gnoj_Ham
         /// </summary>
         public IaManagerPivot IaManager { get; private set; }
 
+        /// <summary>
+        /// The game in which this instance happens.
+        /// </summary>
+        internal GamePivot Game { get; private set; }
+
         #endregion Embedded properties
 
         #region Inferred properties
@@ -204,7 +208,7 @@ namespace Gnoj_Ham
         /// <summary>
         /// Constructor.
         /// </summary>
-        /// <param name="game">The <see cref="GamePivot"/>.</param>
+        /// <param name="game">The <see cref="Game"/> value.</param>
         /// <param name="firstPlayerIndex">The initial <see cref="CurrentPlayerIndex"/> value.</param>
         /// <exception cref="ArgumentOutOfRangeException"><paramref name="firstPlayerIndex"/> value should be between <c>0</c> and <c>3</c>.</exception>
         internal RoundPivot(GamePivot game, int firstPlayerIndex)
@@ -214,11 +218,11 @@ namespace Gnoj_Ham
                 throw new ArgumentOutOfRangeException(nameof(firstPlayerIndex));
             }
 
-            _game = game;
+            Game = game;
             
             _fullTilesList = TilePivot
-                                .GetCompleteSet(_game.WithRedDoras)
-                                .OrderBy(t => _game.SortedDraw ? 1 : GlobalTools.Randomizer.NextDouble())
+                                .GetCompleteSet(Game.WithRedDoras)
+                                .OrderBy(t => Game.SortedDraw ? 1 : GlobalTools.Randomizer.NextDouble())
                                 .ToList();
 
             _hands = Enumerable.Range(0, 4).Select(i => new HandPivot(_fullTilesList.GetRange(i * 13, 13))).ToList();
@@ -355,7 +359,7 @@ namespace Gnoj_Ham
                 // - if "disposableForRiichi" contains only this tile
                 if (IsRiichi(playerIndex))
                 {
-                    List<TilePivot> disposableForRiichi = ExtractRiichiPossibilities(playerIndex);
+                    List<TilePivot> disposableForRiichi = ExtractDiscardChoicesFromTenpai(playerIndex);
                     if (disposableForRiichi.Any(t => t != _hands[playerIndex].LatestPick))
                     {
                         return new List<TilePivot>();
@@ -409,7 +413,7 @@ namespace Gnoj_Ham
 
             _hands[CurrentPlayerIndex].DeclareChii(
                 _discards[PreviousPlayerIndex].Last(),
-                _game.GetPlayerCurrentWind(PreviousPlayerIndex),
+                Game.GetPlayerCurrentWind(PreviousPlayerIndex),
                 startNumber
             );
             _discards[PreviousPlayerIndex].RemoveAt(_discards[PreviousPlayerIndex].Count - 1);
@@ -432,7 +436,7 @@ namespace Gnoj_Ham
 
             _hands[playerIndex].DeclarePon(
                 _discards[PreviousPlayerIndex].Last(),
-                _game.GetPlayerCurrentWind(PreviousPlayerIndex)
+                Game.GetPlayerCurrentWind(PreviousPlayerIndex)
             );
             _discards[PreviousPlayerIndex].RemoveAt(_discards[PreviousPlayerIndex].Count - 1);
             CurrentPlayerIndex = playerIndex;
@@ -490,7 +494,7 @@ namespace Gnoj_Ham
             {
                 _hands[playerIndex].DeclareKan(
                     _discards[PreviousPlayerIndex].Last(),
-                    _game.GetPlayerCurrentWind(PreviousPlayerIndex),
+                    Game.GetPlayerCurrentWind(PreviousPlayerIndex),
                     null
                 );
                 _discards[PreviousPlayerIndex].RemoveAt(_discards[PreviousPlayerIndex].Count - 1);
@@ -528,7 +532,7 @@ namespace Gnoj_Ham
             
             _riichis[playerIndex] = new RiichiPivot(riichiTurnsCount, isUninterruptedFirstTurn, tile,
                 Enumerable.Range(0, 4).Where(i => i != playerIndex).Select(i => new KeyValuePair<int, int>(i, _virtualDiscards[i].Count)).ToDictionary(kvp => kvp.Key, kvp => kvp.Value));
-            _game.AddPendingRiichi(playerIndex);
+            Game.AddPendingRiichi(playerIndex);
 
             return true;
         }
@@ -578,14 +582,14 @@ namespace Gnoj_Ham
                 || IsRiichi(playerIndex)
                 || !_hands[playerIndex].IsConcealed
                 || _wallTiles.Count < 4
-                || _game.Players.ElementAt(playerIndex).Points < ScoreTools.RIICHI_COST)
+                || Game.Players.ElementAt(playerIndex).Points < ScoreTools.RIICHI_COST)
             {
                 return new List<TilePivot>();
             }
 
             // TODO: if already 3 riichi calls, what to do ?
 
-            return ExtractRiichiPossibilities(playerIndex);
+            return ExtractDiscardChoicesFromTenpai(playerIndex);
         }
 
         /// <summary>
@@ -838,37 +842,6 @@ namespace Gnoj_Ham
             return fullList.Where(t => !ReferenceEquals(t, exceptTile)).ToList();
         }
 
-        // Checks if the hand of the specified player is riichi and list tiles which can be discarded.
-        private List<TilePivot> ExtractRiichiPossibilities(int playerIndex)
-        {
-            List<TilePivot> distinctTilesFromOverallConcealed = GetConcealedTilesFromPlayerPointOfView(playerIndex).Distinct().ToList();
-
-            var subPossibilities = new List<TilePivot>();
-            foreach (TilePivot tileToSub in _hands[playerIndex].ConcealedTiles.Distinct())
-            {
-                var tempListConcealed = new List<TilePivot>(_hands[playerIndex].ConcealedTiles);
-                tempListConcealed.Remove(tileToSub);
-                if (HandPivot.IsTenpai(tempListConcealed, _hands[playerIndex].DeclaredCombinations, distinctTilesFromOverallConcealed))
-                {
-                    subPossibilities.Add(tileToSub);
-                }
-            }
-
-            // Avoids red doras in the list returned (if possible).
-            var realSubPossibilities = new List<TilePivot>();
-            foreach (TilePivot tile in subPossibilities.Distinct())
-            {
-                TilePivot subTile = null;
-                if (tile.IsRedDora)
-                {
-                    subTile = _hands[playerIndex].ConcealedTiles.FirstOrDefault(t => t == tile && !t.IsRedDora);
-                }
-                realSubPossibilities.Add(subTile ?? tile);
-            }
-
-            return realSubPossibilities.Distinct().ToList();
-        }
-
         // Picks a compensation tile (after a kan call) for the current player.
         private TilePivot PickCompensationTile(bool isClosedKan)
         {
@@ -908,12 +881,12 @@ namespace Gnoj_Ham
             _hands[playerIndex].SetYakus(new WinContextPivot(
                 latestTile: tile,
                 drawType: drawType,
-                dominantWind: _game.DominantWind,
-                playerWind: _game.GetPlayerCurrentWind(playerIndex),
+                dominantWind: Game.DominantWind,
+                playerWind: Game.GetPlayerCurrentWind(playerIndex),
                 isFirstOrLast: IsWallExhaustion ? (bool?)null : (_discards[playerIndex].Count == 0 && IsUninterruptedHistory(playerIndex)),
                 isRiichi: IsRiichi(playerIndex) ? (_riichis[playerIndex].IsDaburu ? (bool?)null : true) : false,
                 isIppatsu: IsRiichi(playerIndex) && _discards[playerIndex].Count > 0 && ReferenceEquals(_discards[playerIndex].Last(), _riichis[playerIndex].Tile) && IsUninterruptedHistory(playerIndex),
-                useRenhou: _game.UseRenhou
+                useRenhou: Game.UseRenhou
             ));
         }
 
@@ -957,7 +930,7 @@ namespace Gnoj_Ham
             {
                 bool fullTerminalsOrHonors = _discards[i].All(t => t.IsHonorOrTerminal);
                 bool noPlayerStealing = _hands[i].IsConcealed;
-                bool noOpponentStealing = !_hands.Where(h => _hands.IndexOf(h) != i).Any(h => h.DeclaredCombinations.Any(c => c.StolenFrom == _game.GetPlayerCurrentWind(i)));
+                bool noOpponentStealing = !_hands.Where(h => _hands.IndexOf(h) != i).Any(h => h.DeclaredCombinations.Any(c => c.StolenFrom == Game.GetPlayerCurrentWind(i)));
                 if (fullTerminalsOrHonors && noPlayerStealing && noOpponentStealing)
                 {
                     _hands[i].SetYakus(new WinContextPivot());
@@ -971,6 +944,41 @@ namespace Gnoj_Ham
         #endregion Private methods
 
         #region Internal methods
+
+        /// <summary>
+        /// Checks if the hand of the specified player is tenpai and list tiles which can be discarded.
+        /// </summary>
+        /// <param name="playerIndex">The player index.</param>
+        /// <returns>The list of tiles which can be discarded.</returns>
+        internal List<TilePivot> ExtractDiscardChoicesFromTenpai(int playerIndex)
+        {
+            List<TilePivot> distinctTilesFromOverallConcealed = GetConcealedTilesFromPlayerPointOfView(playerIndex).Distinct().ToList();
+
+            var subPossibilities = new List<TilePivot>();
+            foreach (TilePivot tileToSub in _hands[playerIndex].ConcealedTiles.Distinct())
+            {
+                var tempListConcealed = new List<TilePivot>(_hands[playerIndex].ConcealedTiles);
+                tempListConcealed.Remove(tileToSub);
+                if (HandPivot.IsTenpai(tempListConcealed, _hands[playerIndex].DeclaredCombinations, distinctTilesFromOverallConcealed))
+                {
+                    subPossibilities.Add(tileToSub);
+                }
+            }
+
+            // Avoids red doras in the list returned (if possible).
+            var realSubPossibilities = new List<TilePivot>();
+            foreach (TilePivot tile in subPossibilities.Distinct())
+            {
+                TilePivot subTile = null;
+                if (tile.IsRedDora)
+                {
+                    subTile = _hands[playerIndex].ConcealedTiles.FirstOrDefault(t => t == tile && !t.IsRedDora);
+                }
+                realSubPossibilities.Add(subTile ?? tile);
+            }
+
+            return realSubPossibilities.Distinct().ToList();
+        }
 
         /// <summary>
         /// Checks if the specified tile is allowed for discard for the current player.
@@ -1005,7 +1013,7 @@ namespace Gnoj_Ham
 
             List<int> winners = _hands.Where(h => h.IsComplete).Select(w => _hands.IndexOf(w)).ToList();
 
-            if (winners.Count == 0 && _game.UseNagashiMangan)
+            if (winners.Count == 0 && Game.UseNagashiMangan)
             {
                 List<int> iNagashiList = CheckForNagashiMangan();
                 if (iNagashiList.Count > 0)
@@ -1023,7 +1031,7 @@ namespace Gnoj_Ham
                 List<int> notTenpaiPlayersIndex = Enumerable.Range(0, 4).Except(tenpaiPlayersIndex).ToList();
 
                 // Wind turns if East is not tenpai.
-                turnWind = notTenpaiPlayersIndex.Any(tpi => _game.GetPlayerCurrentWind(tpi) == WindPivot.East);
+                turnWind = notTenpaiPlayersIndex.Any(tpi => Game.GetPlayerCurrentWind(tpi) == WindPivot.East);
 
                 Tuple<int, int> points = ScoreTools.GetRyuukyokuPoints(tenpaiPlayersIndex.Count);
 
@@ -1032,7 +1040,7 @@ namespace Gnoj_Ham
             }
             else
             {
-                turnWind = !winners.Any(w => _game.GetPlayerCurrentWind(w) == WindPivot.East);
+                turnWind = !winners.Any(w => Game.GetPlayerCurrentWind(w) == WindPivot.East);
 
                 // TODO : Sekinin barai
 
@@ -1060,13 +1068,13 @@ namespace Gnoj_Ham
                     }
 
                     int fanCount = ScoreTools.GetFanCount(phand.Yakus, phand.IsConcealed, dorasCount, uraDorasCount, redDorasCount);
-                    int fuCount = ScoreTools.GetFuCount(phand, !ronPlayerIndex.HasValue, _game.DominantWind, _game.GetPlayerCurrentWind(pIndex));
+                    int fuCount = ScoreTools.GetFuCount(phand, !ronPlayerIndex.HasValue, Game.DominantWind, Game.GetPlayerCurrentWind(pIndex));
 
-                    Tuple<int, int> finalScore = ScoreTools.GetPoints(fanCount, fuCount, _game.EastIndexTurnCount - 1, winners.Count,
-                        !ronPlayerIndex.HasValue, _game.GetPlayerCurrentWind(pIndex));
+                    Tuple<int, int> finalScore = ScoreTools.GetPoints(fanCount, fuCount, Game.EastIndexTurnCount - 1, winners.Count,
+                        !ronPlayerIndex.HasValue, Game.GetPlayerCurrentWind(pIndex));
 
                     // TODO: if RiichiPendingCount si not a multiple of 3, and there're three winners, it doesn't work well !
-                    int riichiPart = _game.PendingRiichiCount * ScoreTools.RIICHI_COST / winners.Count;
+                    int riichiPart = Game.PendingRiichiCount * ScoreTools.RIICHI_COST / winners.Count;
 
                     playerInfos.Add(new EndOfRoundInformationsPivot.PlayerInformationsPivot(
                         pIndex, fanCount, fuCount, phand,
@@ -1087,7 +1095,7 @@ namespace Gnoj_Ham
                     {
                         if (!winners.Contains(pIndex))
                         {
-                            playerInfos.Add(new EndOfRoundInformationsPivot.PlayerInformationsPivot(pIndex, _game.GetPlayerCurrentWind(pIndex) == WindPivot.East ? eastOrLoserLostCumul : notEastLostCumul));
+                            playerInfos.Add(new EndOfRoundInformationsPivot.PlayerInformationsPivot(pIndex, Game.GetPlayerCurrentWind(pIndex) == WindPivot.East ? eastOrLoserLostCumul : notEastLostCumul));
                         }
                     }
                 }
@@ -1097,11 +1105,21 @@ namespace Gnoj_Ham
             
             foreach (EndOfRoundInformationsPivot.PlayerInformationsPivot p in playerInfos)
             {
-                _game.Players.ElementAt(p.Index).AddPoints(p.PointsGain);
+                Game.Players.ElementAt(p.Index).AddPoints(p.PointsGain);
             }
 
-            return new EndOfRoundInformationsPivot(resetsRiichiCount, turnWind, displayUraDoraTiles, playerInfos, _game.EastIndexTurnCount - 1,
-                _game.PendingRiichiCount, DoraIndicatorTiles, UraDoraIndicatorTiles, VisibleDorasCount);
+            return new EndOfRoundInformationsPivot(resetsRiichiCount, turnWind, displayUraDoraTiles, playerInfos, Game.EastIndexTurnCount - 1,
+                Game.PendingRiichiCount, DoraIndicatorTiles, UraDoraIndicatorTiles, VisibleDorasCount);
+        }
+
+        /// <summary>
+        /// Computes the list of every tiles whose fate is sealed from the point of view of a specific player.
+        /// </summary>
+        /// <param name="playerIndex">The player index.</param>
+        /// <returns>Tiles enumeration.</returns>
+        public IEnumerable<TilePivot> DeadTilesFromIndexPointOfView(int playerIndex)
+        {
+            return _fullTilesList.Except(GetConcealedTilesFromPlayerPointOfView(playerIndex));
         }
 
         #endregion Internal methods

@@ -24,7 +24,7 @@ namespace Gnoj_Ham
         /// Constructor.
         /// </summary>
         /// <param name="round">The <see cref="Round"/> value.</param>
-        /// <exception cref=""><paramref name="round"/> is <c>Null</c>.</exception>
+        /// <exception cref="ArgumentNullException"><paramref name="round"/> is <c>Null</c>.</exception>
         internal IaManagerPivot(RoundPivot round)
         {
             Round = round ?? throw new ArgumentNullException(nameof(round));
@@ -45,10 +45,74 @@ namespace Gnoj_Ham
                 return null;
             }
 
-            // TODO
-            return Round.Hands.ElementAt(Round.CurrentPlayerIndex)
-                .ConcealedTiles
-                .First(t => Round.CanDiscard(t));
+            List<TilePivot> concealedTiles = Round.Hands.ElementAt(Round.CurrentPlayerIndex).ConcealedTiles.ToList();
+
+            List<TilePivot> discardableTiles = concealedTiles
+                                                .Where(t => Round.CanDiscard(t))
+                                                .Distinct()
+                                                .ToList();
+
+            if (discardableTiles.Count == 1)
+            {
+                return discardableTiles.First();
+            }
+
+            List<TilePivot> discards = Round.ExtractDiscardChoicesFromTenpai(Round.CurrentPlayerIndex);
+            if (discards.Count > 0)
+            {
+                return discards.First();
+            }
+
+            List<TilePivot> deadtiles = Round.DeadTilesFromIndexPointOfView(Round.CurrentPlayerIndex).ToList();
+
+            var tilesSafety = new Dictionary<TilePivot, List<TileSafety>>();
+
+            bool oneRiichi = false;
+            foreach (TilePivot tile in discardableTiles)
+            {
+                tilesSafety.Add(tile, new List<TileSafety>());
+                foreach (int i in Enumerable.Range(0, 4).Where(i => i != Round.CurrentPlayerIndex))
+                {
+                    if (Round.IsRiichi(i))
+                    {
+                        oneRiichi = true;
+                        if (IsSafeForPlayer(tile, i, deadtiles))
+                        {
+                            tilesSafety[tile].Add(TileSafety.Safe);
+                        }
+                        else
+                        {
+                            tilesSafety[tile].Add(TileSafety.Unsafe);
+                        }
+                    }
+                    else
+                    {
+                        tilesSafety[tile].Add(TileSafety.Unknown);
+                    }
+                }
+            }
+
+            if (oneRiichi)
+            {
+                return tilesSafety.OrderBy(t => t.Value.Sum(s => (int)s)).First().Key;
+            }
+
+            IEnumerable<IGrouping<TilePivot, TilePivot>> tilesGroup =
+                concealedTiles
+                    .GroupBy(t => t)
+                    .OrderByDescending(t => t.Count())
+                    .ThenByDescending(t =>
+                    {
+                        bool m2 = concealedTiles.Any(tb => tb.Family == t.Key.Family && tb.Number == t.Key.Number - 2);
+                        bool m1 = concealedTiles.Any(tb => tb.Family == t.Key.Family && tb.Number == t.Key.Number - 1);
+                        bool p1 = concealedTiles.Any(tb => tb.Family == t.Key.Family && tb.Number == t.Key.Number + 1);
+                        bool p2 = concealedTiles.Any(tb => tb.Family == t.Key.Family && tb.Number == t.Key.Number + 2);
+
+                        return ((m1 ? 1 : 0) * 2 + (p1 ? 1 : 0) * 2 + (p2 ? 1 : 0) + (m2 ? 1 : 0));
+                    })
+                    .Reverse();
+
+            return tilesGroup.First(tg => discardableTiles.Contains(tg.Key)).Key;
         }
 
         /// <summary>
@@ -75,14 +139,25 @@ namespace Gnoj_Ham
         /// <summary>
         /// Checks if any CPU player can make a pon call, and computes its decision if any.
         /// </summary>
-        /// <returns>The player index who makes the call; <c>-1</c> is none<./returns>
+        /// <returns>The player index who makes the call; <c>-1</c> is none.</returns>
         public int PonDecision()
         {
             int opponentPlayerId = Round.OpponentsCanCallPon();
             if (opponentPlayerId > -1)
             {
-                // TODO
-                return opponentPlayerId;
+                TilePivot tile = Round.Discards.ElementAt(Round.PreviousPlayerIndex).Last();
+                // Call the pon if :
+                // - the hand is already open
+                // - it's valuable for "Yakuhai"
+                if (!Round.Hands.ElementAt(opponentPlayerId).IsConcealed
+                    || tile.Family == FamilyPivot.Dragon
+                    || (tile.Family == FamilyPivot.Wind
+                        && (tile.Wind == Round.Game.GetPlayerCurrentWind(opponentPlayerId)
+                            || tile.Wind == Round.Game.DominantWind)))
+                {
+                    return opponentPlayerId;
+                }
+                opponentPlayerId = -1;
             }
 
             return opponentPlayerId;
@@ -114,8 +189,7 @@ namespace Gnoj_Ham
         /// </summary>
         /// <param name="checkConcealedOnly">
         /// <c>True</c> to check only concealed kan (or from a previous pon);
-        /// <c>False</c> to check the opposite;
-        /// <c>Null</c> for both.
+        /// <c>False</c> to check the opposite.
         /// </param>
         /// <returns>
         /// If the decision is made, a tuple :
@@ -123,13 +197,27 @@ namespace Gnoj_Ham
         /// - The second item indicates the base tile of the kand (several choices are possible).
         /// <c>Null</c> otherwise.
         /// </returns>
-        public Tuple<int, TilePivot> KanDecision(bool? checkConcealedOnly)
+        public Tuple<int, TilePivot> KanDecision(bool checkConcealedOnly)
         {
             Tuple<int, List<TilePivot>> opponentPlayerIdWithTiles = Round.OpponentsCanCallKan(checkConcealedOnly);
             if (opponentPlayerIdWithTiles != null)
             {
-                // TODO
-                return new Tuple<int, TilePivot>(opponentPlayerIdWithTiles.Item1, opponentPlayerIdWithTiles.Item2.First());
+                foreach (TilePivot tile in opponentPlayerIdWithTiles.Item2)
+                {
+                    // Call the kan if :
+                    // - it's a concealed one
+                    // - the hand is already open
+                    // - it's valuable for "Yakuhai"
+                    if (checkConcealedOnly
+                        || !Round.Hands.ElementAt(opponentPlayerIdWithTiles.Item1).IsConcealed
+                        || tile.Family == FamilyPivot.Dragon
+                        || (tile.Family == FamilyPivot.Wind
+                            && (tile.Wind == Round.Game.GetPlayerCurrentWind(opponentPlayerIdWithTiles.Item1)
+                                || tile.Wind == Round.Game.DominantWind)))
+                    {
+                        return new Tuple<int, TilePivot>(opponentPlayerIdWithTiles.Item1, tile);
+                    }
+                }
             }
 
             return null;
@@ -176,13 +264,73 @@ namespace Gnoj_Ham
             Dictionary<TilePivot, bool> chiiTiles = Round.OpponentsCanCallChii();
             if (chiiTiles.Count > 0)
             {
-                // TODO
-                return new Tuple<TilePivot, bool>(chiiTiles.First().Key, chiiTiles.First().Value);
+                // Proceeds to chii if :
+                // - The hand is already open (we assume it's open for a good reason)
+                // - The sequence does not already exist in the end
+                if (!Round.Hands.ElementAt(Round.CurrentPlayerIndex).IsConcealed)
+                {
+                    Tuple<TilePivot, bool> tileChoice = null;
+                    foreach (TilePivot tileKey in chiiTiles.Keys)
+                    {
+                        bool m2 = Round.Hands.ElementAt(Round.CurrentPlayerIndex).ConcealedTiles.Any(t => t.Family == tileKey.Family && t.Number == tileKey.Number - 2);
+                        bool m1 = Round.Hands.ElementAt(Round.CurrentPlayerIndex).ConcealedTiles.Any(t => t.Family == tileKey.Family && t.Number == tileKey.Number - 1);
+                        bool m0 = Round.Hands.ElementAt(Round.CurrentPlayerIndex).ConcealedTiles.Any(t => t == tileKey);
+                        bool p1 = Round.Hands.ElementAt(Round.CurrentPlayerIndex).ConcealedTiles.Any(t => t.Family == tileKey.Family && t.Number == tileKey.Number + 1);
+                        bool p2 = Round.Hands.ElementAt(Round.CurrentPlayerIndex).ConcealedTiles.Any(t => t.Family == tileKey.Family && t.Number == tileKey.Number + 2);
+
+                        if (!((m2 && m1 && m0) || (m1 && m0 && p1) || (m0 && p1 && p2)))
+                        {
+                            tileChoice = new Tuple<TilePivot, bool>(tileKey, chiiTiles[tileKey]);
+                        }
+                    }
+
+                    return tileChoice;
+                }
             }
 
             return null;
         }
 
         #endregion Public methods
+
+        #region Private methods
+
+        private bool IsSafeForPlayer(TilePivot tile, int opponentPlayerIndex, List<TilePivot> deadtiles)
+        {
+            return Round.Discards.ElementAt(opponentPlayerIndex).Contains(tile) || (
+                tile.IsHonor
+                && deadtiles.Count(t => t == tile) == 4
+                && deadtiles.GroupBy(t => t).Any(t => t.Key != tile && t.Key.IsHonor && t.Count() == 4)
+            );
+        }
+
+        #endregion Private methods
+
+        /// <summary>
+        /// Enumeration of level of safety for tile discard.
+        /// </summary>
+        internal enum TileSafety
+        {
+            /// <summary>
+            /// The tile is 100% safe.
+            /// </summary>
+            Safe,
+            /// <summary>
+            /// The tile seems safe.
+            /// </summary>
+            QuiteSafe,
+            /// <summary>
+            /// Unable to detect the safety level of the tile.
+            /// </summary>
+            Unknown,
+            /// <summary>
+            /// The tile seems unsafe.
+            /// </summary>
+            QuiteUnsafe,
+            /// <summary>
+            /// The tile is unsafe.
+            /// </summary>
+            Unsafe
+        }
     }
 }
