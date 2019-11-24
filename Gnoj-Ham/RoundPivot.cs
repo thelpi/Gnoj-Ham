@@ -816,6 +816,26 @@ namespace Gnoj_Ham
             return new Dictionary<TilePivot, bool>();
         }
 
+        /// <summary>
+        /// Checks if the specified tile is allowed for discard for the current player.
+        /// </summary>
+        /// <param name="tile">The tile to check.</param>
+        /// <returns><c>True</c> if the tile is discardable; <c>False</c> otherwise.</returns>
+        public bool CanDiscard(TilePivot tile)
+        {
+            if (!_waitForDiscard || (IsRiichi(CurrentPlayerIndex) && !ReferenceEquals(tile, _hands[CurrentPlayerIndex].LatestPick)))
+            {
+                return false;
+            }
+
+            if (!_hands[CurrentPlayerIndex].CanDiscardTile(tile, _stealingInProgress))
+            {
+                return false;
+            }
+
+            return true;
+        }
+
         #endregion Public methods
 
         #region Private methods
@@ -981,26 +1001,6 @@ namespace Gnoj_Ham
         }
 
         /// <summary>
-        /// Checks if the specified tile is allowed for discard for the current player.
-        /// </summary>
-        /// <param name="tile">The tile to check.</param>
-        /// <returns></returns>
-        internal bool CanDiscard(TilePivot tile)
-        {
-            if (!_waitForDiscard || (IsRiichi(CurrentPlayerIndex) && !ReferenceEquals(tile, _hands[CurrentPlayerIndex].LatestPick)))
-            {
-                return false;
-            }
-
-            if (!_hands[CurrentPlayerIndex].CanDiscardTile(tile, _stealingInProgress))
-            {
-                return false;
-            }
-
-            return true;
-        }
-
-        /// <summary>
         /// Manages the end of a round.
         /// </summary>
         /// <param name="ronPlayerIndex">The player index on who the call has been made; <c>Null</c> if tsumo or ryuukyoku.</param>
@@ -1111,8 +1111,7 @@ namespace Gnoj_Ham
                         }
                     }
 
-                    Tuple<int, int> finalScore = ScoreTools.GetPoints(fanCount, fuCount, winners.Count,
-                        !ronPlayerIndex.HasValue, Game.GetPlayerCurrentWind(pIndex));
+                    Tuple<int, int> finalScore = ScoreTools.GetPoints(fanCount, fuCount, !ronPlayerIndex.HasValue, Game.GetPlayerCurrentWind(pIndex));
 
                     int basePoints = finalScore.Item1 + finalScore.Item2 * 2;
 
@@ -1121,7 +1120,7 @@ namespace Gnoj_Ham
                     int honbaPoints = ScoreTools.GetHonbaPoints(Game.EastIndexTurnCount - 1, winners.Count, !ronPlayerIndex.HasValue);
 
                     // In case of ron with multiple winners, only the one who comes right next to "ronPlayerIndex" takes the stack of riichi.
-                    if (winners.Count > 0)
+                    if (winners.Count > 1)
                     {
                         for (int i = 1; i <= 3; i++)
                         {

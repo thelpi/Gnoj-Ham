@@ -26,6 +26,8 @@ namespace Gnoj_HamView
         private bool _sounds;
         private bool _pauseAutoplay;
         private System.Media.SoundPlayer _tickSound;
+        private System.Timers.Timer _timer;
+        private System.Timers.ElapsedEventHandler _currentTimerHandler;
 
         /// <summary>
         /// Constructor.
@@ -35,6 +37,7 @@ namespace Gnoj_HamView
         /// <param name="endOfGameRule">The ruel to end a game.</param>
         /// <param name="useRedDoras">Indicates if red doras should be used.</param>
         /// <param name="cpuSpeed">CPU speed.</param>
+        /// <param name="chrono">Chrono speed.</param>
         /// <param name="autoTsumoRon">Auto call for tsumo and ron.</param>
         /// <param name="riichiAutoDiscard">Auto-discard when riichi.</param>
         /// <param name="debugMode"><c>True</c> to display the opponent tiles.</param>
@@ -42,11 +45,12 @@ namespace Gnoj_HamView
         /// <param name="useNagashiMangan"><c>True</c> to use the yaku 'Nagashi Mangan'.</param>
         /// <param name="useRenhou"><c>True</c> to use the yakuman 'Renhou'.</param>
         /// <param name="sounds"><c>True</c> to activate sounds.</param>
-        public MainWindow(string playerName, InitialPointsRulePivot pointRule, EndOfGameRulePivot endOfGameRule, bool useRedDoras, CpuSpeedPivot cpuSpeed,
-            bool autoTsumoRon, bool riichiAutoDiscard, bool debugMode, bool sortedDraw, bool useNagashiMangan, bool useRenhou, bool sounds)
+        public MainWindow(string playerName, InitialPointsRulePivot pointRule, EndOfGameRulePivot endOfGameRule, bool useRedDoras,
+            CpuSpeedPivot cpuSpeed, ChronoPivot chrono, bool autoTsumoRon, bool riichiAutoDiscard, bool debugMode, bool sortedDraw,
+            bool useNagashiMangan, bool useRenhou, bool sounds)
         {
             InitializeComponent();
-            
+
             _game = new GamePivot(playerName, pointRule, endOfGameRule, useRedDoras, sortedDraw, useNagashiMangan, useRenhou);
             _cpuSpeedMs = cpuSpeed.ParseSpeed();
             _autoTsumoRon = autoTsumoRon;
@@ -55,29 +59,40 @@ namespace Gnoj_HamView
             _sounds = sounds;
             _tickSound = new System.Media.SoundPlayer(Properties.Resources.tick);
 
+            SetChronoTime(chrono);
+
             FixWindowDimensions();
 
             NewRoundRefresh();
 
-            ContentRendered += delegate(object sender, EventArgs evt)
+            ContentRendered += delegate (object sender, EventArgs evt)
             {
                 AutoPlayAsync();
             };
         }
 
         #region Window events
-        
+
         private void BtnConfiguration_Click(object sender, RoutedEventArgs e)
         {
+            bool timerWasRunning = _timer?.Enabled == true;
+            _timer?.Stop();
             _pauseAutoplay = true;
+
             var configurationWindow = new IntroWindow(_game);
             configurationWindow.ShowDialog();
             _cpuSpeedMs = configurationWindow.CpuSpeed.ParseSpeed();
+            SetChronoTime(configurationWindow.Chrono);
             _autoTsumoRon = configurationWindow.AutoTsumoRon;
             _riichiAutoDiscard = configurationWindow.RiichiAutoDiscard;
             _debugMode = configurationWindow.DebugMode;
             _sounds = configurationWindow.Sounds;
+
             _pauseAutoplay = false;
+            if (timerWasRunning && _timer != null)
+            {
+                _timer.Start();
+            }
         }
         
         private void OnNotifyWallCount(object sender, EventArgs e)
@@ -94,6 +109,8 @@ namespace Gnoj_HamView
 
         private void BtnDiscard_Click(object sender, RoutedEventArgs e)
         {
+            _timer?.Stop();
+
             TilePivot discard = (sender as Button).Tag as TilePivot;
             if (_game.Round.Discard(discard))
             {
@@ -106,6 +123,8 @@ namespace Gnoj_HamView
 
         private void BtnChiiChoice_Click(object sender, RoutedEventArgs e)
         {
+            _timer?.Stop();
+
             KeyValuePair<TilePivot, bool> tag = (KeyValuePair<TilePivot, bool>)((sender as Button).Tag);
 
             if (_game.Round.CallChii(GamePivot.HUMAN_INDEX, tag.Value ? tag.Key.Number - 1 : tag.Key.Number))
@@ -115,6 +134,7 @@ namespace Gnoj_HamView
                 FillCombinationStack(GamePivot.HUMAN_INDEX);
                 FillDiscardPanel(_game.Round.PreviousPlayerIndex);
                 SetActionButtonsVisibility();
+                ActivateTimer(GetFirstAvailableDiscardButton());
             }
             else
             {
@@ -124,11 +144,15 @@ namespace Gnoj_HamView
 
         private void BtnKanChoice_Click(object sender, RoutedEventArgs e)
         {
+            _timer?.Stop();
+
             InnerKanCallProcess((sender as Button).Tag as TilePivot, null);
         }
 
         private void BtnPon_Click(object sender, RoutedEventArgs e)
         {
+            _timer?.Stop();
+
             if (_game.Round.CanCallPon(GamePivot.HUMAN_INDEX))
             {
                 // Note : this value is stored here because the call to "CallPon" makes it change.
@@ -144,6 +168,7 @@ namespace Gnoj_HamView
                     FillCombinationStack(GamePivot.HUMAN_INDEX);
                     FillDiscardPanel(previousPlayerIndex);
                     SetActionButtonsVisibility();
+                    ActivateTimer(GetFirstAvailableDiscardButton());
                 }
             }
             else
@@ -154,6 +179,8 @@ namespace Gnoj_HamView
 
         private void BtnChii_Click(object sender, RoutedEventArgs e)
         {
+            _timer?.Stop();
+
             Dictionary<TilePivot, bool> tileChoices = _game.Round.CanCallChii(GamePivot.HUMAN_INDEX);
 
             if (tileChoices.Keys.Count > 0)
@@ -168,6 +195,8 @@ namespace Gnoj_HamView
 
         private void BtnKan_Click(object sender, RoutedEventArgs e)
         {
+            _timer?.Stop();
+
             List<TilePivot> kanTiles = _game.Round.CanCallKan(GamePivot.HUMAN_INDEX);
             if (kanTiles.Count > 0)
             {
@@ -188,6 +217,8 @@ namespace Gnoj_HamView
 
         private void BtnRiichiChoice_Click(object sender, RoutedEventArgs e)
         {
+            _timer?.Stop();
+
             Button button = sender as Button;
 
             if (_game.Round.CallRiichi(GamePivot.HUMAN_INDEX, button.Tag as TilePivot))
@@ -222,12 +253,14 @@ namespace Gnoj_HamView
         #region Human decisions
 
         // Manages riichii call opportunities.
-        private void HumanCallRiichi(List<TilePivot> tiles)
+        private bool HumanCallRiichi(List<TilePivot> tiles)
         {
             if (tiles.Count > 0 && MessageBox.Show("Declare riichi ?", WINDOW_TITLE, MessageBoxButton.YesNo) == MessageBoxResult.Yes)
             {
                 RestrictDiscardWithTilesSelection(tiles.ToDictionary(t => t, t => false), BtnRiichiChoice_Click);
+                return true;
             }
+            return false;
         }
 
         // Checks a tsumo call for the human player.
@@ -287,7 +320,10 @@ namespace Gnoj_HamView
                 }
                 else
                 {
-                    HumanCallRiichi(_game.Round.CanCallRiichi(GamePivot.HUMAN_INDEX));
+                    if (!HumanCallRiichi(_game.Round.CanCallRiichi(GamePivot.HUMAN_INDEX)))
+                    {
+                        ActivateTimer(GetFirstAvailableDiscardButton());
+                    }
                 }
             }
         }
@@ -456,7 +492,10 @@ namespace Gnoj_HamView
             {
                 Dispatcher.Invoke(() =>
                 {
-                    HumanCallRiichi(tilesRiichi);
+                    if (!HumanCallRiichi(tilesRiichi))
+                    {
+                        ActivateTimer(StpPickP0.Children[0] as Button);
+                    }
                 });
             }
             else if (_riichiAutoDiscard && _game.Round.HumanCanAutoDiscard())
@@ -465,6 +504,13 @@ namespace Gnoj_HamView
                 Dispatcher.Invoke(() =>
                 {
                     (StpPickP0.Children[0] as Button).RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent));
+                });
+            }
+            else
+            {
+                Dispatcher.Invoke(() =>
+                {
+                    ActivateTimer(StpPickP0.Children[0] as Button);
                 });
             }
         }
@@ -503,6 +549,7 @@ namespace Gnoj_HamView
             }
             else
             {
+                ActivateTimer(clickableButtons[0]);
                 // Otherwise, waits for the user choice.
             }
         }
@@ -662,6 +709,53 @@ namespace Gnoj_HamView
         #endregion CPU actions
 
         #region Graphic tools
+
+        // Gets the first button for a discardable tile.
+        private Button GetFirstAvailableDiscardButton()
+        {
+            return (FindName($"StpHandP{GamePivot.HUMAN_INDEX}") as StackPanel)
+                .Children
+                .OfType<Button>()
+                .First(b => _game.Round.CanDiscard(b.Tag as TilePivot));
+        }
+
+        // Activates the human decision timer and binds its event to a button click.
+        private void ActivateTimer(Button buttonToClick)
+        {
+            if (_timer != null)
+            {
+                if (_currentTimerHandler != null)
+                {
+                    _timer.Elapsed -= _currentTimerHandler;
+                }
+                _currentTimerHandler = delegate (object sender, System.Timers.ElapsedEventArgs e)
+                {
+                    Dispatcher.Invoke(() =>
+                    {
+                        buttonToClick.RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent));
+                    });
+                };
+                _timer.Elapsed += _currentTimerHandler;
+                _timer.Start();
+            }
+        }
+
+        // Affects a value to the humand ecision timer.
+        private void SetChronoTime(ChronoPivot chrono)
+        {
+            if (chrono == ChronoPivot.None)
+            {
+                _timer = null;
+            }
+            else if (_timer != null)
+            {
+                _timer.Interval = chrono.GetDelay() * 1000;
+            }
+            else
+            {
+                _timer = new System.Timers.Timer(chrono.GetDelay() * 1000);
+            }
+        }
 
         // Displays the call overlay.
         private void InvokeOverlay(string callName, int playerIndex)

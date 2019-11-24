@@ -19,6 +19,10 @@ namespace Gnoj_HamView
         /// </summary>
         internal CpuSpeedPivot CpuSpeed { get; private set; }
         /// <summary>
+        /// Chrono.
+        /// </summary>
+        internal ChronoPivot Chrono { get; private set; }
+        /// <summary>
         /// Auto call for tsumo and ron y/n.
         /// </summary>
         internal bool AutoTsumoRon { get; private set; }
@@ -63,6 +67,7 @@ namespace Gnoj_HamView
         private void BtnStart_Click(object sender, RoutedEventArgs e)
         {
             CpuSpeed = (CpuSpeedPivot)CbbCpuSpeed.SelectedIndex;
+            Chrono = (ChronoPivot)CbbChrono.SelectedIndex;
             AutoTsumoRon = ChkAutoTsumoRon.IsChecked == true;
             RiichiAutoDiscard = ChkRiichiAutoDiscard.IsChecked == true;
             DebugMode = ChkDebugMode.IsChecked == true;
@@ -89,6 +94,7 @@ namespace Gnoj_HamView
                     (EndOfGameRulePivot)CbbEndOfGameRule.SelectedIndex,
                     ChkUseRedDoras.IsChecked == true,
                     CpuSpeed,
+                    Chrono,
                     AutoTsumoRon,
                     RiichiAutoDiscard,
                     DebugMode,
@@ -124,6 +130,7 @@ namespace Gnoj_HamView
         private void LoadConfiguration()
         {
             CbbCpuSpeed.SelectedIndex = Settings.Default.DefaultCpuSpeed;
+            CbbChrono.SelectedIndex = Settings.Default.DefaultChrono;
             CbbPointsRule.SelectedIndex = Settings.Default.DefaultPointsRule;
             CbbEndOfGameRule.SelectedIndex = Settings.Default.DefaultEndOfGameRule;
             TxtPlayerName.Text = Settings.Default.DefaultPlayerName;
@@ -140,6 +147,7 @@ namespace Gnoj_HamView
         private void SaveConfiguration()
         {
             Settings.Default.DefaultCpuSpeed = (int)CpuSpeed;
+            Settings.Default.DefaultChrono = (int)Chrono;
             Settings.Default.DefaultPointsRule = CbbPointsRule.SelectedIndex;
             Settings.Default.DefaultEndOfGameRule = CbbEndOfGameRule.SelectedIndex;
             Settings.Default.DefaultPlayerName = TxtPlayerName.Text;

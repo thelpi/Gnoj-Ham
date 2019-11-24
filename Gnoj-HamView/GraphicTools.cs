@@ -175,6 +175,24 @@ namespace Gnoj_HamView
             return Convert.ToInt32(cpuSpeed.ToString().Replace("S", string.Empty));
         }
 
+        /// <summary>
+        /// Transforms a <see cref="ChronoPivot"/> value into its delay in seconds.
+        /// </summary>
+        /// <param name="chrono">The chrono value.</param>
+        /// <returns>Delay in seconds.</returns>
+        internal static int GetDelay(this ChronoPivot chrono)
+        {
+            switch (chrono)
+            {
+                case ChronoPivot.Long:
+                    return 20;
+                case ChronoPivot.Short:
+                    return 5;
+                default:
+                    return 0;
+            }
+        }
+
         #region Private methods
 
         private static Grid PointsGridForScoreDisplay(EndOfRoundInformationsPivot.PlayerInformationsPivot p)

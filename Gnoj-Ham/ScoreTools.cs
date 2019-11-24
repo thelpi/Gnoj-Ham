@@ -226,21 +226,14 @@ namespace Gnoj_Ham
         /// </summary>
         /// <param name="fanCount">Fan count.</param>
         /// <param name="fuCount">Fu count.</param>
-        /// <param name="winnerPlayersCount">Number of winners (divide <paramref name="honbaCount"/>).</param>
         /// <param name="isTsumo"><c>True</c> if win by tsumo; <c>False</c> otherwise.</param>
         /// <param name="playerWind">The current player wind.</param>
         /// <returns>
         /// - Number of points lost by east players (or one of the three remaining if the winner is east; or the specific loser if ron).
         /// - Number of points lost by the two other players.
         /// </returns>
-        /// <exception cref="ArgumentException"><see cref="Messages.TooManyWinners"/></exception>
-        public static Tuple<int, int> GetPoints(int fanCount, int fuCount, int winnerPlayersCount, bool isTsumo, WindPivot playerWind)
+        public static Tuple<int, int> GetPoints(int fanCount, int fuCount, bool isTsumo, WindPivot playerWind)
         {
-            if (winnerPlayersCount > 1 && isTsumo)
-            {
-                throw new ArgumentException(Messages.TooManyWinners, nameof(winnerPlayersCount));
-            }
-
             int v1 = 0;
             int v2 = 0;
 
