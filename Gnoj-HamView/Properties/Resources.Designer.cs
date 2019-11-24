@@ -421,6 +421,16 @@ namespace Gnoj_HamView.Properties {
         }
         
         /// <summary>
+        ///   Recherche une ressource localisée de type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap misc {
+            get {
+                object obj = ResourceManager.GetObject("misc", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
         ///   Recherche une chaîne localisée semblable à Caracter_9.
         /// </summary>
         internal static string String {

@@ -143,6 +143,23 @@ namespace Gnoj_Ham
         #region Public methods
 
         /// <summary>
+        /// Updates the current game configuration.
+        /// </summary>
+        /// <param name="humanPlayerName"></param>
+        /// <param name="withRedDoras">The new <see cref="WithRedDoras"/> value.</param>
+        /// <param name="sortedDraw">The new <see cref="SortedDraw"/> value.</param>
+        /// <param name="useNagashiMangan">The new <see cref="UseNagashiMangan"/> value.</param>
+        /// <param name="useRenhou">The new <see cref="UseRenhou"/> value.</param>
+        public void UpdateConfiguration(string humanPlayerName, bool withRedDoras, bool sortedDraw, bool useNagashiMangan, bool useRenhou)
+        {
+            PlayerPivot.UpdateHumanPlayerName(this, humanPlayerName);
+            WithRedDoras = withRedDoras;
+            SortedDraw = sortedDraw;
+            UseNagashiMangan = useNagashiMangan;
+            UseRenhou = useRenhou;
+        }
+
+        /// <summary>
         /// Adds a pending riichi.
         /// </summary>
         /// <param name="playerIndex">The player index.</param>

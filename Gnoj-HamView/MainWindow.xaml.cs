@@ -19,10 +19,11 @@ namespace Gnoj_HamView
         private const string WINDOW_TITLE = "Gnoj-Ham";
 
         private readonly GamePivot _game;
-        private readonly int _cpuSpeedMs;
-        private readonly bool _autoTsumoRon;
-        private readonly bool _riichiAutoDiscard;
-        private readonly bool _debugMode;
+        private int _cpuSpeedMs;
+        private bool _autoTsumoRon;
+        private bool _riichiAutoDiscard;
+        private bool _debugMode;
+        private bool _pauseAutoplay;
 
         /// <summary>
         /// Constructor.
@@ -37,13 +38,13 @@ namespace Gnoj_HamView
         /// <param name="sortedDraw"><c>True</c> to not randomize the tile draw.</param>
         /// <param name="useNagashiMangan"><c>True</c> to use the yaku 'Nagashi Mangan'.</param>
         /// <param name="useRenhou"><c>True</c> to use the yakuman 'Renhou'.</param>
-        public MainWindow(string playerName, InitialPointsRulePivot pointRule, bool useRedDoras, CpuSpeed cpuSpeed, bool autoTsumoRon,
+        public MainWindow(string playerName, InitialPointsRulePivot pointRule, bool useRedDoras, CpuSpeedPivot cpuSpeed, bool autoTsumoRon,
             bool riichiAutoDiscard, bool debugMode, bool sortedDraw, bool useNagashiMangan, bool useRenhou)
         {
             InitializeComponent();
             
             _game = new GamePivot(playerName, pointRule, useRedDoras, sortedDraw, useNagashiMangan, useRenhou);
-            _cpuSpeedMs = Convert.ToInt32(cpuSpeed.ToString().Replace("S", string.Empty));
+            _cpuSpeedMs = cpuSpeed.ParseSpeed();
             _autoTsumoRon = autoTsumoRon;
             _riichiAutoDiscard = riichiAutoDiscard;
             _debugMode = debugMode;
@@ -59,6 +60,19 @@ namespace Gnoj_HamView
         }
 
         #region Window events
+
+        // Click on configuration button in-game
+        private void BtnConfiguration_Click(object sender, RoutedEventArgs e)
+        {
+            _pauseAutoplay = true;
+            var configurationWindow = new IntroWindow(_game);
+            configurationWindow.ShowDialog();
+            _cpuSpeedMs = configurationWindow.CpuSpeed.ParseSpeed();
+            _autoTsumoRon = configurationWindow.AutoTsumoRon;
+            _riichiAutoDiscard = configurationWindow.RiichiAutoDiscard;
+            _debugMode = configurationWindow.DebugMode;
+            _pauseAutoplay = false;
+        }
 
         // Happens when the count of tiles in the wall changes.
         private void OnNotifyWallCount(object sender, EventArgs e)
@@ -298,6 +312,11 @@ namespace Gnoj_HamView
             {
                 while (true)
                 {
+                    while (_pauseAutoplay)
+                    {
+                        // Do nothing until the autoplay is restarted.
+                    }
+
                     if (CheckCallRonForEveryone())
                     {
                         endOfRound = true;
@@ -487,7 +506,7 @@ namespace Gnoj_HamView
             Dispatcher.Invoke(() =>
             {
                 FillHandPanel(_game.Round.CurrentPlayerIndex, compensationTile);
-                (FindName($"StpPickP{_game.Round.CurrentPlayerIndex}") as StackPanel).Children.Add(compensationTile.GenerateTileButton(null, (Angle)_game.Round.CurrentPlayerIndex, !_debugMode));
+                (FindName($"StpPickP{_game.Round.CurrentPlayerIndex}") as StackPanel).Children.Add(compensationTile.GenerateTileButton(null, (AnglePivot)_game.Round.CurrentPlayerIndex, !_debugMode));
                 if (previousPlayerIndex.HasValue)
                 {
                     FillDiscardPanel(previousPlayerIndex.Value);
@@ -506,7 +525,7 @@ namespace Gnoj_HamView
             {
                 SetPlayersLed();
                 int i = _game.Round.CurrentPlayerIndex;
-                (FindName($"StpPickP{i}") as StackPanel).Children.Add(pick.GenerateTileButton(null, (Angle)i, !_debugMode));
+                (FindName($"StpPickP{i}") as StackPanel).Children.Add(pick.GenerateTileButton(null, (AnglePivot)i, !_debugMode));
             });
         }
 
@@ -695,7 +714,7 @@ namespace Gnoj_HamView
                 if (excludedTile == null || !ReferenceEquals(excludedTile, tile))
                 {
                     panel.Children.Add(tile.GenerateTileButton(isHuman && !_game.Round.IsRiichi(pIndex) ?
-                        BtnDiscard_Click : (RoutedEventHandler)null, (Angle)pIndex, !isHuman && !_debugMode));
+                        BtnDiscard_Click : (RoutedEventHandler)null, (AnglePivot)pIndex, !isHuman && !_debugMode));
                 }
             }
         }
@@ -746,10 +765,10 @@ namespace Gnoj_HamView
             foreach (TilePivot tile in _game.Round.Discards.ElementAt(pIndex))
             {
                 StackPanel panel = FindName($"StpP{pIndex}Discard{(i < 6 ? 1 : (i < 12 ? 2 : 3))}") as StackPanel;
-                Angle angle = (Angle)pIndex;
+                AnglePivot angle = (AnglePivot)pIndex;
                 if (_game.Round.IsRiichiRank(pIndex, i))
                 {
-                    angle = (Angle)pIndex.RelativePlayerIndex(1);
+                    angle = (AnglePivot)pIndex.RelativePlayerIndex(1);
                 }
                 if (reversed)
                 {
@@ -795,7 +814,7 @@ namespace Gnoj_HamView
             foreach (KeyValuePair<TilePivot, bool> tileKvp in tilesKvp)
             {
                 panel.Children.Add(tileKvp.Key.GenerateTileButton(null,
-                    (Angle)(tileKvp.Value ? pIndex.RelativePlayerIndex(1) : pIndex),
+                    (AnglePivot)(tileKvp.Value ? pIndex.RelativePlayerIndex(1) : pIndex),
                     combo.IsConcealedDisplay(i)));
                 i++;
             }

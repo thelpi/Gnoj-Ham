@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Gnoj_Ham
 {
@@ -72,12 +73,7 @@ namespace Gnoj_Ham
         /// <exception cref="ArgumentException"><see cref="Messages.InvalidPlayerName"/></exception>
         public static List<PlayerPivot> GetFourPlayers(string humanPlayerName, InitialPointsRulePivot initialPointsRulePivot)
         {
-            humanPlayerName = (humanPlayerName ?? string.Empty).Trim();
-
-            if (humanPlayerName == string.Empty || humanPlayerName.ToUpperInvariant().StartsWith(CPU_NAME_PREFIX.ToUpperInvariant()))
-            {
-                throw new ArgumentException(Messages.InvalidPlayerName, nameof(humanPlayerName));
-            }
+            humanPlayerName = CheckName(humanPlayerName);
 
             int eastIndex = GlobalTools.Randomizer.Next(0, 4);
 
@@ -93,6 +89,35 @@ namespace Gnoj_Ham
             }
 
             return players;
+        }
+
+        private static string CheckName(string humanPlayerName)
+        {
+            humanPlayerName = (humanPlayerName ?? string.Empty).Trim();
+
+            if (humanPlayerName == string.Empty || humanPlayerName.ToUpperInvariant().StartsWith(CPU_NAME_PREFIX.ToUpperInvariant()))
+            {
+                throw new ArgumentException(Messages.InvalidPlayerName, nameof(humanPlayerName));
+            }
+
+            return humanPlayerName;
+        }
+
+        /// <summary>
+        /// Updates the human player's name.
+        /// </summary>
+        /// <param name="game">The current game.</param>
+        /// <param name="humanPlayerName">The new <see cref="Name"/> value for human player.</param>
+        internal static void UpdateHumanPlayerName(GamePivot game, string humanPlayerName)
+        {
+            if (game == null)
+            {
+                throw new ArgumentNullException(nameof(game));
+            }
+
+            humanPlayerName = CheckName(humanPlayerName);
+
+            game.Players.ElementAt(GamePivot.HUMAN_INDEX).Name = humanPlayerName;
         }
 
         #endregion Static methods

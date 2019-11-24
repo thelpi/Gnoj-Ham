@@ -3,7 +3,7 @@
     /// <summary>
     /// Represents tile rotation (depending on the player).
     /// </summary>
-    public enum Angle
+    public enum AnglePivot
     {
         /// <summary>
         /// 0 degrees.

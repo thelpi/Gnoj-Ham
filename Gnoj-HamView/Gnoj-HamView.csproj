@@ -55,7 +55,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Compile Include="Angle.cs" />
+    <Compile Include="AnglePivot.cs" />
     <Compile Include="GraphicTools.cs" />
     <Compile Include="ScoreWindow.xaml.cs">
       <DependentUpon>ScoreWindow.xaml</DependentUpon>
@@ -74,7 +74,7 @@
     </Compile>
     <Compile Include="Converters\CpuSpeedConverter.cs" />
     <Compile Include="Converters\InitialPointsRuleConverter.cs" />
-    <Compile Include="CpuSpeed.cs" />
+    <Compile Include="CpuSpeedPivot.cs" />
     <Compile Include="IntroWindow.xaml.cs">
       <DependentUpon>IntroWindow.xaml</DependentUpon>
     </Compile>
@@ -316,6 +316,11 @@
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Resources\ledred.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\misc.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
   </ItemGroup>

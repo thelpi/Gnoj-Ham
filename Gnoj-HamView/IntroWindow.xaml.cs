@@ -10,14 +10,47 @@ namespace Gnoj_HamView
     /// </summary>
     public partial class IntroWindow : Window
     {
+        #region Embedded properties
+
+        private GamePivot _game;
+
+        /// <summary>
+        /// CPU speed.
+        /// </summary>
+        internal CpuSpeedPivot CpuSpeed { get; private set; }
+        /// <summary>
+        /// Auto call for tsumo and ron y/n.
+        /// </summary>
+        internal bool AutoTsumoRon { get; private set; }
+        /// <summary>
+        /// Riichi auto-discard y/n.
+        /// </summary>
+        internal bool RiichiAutoDiscard { get; private set; }
+        /// <summary>
+        /// Debug mode y/n.
+        /// </summary>
+        internal bool DebugMode { get; private set; }
+
+        #endregion Embedded properties
+
         /// <summary>
         /// Constructor.
         /// </summary>
-        public IntroWindow()
+        /// <param name="currentGame">The current game; <c>Null</c> if new game.</param>
+        public IntroWindow(GamePivot currentGame)
         {
             InitializeComponent();
 
             LoadConfiguration();
+
+            _game = currentGame;
+
+            if (_game != null)
+            {
+                CbbPointsRule.IsEnabled = false;
+                BtnStart.Content = "Resume";
+                BtnQuit.Content = "Cancel";
+            }
         }
 
         #region Page events
@@ -26,25 +59,54 @@ namespace Gnoj_HamView
         {
             SaveConfiguration();
 
-            Hide();
-            new MainWindow(
-                TxtPlayerName.Text,
-                (InitialPointsRulePivot)CbbPointsRule.SelectedIndex,
-                ChkUseRedDoras.IsChecked == true,
-                (CpuSpeed)CbbCpuSpeed.SelectedIndex,
-                ChkAutoTsumoRon.IsChecked == true,
-                ChkRiichiAutoDiscard.IsChecked == true,
-                ChkDebugMode.IsChecked == true,
-                ChkSortedDraw.IsChecked == true,
-                ChkUseNagashiMangan.IsChecked == true,
-                ChkUseRenhou.IsChecked == true
-            ).ShowDialog();
-            ShowDialog();
+            CpuSpeed = (CpuSpeedPivot)CbbCpuSpeed.SelectedIndex;
+            AutoTsumoRon = ChkAutoTsumoRon.IsChecked == true;
+            RiichiAutoDiscard = ChkRiichiAutoDiscard.IsChecked == true;
+            DebugMode = ChkDebugMode.IsChecked == true;
+
+            if (_game != null)
+            {
+                _game.UpdateConfiguration(TxtPlayerName.Text,
+                    ChkUseRedDoras.IsChecked == true,
+                    ChkSortedDraw.IsChecked == true,
+                    ChkUseNagashiMangan.IsChecked == true,
+                    ChkUseRenhou.IsChecked == true);
+                Close();
+            }
+            else
+            {
+                Hide();
+
+                new MainWindow(
+                    TxtPlayerName.Text,
+                    (InitialPointsRulePivot)CbbPointsRule.SelectedIndex,
+                    ChkUseRedDoras.IsChecked == true,
+                    CpuSpeed,
+                    AutoTsumoRon,
+                    RiichiAutoDiscard,
+                    DebugMode,
+                    ChkSortedDraw.IsChecked == true,
+                    ChkUseNagashiMangan.IsChecked == true,
+                    ChkUseRenhou.IsChecked == true
+                ).ShowDialog();
+
+                // The configuration might be updated in-game.
+                LoadConfiguration();
+
+                ShowDialog();
+            }
         }
 
         private void BtnQuit_Click(object sender, RoutedEventArgs e)
         {
-            Environment.Exit(0);
+            if (_game != null)
+            {
+                Close();
+            }
+            else
+            {
+                Environment.Exit(0);
+            }
         }
 
         #endregion Page events

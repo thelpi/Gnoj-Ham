@@ -14,7 +14,7 @@
     <Window.Resources>
         <cvt:CpuSpeedConverter x:Key="CpuSpeedConverter" />
         <cvt:InitialPointsRuleConverter x:Key="InitialPointsRuleConverter" />
-        <view:CpuSpeed x:Key="CpuSpeedEnum" />
+        <view:CpuSpeedPivot x:Key="CpuSpeedEnum" />
         <lib:InitialPointsRulePivot x:Key="InitialPointsRuleEnum" />
     </Window.Resources>
     <DockPanel Margin="5">

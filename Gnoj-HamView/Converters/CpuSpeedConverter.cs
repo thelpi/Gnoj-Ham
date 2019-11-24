@@ -6,13 +6,13 @@ using System.Windows.Data;
 namespace Gnoj_HamView.Converters
 {
     /// <summary>
-    /// Conversion of <see cref="CpuSpeed"/> for display.
+    /// Conversion of <see cref="CpuSpeedPivot"/> for display.
     /// </summary>
     /// <seealso cref="IValueConverter"/>
     public class CpuSpeedConverter : IValueConverter
     {
         /// <summary>
-        /// Transforms every elements of the enum <see cref="CpuSpeed"/> to its <see cref="string"/> representation.
+        /// Transforms every elements of the enum <see cref="CpuSpeedPivot"/> to its <see cref="string"/> representation.
         /// </summary>
         /// <param name="value">Ignorable.</param>
         /// <param name="targetType">Ignorable.</param>
@@ -21,9 +21,9 @@ namespace Gnoj_HamView.Converters
         /// <returns>A list of <see cref="string"/> representations.</returns>
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            return Enum.GetValues(typeof(CpuSpeed)).OfType<CpuSpeed>().Select(v =>
+            return Enum.GetValues(typeof(CpuSpeedPivot)).OfType<CpuSpeedPivot>().Select(v =>
             {
-                int intParsedValue = System.Convert.ToInt32(v.ToString().Replace("S", string.Empty));
+                int intParsedValue = v.ParseSpeed();
 
                 if (intParsedValue >= 1000)
                 {

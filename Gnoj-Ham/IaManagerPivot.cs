@@ -129,7 +129,6 @@ namespace Gnoj_Ham
             List<TilePivot> riichiTiles = Round.CanCallRiichi(Round.CurrentPlayerIndex);
             if (riichiTiles.Count > 0)
             {
-                // TODO
                 return riichiTiles.First();
             }
 
@@ -179,8 +178,7 @@ namespace Gnoj_Ham
             {
                 return false;
             }
-
-            // TODO
+            
             return true;
         }
 
@@ -237,7 +235,6 @@ namespace Gnoj_Ham
                 {
                     if (!ronCalled)
                     {
-                        // TODO
                         ronCalled = true;
                     }
                 }

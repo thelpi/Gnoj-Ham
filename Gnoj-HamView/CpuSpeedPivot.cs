@@ -3,7 +3,7 @@
     /// <summary>
     /// Enumeration of CPU speed.
     /// </summary>
-    public enum CpuSpeed
+    public enum CpuSpeedPivot
     {
         /// <summary>
         /// 2 seconds pause.

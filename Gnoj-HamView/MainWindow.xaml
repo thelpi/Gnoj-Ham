@@ -35,7 +35,14 @@
                 <ColumnDefinition Width="*" />
                 <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
-            <StackPanel Orientation="Horizontal" Grid.Column="1" Name="StpCombosP0" />
+            <DockPanel Grid.Column="1">
+                <Button DockPanel.Dock="Right" Width="25" Height="25" Margin="5, 0, 5, 0" ToolTip="Configuration" Name="BtnConfiguration" Click="BtnConfiguration_Click">
+                    <Button.Content>
+                        <Image Source="Resources/misc.png" />
+                    </Button.Content>
+                </Button>
+                <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Name="StpCombosP0" />
+            </DockPanel>
         </Grid>
         <!-- P2 (right) -->
         <StackPanel Orientation="Vertical" Grid.Column="6" Grid.Row="0" Grid.RowSpan="6" Name="StpCombosP1" />
@@ -54,7 +61,7 @@
         <StackPanel Orientation="Horizontal" Grid.Column="3" Grid.Row="6">
             <Button Name="BtnPon" Content="PON !" FontWeight="ExtraBold" Height="28" Width="75" Visibility="Collapsed" Click="BtnPon_Click" />
             <Button Name="BtnChii" Content="CHII !" FontWeight="ExtraBold" Height="28" Width="75" Visibility="Collapsed" Click="BtnChii_Click" />
-            <Button Name="BtnKan" Content="KAN !" FontWeight="ExtraBold" Height="28" Width="75" Visibility="Visible" Click="BtnKan_Click" />
+            <Button Name="BtnKan" Content="KAN !" FontWeight="ExtraBold" Height="28" Width="75" Visibility="Collapsed" Click="BtnKan_Click" />
         </StackPanel>
 
         <!-- Hands stacks -->

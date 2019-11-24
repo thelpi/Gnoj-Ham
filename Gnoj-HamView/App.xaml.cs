@@ -11,14 +11,7 @@ namespace Gnoj_HamView
     {
         private void Application_Startup(object sender, StartupEventArgs e)
         {
-#if DEBUG
-            AppDomain.CurrentDomain.FirstChanceException += (innerSender, innerE) =>
-            {
-                Debug.WriteLine($"{innerE.Exception.Message} - {innerE.Exception.StackTrace}");
-            };
-#endif
-
-            new IntroWindow().ShowDialog();
+            new IntroWindow(null).ShowDialog();
         }
     }
 }

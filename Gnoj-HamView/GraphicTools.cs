@@ -43,7 +43,7 @@ namespace Gnoj_HamView
         /// <param name="angle">Optionnal; rotation angle; default is <c>0°</c>.</param>
         /// <param name="concealed">Optionnal; set <c>True</c> to display a concealed tile; default is <c>False</c>.</param>
         /// <returns>A button representing the tile.</returns>
-        internal static Button GenerateTileButton(this TilePivot tile, RoutedEventHandler handler = null, Angle angle = Angle.A0, bool concealed = false)
+        internal static Button GenerateTileButton(this TilePivot tile, RoutedEventHandler handler = null, AnglePivot angle = AnglePivot.A0, bool concealed = false)
         {
             string rscName = concealed ? CONCEALED_TILE_RSC_NAME : tile.ToString();
 
@@ -51,8 +51,8 @@ namespace Gnoj_HamView
 
             var button = new Button
             {
-                Height = angle == Angle.A0 || angle == Angle.A180 ? TILE_HEIGHT : TILE_WIDTH,
-                Width = angle == Angle.A0 || angle == Angle.A180 ? TILE_WIDTH : TILE_HEIGHT,
+                Height = angle == AnglePivot.A0 || angle == AnglePivot.A180 ? TILE_HEIGHT : TILE_WIDTH,
+                Width = angle == AnglePivot.A0 || angle == AnglePivot.A180 ? TILE_WIDTH : TILE_HEIGHT,
                 Content = new System.Windows.Controls.Image
                 {
                     Source = tileBitmap.ToBitmapImage(),
@@ -163,6 +163,16 @@ namespace Gnoj_HamView
                 default:
                     throw new NotImplementedException();
             }
+        }
+
+        /// <summary>
+        /// Extension; converts a <see cref="CpuSpeedPivot"/> to a integer value.
+        /// </summary>
+        /// <param name="cpuSpeed">The speed to convert.</param>
+        /// <returns>The integer value.</returns>
+        internal static int ParseSpeed(this CpuSpeedPivot cpuSpeed)
+        {
+            return Convert.ToInt32(cpuSpeed.ToString().Replace("S", string.Empty));
         }
 
         #region Private methods
@@ -306,7 +316,7 @@ namespace Gnoj_HamView
             };
             foreach (Tuple<TilePivot, bool, bool> tile in p.GetFullHandForDisplay())
             {
-                Button b = GenerateTileButton(tile.Item1, null, (tile.Item2 ? Angle.A90 : Angle.A0), false);
+                Button b = GenerateTileButton(tile.Item1, null, (tile.Item2 ? AnglePivot.A90 : AnglePivot.A0), false);
                 if (tile.Item3)
                 {
                     b.Margin = new Thickness(5, 0, 0, 0);
