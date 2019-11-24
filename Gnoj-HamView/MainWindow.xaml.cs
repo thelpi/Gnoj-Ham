@@ -23,7 +23,9 @@ namespace Gnoj_HamView
         private bool _autoTsumoRon;
         private bool _riichiAutoDiscard;
         private bool _debugMode;
+        private bool _sounds;
         private bool _pauseAutoplay;
+        private System.Media.SoundPlayer _tickSound;
 
         /// <summary>
         /// Constructor.
@@ -38,8 +40,9 @@ namespace Gnoj_HamView
         /// <param name="sortedDraw"><c>True</c> to not randomize the tile draw.</param>
         /// <param name="useNagashiMangan"><c>True</c> to use the yaku 'Nagashi Mangan'.</param>
         /// <param name="useRenhou"><c>True</c> to use the yakuman 'Renhou'.</param>
+        /// <param name="sounds"><c>True</c> to activate sounds.</param>
         public MainWindow(string playerName, InitialPointsRulePivot pointRule, bool useRedDoras, CpuSpeedPivot cpuSpeed, bool autoTsumoRon,
-            bool riichiAutoDiscard, bool debugMode, bool sortedDraw, bool useNagashiMangan, bool useRenhou)
+            bool riichiAutoDiscard, bool debugMode, bool sortedDraw, bool useNagashiMangan, bool useRenhou, bool sounds)
         {
             InitializeComponent();
             
@@ -48,6 +51,8 @@ namespace Gnoj_HamView
             _autoTsumoRon = autoTsumoRon;
             _riichiAutoDiscard = riichiAutoDiscard;
             _debugMode = debugMode;
+            _sounds = sounds;
+            _tickSound = new System.Media.SoundPlayer(Properties.Resources.tick);
 
             FixWindowDimensions();
 
@@ -60,8 +65,7 @@ namespace Gnoj_HamView
         }
 
         #region Window events
-
-        // Click on configuration button in-game
+        
         private void BtnConfiguration_Click(object sender, RoutedEventArgs e)
         {
             _pauseAutoplay = true;
@@ -71,10 +75,10 @@ namespace Gnoj_HamView
             _autoTsumoRon = configurationWindow.AutoTsumoRon;
             _riichiAutoDiscard = configurationWindow.RiichiAutoDiscard;
             _debugMode = configurationWindow.DebugMode;
+            _sounds = configurationWindow.Sounds;
             _pauseAutoplay = false;
         }
-
-        // Happens when the count of tiles in the wall changes.
+        
         private void OnNotifyWallCount(object sender, EventArgs e)
         {
             Dispatcher.Invoke(() =>
@@ -105,6 +109,7 @@ namespace Gnoj_HamView
 
             if (_game.Round.CallChii(GamePivot.HUMAN_INDEX, tag.Value ? tag.Key.Number - 1 : tag.Key.Number))
             {
+                PlayTickSound();
                 FillHandPanel(_game.Round.CurrentPlayerIndex);
                 FillCombinationStack(GamePivot.HUMAN_INDEX);
                 FillDiscardPanel(_game.Round.PreviousPlayerIndex);
@@ -133,6 +138,7 @@ namespace Gnoj_HamView
                 }
                 else
                 {
+                    PlayTickSound();
                     FillHandPanel(GamePivot.HUMAN_INDEX);
                     FillCombinationStack(GamePivot.HUMAN_INDEX);
                     FillDiscardPanel(previousPlayerIndex);
@@ -264,6 +270,7 @@ namespace Gnoj_HamView
             }
             else
             {
+                PlayTickSound();
                 FillHandPanel(GamePivot.HUMAN_INDEX, compensationTile);
                 StpPickP0.Children.Add(compensationTile.GenerateTileButton(BtnDiscard_Click));
                 if (previousPlayerIndex.HasValue)
@@ -432,6 +439,7 @@ namespace Gnoj_HamView
             Dispatcher.Invoke(() =>
             {
                 SetPlayersLed();
+                PlayTickSound();
                 StpPickP0.Children.Add(pick.GenerateTileButton(BtnDiscard_Click));
                 SetActionButtonsVisibility(preDiscard: true);
             });
@@ -507,6 +515,7 @@ namespace Gnoj_HamView
         {
             Dispatcher.Invoke(() =>
             {
+                PlayTickSound();
                 FillHandPanel(_game.Round.CurrentPlayerIndex, compensationTile);
                 (FindName($"StpPickP{_game.Round.CurrentPlayerIndex}") as StackPanel).Children.Add(compensationTile.GenerateTileButton(null, (AnglePivot)_game.Round.CurrentPlayerIndex, !_debugMode));
                 if (previousPlayerIndex.HasValue)
@@ -526,6 +535,7 @@ namespace Gnoj_HamView
             Dispatcher.Invoke(() =>
             {
                 SetPlayersLed();
+                PlayTickSound();
                 int i = _game.Round.CurrentPlayerIndex;
                 (FindName($"StpPickP{i}") as StackPanel).Children.Add(pick.GenerateTileButton(null, (AnglePivot)i, !_debugMode));
             });
@@ -541,6 +551,7 @@ namespace Gnoj_HamView
             Dispatcher.Invoke(() =>
             {
                 SetPlayersLed();
+                PlayTickSound();
                 FillHandPanel(_game.Round.CurrentPlayerIndex);
                 FillCombinationStack(_game.Round.CurrentPlayerIndex);
                 FillDiscardPanel(_game.Round.PreviousPlayerIndex);
@@ -561,6 +572,7 @@ namespace Gnoj_HamView
             Dispatcher.Invoke(() =>
             {
                 SetPlayersLed();
+                PlayTickSound();
                 FillHandPanel(opponentPlayerId);
                 FillCombinationStack(opponentPlayerId);
                 FillDiscardPanel(previousPlayerIndex);
@@ -850,6 +862,15 @@ namespace Gnoj_HamView
                 BtnChii.Visibility = _game.Round.CanCallChii(GamePivot.HUMAN_INDEX).Keys.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
                 BtnPon.Visibility = _game.Round.CanCallPon(GamePivot.HUMAN_INDEX) ? Visibility.Visible : Visibility.Collapsed;
                 BtnKan.Visibility = _game.Round.CanCallKan(GamePivot.HUMAN_INDEX).Count > 0 ? Visibility.Visible : Visibility.Collapsed;
+            }
+        }
+
+        // Plays the tick sound if sounds activated.
+        private void PlayTickSound()
+        {
+            if (_sounds)
+            {
+                _tickSound.Play();
             }
         }
 

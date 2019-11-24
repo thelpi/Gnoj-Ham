@@ -142,5 +142,17 @@ namespace Gnoj_HamView.Properties {
                 this["DefaultUseRenhou"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool DefaultSounds {
+            get {
+                return ((bool)(this["DefaultSounds"]));
+            }
+            set {
+                this["DefaultSounds"] = value;
+            }
+        }
     }
 }

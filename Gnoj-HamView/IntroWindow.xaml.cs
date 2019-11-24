@@ -30,6 +30,10 @@ namespace Gnoj_HamView
         /// Debug mode y/n.
         /// </summary>
         internal bool DebugMode { get; private set; }
+        /// <summary>
+        /// Sounds y/n.
+        /// </summary>
+        internal bool Sounds { get; private set; }
 
         #endregion Embedded properties
 
@@ -57,12 +61,13 @@ namespace Gnoj_HamView
 
         private void BtnStart_Click(object sender, RoutedEventArgs e)
         {
-            SaveConfiguration();
-
             CpuSpeed = (CpuSpeedPivot)CbbCpuSpeed.SelectedIndex;
             AutoTsumoRon = ChkAutoTsumoRon.IsChecked == true;
             RiichiAutoDiscard = ChkRiichiAutoDiscard.IsChecked == true;
             DebugMode = ChkDebugMode.IsChecked == true;
+            Sounds = ChkSounds.IsChecked == true;
+
+            SaveConfiguration();
 
             if (_game != null)
             {
@@ -87,7 +92,8 @@ namespace Gnoj_HamView
                     DebugMode,
                     ChkSortedDraw.IsChecked == true,
                     ChkUseNagashiMangan.IsChecked == true,
-                    ChkUseRenhou.IsChecked == true
+                    ChkUseRenhou.IsChecked == true,
+                    Sounds
                 ).ShowDialog();
 
                 // The configuration might be updated in-game.
@@ -125,20 +131,22 @@ namespace Gnoj_HamView
             ChkSortedDraw.IsChecked = Settings.Default.DefaultSortedDraw;
             ChkUseNagashiMangan.IsChecked = Settings.Default.DefaultUseNagashiMangan;
             ChkUseRenhou.IsChecked = Settings.Default.DefaultUseRenhou;
+            ChkSounds.IsChecked = Settings.Default.DefaultSounds;
         }
 
         private void SaveConfiguration()
         {
-            Settings.Default.DefaultCpuSpeed = CbbCpuSpeed.SelectedIndex;
+            Settings.Default.DefaultCpuSpeed = (int)CpuSpeed;
             Settings.Default.DefaultPointsRule = CbbPointsRule.SelectedIndex;
             Settings.Default.DefaultPlayerName = TxtPlayerName.Text;
             Settings.Default.DefaultUseRedDoras = ChkUseRedDoras.IsChecked == true;
-            Settings.Default.DefaultAutoTsumoRon = ChkAutoTsumoRon.IsChecked == true;
-            Settings.Default.DefaultRiichiAutoDiscard = ChkRiichiAutoDiscard.IsChecked == true;
-            Settings.Default.DefaultDebugMode = ChkDebugMode.IsChecked == true;
+            Settings.Default.DefaultAutoTsumoRon = AutoTsumoRon;
+            Settings.Default.DefaultRiichiAutoDiscard = RiichiAutoDiscard;
+            Settings.Default.DefaultDebugMode = DebugMode;
             Settings.Default.DefaultSortedDraw = ChkSortedDraw.IsChecked == true;
             Settings.Default.DefaultUseNagashiMangan = ChkUseNagashiMangan.IsChecked == true;
             Settings.Default.DefaultUseRenhou = ChkUseRenhou.IsChecked == true;
+            Settings.Default.DefaultSounds = Sounds;
             Settings.Default.Save();
         }
 
