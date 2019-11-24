@@ -98,15 +98,7 @@ namespace Gnoj_HamView
         private void BtnDiscard_Click(object sender, RoutedEventArgs e)
         {
             _timer?.Stop();
-
-            TilePivot discard = (sender as Button).Tag as TilePivot;
-            if (_game.Round.Discard(discard))
-            {
-                FillHandPanel(_game.Round.PreviousPlayerIndex);
-                FillDiscardPanel(_game.Round.PreviousPlayerIndex);
-                SetActionButtonsVisibility();
-                AutoPlayAsync();
-            }
+            Discard((sender as Button).Tag as TilePivot);
         }
 
         private void BtnChiiChoice_Click(object sender, RoutedEventArgs e)
@@ -123,10 +115,6 @@ namespace Gnoj_HamView
                 FillDiscardPanel(_game.Round.PreviousPlayerIndex);
                 SetActionButtonsVisibility();
                 ActivateTimer(GetFirstAvailableDiscardButton());
-            }
-            else
-            {
-                throw new NotImplementedException();
             }
         }
 
@@ -145,11 +133,7 @@ namespace Gnoj_HamView
             {
                 // Note : this value is stored here because the call to "CallPon" makes it change.
                 int previousPlayerIndex = _game.Round.PreviousPlayerIndex;
-                if (!_game.Round.CallPon(GamePivot.HUMAN_INDEX))
-                {
-                    throw new NotImplementedException();
-                }
-                else
+                if (_game.Round.CallPon(GamePivot.HUMAN_INDEX))
                 {
                     PlayTickSound();
                     FillHandPanel(GamePivot.HUMAN_INDEX);
@@ -158,10 +142,6 @@ namespace Gnoj_HamView
                     SetActionButtonsVisibility();
                     ActivateTimer(GetFirstAvailableDiscardButton());
                 }
-            }
-            else
-            {
-                throw new NotImplementedException();
             }
         }
 
@@ -174,10 +154,6 @@ namespace Gnoj_HamView
             if (tileChoices.Keys.Count > 0)
             {
                 RestrictDiscardWithTilesSelection(tileChoices, BtnChiiChoice_Click);
-            }
-            else
-            {
-                throw new NotImplementedException();
             }
         }
 
@@ -197,10 +173,6 @@ namespace Gnoj_HamView
                     InnerKanCallProcess(null, _game.Round.PreviousPlayerIndex);
                 }
             }
-            else if (_game.Round.CompensationTiles.Count > 0)
-            {
-                throw new NotImplementedException();
-            }
         }
 
         private void BtnRiichiChoice_Click(object sender, RoutedEventArgs e)
@@ -215,10 +187,6 @@ namespace Gnoj_HamView
                 FillDiscardPanel(_game.Round.PreviousPlayerIndex);
                 SetActionButtonsVisibility();
                 AutoPlayAsync();
-            }
-            else
-            {
-                throw new NotImplementedException();
             }
         }
 
@@ -281,11 +249,7 @@ namespace Gnoj_HamView
         private void InnerKanCallProcess(TilePivot tile, int? previousPlayerIndex)
         {
             TilePivot compensationTile = _game.Round.CallKan(GamePivot.HUMAN_INDEX, tile);
-            if (compensationTile == null)
-            {
-                throw new NotImplementedException();
-            }
-            else if (CheckCallRonForEveryone())
+            if (CheckCallRonForEveryone())
             {
                 _game.Round.UndoPickCompensationTile();
                 NewRound(_game.Round.CurrentPlayerIndex);
@@ -545,6 +509,27 @@ namespace Gnoj_HamView
             }
         }
 
+        private void Discard(TilePivot tile)
+        {
+            if (_game.Round.Discard(tile))
+            {
+                if (!_game.Round.PreviousIsHumanPlayer)
+                {
+                    Thread.Sleep(_cpuSpeedMs);
+                }
+                Dispatcher.Invoke(() =>
+                {
+                    FillHandPanel(_game.Round.PreviousPlayerIndex);
+                    FillDiscardPanel(_game.Round.PreviousPlayerIndex);
+                    SetActionButtonsVisibility(cpuPlay: !_game.Round.PreviousIsHumanPlayer);
+                    if (_game.Round.PreviousIsHumanPlayer)
+                    {
+                        AutoPlayAsync();
+                    }
+                });
+            }
+        }
+
         #endregion General orchestration
 
         #region CPU actions
@@ -670,16 +655,7 @@ namespace Gnoj_HamView
         // Proceeds to discard for the current opponent.
         private void OpponentDiscard()
         {
-            if (_game.Round.Discard(_game.Round.IaManager.DiscardDecision()))
-            {
-                Thread.Sleep(_cpuSpeedMs);
-                Dispatcher.Invoke(() =>
-                {
-                    FillHandPanel(_game.Round.PreviousPlayerIndex);
-                    FillDiscardPanel(_game.Round.PreviousPlayerIndex);
-                    SetActionButtonsVisibility(cpuPlay: true);
-                });
-            }
+            Discard(_game.Round.IaManager.DiscardDecision());
         }
 
         // Proceeds to call riichi for the current opponent.

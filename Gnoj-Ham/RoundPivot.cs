@@ -160,6 +160,17 @@ namespace Gnoj_Ham
         }
 
         /// <summary>
+        /// Inferred; indicates if the previous player is the human player.
+        /// </summary>
+        public bool PreviousIsHumanPlayer
+        {
+            get
+            {
+                return PreviousPlayerIndex == GamePivot.HUMAN_INDEX;
+            }
+        }
+
+        /// <summary>
         /// Inferred; indicates the index of the player before <see cref="CurrentPlayerIndex"/>.
         /// </summary>
         public int PreviousPlayerIndex
