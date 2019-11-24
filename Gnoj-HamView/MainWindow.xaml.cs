@@ -156,16 +156,7 @@ namespace Gnoj_HamView
         private void BtnRiichiChoice_Click(object sender, RoutedEventArgs e)
         {
             _timer?.Stop();
-
-            Button button = sender as Button;
-
-            if (_game.Round.CallRiichi(GamePivot.HUMAN_INDEX, button.Tag as TilePivot))
-            {
-                FillHandPanel(_game.Round.PreviousPlayerIndex);
-                FillDiscardPanel(_game.Round.PreviousPlayerIndex);
-                SetActionButtonsVisibility();
-                AutoPlayAsync();
-            }
+            CallRiichi((sender as Button).Tag as TilePivot);
         }
 
         private void Window_MouseDoubleClick(object sender, MouseButtonEventArgs e)
@@ -575,7 +566,7 @@ namespace Gnoj_HamView
             }
         }
 
-        // Pick action (human or CPU)
+        // Pick action (human or CPU).
         private void Pick()
         {
             TilePivot pick = _game.Round.Pick();
@@ -595,6 +586,31 @@ namespace Gnoj_HamView
                     SetActionButtonsVisibility(preDiscard: true);
                 }
             });
+        }
+
+        // Riichi call action (human or CPU).
+        private void CallRiichi(TilePivot tile)
+        {
+            if (_game.Round.CallRiichi(_game.Round.CurrentPlayerIndex, tile))
+            {
+                if (!_game.Round.IsHumanPlayer)
+                {
+                    InvokeOverlay("Riichi", _game.Round.CurrentPlayerIndex);
+                    Thread.Sleep(_cpuSpeedMs);
+                }
+
+                Dispatcher.Invoke(() =>
+                {
+                    FillHandPanel(_game.Round.PreviousPlayerIndex);
+                    FillDiscardPanel(_game.Round.PreviousPlayerIndex);
+                    SetActionButtonsVisibility(cpuPlay: !_game.Round.IsHumanPlayer);
+                });
+
+                if (_game.Round.IsHumanPlayer)
+                {
+                    AutoPlayAsync();
+                }
+            }
         }
 
         #endregion General orchestration
@@ -658,27 +674,12 @@ namespace Gnoj_HamView
             TilePivot riichiTile = _game.Round.IaManager.RiichiDecision();
             if (riichiTile != null)
             {
-                OpponentCallRiichiAndDiscard(riichiTile);
+                CallRiichi(riichiTile);
                 return false;
             }
 
             Discard(_game.Round.IaManager.DiscardDecision());
             return false;
-        }
-
-        // Proceeds to call riichi for the current opponent.
-        private void OpponentCallRiichiAndDiscard(TilePivot riichiTile)
-        {
-            InvokeOverlay("Riichi", _game.Round.CurrentPlayerIndex);
-
-            _game.Round.CallRiichi(_game.Round.CurrentPlayerIndex, riichiTile);
-            Thread.Sleep(_cpuSpeedMs);
-            Dispatcher.Invoke(() =>
-            {
-                FillHandPanel(_game.Round.PreviousPlayerIndex);
-                FillDiscardPanel(_game.Round.PreviousPlayerIndex);
-                SetActionButtonsVisibility(cpuPlay: true);
-            });
         }
 
         #endregion CPU actions
