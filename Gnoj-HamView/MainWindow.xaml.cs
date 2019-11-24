@@ -120,20 +120,7 @@ namespace Gnoj_HamView
         {
             _timer?.Stop();
 
-            if (_game.Round.CanCallPon(GamePivot.HUMAN_INDEX))
-            {
-                // Note : this value is stored here because the call to "CallPon" makes it change.
-                int previousPlayerIndex = _game.Round.PreviousPlayerIndex;
-                if (_game.Round.CallPon(GamePivot.HUMAN_INDEX))
-                {
-                    PlayTickSound();
-                    FillHandPanel(GamePivot.HUMAN_INDEX);
-                    FillCombinationStack(GamePivot.HUMAN_INDEX);
-                    FillDiscardPanel(previousPlayerIndex);
-                    SetActionButtonsVisibility();
-                    ActivateTimer(GetFirstAvailableDiscardButton());
-                }
-            }
+            PonCall(GamePivot.HUMAN_INDEX);
         }
 
         private void BtnChii_Click(object sender, RoutedEventArgs e)
@@ -340,7 +327,7 @@ namespace Gnoj_HamView
                     int opponentPlayerId = _game.Round.IaManager.PonDecision();
                     if (opponentPlayerId > -1)
                     {
-                        OpponentCallPonAndDiscard(opponentPlayerId);
+                        PonCall(opponentPlayerId);
                         continue;
                     }
 
@@ -378,7 +365,7 @@ namespace Gnoj_HamView
                     }
                     else
                     {
-                        OpponentPick();
+                        Pick();
                         if (OpponentAfterPick(ref kanInProgress))
                         {
                             endOfRound = true;
@@ -417,15 +404,7 @@ namespace Gnoj_HamView
         {
             newRound = false;
 
-            TilePivot pick = _game.Round.Pick();
-
-            Dispatcher.Invoke(() =>
-            {
-                SetPlayersLed();
-                PlayTickSound();
-                StpPickP0.Children.Add(pick.GenerateTileButton(BtnDiscard_Click));
-                SetActionButtonsVisibility(preDiscard: true);
-            });
+            Pick();
 
             if (HumanCallTsumo(false))
             {
@@ -481,7 +460,7 @@ namespace Gnoj_HamView
                 buttonClickable.Click -= BtnDiscard_Click;
                 if (handler == BtnChiiChoice_Click)
                 {
-                    buttonClickable.Tag = tileChoices[tileKey];
+                    buttonClickable.Tag = new Tuple<TilePivot, bool>(tileKey, tileChoices[tileKey]);
                 }
                 clickableButtons.Add(buttonClickable);
             }
@@ -557,6 +536,67 @@ namespace Gnoj_HamView
             }
         }
 
+        // Pon call action (human or CPU).
+        private void PonCall(int playerIndex)
+        {
+            // Note : this value is stored here because the call to "CallPon" makes it change.
+            int previousPlayerIndex = _game.Round.PreviousPlayerIndex;
+            bool isCpu = playerIndex != GamePivot.HUMAN_INDEX;
+
+            if (_game.Round.CallPon(playerIndex))
+            {
+                if (isCpu)
+                {
+                    InvokeOverlay("Pon", playerIndex);
+                    Thread.Sleep(_cpuSpeedMs);
+                }
+
+                Dispatcher.Invoke(() =>
+                {
+                    if (isCpu)
+                    {
+                        SetPlayersLed();
+                    }
+                    PlayTickSound();
+                    FillHandPanel(playerIndex);
+                    FillCombinationStack(playerIndex);
+                    FillDiscardPanel(previousPlayerIndex);
+                    SetActionButtonsVisibility(cpuPlay: isCpu);
+                    if (!isCpu)
+                    {
+                        ActivateTimer(GetFirstAvailableDiscardButton());
+                    }
+                });
+
+                if (isCpu)
+                {
+                    Discard(_game.Round.IaManager.DiscardDecision());
+                }
+            }
+        }
+
+        // Pick action (human or CPU)
+        private void Pick()
+        {
+            TilePivot pick = _game.Round.Pick();
+            Dispatcher.Invoke(() =>
+            {
+                SetPlayersLed();
+                PlayTickSound();
+                (FindName($"StpPickP{_game.Round.CurrentPlayerIndex}") as StackPanel).Children.Add(
+                    pick.GenerateTileButton(
+                        _game.Round.IsHumanPlayer ? BtnDiscard_Click : (RoutedEventHandler)null,
+                        (AnglePivot)_game.Round.CurrentPlayerIndex,
+                        !_game.Round.IsHumanPlayer && !_debugMode
+                    )
+                );
+                if (_game.Round.IsHumanPlayer)
+                {
+                    SetActionButtonsVisibility(preDiscard: true);
+                }
+            });
+        }
+
         #endregion General orchestration
 
         #region CPU actions
@@ -577,40 +617,6 @@ namespace Gnoj_HamView
                 SetActionButtonsVisibility(cpuPlay: true);
                 StpDoras.SetDorasPanel(_game.Round.DoraIndicatorTiles, _game.Round.VisibleDorasCount);
             });
-        }
-
-        // Proceeds to pick for the current opponent.
-        private void OpponentPick()
-        {
-            TilePivot pick = _game.Round.Pick();
-            Dispatcher.Invoke(() =>
-            {
-                SetPlayersLed();
-                PlayTickSound();
-                int i = _game.Round.CurrentPlayerIndex;
-                (FindName($"StpPickP{i}") as StackPanel).Children.Add(pick.GenerateTileButton(null, (AnglePivot)i, !_debugMode));
-            });
-        }
-
-        // Proceeds to call pon then discard for an opponent.
-        private void OpponentCallPonAndDiscard(int opponentPlayerId)
-        {
-            InvokeOverlay("Pon", opponentPlayerId);
-
-            // Note : this value is stored here because the call to "CallPon" makes it change.
-            int previousPlayerIndex = _game.Round.PreviousPlayerIndex;
-            _game.Round.CallPon(opponentPlayerId);
-            Thread.Sleep(_cpuSpeedMs);
-            Dispatcher.Invoke(() =>
-            {
-                SetPlayersLed();
-                PlayTickSound();
-                FillHandPanel(opponentPlayerId);
-                FillCombinationStack(opponentPlayerId);
-                FillDiscardPanel(previousPlayerIndex);
-                SetActionButtonsVisibility(cpuPlay: true);
-            });
-            Discard(_game.Round.IaManager.DiscardDecision());
         }
 
         // Proceeds to call a kan for an opponent.
