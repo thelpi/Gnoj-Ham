@@ -105,17 +105,8 @@ namespace Gnoj_HamView
         {
             _timer?.Stop();
 
-            KeyValuePair<TilePivot, bool> tag = (KeyValuePair<TilePivot, bool>)((sender as Button).Tag);
-
-            if (_game.Round.CallChii(GamePivot.HUMAN_INDEX, tag.Value ? tag.Key.Number - 1 : tag.Key.Number))
-            {
-                PlayTickSound();
-                FillHandPanel(_game.Round.CurrentPlayerIndex);
-                FillCombinationStack(GamePivot.HUMAN_INDEX);
-                FillDiscardPanel(_game.Round.PreviousPlayerIndex);
-                SetActionButtonsVisibility();
-                ActivateTimer(GetFirstAvailableDiscardButton());
-            }
+            Tuple<TilePivot, bool> tag = (Tuple<TilePivot, bool>)((sender as Button).Tag);
+            ChiiCall(tag);
         }
 
         private void BtnKanChoice_Click(object sender, RoutedEventArgs e)
@@ -361,7 +352,7 @@ namespace Gnoj_HamView
                     Tuple<TilePivot, bool> chiiTilePick = _game.Round.IaManager.ChiiDecision();
                     if (chiiTilePick != null)
                     {
-                        OpponentCallChiiAndDiscard(chiiTilePick);
+                        ChiiCall(chiiTilePick);
                         continue;
                     }
 
@@ -482,15 +473,15 @@ namespace Gnoj_HamView
             }
 
             var clickableButtons = new List<Button>();
-            foreach (KeyValuePair<TilePivot, bool> tileKvp in tileChoices)
+            foreach (TilePivot tileKey in tileChoices.Keys)
             {
                 // Changes the event of every buttons concerned by the call...
-                Button buttonClickable = buttons.First(b => b.Tag as TilePivot == tileKvp.Key);
+                Button buttonClickable = buttons.First(b => b.Tag as TilePivot == tileKey);
                 buttonClickable.Click += handler;
                 buttonClickable.Click -= BtnDiscard_Click;
                 if (handler == BtnChiiChoice_Click)
                 {
-                    buttonClickable.Tag = tileKvp;
+                    buttonClickable.Tag = tileChoices[tileKey];
                 }
                 clickableButtons.Add(buttonClickable);
             }
@@ -509,6 +500,7 @@ namespace Gnoj_HamView
             }
         }
 
+        // Discard action (human or CPU).
         private void Discard(TilePivot tile)
         {
             if (_game.Round.Discard(tile))
@@ -527,6 +519,41 @@ namespace Gnoj_HamView
                         AutoPlayAsync();
                     }
                 });
+            }
+        }
+
+        // Chii call action (human or CPU).
+        private void ChiiCall(Tuple<TilePivot, bool> chiiTilePick)
+        {
+            if (_game.Round.CallChii(_game.Round.CurrentPlayerIndex, chiiTilePick.Item2 ? chiiTilePick.Item1.Number - 1 : chiiTilePick.Item1.Number))
+            {
+                if (!_game.Round.IsHumanPlayer)
+                {
+                    InvokeOverlay("Chii", _game.Round.CurrentPlayerIndex);
+                    Thread.Sleep(_cpuSpeedMs);
+                }
+
+                Dispatcher.Invoke(() =>
+                {
+                    PlayTickSound();
+                    FillHandPanel(_game.Round.CurrentPlayerIndex);
+                    FillCombinationStack(_game.Round.CurrentPlayerIndex);
+                    FillDiscardPanel(_game.Round.PreviousPlayerIndex);
+                    SetActionButtonsVisibility(cpuPlay: !_game.Round.IsHumanPlayer);
+                    if (_game.Round.IsHumanPlayer)
+                    {
+                        ActivateTimer(GetFirstAvailableDiscardButton());
+                    }
+                    else
+                    {
+                        SetPlayersLed();
+                    }
+                });
+
+                if (!_game.Round.IsHumanPlayer)
+                {
+                    Discard(_game.Round.IaManager.DiscardDecision());
+                }
             }
         }
 
@@ -565,25 +592,6 @@ namespace Gnoj_HamView
             });
         }
 
-        // Proceeds to call chii then discard for the current opponent.
-        private void OpponentCallChiiAndDiscard(Tuple<TilePivot, bool> chiiTilePick)
-        {
-            InvokeOverlay("Chii", _game.Round.CurrentPlayerIndex);
-
-            _game.Round.CallChii(_game.Round.CurrentPlayerIndex, chiiTilePick.Item2 ? chiiTilePick.Item1.Number - 1 : chiiTilePick.Item1.Number);
-            Thread.Sleep(_cpuSpeedMs);
-            Dispatcher.Invoke(() =>
-            {
-                SetPlayersLed();
-                PlayTickSound();
-                FillHandPanel(_game.Round.CurrentPlayerIndex);
-                FillCombinationStack(_game.Round.CurrentPlayerIndex);
-                FillDiscardPanel(_game.Round.PreviousPlayerIndex);
-                SetActionButtonsVisibility(cpuPlay: true);
-            });
-            OpponentDiscard();
-        }
-
         // Proceeds to call pon then discard for an opponent.
         private void OpponentCallPonAndDiscard(int opponentPlayerId)
         {
@@ -602,7 +610,7 @@ namespace Gnoj_HamView
                 FillDiscardPanel(previousPlayerIndex);
                 SetActionButtonsVisibility(cpuPlay: true);
             });
-            OpponentDiscard();
+            Discard(_game.Round.IaManager.DiscardDecision());
         }
 
         // Proceeds to call a kan for an opponent.
@@ -648,14 +656,8 @@ namespace Gnoj_HamView
                 return false;
             }
 
-            OpponentDiscard();
-            return false;
-        }
-
-        // Proceeds to discard for the current opponent.
-        private void OpponentDiscard()
-        {
             Discard(_game.Round.IaManager.DiscardDecision());
+            return false;
         }
 
         // Proceeds to call riichi for the current opponent.
@@ -859,16 +861,16 @@ namespace Gnoj_HamView
             WindPivot pWind = _game.GetPlayerCurrentWind(pIndex);
 
             int i = 0;
-            List<KeyValuePair<TilePivot, bool>> tilesKvp = combo.GetSortedTilesForDisplay(pWind);
+            List<Tuple<TilePivot, bool>> tileTuples = combo.GetSortedTilesForDisplay(pWind);
             if (pIndex > 0 && pIndex < 3)
             {
-                tilesKvp.Reverse();
+                tileTuples.Reverse();
             }
 
-            foreach (KeyValuePair<TilePivot, bool> tileKvp in tilesKvp)
+            foreach (Tuple<TilePivot, bool> tileTuple in tileTuples)
             {
-                panel.Children.Add(tileKvp.Key.GenerateTileButton(null,
-                    (AnglePivot)(tileKvp.Value ? pIndex.RelativePlayerIndex(1) : pIndex),
+                panel.Children.Add(tileTuple.Item1.GenerateTileButton(null,
+                    (AnglePivot)(tileTuple.Item2 ? pIndex.RelativePlayerIndex(1) : pIndex),
                     combo.IsConcealedDisplay(i)));
                 i++;
             }

@@ -395,16 +395,16 @@ namespace Gnoj_Ham
         }
 
         // Gets the tile corresponding to the specified wind in the purpose to create a sorted list for display.
-        private KeyValuePair<TilePivot, bool> GetTileForSortedListAtSpecifiedWind(WindPivot wind, List<TilePivot> concealedOnly, ref int i)
+        private Tuple<TilePivot, bool> GetTileForSortedListAtSpecifiedWind(WindPivot wind, List<TilePivot> concealedOnly, ref int i)
         {
             if (wind == StolenFrom.Value)
             {
-                return new KeyValuePair<TilePivot, bool>(OpenTile, true);
+                return new Tuple<TilePivot, bool>(OpenTile, true);
             }
             else
             {
                 i++;
-                return new KeyValuePair<TilePivot, bool>(concealedOnly[i - 1], false);
+                return new Tuple<TilePivot, bool>(concealedOnly[i - 1], false);
             }
         }
 
@@ -466,12 +466,12 @@ namespace Gnoj_Ham
         /// Gets the list of tiles from the combination, sorted by wind logic for display.
         /// </summary>
         /// <param name="ownerWind">The current wind of the owner.</param>
-        /// <returns>List of tiles; value is <c>True</c> when the tile is the opened one.</returns>
-        public List<KeyValuePair<TilePivot, bool>> GetSortedTilesForDisplay(WindPivot ownerWind)
+        /// <returns>List of tiles tuple; the second item is <c>True</c> when the tile is the opened one.</returns>
+        public List<Tuple<TilePivot, bool>> GetSortedTilesForDisplay(WindPivot ownerWind)
         {
             if (!StolenFrom.HasValue)
             {
-                return Tiles.Select(t => new KeyValuePair<TilePivot, bool>(t, false)).ToList();
+                return Tiles.Select(t => new Tuple<TilePivot, bool>(t, false)).ToList();
             }
 
             var concealedOnly = new List<TilePivot>(_tiles);
@@ -479,7 +479,7 @@ namespace Gnoj_Ham
 
             int i = 0;
 
-            var tiles = new List<KeyValuePair<TilePivot, bool>>
+            var tiles = new List<Tuple<TilePivot, bool>>
             {
                 GetTileForSortedListAtSpecifiedWind(ownerWind.Left(), concealedOnly, ref i),
                 GetTileForSortedListAtSpecifiedWind(ownerWind.Opposite(), concealedOnly, ref i)
@@ -488,7 +488,7 @@ namespace Gnoj_Ham
             // For a square, the third tile is never from an opponent.
             if (IsSquare)
             {
-                tiles.Add(new KeyValuePair<TilePivot, bool>(concealedOnly[i], false));
+                tiles.Add(new Tuple<TilePivot, bool>(concealedOnly[i], false));
                 i++;
             }
 
