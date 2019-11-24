@@ -1008,7 +1008,7 @@ namespace Gnoj_Ham
         internal EndOfRoundInformationsPivot EndOfRound(int? ronPlayerIndex)
         {
             bool turnWind = false;
-            bool resetsRiichiCount = false;
+            bool ryuukyoku = true;
             bool displayUraDoraTiles = false;
 
             List<int> winners = _hands.Where(h => h.IsComplete).Select(w => _hands.IndexOf(w)).ToList();
@@ -1035,17 +1035,29 @@ namespace Gnoj_Ham
 
                 Tuple<int, int> points = ScoreTools.GetRyuukyokuPoints(tenpaiPlayersIndex.Count);
 
-                tenpaiPlayersIndex.ForEach(i => playerInfos.Add(new EndOfRoundInformationsPivot.PlayerInformationsPivot(i, 0, 0, _hands[i], points.Item1, 0, 0, 0)));
+                tenpaiPlayersIndex.ForEach(i => playerInfos.Add(new EndOfRoundInformationsPivot.PlayerInformationsPivot(i, 0, 0, _hands[i], points.Item1, 0, 0, 0, points.Item1)));
                 notTenpaiPlayersIndex.ForEach(i => playerInfos.Add(new EndOfRoundInformationsPivot.PlayerInformationsPivot(i, points.Item2)));
             }
             else
             {
                 turnWind = !winners.Any(w => Game.GetPlayerCurrentWind(w) == WindPivot.East);
 
-                // TODO : Sekinin barai
+                // Why this list ? Consider the following :
+                // - Player 1 and 2 ron on player 3
+                // - Player 1 is "Daisangen"
+                // - Player 2 is "Daisuushii"
+                // - Player 4 is liable for player 1
+                // - Player 1 is liable for player 2
+                // In that case :
+                // - P1 pays half of P2 yakuman
+                // - P4 pays half of P1 yakuman
+                // - P3 pays half of both yakuman
+                var liablePlayersLost = new Dictionary<int, int>();
 
+                // These two are negative points.
                 int eastOrLoserLostCumul = 0;
                 int notEastLostCumul = 0;
+
                 foreach (int pIndex in winners)
                 {
                     HandPivot phand = _hands[pIndex];
@@ -1054,6 +1066,20 @@ namespace Gnoj_Ham
                     if (ronPlayerIndex.HasValue)
                     {
                         phand.SetFromRon(_discards[ronPlayerIndex.Value].Last());
+                    }
+
+                    int? liablePlayerId = null;
+                    if (phand.Yakus.Contains(YakuPivot.Daisangen)
+                        && phand.DeclaredCombinations.Count(c => c.Family == FamilyPivot.Dragon) == 3
+                        && phand.DeclaredCombinations.Last(c => c.Family == FamilyPivot.Dragon).StolenFrom.HasValue)
+                    {
+                        liablePlayerId = Game.GetPlayerIndexByCurrentWind(phand.DeclaredCombinations.Last(c => c.Family == FamilyPivot.Dragon).StolenFrom.Value);
+                    }
+                    else if (phand.Yakus.Contains(YakuPivot.Daisuushii)
+                        && phand.DeclaredCombinations.Count(c => c.Family == FamilyPivot.Wind) == 4
+                        && phand.DeclaredCombinations.Last(c => c.Family == FamilyPivot.Wind).StolenFrom.HasValue)
+                    {
+                        liablePlayerId = Game.GetPlayerIndexByCurrentWind(phand.DeclaredCombinations.Last(c => c.Family == FamilyPivot.Wind).StolenFrom.Value);
                     }
 
                     bool isRiichi = phand.Yakus.Contains(YakuPivot.Riichi) || phand.Yakus.Contains(YakuPivot.DaburuRiichi);
@@ -1070,22 +1096,95 @@ namespace Gnoj_Ham
                     int fanCount = ScoreTools.GetFanCount(phand.Yakus, phand.IsConcealed, dorasCount, uraDorasCount, redDorasCount);
                     int fuCount = ScoreTools.GetFuCount(phand, !ronPlayerIndex.HasValue, Game.DominantWind, Game.GetPlayerCurrentWind(pIndex));
 
-                    Tuple<int, int> finalScore = ScoreTools.GetPoints(fanCount, fuCount, Game.EastIndexTurnCount - 1, winners.Count,
+                    if (liablePlayerId.HasValue)
+                    {
+                        if (!ronPlayerIndex.HasValue)
+                        {
+                            // Sekinin barai : transforms the tsumo into a ron on the liable player.
+                            ronPlayerIndex = liablePlayerId;
+                            liablePlayerId = null;
+                        }
+                        else if (ronPlayerIndex.Value == liablePlayerId.Value)
+                        {
+                            // Sekinin barai : no consequence as ron player and liable player are the same.
+                            liablePlayerId = null;
+                        }
+                    }
+
+                    Tuple<int, int> finalScore = ScoreTools.GetPoints(fanCount, fuCount, winners.Count,
                         !ronPlayerIndex.HasValue, Game.GetPlayerCurrentWind(pIndex));
 
-                    // TODO: if RiichiPendingCount si not a multiple of 3, and there're three winners, it doesn't work well !
-                    int riichiPart = Game.PendingRiichiCount * ScoreTools.RIICHI_COST / winners.Count;
+                    int basePoints = finalScore.Item1 + finalScore.Item2 * 2;
 
+                    int riichiPart = Game.PendingRiichiCount * ScoreTools.RIICHI_COST;
+
+                    int honbaPoints = ScoreTools.GetHonbaPoints(Game.EastIndexTurnCount - 1, winners.Count, !ronPlayerIndex.HasValue);
+
+                    // In case of ron with multiple winners, only the one who comes right next to "ronPlayerIndex" takes the stack of riichi.
+                    if (winners.Count > 0)
+                    {
+                        for (int i = 1; i <= 3; i++)
+                        {
+                            int nextPlayerId = ronPlayerIndex.Value.RelativePlayerIndex(i);
+                            if (winners.Contains(nextPlayerId) && pIndex != nextPlayerId)
+                            {
+                                riichiPart = 0;
+                            }
+                        }
+                    }
+                    
                     playerInfos.Add(new EndOfRoundInformationsPivot.PlayerInformationsPivot(
-                        pIndex, fanCount, fuCount, phand,
-                        finalScore.Item1 + finalScore.Item2 * 2 + riichiPart,
-                        dorasCount, uraDorasCount, redDorasCount));
+                        pIndex, fanCount, fuCount, phand, basePoints + riichiPart + honbaPoints,
+                        dorasCount, uraDorasCount, redDorasCount, basePoints));
 
-                    eastOrLoserLostCumul -= finalScore.Item1;
                     notEastLostCumul -= finalScore.Item2;
+
+                    // If there's is a liable player (only in a case of ron on other player than the one liable)...
+                    if (liablePlayerId.HasValue)
+                    {
+                        if (!liablePlayersLost.ContainsKey(liablePlayerId.Value))
+                        {
+                            liablePlayersLost.Add(liablePlayerId.Value, 0);
+                        }
+                        // ... he takes half of the points from the ron player for this hand.
+                        eastOrLoserLostCumul -= finalScore.Item1 / 2;
+                        liablePlayersLost[liablePlayerId.Value] -= finalScore.Item1 / 2;
+                    }
+                    else
+                    {
+                        // Otherwise, the ron player takes all.
+                        eastOrLoserLostCumul -= finalScore.Item1;
+                    }
                 }
 
-                if (ronPlayerIndex.HasValue)
+                // Note : "liablePlayersLost" is empty in case of tsumo transformed into ron.
+                if (liablePlayersLost.Count > 0)
+                {
+                    int pointsNotOnRonPlayer = 0;
+                    foreach (int liablePlayerId in liablePlayersLost.Keys)
+                    {
+                        pointsNotOnRonPlayer += (liablePlayerId != ronPlayerIndex.Value ? liablePlayersLost[liablePlayerId] : 0);
+                        if (playerInfos.Any(pi => pi.Index == liablePlayerId))
+                        {
+                            playerInfos.First(pi => pi.Index == liablePlayerId).AddPoints(liablePlayersLost[liablePlayerId]);
+                        }
+                        else
+                        {
+                            playerInfos.Add(new EndOfRoundInformationsPivot.PlayerInformationsPivot(
+                                liablePlayerId, liablePlayersLost[liablePlayerId]));
+                        }
+                    }
+                    if (playerInfos.Any(pi => pi.Index == ronPlayerIndex.Value))
+                    {
+                        playerInfos.First(pi => pi.Index == ronPlayerIndex.Value).AddPoints(-pointsNotOnRonPlayer);
+                    }
+                    else
+                    {
+                        playerInfos.Add(new EndOfRoundInformationsPivot.PlayerInformationsPivot(
+                            ronPlayerIndex.Value, eastOrLoserLostCumul - pointsNotOnRonPlayer));
+                    }
+                }
+                else if (ronPlayerIndex.HasValue)
                 {
                     playerInfos.Add(new EndOfRoundInformationsPivot.PlayerInformationsPivot(ronPlayerIndex.Value, eastOrLoserLostCumul));
                 }
@@ -1100,7 +1199,7 @@ namespace Gnoj_Ham
                     }
                 }
 
-                resetsRiichiCount = true;
+                ryuukyoku = false;
             }
             
             foreach (EndOfRoundInformationsPivot.PlayerInformationsPivot p in playerInfos)
@@ -1108,7 +1207,7 @@ namespace Gnoj_Ham
                 Game.Players.ElementAt(p.Index).AddPoints(p.PointsGain);
             }
 
-            return new EndOfRoundInformationsPivot(resetsRiichiCount, turnWind, displayUraDoraTiles, playerInfos, Game.EastIndexTurnCount - 1,
+            return new EndOfRoundInformationsPivot(ryuukyoku, turnWind, displayUraDoraTiles, playerInfos, Game.EastIndexTurnCount - 1,
                 Game.PendingRiichiCount, DoraIndicatorTiles, UraDoraIndicatorTiles, VisibleDorasCount);
         }
 

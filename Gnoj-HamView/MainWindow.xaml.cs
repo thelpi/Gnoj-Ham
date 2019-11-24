@@ -32,6 +32,7 @@ namespace Gnoj_HamView
         /// </summary>
         /// <param name="playerName">Human player name.</param>
         /// <param name="pointRule">Indicates the initial points count for every players.</param>
+        /// <param name="endOfGameRule">The ruel to end a game.</param>
         /// <param name="useRedDoras">Indicates if red doras should be used.</param>
         /// <param name="cpuSpeed">CPU speed.</param>
         /// <param name="autoTsumoRon">Auto call for tsumo and ron.</param>
@@ -41,12 +42,12 @@ namespace Gnoj_HamView
         /// <param name="useNagashiMangan"><c>True</c> to use the yaku 'Nagashi Mangan'.</param>
         /// <param name="useRenhou"><c>True</c> to use the yakuman 'Renhou'.</param>
         /// <param name="sounds"><c>True</c> to activate sounds.</param>
-        public MainWindow(string playerName, InitialPointsRulePivot pointRule, bool useRedDoras, CpuSpeedPivot cpuSpeed, bool autoTsumoRon,
-            bool riichiAutoDiscard, bool debugMode, bool sortedDraw, bool useNagashiMangan, bool useRenhou, bool sounds)
+        public MainWindow(string playerName, InitialPointsRulePivot pointRule, EndOfGameRulePivot endOfGameRule, bool useRedDoras, CpuSpeedPivot cpuSpeed,
+            bool autoTsumoRon, bool riichiAutoDiscard, bool debugMode, bool sortedDraw, bool useNagashiMangan, bool useRenhou, bool sounds)
         {
             InitializeComponent();
             
-            _game = new GamePivot(playerName, pointRule, useRedDoras, sortedDraw, useNagashiMangan, useRenhou);
+            _game = new GamePivot(playerName, pointRule, endOfGameRule, useRedDoras, sortedDraw, useNagashiMangan, useRenhou);
             _cpuSpeedMs = cpuSpeed.ParseSpeed();
             _autoTsumoRon = autoTsumoRon;
             _riichiAutoDiscard = riichiAutoDiscard;

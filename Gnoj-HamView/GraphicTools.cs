@@ -210,7 +210,7 @@ namespace Gnoj_HamView
             var gainLbl = new Label
             {
                 VerticalAlignment = VerticalAlignment.Center,
-                Content = p.PointsGain,
+                Content = p.HandPointsGain,
                 Foreground = System.Windows.Media.Brushes.Red
             };
             gainLbl.SetValue(Grid.RowProperty, 0);

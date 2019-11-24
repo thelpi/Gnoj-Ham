@@ -160,5 +160,25 @@ namespace Gnoj_Ham
 
             return newIndex;
         }
+
+        /// <summary>
+        /// Extension; checks if a <see cref="EndOfGameRulePivot"/> applies "Tobi" or not.
+        /// </summary>
+        /// <param name="endOfGameRule">The <see cref="EndOfGameRulePivot"/> to check.</param>
+        /// <returns><c>True</c> if applies rule; <c>False</c> otherwise.</returns>
+        internal static bool TobiRuleApply(this EndOfGameRulePivot endOfGameRule)
+        {
+            return endOfGameRule == EndOfGameRulePivot.Tobi || endOfGameRule == EndOfGameRulePivot.EnchousenAndTobi;
+        }
+
+        /// <summary>
+        /// Extension; checks if a <see cref="EndOfGameRulePivot"/> applies "Enchousen" or not.
+        /// </summary>
+        /// <param name="endOfGameRule">The <see cref="EndOfGameRulePivot"/> to check.</param>
+        /// <returns><c>True</c> if applies rule; <c>False</c> otherwise.</returns>
+        internal static bool EnchousenRuleApply(this EndOfGameRulePivot endOfGameRule)
+        {
+            return endOfGameRule == EndOfGameRulePivot.Enchousen || endOfGameRule == EndOfGameRulePivot.EnchousenAndTobi;
+        }
     }
 }

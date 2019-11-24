@@ -59,6 +59,7 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="AnglePivot.cs" />
+    <Compile Include="Converters\EndOfGameRuleConverter.cs" />
     <Compile Include="GraphicTools.cs" />
     <Compile Include="ScoreWindow.xaml.cs">
       <DependentUpon>ScoreWindow.xaml</DependentUpon>

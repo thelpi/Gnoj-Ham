@@ -52,6 +52,7 @@ namespace Gnoj_HamView
             if (_game != null)
             {
                 CbbPointsRule.IsEnabled = false;
+                CbbEndOfGameRule.IsEnabled = false;
                 BtnStart.Content = "Resume";
                 BtnQuit.Content = "Cancel";
             }
@@ -85,6 +86,7 @@ namespace Gnoj_HamView
                 new MainWindow(
                     TxtPlayerName.Text,
                     (InitialPointsRulePivot)CbbPointsRule.SelectedIndex,
+                    (EndOfGameRulePivot)CbbEndOfGameRule.SelectedIndex,
                     ChkUseRedDoras.IsChecked == true,
                     CpuSpeed,
                     AutoTsumoRon,
@@ -123,6 +125,7 @@ namespace Gnoj_HamView
         {
             CbbCpuSpeed.SelectedIndex = Settings.Default.DefaultCpuSpeed;
             CbbPointsRule.SelectedIndex = Settings.Default.DefaultPointsRule;
+            CbbEndOfGameRule.SelectedIndex = Settings.Default.DefaultEndOfGameRule;
             TxtPlayerName.Text = Settings.Default.DefaultPlayerName;
             ChkUseRedDoras.IsChecked = Settings.Default.DefaultUseRedDoras;
             ChkAutoTsumoRon.IsChecked = Settings.Default.DefaultAutoTsumoRon;
@@ -138,6 +141,7 @@ namespace Gnoj_HamView
         {
             Settings.Default.DefaultCpuSpeed = (int)CpuSpeed;
             Settings.Default.DefaultPointsRule = CbbPointsRule.SelectedIndex;
+            Settings.Default.DefaultEndOfGameRule = CbbEndOfGameRule.SelectedIndex;
             Settings.Default.DefaultPlayerName = TxtPlayerName.Text;
             Settings.Default.DefaultUseRedDoras = ChkUseRedDoras.IsChecked == true;
             Settings.Default.DefaultAutoTsumoRon = AutoTsumoRon;

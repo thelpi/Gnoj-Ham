@@ -14,8 +14,10 @@
     <Window.Resources>
         <cvt:CpuSpeedConverter x:Key="CpuSpeedConverter" />
         <cvt:InitialPointsRuleConverter x:Key="InitialPointsRuleConverter" />
+        <cvt:EndOfGameRuleConverter x:Key="EndOfGameRuleConverter" />
         <view:CpuSpeedPivot x:Key="CpuSpeedEnum" />
         <lib:InitialPointsRulePivot x:Key="InitialPointsRuleEnum" />
+        <lib:EndOfGameRulePivot x:Key="EndOfGameRuleEnum" />
     </Window.Resources>
     <DockPanel Margin="5">
         <StackPanel DockPanel.Dock="Bottom" Margin="0, 10, 0, 0" Orientation="Horizontal" HorizontalAlignment="Right">
@@ -59,15 +61,18 @@
                         <RowDefinition Height="30" />
                         <RowDefinition Height="30" />
                         <RowDefinition Height="30" />
+                        <RowDefinition Height="30" />
                     </Grid.RowDefinitions>
                     <Label Grid.Column="0" Grid.Row="0" HorizontalContentAlignment="Right" VerticalContentAlignment="Center" Content="Use red doras" />
                     <Label Grid.Column="0" Grid.Row="1" HorizontalContentAlignment="Right" VerticalContentAlignment="Center" Content="Initial points count" />
                     <Label Grid.Column="0" Grid.Row="2" HorizontalContentAlignment="Right" VerticalContentAlignment="Center" Content="Use nagashi mangan" />
                     <Label Grid.Column="0" Grid.Row="3" HorizontalContentAlignment="Right" VerticalContentAlignment="Center" Content="Use renhou" />
+                    <Label Grid.Column="0" Grid.Row="4" HorizontalContentAlignment="Right" VerticalContentAlignment="Center" Content="End of game rule" />
                     <CheckBox Margin="5, 0, 0, 0" Grid.Column="1" Grid.Row="0" Name="ChkUseRedDoras" VerticalAlignment="Center" />
                     <ComboBox Margin="5, 0, 0, 0" Grid.Column="1" Grid.Row="1" Name="CbbPointsRule" Height="25" VerticalContentAlignment="Center" ItemsSource="{Binding Source={StaticResource InitialPointsRuleEnum}, Converter={StaticResource InitialPointsRuleConverter}}" />
                     <CheckBox Margin="5, 0, 0, 0" Grid.Column="1" Grid.Row="2" Name="ChkUseNagashiMangan" VerticalAlignment="Center" />
                     <CheckBox Margin="5, 0, 0, 0" Grid.Column="1" Grid.Row="3" Name="ChkUseRenhou" VerticalAlignment="Center" />
+                    <ComboBox Margin="5, 0, 0, 0" Grid.Column="1" Grid.Row="4" Name="CbbEndOfGameRule" Height="25" VerticalContentAlignment="Center" ItemsSource="{Binding Source={StaticResource EndOfGameRuleEnum}, Converter={StaticResource EndOfGameRuleConverter}}" />
                 </Grid>
             </GroupBox>
             <GroupBox Padding="5" Header="Debug" Margin="0, 10, 0, 0">

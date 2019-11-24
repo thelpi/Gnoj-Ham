@@ -154,5 +154,17 @@ namespace Gnoj_HamView.Properties {
                 this["DefaultSounds"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("1")]
+        public int DefaultEndOfGameRule {
+            get {
+                return ((int)(this["DefaultEndOfGameRule"]));
+            }
+            set {
+                this["DefaultEndOfGameRule"] = value;
+            }
+        }
     }
 }

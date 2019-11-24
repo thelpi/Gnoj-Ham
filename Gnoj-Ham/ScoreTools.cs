@@ -222,11 +222,10 @@ namespace Gnoj_Ham
         }
 
         /// <summary>
-        /// Computes the number of points for a winner.
+        /// Computes the number of points for a winner, without honba and riichi pending count.
         /// </summary>
         /// <param name="fanCount">Fan count.</param>
         /// <param name="fuCount">Fu count.</param>
-        /// <param name="honbaCount">Honba count.</param>
         /// <param name="winnerPlayersCount">Number of winners (divide <paramref name="honbaCount"/>).</param>
         /// <param name="isTsumo"><c>True</c> if win by tsumo; <c>False</c> otherwise.</param>
         /// <param name="playerWind">The current player wind.</param>
@@ -235,7 +234,7 @@ namespace Gnoj_Ham
         /// - Number of points lost by the two other players.
         /// </returns>
         /// <exception cref="ArgumentException"><see cref="Messages.TooManyWinners"/></exception>
-        public static Tuple<int, int> GetPoints(int fanCount, int fuCount, int honbaCount, int winnerPlayersCount, bool isTsumo, WindPivot playerWind)
+        public static Tuple<int, int> GetPoints(int fanCount, int fuCount, int winnerPlayersCount, bool isTsumo, WindPivot playerWind)
         {
             if (winnerPlayersCount > 1 && isTsumo)
             {
@@ -300,20 +299,30 @@ namespace Gnoj_Ham
                 }
             }
 
-            if (honbaCount > 0)
+            return new Tuple<int, int>(v1, v2);
+        }
+
+        /// <summary>
+        /// Comptues honba points.
+        /// </summary>
+        /// <param name="honbaCount">Honba count.</param>
+        /// <param name="winnerPlayersCount">Winners count.</param>
+        /// <param name="isTsumo">Winner is tsumo.</param>
+        /// <returns>Honba points.</returns>
+        /// <exception cref="ArgumentOutOfRangeException"><paramref name="winnerPlayersCount"/> should be greater than <c>0</c> if <paramref name="isTsumo"/> is <c>False</c>.</exception>
+        public static int GetHonbaPoints(int honbaCount, int winnerPlayersCount, bool isTsumo)
+        {
+            if (winnerPlayersCount < 1 && !isTsumo)
             {
-                if (isTsumo)
-                {
-                    v1 += (honbaCount * HONBA_VALUE) / 3;
-                    v2 += (honbaCount * HONBA_VALUE) / 3;
-                }
-                else
-                {
-                    v1 += (honbaCount * HONBA_VALUE) / winnerPlayersCount;
-                }
+                throw new ArgumentOutOfRangeException(nameof(winnerPlayersCount));
             }
 
-            return new Tuple<int, int>(v1, v2);
+            if (honbaCount > 0)
+            {
+                return (honbaCount * HONBA_VALUE) / (isTsumo ? 3 : winnerPlayersCount);
+            }
+
+            return 0;
         }
     }
 }

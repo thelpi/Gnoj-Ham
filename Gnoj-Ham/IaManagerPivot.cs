@@ -241,7 +241,7 @@ namespace Gnoj_Ham
                     }
                     else
                     {
-                        // TODO : implements some decision logic here.
+                        // Same code as the "if" statement : expected for now.
                         callers.Add(i);
                     }
                 }

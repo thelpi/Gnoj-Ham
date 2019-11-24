@@ -72,6 +72,14 @@ namespace Gnoj_Ham
         /// Indicates if the yakuman <see cref="YakuPivot.Renhou"/> is used or not.
         /// </summary>
         public bool UseRenhou { get; private set; }
+        /// <summary>
+        /// The rule to check end of the game.
+        /// </summary>
+        public EndOfGameRulePivot EndOfGameRule { get; private set; }
+        /// <summary>
+        /// The rule for players initial points.
+        /// </summary>
+        public InitialPointsRulePivot InitialPointsRule { get; private set; }
 
         #endregion Embedded properties
 
@@ -117,15 +125,18 @@ namespace Gnoj_Ham
         /// Constructor.
         /// </summary>
         /// <param name="humanPlayerName">The name of the human player; other players will be <see cref="PlayerPivot.IsCpu"/>.</param>
-        /// <param name="initialPointsRule">The rule for initial points count.</param>
+        /// <param name="initialPointsRule">The <see cref="InitialPointsRule"/> value.</param>
+        /// <param name="endOfGameRule">The <see cref="EndOfGameRule"/> value.</param>
         /// <param name="withRedDoras">Optionnal; the <see cref="WithRedDoras"/> value; default value is <c>False</c>.</param>
         /// <param name="sortedDraw">Optionnal; the <see cref="SortedDraw"/> value; default value is <c>False</c>.</param>
         /// <param name="useNagashiMangan">Optionnal; the <see cref="UseNagashiMangan"/> value; default value is <c>False</c>.</param>
         /// <param name="useRenhou">Optionnal; the <see cref="UseRenhou"/> value; default value is <c>False</c>.</param>
-        public GamePivot(string humanPlayerName, InitialPointsRulePivot initialPointsRule, bool withRedDoras = false, bool sortedDraw = false,
-            bool useNagashiMangan = false, bool useRenhou = false)
+        public GamePivot(string humanPlayerName, InitialPointsRulePivot initialPointsRule, EndOfGameRulePivot endOfGameRule,
+            bool withRedDoras = false, bool sortedDraw = false, bool useNagashiMangan = false, bool useRenhou = false)
         {
-            _players = PlayerPivot.GetFourPlayers(humanPlayerName, initialPointsRule);
+            InitialPointsRule = initialPointsRule;
+            EndOfGameRule = endOfGameRule;
+            _players = PlayerPivot.GetFourPlayers(humanPlayerName, InitialPointsRule);
             DominantWind = WindPivot.East;
             EastIndexTurnCount = 1;
             EastIndex = FirstEastIndex;
@@ -184,9 +195,26 @@ namespace Gnoj_Ham
         {
             EndOfRoundInformationsPivot endOfRoundInformations = Round.EndOfRound(ronPlayerIndex);
 
-            if (endOfRoundInformations.ResetRiichiPendingCount)
+            if (!endOfRoundInformations.Ryuukyoku)
             {
                 PendingRiichiCount = 0;
+            }
+
+            if (EndOfGameRule.TobiRuleApply() && _players.Any(p => p.Points < 0))
+            {
+                endOfRoundInformations.EndOfGame = true;
+                ClearPendingRiichi();
+                return endOfRoundInformations;
+            }
+
+            if (DominantWind == WindPivot.West || DominantWind == WindPivot.North)
+            {
+                if (!endOfRoundInformations.Ryuukyoku && _players.Any(p => p.Points >= 30000))
+                {
+                    endOfRoundInformations.EndOfGame = true;
+                    ClearPendingRiichi();
+                    return endOfRoundInformations;
+                }
             }
 
             if (endOfRoundInformations.ToNextEast)
@@ -198,14 +226,35 @@ namespace Gnoj_Ham
                 if (EastIndex == FirstEastIndex)
                 {
                     EastRank = 1;
-                    // TODO : west turn if everyone is between 20k and 30k
-                    // TODO : Riichi pending ?
                     if (DominantWind == WindPivot.South)
                     {
+                        if (EndOfGameRule.EnchousenRuleApply()
+                            && InitialPointsRule == InitialPointsRulePivot.K25
+                            && _players.All(p => p.Points < 30000))
+                        {
+                            DominantWind = WindPivot.West;
+                        }
+                        else
+                        {
+                            endOfRoundInformations.EndOfGame = true;
+                            ClearPendingRiichi();
+                            return endOfRoundInformations;
+                        }
+                    }
+                    else if (DominantWind == WindPivot.West)
+                    {
+                        DominantWind = WindPivot.North;
+                    }
+                    else if (DominantWind == WindPivot.North)
+                    {
                         endOfRoundInformations.EndOfGame = true;
+                        ClearPendingRiichi();
                         return endOfRoundInformations;
                     }
-                    DominantWind = WindPivot.South;
+                    else
+                    {
+                        DominantWind = WindPivot.South;
+                    }
                 }
             }
             else
@@ -247,6 +296,39 @@ namespace Gnoj_Ham
             return WindPivot.East;
         }
 
+        /// <summary>
+        /// Gets the player index for the specified wind.
+        /// </summary>
+        /// <param name="wind">The wind.</param>
+        /// <returns>The player index.</returns>
+        public int GetPlayerIndexByCurrentWind(WindPivot wind)
+        {
+            return Enumerable.Range(0, 4).First(i => GetPlayerCurrentWind(i) == wind);
+        }
+
         #endregion Public methods
+
+        #region Private methods
+
+        // At the end of the game, manage the remaining pending riichi.
+        private void ClearPendingRiichi()
+        {
+            if (PendingRiichiCount > 0)
+            {
+                PlayerPivot winner = _players.OrderByDescending(p => p.Points).First();
+                List<PlayerPivot> everyWinner = _players.Where(p => p.Points == winner.Points).ToList();
+                if ((PendingRiichiCount * ScoreTools.RIICHI_COST) % everyWinner.Count != 0)
+                {
+                    // This is ugly...
+                    everyWinner.Remove(everyWinner.Last());
+                }
+                foreach (PlayerPivot w in everyWinner)
+                {
+                    w.AddPoints((PendingRiichiCount * ScoreTools.RIICHI_COST) / everyWinner.Count);
+                }
+            }
+        }
+
+        #endregion Private methods
     }
 }

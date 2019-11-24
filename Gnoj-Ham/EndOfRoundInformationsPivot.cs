@@ -16,9 +16,9 @@ namespace Gnoj_Ham
         private readonly List<TilePivot> _uraDoraTiles;
 
         /// <summary>
-        /// <c>True</c> to reset <see cref="GamePivot.PendingRiichiCount"/>.
+        /// <c>True</c> to "Ryuukyoku" (otherwie, resets <see cref="GamePivot.PendingRiichiCount"/>).
         /// </summary>
-        public bool ResetRiichiPendingCount { get; private set; }
+        public bool Ryuukyoku { get; private set; }
         /// <summary>
         /// <c>True</c> if the current east has not won this round.
         /// </summary>
@@ -101,7 +101,7 @@ namespace Gnoj_Ham
         /// <summary>
         /// Constructor.
         /// </summary>
-        /// <param name="resetRiichiPendingCount">The <see cref="ResetRiichiPendingCount"/> value.</param>
+        /// <param name="ryuukyoku">The <see cref="Ryuukyoku"/> value.</param>
         /// <param name="toNextEast">The <see cref="ToNextEast"/> value.</param>
         /// <param name="displayUraDora">The <see cref="DisplayUraDora"/> value.</param>
         /// <param name="playersInfo">The <see cref="_playersInfo"/> value.</param>
@@ -112,7 +112,7 @@ namespace Gnoj_Ham
         /// <param name="doraVisibleCount">The <see cref="DoraVisibleCount"/> value.</param>
         /// <exception cref="ArgumentNullException"><paramref name="playersInfo"/> is <c>Null</c>.</exception>
         /// <exception cref="ArgumentOutOfRangeException"><paramref name="playersInfo"/> count is beyond <c>4</c>.</exception>
-        public EndOfRoundInformationsPivot(bool resetRiichiPendingCount, bool toNextEast, bool displayUraDora,
+        internal EndOfRoundInformationsPivot(bool ryuukyoku, bool toNextEast, bool displayUraDora,
             List<PlayerInformationsPivot> playersInfo, int honbaCount, int pendingRiichiCount,
             IEnumerable<TilePivot> doraTiles, IEnumerable<TilePivot> uraDoraTiles, int doraVisibleCount)
         {
@@ -126,7 +126,7 @@ namespace Gnoj_Ham
                 throw new ArgumentOutOfRangeException(nameof(playersInfo));
             }
 
-            ResetRiichiPendingCount = resetRiichiPendingCount;
+            Ryuukyoku = ryuukyoku;
             ToNextEast = toNextEast;
             DisplayUraDora = displayUraDora;
             _playersInfo = playersInfo;
@@ -175,6 +175,10 @@ namespace Gnoj_Ham
             /// Fu count.
             /// </summary>
             public int FuCount { get; private set; }
+            /// <summary>
+            /// The points gain from the hand itself (zero or positive).
+            /// </summary>
+            public int HandPointsGain { get; private set; }
             /// <summary>
             /// Points gain for this round (might be negative).
             /// </summary>
@@ -233,8 +237,9 @@ namespace Gnoj_Ham
             /// <param name="doraCount">The <see cref="DoraCount"/> value.</param>
             /// <param name="uraDoraCount">The <see cref="UraDoraCount"/> value.</param>
             /// <param name="redDoraCount">The <see cref="RedDoraCount"/> value.</param>
-            public PlayerInformationsPivot(int index, int fanCount, int fuCount, HandPivot hand,
-                int pointsGain, int doraCount, int uraDoraCount, int redDoraCount)
+            /// <param name="handPointsGain">The <see cref="HandPointsGain"/> value.</param>
+            internal PlayerInformationsPivot(int index, int fanCount, int fuCount, HandPivot hand,
+                int pointsGain, int doraCount, int uraDoraCount, int redDoraCount, int handPointsGain)
             {
                 Index = index;
                 FanCount = fanCount;
@@ -243,6 +248,7 @@ namespace Gnoj_Ham
                 DoraCount = doraCount;
                 UraDoraCount = uraDoraCount;
                 RedDoraCount = redDoraCount;
+                HandPointsGain = handPointsGain;
                 _hand = hand;
             }
 
@@ -251,8 +257,8 @@ namespace Gnoj_Ham
             /// </summary>
             /// <param name="index">The <see cref="Index"/> value.</param>
             /// <param name="pointsGain">The <see cref="PointsGain"/> value.</param>
-            public PlayerInformationsPivot(int index, int pointsGain)
-                : this(index, 0, 0, null, pointsGain, 0, 0, 0) { }
+            internal PlayerInformationsPivot(int index, int pointsGain)
+                : this(index, 0, 0, null, pointsGain, 0, 0, 0, 0) { }
 
             #endregion Constructors
 
@@ -280,6 +286,19 @@ namespace Gnoj_Ham
             }
 
             #endregion Public methods
+
+            #region Internal methods
+
+            /// <summary>
+            /// Adds points to <see cref="PointsGain"/>.
+            /// </summary>
+            /// <param name="points">Points to add.</param>
+            public void AddPoints(int points)
+            {
+                PointsGain += points;
+            }
+
+            #endregion Internal methods
         }
     }
 }
