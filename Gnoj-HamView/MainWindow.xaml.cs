@@ -407,17 +407,19 @@ namespace Gnoj_HamView
         // Checks ron call for every players.
         private bool CheckCallRonForEveryone()
         {
-            bool ronCalled = false;
+            bool humanCallRon = false;
             if (HumanCallRon())
             {
-                ronCalled = true;
+                humanCallRon = true;
             }
-            if (_game.Round.IaManager.RonDecision(ronCalled))
+
+            List<int> opponentsCallRon = _game.Round.IaManager.RonDecision(humanCallRon);
+            foreach (int opponentPlayerIndex in opponentsCallRon)
             {
-                InvokeOverlay("Ron");
-                ronCalled = true;
+                InvokeOverlay("Ron", opponentPlayerIndex);
             }
-            return ronCalled;
+
+            return humanCallRon || opponentsCallRon.Count > 0;
         }
 
         // Proceeds to autoplay for human player.
@@ -532,7 +534,7 @@ namespace Gnoj_HamView
         // Proceeds to call chii then discard for the current opponent.
         private void OpponentCallChiiAndDiscard(Tuple<TilePivot, bool> chiiTilePick)
         {
-            InvokeOverlay("Chii");
+            InvokeOverlay("Chii", _game.Round.CurrentPlayerIndex);
 
             _game.Round.CallChii(_game.Round.CurrentPlayerIndex, chiiTilePick.Item2 ? chiiTilePick.Item1.Number - 1 : chiiTilePick.Item1.Number);
             Thread.Sleep(_cpuSpeedMs);
@@ -550,7 +552,7 @@ namespace Gnoj_HamView
         // Proceeds to call pon then discard for an opponent.
         private void OpponentCallPonAndDiscard(int opponentPlayerId)
         {
-            InvokeOverlay("Pon");
+            InvokeOverlay("Pon", opponentPlayerId);
 
             // Note : this value is stored here because the call to "CallPon" makes it change.
             int previousPlayerIndex = _game.Round.PreviousPlayerIndex;
@@ -570,7 +572,7 @@ namespace Gnoj_HamView
         // Proceeds to call a kan for an opponent.
         private TilePivot OpponentBeginCallKan(int playerId, TilePivot kanTilePick, bool concealedKan, bool fromPreviousKan)
         {
-            InvokeOverlay("Kan");
+            InvokeOverlay("Kan", playerId);
 
             TilePivot compensationTile = _game.Round.CallKan(playerId, kanTilePick);
             Thread.Sleep(_cpuSpeedMs);
@@ -589,7 +591,7 @@ namespace Gnoj_HamView
         {
             if (_game.Round.IaManager.TsumoDecision(kanInProgress != null))
             {
-                InvokeOverlay("Tsumo");
+                InvokeOverlay("Tsumo", _game.Round.CurrentPlayerIndex);
                 return true;
             }
 
@@ -632,7 +634,7 @@ namespace Gnoj_HamView
         // Proceeds to call riichi for the current opponent.
         private void OpponentCallRiichiAndDiscard(TilePivot riichiTile)
         {
-            InvokeOverlay("Riichi");
+            InvokeOverlay("Riichi", _game.Round.CurrentPlayerIndex);
 
             _game.Round.CallRiichi(_game.Round.CurrentPlayerIndex, riichiTile);
             Thread.Sleep(_cpuSpeedMs);
@@ -649,12 +651,15 @@ namespace Gnoj_HamView
         #region Graphic tools
 
         // Displays the call overlay.
-        private void InvokeOverlay(string callName)
+        private void InvokeOverlay(string callName, int playerIndex)
         {
             Dispatcher.Invoke(() =>
             {
-                GrdOverlayCall.Visibility = Visibility.Visible;
                 BtnOpponentCall.Content = $"{callName} !";
+                BtnOpponentCall.HorizontalAlignment = playerIndex == 1 ? HorizontalAlignment.Right : (playerIndex == 3 ? HorizontalAlignment.Left : HorizontalAlignment.Center);
+                BtnOpponentCall.VerticalAlignment = playerIndex == 2 ? VerticalAlignment.Top : VerticalAlignment.Center;
+                BtnOpponentCall.Margin = new Thickness(playerIndex == 3 ? 20 : 0, playerIndex == 2 ? 20 : 0, playerIndex == 1 ? 20 : 0, 0);
+                GrdOverlayCall.Visibility = Visibility.Visible;
             });
             Thread.Sleep(_cpuSpeedMs);
             Dispatcher.Invoke(() =>

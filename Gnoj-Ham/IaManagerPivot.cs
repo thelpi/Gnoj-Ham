@@ -226,20 +226,28 @@ namespace Gnoj_Ham
         /// </summary>
         /// <remarks>If any player, including human, calls ron, every players who can call ron will do.</remarks>
         /// <param name="ronCalled">Indicates if the human player has already made a ron call.</param>
-        /// <returns><c>True</c> if any decision made; <c>False</c> otherwise.</returns>
-        public bool RonDecision(bool ronCalled)
+        /// <returns>List of player index, other than human player, who decide to call ron.</returns>
+        public List<int> RonDecision(bool ronCalled)
         {
+            var callers = new List<int>();
+
             for (int i = 0; i < 4; i++)
             {
                 if (i != GamePivot.HUMAN_INDEX && Round.CanCallRon(i))
                 {
-                    if (!ronCalled)
+                    if (ronCalled || callers.Count > 0)
                     {
-                        ronCalled = true;
+                        callers.Add(i);
+                    }
+                    else
+                    {
+                        // TODO : implements some decision logic here.
+                        callers.Add(i);
                     }
                 }
             }
-            return ronCalled;
+
+            return callers;
         }
 
         /// <summary>
