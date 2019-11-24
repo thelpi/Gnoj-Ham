@@ -113,7 +113,7 @@ namespace Gnoj_HamView
         {
             _timer?.Stop();
 
-            InnerKanCallProcess((sender as Button).Tag as TilePivot, null);
+            HumanKanCallProcess((sender as Button).Tag as TilePivot, null);
         }
 
         private void BtnPon_Click(object sender, RoutedEventArgs e)
@@ -148,7 +148,7 @@ namespace Gnoj_HamView
                 }
                 else
                 {
-                    InnerKanCallProcess(null, _game.Round.PreviousPlayerIndex);
+                    HumanKanCallProcess(null, _game.Round.PreviousPlayerIndex);
                 }
             }
         }
@@ -177,7 +177,7 @@ namespace Gnoj_HamView
 
         #region Human decisions
 
-        // Manages riichii call opportunities.
+        // Manages riichi call opportunities.
         private bool HumanCallRiichi(List<TilePivot> tiles)
         {
             if (tiles.Count > 0 && MessageBox.Show("Declare riichi ?", WINDOW_TITLE, MessageBoxButton.YesNo) == MessageBoxResult.Yes)
@@ -215,7 +215,7 @@ namespace Gnoj_HamView
         }
 
         // Inner process kan call.
-        private void InnerKanCallProcess(TilePivot tile, int? previousPlayerIndex)
+        private void HumanKanCallProcess(TilePivot tile, int? previousPlayerIndex)
         {
             TilePivot compensationTile = _game.Round.CallKan(GamePivot.HUMAN_INDEX, tile);
             if (CheckCallRonForEveryone())
@@ -225,16 +225,7 @@ namespace Gnoj_HamView
             }
             else
             {
-                PlayTickSound();
-                FillHandPanel(GamePivot.HUMAN_INDEX, compensationTile);
-                StpPickP0.Children.Add(compensationTile.GenerateTileButton(BtnDiscard_Click));
-                if (previousPlayerIndex.HasValue)
-                {
-                    FillDiscardPanel(previousPlayerIndex.Value);
-                }
-                FillCombinationStack(GamePivot.HUMAN_INDEX);
-                SetActionButtonsVisibility(preDiscard: true);
-                StpDoras.SetDorasPanel(_game.Round.DoraIndicatorTiles, _game.Round.VisibleDorasCount);
+                CommonCallKan(previousPlayerIndex, compensationTile);
                 if (HumanCallTsumo(true))
                 {
                     NewRound(null);
@@ -298,7 +289,7 @@ namespace Gnoj_HamView
 
                     if (kanInProgress != null)
                     {
-                        OpponentContinueCallKan(kanInProgress.Item2, kanInProgress.Item3);
+                        CommonCallKan(kanInProgress.Item3, kanInProgress.Item2);
                     }
 
                     if (!skipCurrentAction && _game.Round.CanCallPonOrKan(GamePivot.HUMAN_INDEX))
@@ -593,9 +584,9 @@ namespace Gnoj_HamView
         {
             if (_game.Round.CallRiichi(_game.Round.CurrentPlayerIndex, tile))
             {
-                if (!_game.Round.IsHumanPlayer)
+                if (!_game.Round.PreviousIsHumanPlayer)
                 {
-                    InvokeOverlay("Riichi", _game.Round.CurrentPlayerIndex);
+                    InvokeOverlay("Riichi", _game.Round.PreviousPlayerIndex);
                     Thread.Sleep(_cpuSpeedMs);
                 }
 
@@ -603,52 +594,32 @@ namespace Gnoj_HamView
                 {
                     FillHandPanel(_game.Round.PreviousPlayerIndex);
                     FillDiscardPanel(_game.Round.PreviousPlayerIndex);
-                    SetActionButtonsVisibility(cpuPlay: !_game.Round.IsHumanPlayer);
+                    SetActionButtonsVisibility(cpuPlay: !_game.Round.PreviousIsHumanPlayer);
                 });
 
-                if (_game.Round.IsHumanPlayer)
+                if (_game.Round.PreviousIsHumanPlayer)
                 {
                     AutoPlayAsync();
                 }
             }
         }
 
-        #endregion General orchestration
-
-        #region CPU actions
-
-        // Intermediate phase when an opponent call kan.
-        private void OpponentContinueCallKan(TilePivot compensationTile, int? previousPlayerIndex)
-        {
-            Dispatcher.Invoke(() =>
-            {
-                PlayTickSound();
-                FillHandPanel(_game.Round.CurrentPlayerIndex, compensationTile);
-                (FindName($"StpPickP{_game.Round.CurrentPlayerIndex}") as StackPanel).Children.Add(compensationTile.GenerateTileButton(null, (AnglePivot)_game.Round.CurrentPlayerIndex, !_debugMode));
-                if (previousPlayerIndex.HasValue)
-                {
-                    FillDiscardPanel(previousPlayerIndex.Value);
-                }
-                FillCombinationStack(_game.Round.CurrentPlayerIndex);
-                SetActionButtonsVisibility(cpuPlay: true);
-                StpDoras.SetDorasPanel(_game.Round.DoraIndicatorTiles, _game.Round.VisibleDorasCount);
-            });
-        }
-
         // Proceeds to call a kan for an opponent.
         private TilePivot OpponentBeginCallKan(int playerId, TilePivot kanTilePick, bool concealedKan, bool fromPreviousKan)
         {
-            InvokeOverlay("Kan", playerId);
-
             TilePivot compensationTile = _game.Round.CallKan(playerId, kanTilePick);
-            Thread.Sleep(_cpuSpeedMs);
-            Dispatcher.Invoke(() =>
+            if (compensationTile != null)
             {
-                if (!concealedKan)
+                InvokeOverlay("Kan", playerId);
+                Thread.Sleep(_cpuSpeedMs);
+                Dispatcher.Invoke(() =>
                 {
-                    SetPlayersLed();
-                }
-            });
+                    if (!concealedKan)
+                    {
+                        SetPlayersLed();
+                    }
+                });
+            }
             return compensationTile;
         }
 
@@ -682,9 +653,32 @@ namespace Gnoj_HamView
             return false;
         }
 
-        #endregion CPU actions
+        #endregion General orchestration
 
         #region Graphic tools
+
+        private void CommonCallKan(int? previousPlayerIndex, TilePivot compensationTile)
+        {
+            Dispatcher.Invoke(() =>
+            {
+                PlayTickSound();
+                FillHandPanel(_game.Round.CurrentPlayerIndex, compensationTile);
+                (FindName($"StpPickP{_game.Round.CurrentPlayerIndex}") as StackPanel).Children.Add(
+                    compensationTile.GenerateTileButton(
+                        _game.Round.IsHumanPlayer ? BtnDiscard_Click : (RoutedEventHandler)null,
+                        (AnglePivot)_game.Round.CurrentPlayerIndex,
+                        !_game.Round.IsHumanPlayer && !_debugMode
+                    )
+                );
+                if (previousPlayerIndex.HasValue)
+                {
+                    FillDiscardPanel(previousPlayerIndex.Value);
+                }
+                FillCombinationStack(_game.Round.CurrentPlayerIndex);
+                SetActionButtonsVisibility(cpuPlay: !_game.Round.IsHumanPlayer, preDiscard: _game.Round.IsHumanPlayer);
+                StpDoras.SetDorasPanel(_game.Round.DoraIndicatorTiles, _game.Round.VisibleDorasCount);
+            });
+        }
 
         // Triggered when the tiles count in the wall is updated.
         private void OnNotifyWallCount(object sender, EventArgs e)
