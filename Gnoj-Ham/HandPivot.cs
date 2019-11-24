@@ -703,12 +703,14 @@ namespace Gnoj_Ham
                     return false;
                 }
                 else if (lastCombination.IsSequence
+                    && tile.Family == lastCombination.Family
                     && lastCombination.OpenTile.Number == lastCombination.SequenceFirstNumber
                     && tile.Number == lastCombination.SequenceFirstNumber + 3)
                 {
                     return false;
                 }
                 else if (lastCombination.IsSequence
+                    && tile.Family == lastCombination.Family
                     && lastCombination.OpenTile.Number == lastCombination.SequenceLastNumber
                     && tile.Number == lastCombination.SequenceLastNumber - 3)
                 {

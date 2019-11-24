@@ -94,18 +94,6 @@ namespace Gnoj_HamView
                 _timer.Start();
             }
         }
-        
-        private void OnNotifyWallCount(object sender, EventArgs e)
-        {
-            Dispatcher.Invoke(() =>
-            {
-                LblWallTilesLeft.Content = _game.Round.WallTiles.Count;
-                if (_game.Round.WallTiles.Count <= 4)
-                {
-                    LblWallTilesLeft.Foreground = System.Windows.Media.Brushes.Red;
-                }
-            });
-        }
 
         private void BtnDiscard_Click(object sender, RoutedEventArgs e)
         {
@@ -341,8 +329,11 @@ namespace Gnoj_HamView
             {
                 Close();
             }
-            NewRoundRefresh();
-            AutoPlayAsync();
+            else
+            {
+                NewRoundRefresh();
+                AutoPlayAsync();
+            }
         }
 
         // Auto-play the round while there's no reason for the player to interact; asynchronous.
@@ -710,6 +701,19 @@ namespace Gnoj_HamView
 
         #region Graphic tools
 
+        // Triggered when the tiles count in the wall is updated.
+        private void OnNotifyWallCount(object sender, EventArgs e)
+        {
+            Dispatcher.Invoke(() =>
+            {
+                LblWallTilesLeft.Content = _game.Round.WallTiles.Count;
+                if (_game.Round.WallTiles.Count <= 4)
+                {
+                    LblWallTilesLeft.Foreground = System.Windows.Media.Brushes.Red;
+                }
+            });
+        }
+
         // Gets the first button for a discardable tile.
         private Button GetFirstAvailableDiscardButton()
         {
@@ -717,44 +721,6 @@ namespace Gnoj_HamView
                 .Children
                 .OfType<Button>()
                 .First(b => _game.Round.CanDiscard(b.Tag as TilePivot));
-        }
-
-        // Activates the human decision timer and binds its event to a button click.
-        private void ActivateTimer(Button buttonToClick)
-        {
-            if (_timer != null)
-            {
-                if (_currentTimerHandler != null)
-                {
-                    _timer.Elapsed -= _currentTimerHandler;
-                }
-                _currentTimerHandler = delegate (object sender, System.Timers.ElapsedEventArgs e)
-                {
-                    Dispatcher.Invoke(() =>
-                    {
-                        buttonToClick.RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent));
-                    });
-                };
-                _timer.Elapsed += _currentTimerHandler;
-                _timer.Start();
-            }
-        }
-
-        // Affects a value to the humand ecision timer.
-        private void SetChronoTime(ChronoPivot chrono)
-        {
-            if (chrono == ChronoPivot.None)
-            {
-                _timer = null;
-            }
-            else if (_timer != null)
-            {
-                _timer.Interval = chrono.GetDelay() * 1000;
-            }
-            else
-            {
-                _timer = new System.Timers.Timer(chrono.GetDelay() * 1000);
-            }
         }
 
         // Displays the call overlay.
@@ -960,6 +926,48 @@ namespace Gnoj_HamView
             }
         }
 
+        #endregion Graphic tools
+
+        #region Other methods
+
+        // Activates the human decision timer and binds its event to a button click.
+        private void ActivateTimer(Button buttonToClick)
+        {
+            if (_timer != null)
+            {
+                if (_currentTimerHandler != null)
+                {
+                    _timer.Elapsed -= _currentTimerHandler;
+                }
+                _currentTimerHandler = delegate (object sender, System.Timers.ElapsedEventArgs e)
+                {
+                    Dispatcher.Invoke(() =>
+                    {
+                        buttonToClick.RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent));
+                    });
+                };
+                _timer.Elapsed += _currentTimerHandler;
+                _timer.Start();
+            }
+        }
+
+        // Affects a value to the humand ecision timer.
+        private void SetChronoTime(ChronoPivot chrono)
+        {
+            if (chrono == ChronoPivot.None)
+            {
+                _timer = null;
+            }
+            else if (_timer != null)
+            {
+                _timer.Interval = chrono.GetDelay() * 1000;
+            }
+            else
+            {
+                _timer = new System.Timers.Timer(chrono.GetDelay() * 1000);
+            }
+        }
+
         // Plays the tick sound if sounds activated.
         private void PlayTickSound()
         {
@@ -969,6 +977,6 @@ namespace Gnoj_HamView
             }
         }
 
-        #endregion Graphic tools
+        #endregion Other methods
     }
 }
