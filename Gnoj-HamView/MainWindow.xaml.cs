@@ -7,6 +7,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Input;
+using System.Windows.Media.Animation;
 using Gnoj_Ham;
 
 namespace Gnoj_HamView
@@ -24,6 +25,7 @@ namespace Gnoj_HamView
         private System.Timers.Timer _timer;
         private System.Timers.ElapsedEventHandler _currentTimerHandler;
         private BackgroundWorker _autoPlay;
+        private Storyboard _overlayStoryboard;
 
         /// <summary>
         /// Constructor.
@@ -42,6 +44,11 @@ namespace Gnoj_HamView
 
             _game = new GamePivot(playerName, pointRule, endOfGameRule, useRedDoras, sortedDraw, useNagashiMangan, useRenhou);
             _tickSound = new System.Media.SoundPlayer(Properties.Resources.tick);
+
+            _overlayStoryboard = FindResource("StbHideOverlay") as Storyboard;
+            Storyboard.SetTarget(_overlayStoryboard, GrdOverlayCall);
+
+            ApplyConfigurationToOverlayStoryboard();
 
             SetChronoTime();
 
@@ -66,6 +73,7 @@ namespace Gnoj_HamView
             _pauseAutoplay = true;
 
             new IntroWindow(_game).ShowDialog();
+            ApplyConfigurationToOverlayStoryboard();
 
             _pauseAutoplay = false;
             if (timerWasRunning && _timer != null)
@@ -177,6 +185,7 @@ namespace Gnoj_HamView
         {
             if (tiles.Count > 0 && MessageBox.Show("Declare riichi ?", WINDOW_TITLE, MessageBoxButton.YesNo) == MessageBoxResult.Yes)
             {
+                InvokeOverlay("Riichi", GamePivot.HUMAN_INDEX);
                 Tuple<string, int> restrictResult =  RestrictDiscardWithTilesSelection(tiles.ToDictionary(t => t, t => false), BtnRiichiChoice_Click);
                 return new Tuple<bool, string, int>(true, restrictResult.Item1, restrictResult.Item2);
             }
@@ -191,6 +200,7 @@ namespace Gnoj_HamView
                 if (Properties.Settings.Default.AutoCallMahjong
                     || MessageBox.Show("Call tsumo ?", WINDOW_TITLE, MessageBoxButton.YesNo) == MessageBoxResult.Yes)
                 {
+                    InvokeOverlay("Tsumo", GamePivot.HUMAN_INDEX);
                     return true;
                 }
             }
@@ -205,6 +215,7 @@ namespace Gnoj_HamView
                 if (Properties.Settings.Default.AutoCallMahjong
                     || MessageBox.Show("Call ron ?", WINDOW_TITLE, MessageBoxButton.YesNo) == MessageBoxResult.Yes)
                 {
+                    InvokeOverlay("Ron", GamePivot.HUMAN_INDEX);
                     return true;
                 }
             }
@@ -215,6 +226,7 @@ namespace Gnoj_HamView
         private void HumanKanCallProcess(TilePivot tile, int? previousPlayerIndex)
         {
             TilePivot compensationTile = _game.Round.CallKan(GamePivot.HUMAN_INDEX, tile);
+            InvokeOverlay("Kan", GamePivot.HUMAN_INDEX);
             if (CheckCallRonForEveryone())
             {
                 _game.Round.UndoPickCompensationTile();
@@ -521,9 +533,9 @@ namespace Gnoj_HamView
         {
             if (_game.Round.CallChii(_game.Round.CurrentPlayerIndex, chiiTilePick.Item2 ? chiiTilePick.Item1.Number - 1 : chiiTilePick.Item1.Number))
             {
+                InvokeOverlay("Chii", _game.Round.CurrentPlayerIndex);
                 if (!_game.Round.IsHumanPlayer)
                 {
-                    InvokeOverlay("Chii", _game.Round.CurrentPlayerIndex);
                     Thread.Sleep(((CpuSpeedPivot)Properties.Settings.Default.CpuSpeed).ParseSpeed());
                 }
 
@@ -560,9 +572,9 @@ namespace Gnoj_HamView
 
             if (_game.Round.CallPon(playerIndex))
             {
+                InvokeOverlay("Pon", playerIndex);
                 if (isCpu)
                 {
-                    InvokeOverlay("Pon", playerIndex);
                     Thread.Sleep(((CpuSpeedPivot)Properties.Settings.Default.CpuSpeed).ParseSpeed());
                 }
 
@@ -742,15 +754,15 @@ namespace Gnoj_HamView
             {
                 BtnOpponentCall.Content = $"{callName} !";
                 BtnOpponentCall.HorizontalAlignment = playerIndex == 1 ? HorizontalAlignment.Right : (playerIndex == 3 ? HorizontalAlignment.Left : HorizontalAlignment.Center);
-                BtnOpponentCall.VerticalAlignment = playerIndex == 2 ? VerticalAlignment.Top : VerticalAlignment.Center;
-                BtnOpponentCall.Margin = new Thickness(playerIndex == 3 ? 20 : 0, playerIndex == 2 ? 20 : 0, playerIndex == 1 ? 20 : 0, 0);
+                BtnOpponentCall.VerticalAlignment = playerIndex == 0 ? VerticalAlignment.Bottom : (playerIndex == 2 ? VerticalAlignment.Top : VerticalAlignment.Center);
+                BtnOpponentCall.Margin = new Thickness(playerIndex == 3 ? 20 : 0, playerIndex == 2 ? 20 : 0, playerIndex == 1 ? 20 : 0, playerIndex == 0 ? 20 : 0);
                 GrdOverlayCall.Visibility = Visibility.Visible;
+                _overlayStoryboard.Begin();
             });
-            Thread.Sleep(((CpuSpeedPivot)Properties.Settings.Default.CpuSpeed).ParseSpeed());
-            Dispatcher.Invoke(() =>
+            if (playerIndex != GamePivot.HUMAN_INDEX)
             {
-                GrdOverlayCall.Visibility = Visibility.Collapsed;
-            });
+                Thread.Sleep(((CpuSpeedPivot)Properties.Settings.Default.CpuSpeed).ParseSpeed());
+            }
         }
 
         // Fix dimensions of the window and every panels (when it's required).
@@ -1010,6 +1022,13 @@ namespace Gnoj_HamView
             {
                 _tickSound.Play();
             }
+        }
+
+        // Apply the CPU speed stored in configuration to the storyboard managing the overlay visibility.
+        private void ApplyConfigurationToOverlayStoryboard()
+        {
+            (_overlayStoryboard.Children.Last() as ObjectAnimationUsingKeyFrames).KeyFrames[1].KeyTime =
+                KeyTime.FromTimeSpan(new TimeSpan(0, 0, 0, 0, ((CpuSpeedPivot)Properties.Settings.Default.CpuSpeed).ParseSpeed()));
         }
 
         #endregion Other methods

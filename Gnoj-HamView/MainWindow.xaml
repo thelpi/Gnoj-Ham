@@ -7,7 +7,16 @@
         Background="Gainsboro"
         MouseDoubleClick="Window_MouseDoubleClick"
         WindowStartupLocation="CenterScreen"
-        Height="960" Width="960">
+        Height="960" Width="960"
+        MinHeight="960" MinWidth="960">
+    <Window.Resources>
+        <Storyboard x:Key="StbHideOverlay">
+            <ObjectAnimationUsingKeyFrames BeginTime="00:00:00" Storyboard.TargetName="grid" Storyboard.TargetProperty="(UIElement.Visibility)">
+                <DiscreteObjectKeyFrame KeyTime="00:00:00" Value="{x:Static Visibility.Visible}"/>
+                <DiscreteObjectKeyFrame KeyTime="00:00:00.7500000" Value="{x:Static Visibility.Collapsed}"/>
+            </ObjectAnimationUsingKeyFrames>
+        </Storyboard>
+    </Window.Resources>
     <Grid Name="GrdMain" Margin="5" Background="PaleGreen">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Name="Cod0" />
