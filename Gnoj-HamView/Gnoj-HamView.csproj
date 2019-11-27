@@ -59,6 +59,7 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="AnglePivot.cs" />
+    <Compile Include="AutoPlayResult.cs" />
     <Compile Include="ChronoPivot.cs" />
     <Compile Include="Converters\ChronoConverter.cs" />
     <Compile Include="Converters\EndOfGameRuleConverter.cs" />

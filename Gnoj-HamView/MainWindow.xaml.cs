@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Threading;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
@@ -28,6 +28,7 @@ namespace Gnoj_HamView
         private System.Media.SoundPlayer _tickSound;
         private System.Timers.Timer _timer;
         private System.Timers.ElapsedEventHandler _currentTimerHandler;
+        private BackgroundWorker _autoPlay;
 
         /// <summary>
         /// Constructor.
@@ -65,9 +66,11 @@ namespace Gnoj_HamView
 
             NewRoundRefresh();
 
+            InitializeAutoPlayWorker();
+
             ContentRendered += delegate (object sender, EventArgs evt)
             {
-                AutoPlayAsync();
+                RunAutoPlay();
             };
         }
 
@@ -97,79 +100,95 @@ namespace Gnoj_HamView
 
         private void BtnDiscard_Click(object sender, RoutedEventArgs e)
         {
-            _timer?.Stop();
-            Discard((sender as Button).Tag as TilePivot);
+            if (IsCurrentlyClickable(e))
+            {
+                Discard((sender as Button).Tag as TilePivot);
+            }
         }
 
         private void BtnChiiChoice_Click(object sender, RoutedEventArgs e)
         {
-            _timer?.Stop();
-
-            Tuple<TilePivot, bool> tag = (Tuple<TilePivot, bool>)((sender as Button).Tag);
-            ChiiCall(tag);
+            if (IsCurrentlyClickable(e))
+            {
+                Tuple<TilePivot, bool> tag = (Tuple<TilePivot, bool>)((sender as Button).Tag);
+                ChiiCall(tag);
+            }
         }
 
         private void BtnKanChoice_Click(object sender, RoutedEventArgs e)
         {
-            _timer?.Stop();
-
-            HumanKanCallProcess((sender as Button).Tag as TilePivot, null);
+            if (IsCurrentlyClickable(e))
+            {
+                HumanKanCallProcess((sender as Button).Tag as TilePivot, null);
+            }
         }
 
         private void BtnPon_Click(object sender, RoutedEventArgs e)
         {
-            _timer?.Stop();
-
-            PonCall(GamePivot.HUMAN_INDEX);
+            if (IsCurrentlyClickable(e))
+            {
+                PonCall(GamePivot.HUMAN_INDEX);
+            }
         }
 
         private void BtnChii_Click(object sender, RoutedEventArgs e)
         {
-            _timer?.Stop();
-
-            Dictionary<TilePivot, bool> tileChoices = _game.Round.CanCallChii(GamePivot.HUMAN_INDEX);
-
-            if (tileChoices.Keys.Count > 0)
+            if (IsCurrentlyClickable(e))
             {
-                RestrictDiscardWithTilesSelection(tileChoices, BtnChiiChoice_Click);
+                Dictionary<TilePivot, bool> tileChoices = _game.Round.CanCallChii(GamePivot.HUMAN_INDEX);
+
+                if (tileChoices.Keys.Count > 0)
+                {
+                    Tuple<string, int> restrictResult = RestrictDiscardWithTilesSelection(tileChoices, BtnChiiChoice_Click);
+                    RaiseButtonClickEvent(restrictResult.Item1, restrictResult.Item2);
+                }
             }
         }
 
         private void BtnKan_Click(object sender, RoutedEventArgs e)
         {
-            _timer?.Stop();
-
-            List<TilePivot> kanTiles = _game.Round.CanCallKan(GamePivot.HUMAN_INDEX);
-            if (kanTiles.Count > 0)
+            if (IsCurrentlyClickable(e))
             {
-                if (_game.Round.IsHumanPlayer)
+                List<TilePivot> kanTiles = _game.Round.CanCallKan(GamePivot.HUMAN_INDEX);
+                if (kanTiles.Count > 0)
                 {
-                    RestrictDiscardWithTilesSelection(kanTiles.ToDictionary(t => t, t => false), BtnKanChoice_Click);
-                }
-                else
-                {
-                    HumanKanCallProcess(null, _game.Round.PreviousPlayerIndex);
+                    if (_game.Round.IsHumanPlayer)
+                    {
+                        Tuple<string, int> restrictResult = RestrictDiscardWithTilesSelection(kanTiles.ToDictionary(t => t, t => false), BtnKanChoice_Click);
+                        RaiseButtonClickEvent(restrictResult.Item1, restrictResult.Item2);
+                    }
+                    else
+                    {
+                        HumanKanCallProcess(null, _game.Round.PreviousPlayerIndex);
+                    }
                 }
             }
         }
 
         private void BtnRiichiChoice_Click(object sender, RoutedEventArgs e)
         {
-            _timer?.Stop();
-            CallRiichi((sender as Button).Tag as TilePivot);
+            if (IsCurrentlyClickable(e))
+            {
+                CallRiichi((sender as Button).Tag as TilePivot);
+            }
         }
 
         private void Window_MouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
+            if (_autoPlay.IsBusy)
+            {
+                return;
+            }
+
             if (BtnPon.Visibility == Visibility.Visible
                 || BtnChii.Visibility == Visibility.Visible
                 || BtnKan.Visibility == Visibility.Visible)
             {
-                AutoPlayAsync(true);
+                RunAutoPlay(true);
             }
             else if (StpPickP0.Children.Count > 0)
             {
-                (StpPickP0.Children[0] as Button).RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent));
+                RaiseButtonClickEvent("StpPickP0", 0);
             }
         }
 
@@ -178,14 +197,14 @@ namespace Gnoj_HamView
         #region Human decisions
 
         // Manages riichi call opportunities.
-        private bool HumanCallRiichi(List<TilePivot> tiles)
+        private Tuple<bool, string, int> HumanCallRiichi(List<TilePivot> tiles)
         {
             if (tiles.Count > 0 && MessageBox.Show("Declare riichi ?", WINDOW_TITLE, MessageBoxButton.YesNo) == MessageBoxResult.Yes)
             {
-                RestrictDiscardWithTilesSelection(tiles.ToDictionary(t => t, t => false), BtnRiichiChoice_Click);
-                return true;
+                Tuple<string, int> restrictResult =  RestrictDiscardWithTilesSelection(tiles.ToDictionary(t => t, t => false), BtnRiichiChoice_Click);
+                return new Tuple<bool, string, int>(true, restrictResult.Item1, restrictResult.Item2);
             }
-            return false;
+            return new Tuple<bool, string, int>(false, null, -1);
         }
 
         // Checks a tsumo call for the human player.
@@ -232,7 +251,8 @@ namespace Gnoj_HamView
                 }
                 else
                 {
-                    if (!HumanCallRiichi(_game.Round.CanCallRiichi(GamePivot.HUMAN_INDEX)))
+                    Tuple<bool, string, int> riichiResult = HumanCallRiichi(_game.Round.CanCallRiichi(GamePivot.HUMAN_INDEX));
+                    if (!riichiResult.Item1)
                     {
                         ActivateTimer(GetFirstAvailableDiscardButton());
                     }
@@ -244,31 +264,25 @@ namespace Gnoj_HamView
 
         #region General orchestration
 
-        // Proceeds to new round.
-        private void NewRound(int? ronPlayerIndex)
+        // Initializes a background worker which orchestrates the CPU actions.
+        private void InitializeAutoPlayWorker()
         {
-            EndOfRoundInformationsPivot endOfRoundInfos = _game.NextRound(ronPlayerIndex);
-            new ScoreWindow(_game.Players.ToList(), endOfRoundInfos).ShowDialog();
-            if (endOfRoundInfos.EndOfGame)
+            _autoPlay = new BackgroundWorker
             {
-                Close();
-            }
-            else
+                WorkerReportsProgress = false,
+                WorkerSupportsCancellation = false
+            };
+            _autoPlay.DoWork += delegate (object sender, DoWorkEventArgs evt)
             {
-                NewRoundRefresh();
-                AutoPlayAsync();
-            }
-        }
-
-        // Auto-play the round while there's no reason for the player to interact; asynchronous.
-        private async void AutoPlayAsync(bool skipCurrentAction = false)
-        {
-            bool endOfRound = false;
-            int? ronPlayerId = null;
-            Tuple<int, TilePivot, int?> kanInProgress = null;
-
-            await Task.Run(() =>
-            {
+                bool skipCurrentAction = (bool)evt.Argument;
+                Tuple<int, TilePivot, int?> kanInProgress = null;
+                AutoPlayResult result = new AutoPlayResult
+                {
+                    ChildrenIndex = -1,
+                    EndOfRound = false,
+                    PanelName = null,
+                    RonPlayerId = null
+                };
                 while (true)
                 {
                     while (_pauseAutoplay)
@@ -278,8 +292,8 @@ namespace Gnoj_HamView
 
                     if (CheckCallRonForEveryone())
                     {
-                        endOfRound = true;
-                        ronPlayerId = kanInProgress != null ? kanInProgress.Item1 : _game.Round.PreviousPlayerIndex;
+                        result.EndOfRound = true;
+                        result.RonPlayerId = kanInProgress != null ? kanInProgress.Item1 : _game.Round.PreviousPlayerIndex;
                         if (kanInProgress != null)
                         {
                             _game.Round.UndoPickCompensationTile();
@@ -336,13 +350,13 @@ namespace Gnoj_HamView
 
                     if (_game.Round.IsWallExhaustion)
                     {
-                        endOfRound = true;
+                        result.EndOfRound = true;
                         break;
                     }
 
                     if (_game.Round.IsHumanPlayer)
                     {
-                        HumanAutoPlay(out endOfRound);
+                        HumanAutoPlay(result);
                         break;
                     }
                     else
@@ -350,16 +364,50 @@ namespace Gnoj_HamView
                         Pick();
                         if (OpponentAfterPick(ref kanInProgress))
                         {
-                            endOfRound = true;
+                            result.EndOfRound = true;
                             break;
                         }
                     }
                 }
-            });
 
-            if (endOfRound)
+                evt.Result = result;
+            };
+            _autoPlay.RunWorkerCompleted += delegate (object sender, RunWorkerCompletedEventArgs evt)
             {
-                NewRound(ronPlayerId);
+                AutoPlayResult autoPlayResult = evt.Result as AutoPlayResult;
+                if (autoPlayResult.EndOfRound)
+                {
+                    NewRound(autoPlayResult.RonPlayerId);
+                }
+                else
+                {
+                    RaiseButtonClickEvent(autoPlayResult.PanelName, autoPlayResult.ChildrenIndex);
+                }
+            };
+        }
+
+        // Proceeds to new round.
+        private void NewRound(int? ronPlayerIndex)
+        {
+            EndOfRoundInformationsPivot endOfRoundInfos = _game.NextRound(ronPlayerIndex);
+            new ScoreWindow(_game.Players.ToList(), endOfRoundInfos).ShowDialog();
+            if (endOfRoundInfos.EndOfGame)
+            {
+                Close();
+            }
+            else
+            {
+                NewRoundRefresh();
+                RunAutoPlay();
+            }
+        }
+
+        // Starts the background worker.
+        private void RunAutoPlay(bool skipCurrentAction = false)
+        {
+            if (!_autoPlay.IsBusy)
+            {
+                _autoPlay.RunWorkerAsync(skipCurrentAction);
             }
         }
 
@@ -382,15 +430,13 @@ namespace Gnoj_HamView
         }
 
         // Proceeds to autoplay for human player.
-        private void HumanAutoPlay(out bool newRound)
+        private void HumanAutoPlay(AutoPlayResult result)
         {
-            newRound = false;
-
             Pick();
 
             if (HumanCallTsumo(false))
             {
-                newRound = true;
+                result.EndOfRound = true;
                 return;
             }
 
@@ -399,19 +445,23 @@ namespace Gnoj_HamView
             {
                 Dispatcher.Invoke(() =>
                 {
-                    if (!HumanCallRiichi(tilesRiichi))
+                    Tuple<bool, string, int> riichiResult = HumanCallRiichi(tilesRiichi);
+                    if (!riichiResult.Item1)
                     {
                         ActivateTimer(StpPickP0.Children[0] as Button);
+                    }
+                    else if (!string.IsNullOrWhiteSpace(riichiResult.Item2))
+                    {
+                        result.PanelName = riichiResult.Item2;
+                        result.ChildrenIndex = riichiResult.Item3;
                     }
                 });
             }
             else if (_riichiAutoDiscard && _game.Round.HumanCanAutoDiscard())
             {
                 Thread.Sleep(_cpuSpeedMs);
-                Dispatcher.Invoke(() =>
-                {
-                    (StpPickP0.Children[0] as Button).RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent));
-                });
+                result.PanelName = "StpPickP0";
+                result.ChildrenIndex = 0;
             }
             else
             {
@@ -423,8 +473,10 @@ namespace Gnoj_HamView
         }
 
         // Restrict possible discards on the specified selection of tiles.
-        private void RestrictDiscardWithTilesSelection(IDictionary<TilePivot, bool> tileChoices, RoutedEventHandler handler)
+        private Tuple<string, int> RestrictDiscardWithTilesSelection(IDictionary<TilePivot, bool> tileChoices, RoutedEventHandler handler)
         {
+            Tuple<string, int> result = new Tuple<string, int>(null, -1);
+
             SetActionButtonsVisibility();
 
             List<Button> buttons = StpHandP0.Children.OfType<Button>().ToList();
@@ -452,13 +504,14 @@ namespace Gnoj_HamView
             if (clickableButtons.Count == 1)
             {
                 // Only one possibility : proceeds to make the call.
-                clickableButtons[0].RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent));
+                result = new Tuple<string, int>(nameof(StpHandP0), StpHandP0.Children.IndexOf(clickableButtons[0]));
             }
             else
             {
                 ActivateTimer(clickableButtons[0]);
-                // Otherwise, waits for the user choice.
             }
+
+            return result;
         }
 
         // Discard action (human or CPU).
@@ -470,16 +523,18 @@ namespace Gnoj_HamView
                 {
                     Thread.Sleep(_cpuSpeedMs);
                 }
+
                 Dispatcher.Invoke(() =>
                 {
                     FillHandPanel(_game.Round.PreviousPlayerIndex);
                     FillDiscardPanel(_game.Round.PreviousPlayerIndex);
                     SetActionButtonsVisibility(cpuPlay: !_game.Round.PreviousIsHumanPlayer);
-                    if (_game.Round.PreviousIsHumanPlayer)
-                    {
-                        AutoPlayAsync();
-                    }
                 });
+
+                if (_game.Round.PreviousIsHumanPlayer)
+                {
+                    RunAutoPlay();
+                }
             }
         }
 
@@ -599,7 +654,7 @@ namespace Gnoj_HamView
 
                 if (_game.Round.PreviousIsHumanPlayer)
                 {
-                    AutoPlayAsync();
+                    RunAutoPlay();
                 }
             }
         }
@@ -908,6 +963,28 @@ namespace Gnoj_HamView
         #endregion Graphic tools
 
         #region Other methods
+
+        // Raises the button click event, from the panel specified at the index (of children) specified.
+        private void RaiseButtonClickEvent(string panelName, int childrenIndex)
+        {
+            if (!string.IsNullOrWhiteSpace(panelName))
+            {
+                ((FindName(panelName) as StackPanel).Children[childrenIndex] as Button).RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent));
+            }
+        }
+
+        // Checks if the button clicked was ready.
+        private bool IsCurrentlyClickable(RoutedEventArgs e)
+        {
+            bool isCurrentlyClickable = !_autoPlay.IsBusy;
+
+            if (isCurrentlyClickable)
+            {
+                _timer?.Stop();
+            }
+
+            return isCurrentlyClickable;
+        }
 
         // Activates the human decision timer and binds its event to a button click.
         private void ActivateTimer(Button buttonToClick)
