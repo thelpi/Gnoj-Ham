@@ -164,6 +164,8 @@ namespace Gnoj_HamView
                 return;
             }
 
+            _timer?.Stop();
+
             if (BtnPon.Visibility == Visibility.Visible
                 || BtnChii.Visibility == Visibility.Visible
                 || BtnKan.Visibility == Visibility.Visible)
@@ -948,6 +950,13 @@ namespace Gnoj_HamView
                 BtnPon.Visibility = _game.Round.CanCallPon(GamePivot.HUMAN_INDEX) ? Visibility.Visible : Visibility.Collapsed;
                 BtnKan.Visibility = _game.Round.CanCallKan(GamePivot.HUMAN_INDEX).Count > 0 ? Visibility.Visible : Visibility.Collapsed;
             }
+
+            if (BtnChii.Visibility == Visibility.Visible
+                || BtnPon.Visibility == Visibility.Visible
+                || BtnKan.Visibility == Visibility.Visible)
+            {
+                ActivateTimer(null);
+            }
         }
 
         #endregion Graphic tools
@@ -989,7 +998,14 @@ namespace Gnoj_HamView
                 {
                     Dispatcher.Invoke(() =>
                     {
-                        buttonToClick.RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent));
+                        if (buttonToClick == null)
+                        {
+                            Window_MouseDoubleClick(null, null);
+                        }
+                        else
+                        {
+                            buttonToClick.RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent));
+                        }
                     });
                 };
                 _timer.Elapsed += _currentTimerHandler;
