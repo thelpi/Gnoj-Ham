@@ -473,6 +473,7 @@ namespace Gnoj_Ham
                 _hands[playerIndex].DeclaredCombinations.FirstOrDefault(c => c.IsBrelan && c.OpenTile == tileChoice);
 
             if (CurrentPlayerIndex == playerIndex
+                && _waitForDiscard
                 && tileChoice != null
                 && !_hands[playerIndex].ConcealedTiles.GroupBy(t => t).Any(t => t.Count() == 4 && t.Key == tileChoice)
                 && fromPreviousPon == null)
@@ -481,7 +482,7 @@ namespace Gnoj_Ham
             }
 
             bool isClosedKan = false;
-            if (CurrentPlayerIndex == playerIndex)
+            if (CurrentPlayerIndex == playerIndex && _waitForDiscard)
             {
                 // Forces a decision, even if there're several possibilities.
                 if (tileChoice == null)

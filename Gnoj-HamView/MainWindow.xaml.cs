@@ -314,9 +314,9 @@ namespace Gnoj_HamView
                     Tuple<int, TilePivot> opponentWithKanTilePick = _game.Round.IaManager.KanDecision(false);
                     if (opponentWithKanTilePick != null)
                     {
-                        int currentPlayerId = _game.Round.CurrentPlayerIndex;
+                        int previousPlayerIndex = _game.Round.PreviousPlayerIndex;
                         TilePivot compensationTile = OpponentBeginCallKan(opponentWithKanTilePick.Item1, opponentWithKanTilePick.Item2, false, false);
-                        kanInProgress = new Tuple<int, TilePivot, int?>(opponentWithKanTilePick.Item1, compensationTile, currentPlayerId);
+                        kanInProgress = new Tuple<int, TilePivot, int?>(opponentWithKanTilePick.Item1, compensationTile, previousPlayerIndex);
                         continue;
                     }
 
@@ -662,7 +662,7 @@ namespace Gnoj_HamView
         // Proceeds to call a kan for an opponent.
         private TilePivot OpponentBeginCallKan(int playerId, TilePivot kanTilePick, bool concealedKan, bool fromPreviousKan)
         {
-            TilePivot compensationTile = _game.Round.CallKan(playerId, kanTilePick);
+            TilePivot compensationTile = _game.Round.CallKan(playerId, concealedKan ? kanTilePick : null);
             if (compensationTile != null)
             {
                 InvokeOverlay("Kan", playerId);
