@@ -19,11 +19,6 @@ namespace Gnoj_HamView
         private const string WINDOW_TITLE = "Gnoj-Ham";
 
         private readonly GamePivot _game;
-        private int _cpuSpeedMs;
-        private bool _autoTsumoRon;
-        private bool _riichiAutoDiscard;
-        private bool _debugMode;
-        private bool _sounds;
         private bool _pauseAutoplay;
         private System.Media.SoundPlayer _tickSound;
         private System.Timers.Timer _timer;
@@ -37,30 +32,18 @@ namespace Gnoj_HamView
         /// <param name="pointRule">Indicates the initial points count for every players.</param>
         /// <param name="endOfGameRule">The ruel to end a game.</param>
         /// <param name="useRedDoras">Indicates if red doras should be used.</param>
-        /// <param name="cpuSpeed">CPU speed.</param>
-        /// <param name="chrono">Chrono speed.</param>
-        /// <param name="autoTsumoRon">Auto call for tsumo and ron.</param>
-        /// <param name="riichiAutoDiscard">Auto-discard when riichi.</param>
-        /// <param name="debugMode"><c>True</c> to display the opponent tiles.</param>
         /// <param name="sortedDraw"><c>True</c> to not randomize the tile draw.</param>
         /// <param name="useNagashiMangan"><c>True</c> to use the yaku 'Nagashi Mangan'.</param>
         /// <param name="useRenhou"><c>True</c> to use the yakuman 'Renhou'.</param>
-        /// <param name="sounds"><c>True</c> to activate sounds.</param>
-        public MainWindow(string playerName, InitialPointsRulePivot pointRule, EndOfGameRulePivot endOfGameRule, bool useRedDoras,
-            CpuSpeedPivot cpuSpeed, ChronoPivot chrono, bool autoTsumoRon, bool riichiAutoDiscard, bool debugMode, bool sortedDraw,
-            bool useNagashiMangan, bool useRenhou, bool sounds)
+        public MainWindow(string playerName, InitialPointsRulePivot pointRule, EndOfGameRulePivot endOfGameRule,
+            bool useRedDoras, bool sortedDraw, bool useNagashiMangan, bool useRenhou)
         {
             InitializeComponent();
 
             _game = new GamePivot(playerName, pointRule, endOfGameRule, useRedDoras, sortedDraw, useNagashiMangan, useRenhou);
-            _cpuSpeedMs = cpuSpeed.ParseSpeed();
-            _autoTsumoRon = autoTsumoRon;
-            _riichiAutoDiscard = riichiAutoDiscard;
-            _debugMode = debugMode;
-            _sounds = sounds;
             _tickSound = new System.Media.SoundPlayer(Properties.Resources.tick);
 
-            SetChronoTime(chrono);
+            SetChronoTime();
 
             FixWindowDimensions();
 
@@ -82,14 +65,7 @@ namespace Gnoj_HamView
             _timer?.Stop();
             _pauseAutoplay = true;
 
-            var configurationWindow = new IntroWindow(_game);
-            configurationWindow.ShowDialog();
-            _cpuSpeedMs = configurationWindow.CpuSpeed.ParseSpeed();
-            SetChronoTime(configurationWindow.Chrono);
-            _autoTsumoRon = configurationWindow.AutoTsumoRon;
-            _riichiAutoDiscard = configurationWindow.RiichiAutoDiscard;
-            _debugMode = configurationWindow.DebugMode;
-            _sounds = configurationWindow.Sounds;
+            new IntroWindow(_game).ShowDialog();
 
             _pauseAutoplay = false;
             if (timerWasRunning && _timer != null)
@@ -212,7 +188,8 @@ namespace Gnoj_HamView
         {
             if (_game.Round.CanCallTsumo(isKanCompensation))
             {
-                if (_autoTsumoRon || MessageBox.Show("Call tsumo ?", WINDOW_TITLE, MessageBoxButton.YesNo) == MessageBoxResult.Yes)
+                if (Properties.Settings.Default.AutoCallMahjong
+                    || MessageBox.Show("Call tsumo ?", WINDOW_TITLE, MessageBoxButton.YesNo) == MessageBoxResult.Yes)
                 {
                     return true;
                 }
@@ -225,7 +202,8 @@ namespace Gnoj_HamView
         {
             if (_game.Round.CanCallRon(GamePivot.HUMAN_INDEX))
             {
-                if (_autoTsumoRon || MessageBox.Show("Call ron ?", WINDOW_TITLE, MessageBoxButton.YesNo) == MessageBoxResult.Yes)
+                if (Properties.Settings.Default.AutoCallMahjong
+                    || MessageBox.Show("Call ron ?", WINDOW_TITLE, MessageBoxButton.YesNo) == MessageBoxResult.Yes)
                 {
                     return true;
                 }
@@ -457,9 +435,9 @@ namespace Gnoj_HamView
                     }
                 });
             }
-            else if (_riichiAutoDiscard && _game.Round.HumanCanAutoDiscard())
+            else if (Properties.Settings.Default.AutoDiscardAfterRiichi && _game.Round.HumanCanAutoDiscard())
             {
-                Thread.Sleep(_cpuSpeedMs);
+                Thread.Sleep(((CpuSpeedPivot)Properties.Settings.Default.CpuSpeed).ParseSpeed());
                 result.PanelName = "StpPickP0";
                 result.ChildrenIndex = 0;
             }
@@ -521,7 +499,7 @@ namespace Gnoj_HamView
             {
                 if (!_game.Round.PreviousIsHumanPlayer)
                 {
-                    Thread.Sleep(_cpuSpeedMs);
+                    Thread.Sleep(((CpuSpeedPivot)Properties.Settings.Default.CpuSpeed).ParseSpeed());
                 }
 
                 Dispatcher.Invoke(() =>
@@ -546,7 +524,7 @@ namespace Gnoj_HamView
                 if (!_game.Round.IsHumanPlayer)
                 {
                     InvokeOverlay("Chii", _game.Round.CurrentPlayerIndex);
-                    Thread.Sleep(_cpuSpeedMs);
+                    Thread.Sleep(((CpuSpeedPivot)Properties.Settings.Default.CpuSpeed).ParseSpeed());
                 }
 
                 Dispatcher.Invoke(() =>
@@ -585,7 +563,7 @@ namespace Gnoj_HamView
                 if (isCpu)
                 {
                     InvokeOverlay("Pon", playerIndex);
-                    Thread.Sleep(_cpuSpeedMs);
+                    Thread.Sleep(((CpuSpeedPivot)Properties.Settings.Default.CpuSpeed).ParseSpeed());
                 }
 
                 Dispatcher.Invoke(() =>
@@ -624,7 +602,7 @@ namespace Gnoj_HamView
                     pick.GenerateTileButton(
                         _game.Round.IsHumanPlayer ? BtnDiscard_Click : (RoutedEventHandler)null,
                         (AnglePivot)_game.Round.CurrentPlayerIndex,
-                        !_game.Round.IsHumanPlayer && !_debugMode
+                        !_game.Round.IsHumanPlayer && !Properties.Settings.Default.DebugMode
                     )
                 );
                 if (_game.Round.IsHumanPlayer)
@@ -642,7 +620,7 @@ namespace Gnoj_HamView
                 if (!_game.Round.PreviousIsHumanPlayer)
                 {
                     InvokeOverlay("Riichi", _game.Round.PreviousPlayerIndex);
-                    Thread.Sleep(_cpuSpeedMs);
+                    Thread.Sleep(((CpuSpeedPivot)Properties.Settings.Default.CpuSpeed).ParseSpeed());
                 }
 
                 Dispatcher.Invoke(() =>
@@ -666,7 +644,7 @@ namespace Gnoj_HamView
             if (compensationTile != null)
             {
                 InvokeOverlay("Kan", playerId);
-                Thread.Sleep(_cpuSpeedMs);
+                Thread.Sleep(((CpuSpeedPivot)Properties.Settings.Default.CpuSpeed).ParseSpeed());
                 Dispatcher.Invoke(() =>
                 {
                     if (!concealedKan)
@@ -722,7 +700,7 @@ namespace Gnoj_HamView
                     compensationTile.GenerateTileButton(
                         _game.Round.IsHumanPlayer ? BtnDiscard_Click : (RoutedEventHandler)null,
                         (AnglePivot)_game.Round.CurrentPlayerIndex,
-                        !_game.Round.IsHumanPlayer && !_debugMode
+                        !_game.Round.IsHumanPlayer && !Properties.Settings.Default.DebugMode
                     )
                 );
                 if (previousPlayerIndex.HasValue)
@@ -768,7 +746,7 @@ namespace Gnoj_HamView
                 BtnOpponentCall.Margin = new Thickness(playerIndex == 3 ? 20 : 0, playerIndex == 2 ? 20 : 0, playerIndex == 1 ? 20 : 0, 0);
                 GrdOverlayCall.Visibility = Visibility.Visible;
             });
-            Thread.Sleep(_cpuSpeedMs);
+            Thread.Sleep(((CpuSpeedPivot)Properties.Settings.Default.CpuSpeed).ParseSpeed());
             Dispatcher.Invoke(() =>
             {
                 GrdOverlayCall.Visibility = Visibility.Collapsed;
@@ -826,7 +804,7 @@ namespace Gnoj_HamView
                 if (excludedTile == null || !ReferenceEquals(excludedTile, tile))
                 {
                     panel.Children.Add(tile.GenerateTileButton(isHuman && !_game.Round.IsRiichi(pIndex) ?
-                        BtnDiscard_Click : (RoutedEventHandler)null, (AnglePivot)pIndex, !isHuman && !_debugMode));
+                        BtnDiscard_Click : (RoutedEventHandler)null, (AnglePivot)pIndex, !isHuman && !Properties.Settings.Default.DebugMode));
                 }
             }
         }
@@ -1007,27 +985,28 @@ namespace Gnoj_HamView
             }
         }
 
-        // Affects a value to the humand ecision timer.
-        private void SetChronoTime(ChronoPivot chrono)
+        // Affects a value to the human decision timer.
+        private void SetChronoTime()
         {
-            if (chrono == ChronoPivot.None)
+            ChronoPivot chronoValue = (ChronoPivot)Properties.Settings.Default.ChronoSpeed;
+            if (chronoValue == ChronoPivot.None)
             {
                 _timer = null;
             }
             else if (_timer != null)
             {
-                _timer.Interval = chrono.GetDelay() * 1000;
+                _timer.Interval = chronoValue.GetDelay() * 1000;
             }
             else
             {
-                _timer = new System.Timers.Timer(chrono.GetDelay() * 1000);
+                _timer = new System.Timers.Timer(chronoValue.GetDelay() * 1000);
             }
         }
 
         // Plays the tick sound if sounds activated.
         private void PlayTickSound()
         {
-            if (_sounds)
+            if (Properties.Settings.Default.PlaySounds)
             {
                 _tickSound.Play();
             }

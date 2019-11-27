@@ -50,132 +50,132 @@ namespace Gnoj_HamView.Properties {
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("0")]
-        public int DefaultPointsRule {
+        public int InitialPointsRule {
             get {
-                return ((int)(this["DefaultPointsRule"]));
+                return ((int)(this["InitialPointsRule"]));
             }
             set {
-                this["DefaultPointsRule"] = value;
+                this["InitialPointsRule"] = value;
             }
         }
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("2")]
-        public int DefaultCpuSpeed {
+        public int CpuSpeed {
             get {
-                return ((int)(this["DefaultCpuSpeed"]));
+                return ((int)(this["CpuSpeed"]));
             }
             set {
-                this["DefaultCpuSpeed"] = value;
+                this["CpuSpeed"] = value;
             }
         }
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("True")]
-        public bool DefaultRiichiAutoDiscard {
+        public bool AutoDiscardAfterRiichi {
             get {
-                return ((bool)(this["DefaultRiichiAutoDiscard"]));
+                return ((bool)(this["AutoDiscardAfterRiichi"]));
             }
             set {
-                this["DefaultRiichiAutoDiscard"] = value;
+                this["AutoDiscardAfterRiichi"] = value;
             }
         }
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("True")]
-        public bool DefaultAutoTsumoRon {
+        public bool AutoCallMahjong {
             get {
-                return ((bool)(this["DefaultAutoTsumoRon"]));
+                return ((bool)(this["AutoCallMahjong"]));
             }
             set {
-                this["DefaultAutoTsumoRon"] = value;
+                this["AutoCallMahjong"] = value;
             }
         }
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("False")]
-        public bool DefaultSortedDraw {
+        public bool SortedDraw {
             get {
-                return ((bool)(this["DefaultSortedDraw"]));
+                return ((bool)(this["SortedDraw"]));
             }
             set {
-                this["DefaultSortedDraw"] = value;
+                this["SortedDraw"] = value;
             }
         }
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("False")]
-        public bool DefaultDebugMode {
+        public bool DebugMode {
             get {
-                return ((bool)(this["DefaultDebugMode"]));
+                return ((bool)(this["DebugMode"]));
             }
             set {
-                this["DefaultDebugMode"] = value;
+                this["DebugMode"] = value;
             }
         }
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("True")]
-        public bool DefaultUseNagashiMangan {
+        public bool UseNagashiMangan {
             get {
-                return ((bool)(this["DefaultUseNagashiMangan"]));
+                return ((bool)(this["UseNagashiMangan"]));
             }
             set {
-                this["DefaultUseNagashiMangan"] = value;
+                this["UseNagashiMangan"] = value;
             }
         }
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("True")]
-        public bool DefaultUseRenhou {
+        public bool UseRenhou {
             get {
-                return ((bool)(this["DefaultUseRenhou"]));
+                return ((bool)(this["UseRenhou"]));
             }
             set {
-                this["DefaultUseRenhou"] = value;
+                this["UseRenhou"] = value;
             }
         }
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("True")]
-        public bool DefaultSounds {
+        public bool PlaySounds {
             get {
-                return ((bool)(this["DefaultSounds"]));
+                return ((bool)(this["PlaySounds"]));
             }
             set {
-                this["DefaultSounds"] = value;
+                this["PlaySounds"] = value;
             }
         }
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("1")]
-        public int DefaultEndOfGameRule {
+        public int EndOfGameRule {
             get {
-                return ((int)(this["DefaultEndOfGameRule"]));
+                return ((int)(this["EndOfGameRule"]));
             }
             set {
-                this["DefaultEndOfGameRule"] = value;
+                this["EndOfGameRule"] = value;
             }
         }
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("0")]
-        public int DefaultChrono {
+        public int ChronoSpeed {
             get {
-                return ((int)(this["DefaultChrono"]));
+                return ((int)(this["ChronoSpeed"]));
             }
             set {
-                this["DefaultChrono"] = value;
+                this["ChronoSpeed"] = value;
             }
         }
     }

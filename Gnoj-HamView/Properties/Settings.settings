@@ -8,37 +8,37 @@
     <Setting Name="DefaultPlayerName" Type="System.String" Scope="User">
       <Value Profile="(Default)">Lpi</Value>
     </Setting>
-    <Setting Name="DefaultPointsRule" Type="System.Int32" Scope="User">
+    <Setting Name="InitialPointsRule" Type="System.Int32" Scope="User">
       <Value Profile="(Default)">0</Value>
     </Setting>
-    <Setting Name="DefaultCpuSpeed" Type="System.Int32" Scope="User">
+    <Setting Name="CpuSpeed" Type="System.Int32" Scope="User">
       <Value Profile="(Default)">2</Value>
     </Setting>
-    <Setting Name="DefaultRiichiAutoDiscard" Type="System.Boolean" Scope="User">
+    <Setting Name="AutoDiscardAfterRiichi" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">True</Value>
     </Setting>
-    <Setting Name="DefaultAutoTsumoRon" Type="System.Boolean" Scope="User">
+    <Setting Name="AutoCallMahjong" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">True</Value>
     </Setting>
-    <Setting Name="DefaultSortedDraw" Type="System.Boolean" Scope="User">
+    <Setting Name="SortedDraw" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">False</Value>
     </Setting>
-    <Setting Name="DefaultDebugMode" Type="System.Boolean" Scope="User">
+    <Setting Name="DebugMode" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">False</Value>
     </Setting>
-    <Setting Name="DefaultUseNagashiMangan" Type="System.Boolean" Scope="User">
+    <Setting Name="UseNagashiMangan" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">True</Value>
     </Setting>
-    <Setting Name="DefaultUseRenhou" Type="System.Boolean" Scope="User">
+    <Setting Name="UseRenhou" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">True</Value>
     </Setting>
-    <Setting Name="DefaultSounds" Type="System.Boolean" Scope="User">
+    <Setting Name="PlaySounds" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">True</Value>
     </Setting>
-    <Setting Name="DefaultEndOfGameRule" Type="System.Int32" Scope="User">
+    <Setting Name="EndOfGameRule" Type="System.Int32" Scope="User">
       <Value Profile="(Default)">1</Value>
     </Setting>
-    <Setting Name="DefaultChrono" Type="System.Int32" Scope="User">
+    <Setting Name="ChronoSpeed" Type="System.Int32" Scope="User">
       <Value Profile="(Default)">0</Value>
     </Setting>
   </Settings>
