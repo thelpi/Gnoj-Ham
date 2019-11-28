@@ -119,7 +119,7 @@ namespace Gnoj_HamView
         {
             if (IsCurrentlyClickable(e))
             {
-                Dictionary<TilePivot, bool> tileChoices = _game.Round.CanCallChii(GamePivot.HUMAN_INDEX);
+                Dictionary<TilePivot, bool> tileChoices = _game.Round.CanCallChii();
 
                 if (tileChoices.Keys.Count > 0)
                 {
@@ -243,7 +243,7 @@ namespace Gnoj_HamView
                 }
                 else
                 {
-                    Tuple<bool, string, int> riichiResult = HumanCallRiichi(_game.Round.CanCallRiichi(GamePivot.HUMAN_INDEX));
+                    Tuple<bool, string, int> riichiResult = HumanCallRiichi(_game.Round.CanCallRiichi());
                     if (!riichiResult.Item1)
                     {
                         ActivateTimer(GetFirstAvailableDiscardButton());
@@ -319,7 +319,7 @@ namespace Gnoj_HamView
                         continue;
                     }
 
-                    if (!skipCurrentAction && _game.Round.CanCallChii(GamePivot.HUMAN_INDEX).Count > 0)
+                    if (!skipCurrentAction && _game.Round.IsHumanPlayer && _game.Round.CanCallChii().Count > 0)
                     {
                         break;
                     }
@@ -432,7 +432,7 @@ namespace Gnoj_HamView
                 return;
             }
 
-            List<TilePivot> tilesRiichi = _game.Round.CanCallRiichi(GamePivot.HUMAN_INDEX);
+            List<TilePivot> tilesRiichi = _game.Round.CanCallRiichi();
             if (tilesRiichi.Count > 0)
             {
                 Dispatcher.Invoke(() =>
@@ -533,7 +533,7 @@ namespace Gnoj_HamView
         // Chii call action (human or CPU).
         private void ChiiCall(Tuple<TilePivot, bool> chiiTilePick)
         {
-            if (_game.Round.CallChii(_game.Round.CurrentPlayerIndex, chiiTilePick.Item2 ? chiiTilePick.Item1.Number - 1 : chiiTilePick.Item1.Number))
+            if (_game.Round.CallChii(chiiTilePick.Item2 ? chiiTilePick.Item1.Number - 1 : chiiTilePick.Item1.Number))
             {
                 InvokeOverlay("Chii", _game.Round.CurrentPlayerIndex);
                 if (!_game.Round.IsHumanPlayer)
@@ -629,7 +629,7 @@ namespace Gnoj_HamView
         // Riichi call action (human or CPU).
         private void CallRiichi(TilePivot tile)
         {
-            if (_game.Round.CallRiichi(_game.Round.CurrentPlayerIndex, tile))
+            if (_game.Round.CallRiichi(tile))
             {
                 if (!_game.Round.PreviousIsHumanPlayer)
                 {
@@ -946,7 +946,7 @@ namespace Gnoj_HamView
             {
                 // When the CPU is playing
                 // Or it's player's turn but he has not pick yet
-                BtnChii.Visibility = _game.Round.CanCallChii(GamePivot.HUMAN_INDEX).Keys.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
+                BtnChii.Visibility = _game.Round.IsHumanPlayer && _game.Round.CanCallChii().Keys.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
                 BtnPon.Visibility = _game.Round.CanCallPon(GamePivot.HUMAN_INDEX) ? Visibility.Visible : Visibility.Collapsed;
                 BtnKan.Visibility = _game.Round.CanCallKan(GamePivot.HUMAN_INDEX).Count > 0 ? Visibility.Visible : Visibility.Collapsed;
             }

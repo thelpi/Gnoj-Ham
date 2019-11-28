@@ -126,7 +126,7 @@ namespace Gnoj_Ham
                 return null;
             }
 
-            List<TilePivot> riichiTiles = Round.CanCallRiichi(Round.CurrentPlayerIndex);
+            List<TilePivot> riichiTiles = Round.CanCallRiichi();
             if (riichiTiles.Count > 0)
             {
                 return riichiTiles.First();

@@ -280,16 +280,15 @@ namespace Gnoj_Ham
         /// <summary>
         /// Checks if calling chii is allowed for the specified player.
         /// </summary>
-        /// <param name="playerIndex">The player index.</param>
         /// <returns>
         /// A dictionnary, where each <see cref="KeyValuePair{TilePivot, Boolean}"/> is an indication of the chii which can be made:
         /// - The key is the first tile (ie the lowest number) of <see cref="HandPivot.ConcealedTiles"/> to use in the sequence.
         /// - The value indicates if the key is used as lowest number in the sequence (<c>False</c>) or second (<c>True</c>, ie the tile stolen is the lowest number).
         /// The list is empty if calling chii is impossible.
         /// </returns>
-        public Dictionary<TilePivot, bool> CanCallChii(int playerIndex)
+        public Dictionary<TilePivot, bool> CanCallChii()
         {
-            if (_wallTiles.Count == 0 || CurrentPlayerIndex != playerIndex || _discards[PreviousPlayerIndex].Count == 0 || _waitForDiscard || IsRiichi(playerIndex))
+            if (_wallTiles.Count == 0 || _discards[PreviousPlayerIndex].Count == 0 || _waitForDiscard || IsRiichi(CurrentPlayerIndex))
             {
                 return new Dictionary<TilePivot, bool>();
             }
@@ -412,12 +411,11 @@ namespace Gnoj_Ham
         /// <summary>
         /// Tries to call chii for the specified player.
         /// </summary>
-        /// <param name="playerIndex">Player index.</param>
         /// <param name="startNumber">The number indicating the beginning of the sequence.</param>
         /// <returns><c>True</c> if success; <c>False</c> if failure.</returns>
-        public bool CallChii(int playerIndex, int startNumber)
+        public bool CallChii(int startNumber)
         {
-            if (CanCallChii(playerIndex).Keys.Count == 0)
+            if (CanCallChii().Keys.Count == 0)
             {
                 return false;
             }
@@ -522,29 +520,28 @@ namespace Gnoj_Ham
         /// <summary>
         /// Proceeds to call riichi.
         /// </summary>
-        /// <param name="playerIndex">The player index.</param>
         /// <param name="tile">The discarded tile.</param>
         /// <exception cref="InvalidOperationException"><see cref="Messages.UnexpectedDiscardFail"/></exception>
-        public bool CallRiichi(int playerIndex, TilePivot tile)
+        public bool CallRiichi(TilePivot tile)
         {
-            if (!CanCallRiichi(playerIndex).Contains(tile))
+            if (!CanCallRiichi().Contains(tile))
             {
                 return false;
             }
 
             // Computes before discard, but proceeds after.
             // Otherwise, the discard will fail.
-            int riichiTurnsCount = _discards[playerIndex].Count;
-            bool isUninterruptedFirstTurn = _discards[playerIndex].Count == 0 && IsUninterruptedHistory(playerIndex);
+            int riichiTurnsCount = _discards[CurrentPlayerIndex].Count;
+            bool isUninterruptedFirstTurn = _discards[CurrentPlayerIndex].Count == 0 && IsUninterruptedHistory(CurrentPlayerIndex);
 
             if (!Discard(tile))
             {
                 throw new InvalidOperationException(Messages.UnexpectedDiscardFail);
             }
             
-            _riichis[playerIndex] = new RiichiPivot(riichiTurnsCount, isUninterruptedFirstTurn, tile,
-                Enumerable.Range(0, 4).Where(i => i != playerIndex).Select(i => new KeyValuePair<int, int>(i, _virtualDiscards[i].Count)).ToDictionary(kvp => kvp.Key, kvp => kvp.Value));
-            Game.AddPendingRiichi(playerIndex);
+            _riichis[PreviousPlayerIndex] = new RiichiPivot(riichiTurnsCount, isUninterruptedFirstTurn, tile,
+                Enumerable.Range(0, 4).Where(i => i != PreviousPlayerIndex).Select(i => new KeyValuePair<int, int>(i, _virtualDiscards[i].Count)).ToDictionary(kvp => kvp.Key, kvp => kvp.Value));
+            Game.AddPendingRiichi(PreviousPlayerIndex);
 
             return true;
         }
@@ -583,25 +580,23 @@ namespace Gnoj_Ham
         }
 
         /// <summary>
-        /// Checks if the specified player can call riichi.
+        /// Checks if the current player can call riichi.
         /// </summary>
-        /// <param name="playerIndex">Player index.</param>
         /// <returns>Tiles the player can discard; empty list if riichi is impossible.</returns>
-        public List<TilePivot> CanCallRiichi(int playerIndex)
+        public List<TilePivot> CanCallRiichi()
         {
-            if (CurrentPlayerIndex != playerIndex
-                || !_waitForDiscard
-                || IsRiichi(playerIndex)
-                || !_hands[playerIndex].IsConcealed
+            if (!_waitForDiscard
+                || IsRiichi(CurrentPlayerIndex)
+                || !_hands[CurrentPlayerIndex].IsConcealed
                 || _wallTiles.Count < 4
-                || Game.Players.ElementAt(playerIndex).Points < ScoreTools.RIICHI_COST)
+                || Game.Players.ElementAt(CurrentPlayerIndex).Points < ScoreTools.RIICHI_COST)
             {
                 return new List<TilePivot>();
             }
 
             // TODO: if already 3 riichi calls, what to do ?
 
-            return ExtractDiscardChoicesFromTenpai(playerIndex);
+            return ExtractDiscardChoicesFromTenpai(CurrentPlayerIndex);
         }
 
         /// <summary>
@@ -810,18 +805,15 @@ namespace Gnoj_Ham
         /// <summary>
         /// Checks if a chii call can be made by any opponent of the human player.
         /// </summary>
-        /// <returns>same type of return than the method <see cref="CanCallChii(int)"/>, for the opponent who can call chii.</returns>
+        /// <returns>Same type of return than the method <see cref="CanCallChii()"/>, for the opponent who can call chii.</returns>
         public Dictionary<TilePivot, bool> OpponentsCanCallChii()
         {
-            for (int i = 0; i < 4; i++)
+            if (!IsHumanPlayer)
             {
-                if (i != GamePivot.HUMAN_INDEX)
+                Dictionary<TilePivot, bool> chiiTiles = CanCallChii();
+                if (chiiTiles.Count > 0)
                 {
-                    Dictionary<TilePivot, bool> chiiTiles = CanCallChii(i);
-                    if (chiiTiles.Count > 0)
-                    {
-                        return chiiTiles;
-                    }
+                    return chiiTiles;
                 }
             }
 
