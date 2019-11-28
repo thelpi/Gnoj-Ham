@@ -317,5 +317,36 @@ namespace Gnoj_Ham
 
             return 0;
         }
+
+        /// <summary>
+        /// Computes the rank and score of every players at the current state of the game.
+        /// </summary>
+        /// <param name="game">The current game.</param>
+        /// <returns>A list of player with score, order by ascending rank.</returns>
+        public static List<PlayerScorePivot> ComputeCurrentRanking(GamePivot game)
+        {
+            if (game == null)
+            {
+                throw new ArgumentNullException(nameof(game));
+            }
+
+            var playersOrdered = new List<PlayerScorePivot>();
+
+            int i = 1;
+            foreach (PlayerPivot player in game.Players.OrderByDescending(p => p.Points))
+            {
+                playersOrdered.Add(new PlayerScorePivot(player, i, ComputeUma(i), game.InitialPointsRule.GetInitialPointsFromRule()));
+                i++;
+            }
+
+            return playersOrdered;
+        }
+
+        // Computes uma at the specified rank.
+        private static int ComputeUma(int rank)
+        {
+            // TODO : manage more than one rule.
+            return rank == 1 ? 15 : (rank == 2 ? 5 : (rank == 3 ? -5 : -15));
+        }
     }
 }

@@ -45,21 +45,7 @@ namespace Gnoj_HamView
             {
                 (FindName($"LblPlayer{i}") as Label).Content = players[i].Name;
                 (FindName($"LblScore{i}") as Label).Content = players[i].Points;
-
-                int gain = endOfRoundInformations.GetPlayerPointsGain(i);
-
-                Label lblGain = (FindName($"LblGain{i}") as Label);
-
-                lblGain.Content = gain;
-                if (gain > 0)
-                {
-                    lblGain.Content = $"+{gain}";
-                    lblGain.Foreground = Brushes.ForestGreen;
-                }
-                else if (gain < 0)
-                {
-                    lblGain.Foreground = Brushes.Red;
-                }
+                (FindName($"LblGain{i}") as Label).ApplyGainAndLostStyle(endOfRoundInformations.GetPlayerPointsGain(i));
             }
         }
     }

@@ -193,6 +193,25 @@ namespace Gnoj_HamView
             }
         }
 
+        /// <summary>
+        /// Applies a style to a label to show a gain or lost.
+        /// </summary>
+        /// <param name="label">The label.</param>
+        /// <param name="gainOrLostValue">The gain or lost value.</param>
+        internal static void ApplyGainAndLostStyle(this Label label, int gainOrLostValue)
+        {
+            label.Content = gainOrLostValue;
+            if (gainOrLostValue > 0)
+            {
+                label.Content = $"+{gainOrLostValue}";
+                label.Foreground = System.Windows.Media.Brushes.ForestGreen;
+            }
+            else if (gainOrLostValue < 0)
+            {
+                label.Foreground = System.Windows.Media.Brushes.Red;
+            }
+        }
+
         #region Private methods
 
         private static Grid PointsGridForScoreDisplay(EndOfRoundInformationsPivot.PlayerInformationsPivot p)

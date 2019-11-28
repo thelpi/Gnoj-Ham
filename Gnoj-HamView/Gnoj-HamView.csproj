@@ -63,10 +63,17 @@
     <Compile Include="ChronoPivot.cs" />
     <Compile Include="Converters\ChronoConverter.cs" />
     <Compile Include="Converters\EndOfGameRuleConverter.cs" />
+    <Compile Include="EndOfGameWindow.xaml.cs">
+      <DependentUpon>EndOfGameWindow.xaml</DependentUpon>
+    </Compile>
     <Compile Include="GraphicTools.cs" />
     <Compile Include="ScoreWindow.xaml.cs">
       <DependentUpon>ScoreWindow.xaml</DependentUpon>
     </Compile>
+    <Page Include="EndOfGameWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="IntroWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>

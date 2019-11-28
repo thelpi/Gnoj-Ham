@@ -385,6 +385,7 @@ namespace Gnoj_HamView
             new ScoreWindow(_game.Players.ToList(), endOfRoundInfos).ShowDialog();
             if (endOfRoundInfos.EndOfGame)
             {
+                new EndOfGameWindow(_game).ShowDialog();
                 Close();
             }
             else
