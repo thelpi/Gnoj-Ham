@@ -896,7 +896,18 @@ namespace Gnoj_Ham
         {
             List<int> historySinceLastTime = _playerIndexHistory.TakeWhile(i => i != playerIndex).ToList();
 
-            return historySinceLastTime.Count <= 3 && Enumerable.Range(0, 3).All(i => historySinceLastTime.Count <= i || historySinceLastTime[i] == playerIndex.RelativePlayerIndex(-(i + 1)));
+            int rank = 1;
+            for (int i = (historySinceLastTime.Count - 1); i >= 0; i--)
+            {
+                int nextPIndex = playerIndex.RelativePlayerIndex(rank);
+                if (nextPIndex != historySinceLastTime[i])
+                {
+                    return false;
+                }
+                rank++;
+            }
+
+            return true;
         }
 
         // Creates the context and calls "SetYakus" for the specified player.
@@ -909,9 +920,18 @@ namespace Gnoj_Ham
                 playerWind: Game.GetPlayerCurrentWind(playerIndex),
                 isFirstOrLast: IsWallExhaustion ? (bool?)null : (_discards[playerIndex].Count == 0 && IsUninterruptedHistory(playerIndex)),
                 isRiichi: IsRiichi(playerIndex) ? (_riichis[playerIndex].IsDaburu ? (bool?)null : true) : false,
-                isIppatsu: IsRiichi(playerIndex) && _discards[playerIndex].Count > 0 && ReferenceEquals(_discards[playerIndex].Last(), _riichis[playerIndex].Tile) && IsUninterruptedHistory(playerIndex),
+                isIppatsu: IsIppatsu(playerIndex),
                 useRenhou: Game.UseRenhou
             ));
+        }
+
+        // Checks if the specified player is ippatsu.
+        private bool IsIppatsu(int playerIndex)
+        {
+            return IsRiichi(playerIndex)
+                && _discards[playerIndex].Count > 0
+                && ReferenceEquals(_discards[playerIndex].Last(), _riichis[playerIndex].Tile)
+                && IsUninterruptedHistory(playerIndex);
         }
 
         // Gets the concealed tile of the round from the point of view of a specified player.
