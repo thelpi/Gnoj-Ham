@@ -496,8 +496,16 @@ namespace Gnoj_HamView
 
             if (clickableButtons.Count == 1)
             {
-                // Only one possibility : proceeds to make the call.
-                result = new Tuple<string, int>(nameof(StpHandP0), StpHandP0.Children.IndexOf(clickableButtons[0]));
+                // Only one possibility : initiates the auto-discard.
+                int buttonIndexInHandPanel = StpHandP0.Children.IndexOf(clickableButtons[0]);
+                if (buttonIndexInHandPanel >= 0)
+                {
+                    result = new Tuple<string, int>(nameof(StpHandP0), buttonIndexInHandPanel);
+                }
+                else
+                {
+                    result = new Tuple<string, int>(nameof(StpPickP0), StpPickP0.Children.IndexOf(clickableButtons[0]));
+                }
             }
             else
             {
