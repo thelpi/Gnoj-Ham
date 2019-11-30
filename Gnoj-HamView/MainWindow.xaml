@@ -114,9 +114,9 @@
         <!-- Discards -->
         <!-- P1 (bottom) -->
         <StackPanel Orientation="Vertical" Grid.Row="4" Grid.Column="3" Grid.ColumnSpan="2">
-            <StackPanel Orientation="Horizontal" Name="StpP0Discard1" />
-            <StackPanel Orientation="Horizontal" Name="StpP0Discard2" />
-            <StackPanel Orientation="Horizontal" Name="StpP0Discard3" />
+            <StackPanel Orientation="Horizontal" Name="StpDiscard1P0" />
+            <StackPanel Orientation="Horizontal" Name="StpDiscard2P0" />
+            <StackPanel Orientation="Horizontal" Name="StpDiscard3P0" />
         </StackPanel>
         <!-- P2 (right) -->
         <StackPanel Orientation="Horizontal" Grid.Row="2" Grid.Column="4" Grid.RowSpan="2">
@@ -125,21 +125,21 @@
                     <RowDefinition Height="*" />
                     <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
-                <StackPanel Grid.Row="1" Orientation="Vertical" Name="StpP1Discard1" />
+                <StackPanel Grid.Row="1" Orientation="Vertical" Name="StpDiscard1P1" />
             </Grid>
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="*" />
                     <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
-                <StackPanel Grid.Row="1" Orientation="Vertical" Name="StpP1Discard2" />
+                <StackPanel Grid.Row="1" Orientation="Vertical" Name="StpDiscard2P1" />
             </Grid>
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="*" />
                     <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
-                <StackPanel Grid.Row="1" Orientation="Vertical" Name="StpP1Discard3" />
+                <StackPanel Grid.Row="1" Orientation="Vertical" Name="StpDiscard3P1" />
             </Grid>
         </StackPanel>
         <!-- P3 (top) -->
@@ -149,28 +149,28 @@
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
-                <StackPanel Orientation="Horizontal" Grid.Column="1" Name="StpP2Discard3" />
+                <StackPanel Orientation="Horizontal" Grid.Column="1" Name="StpDiscard3P2" />
             </Grid>
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
-                <StackPanel Orientation="Horizontal" Grid.Column="1" Name="StpP2Discard2" />
+                <StackPanel Orientation="Horizontal" Grid.Column="1" Name="StpDiscard2P2" />
             </Grid>
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
-                <StackPanel Orientation="Horizontal" Grid.Column="1" Name="StpP2Discard1" />
+                <StackPanel Orientation="Horizontal" Grid.Column="1" Name="StpDiscard1P2" />
             </Grid>
         </StackPanel>
         <!-- P4 (left) -->
         <StackPanel Orientation="Horizontal" Grid.Row="3" Grid.Column="2" Grid.RowSpan="2">
-            <StackPanel Orientation="Vertical" Name="StpP3Discard3" />
-            <StackPanel Orientation="Vertical" Name="StpP3Discard2" />
-            <StackPanel Orientation="Vertical" Name="StpP3Discard1" />
+            <StackPanel Orientation="Vertical" Name="StpDiscard3P3" />
+            <StackPanel Orientation="Vertical" Name="StpDiscard2P3" />
+            <StackPanel Orientation="Vertical" Name="StpDiscard1P3" />
         </StackPanel>
 
         <!-- Player infos -->

@@ -621,7 +621,7 @@ namespace Gnoj_HamView
             {
                 SetPlayersLed();
                 PlayTickSound();
-                (FindName($"StpPickP{_game.Round.CurrentPlayerIndex}") as StackPanel).Children.Add(
+                this.FindPanel("StpPickP", _game.Round.CurrentPlayerIndex).Children.Add(
                     pick.GenerateTileButton(
                         _game.Round.IsHumanPlayer ? BtnDiscard_Click : (RoutedEventHandler)null,
                         (AnglePivot)_game.Round.CurrentPlayerIndex,
@@ -719,7 +719,7 @@ namespace Gnoj_HamView
             {
                 PlayTickSound();
                 FillHandPanel(_game.Round.CurrentPlayerIndex, compensationTile);
-                (FindName($"StpPickP{_game.Round.CurrentPlayerIndex}") as StackPanel).Children.Add(
+                this.FindPanel("StpPickP", _game.Round.CurrentPlayerIndex).Children.Add(
                     compensationTile.GenerateTileButton(
                         _game.Round.IsHumanPlayer ? BtnDiscard_Click : (RoutedEventHandler)null,
                         (AnglePivot)_game.Round.CurrentPlayerIndex,
@@ -752,7 +752,7 @@ namespace Gnoj_HamView
         // Gets the first button for a discardable tile.
         private Button GetFirstAvailableDiscardButton()
         {
-            return (FindName($"StpHandP{GamePivot.HUMAN_INDEX}") as StackPanel)
+            return this.FindPanel("StpHandP", GamePivot.HUMAN_INDEX)
                 .Children
                 .OfType<Button>()
                 .First(b => _game.Round.CanDiscard(b.Tag as TilePivot));
@@ -799,7 +799,7 @@ namespace Gnoj_HamView
             {
                 for (int j = 1; j <= 3; j++)
                 {
-                    StackPanel panel = FindName($"StpP{i}Discard{j}") as StackPanel;
+                    Panel panel = this.FindPanel($"StpDiscard{j}P", i);
                     if (i % 2 == 0)
                     {
                         panel.Height = GraphicTools.TILE_HEIGHT + (0.5 * GraphicTools.DEFAULT_TILE_MARGIN);
@@ -817,9 +817,9 @@ namespace Gnoj_HamView
         {
             bool isHuman = pIndex == GamePivot.HUMAN_INDEX;
 
-            StackPanel panel = FindName($"StpHandP{pIndex}") as StackPanel;
+            Panel panel = this.FindPanel("StpHandP", pIndex);
 
-            (FindName($"StpPickP{pIndex}") as StackPanel).Children.Clear();
+            this.FindPanel("StpPickP", pIndex).Children.Clear();
 
             panel.Children.Clear();
             foreach (TilePivot tile in _game.Round.Hands.ElementAt(pIndex).ConcealedTiles)
@@ -843,12 +843,12 @@ namespace Gnoj_HamView
             LblEastTurnCount.Content = _game.EastRank;
             for (int pIndex = 0; pIndex < _game.Players.Count; pIndex++)
             {
-                (FindName($"StpCombosP{pIndex}") as StackPanel).Children.Clear();
+                this.FindPanel("StpCombosP", pIndex).Children.Clear();
                 FillHandPanel(pIndex);
                 FillDiscardPanel(pIndex);
-                (FindName($"LblWindP{pIndex}") as Label).Content = _game.GetPlayerCurrentWind(pIndex).ToString();
-                (FindName($"LblNameP{pIndex}") as Label).Content = _game.Players.ElementAt(pIndex).Name;
-                (FindName($"LblPointsP{pIndex}") as Label).Content = $"{_game.Players.ElementAt(pIndex).Points / 1000}k";
+                this.FindControl("LblWindP", pIndex).Content = _game.GetPlayerCurrentWind(pIndex).ToString();
+                this.FindControl("LblNameP", pIndex).Content = _game.Players.ElementAt(pIndex).Name;
+                this.FindControl("LblPointsP", pIndex).Content = $"{_game.Players.ElementAt(pIndex).Points / 1000}k";
             }
             SetPlayersLed();
             SetActionButtonsVisibility(preDiscard: true);
@@ -859,7 +859,7 @@ namespace Gnoj_HamView
         {
             for (int pIndex = 0; pIndex < _game.Players.Count; pIndex++)
             {
-                (FindName($"ImgLedP{pIndex}") as Image).Source =
+                this.FindName<Image>("ImgLedP", pIndex).Source =
                     (pIndex == _game.Round.CurrentPlayerIndex ? Properties.Resources.ledgreen : Properties.Resources.ledred).ToBitmapImage();
             }
         }
@@ -869,7 +869,7 @@ namespace Gnoj_HamView
         {
             for (int r = 1; r <= 3; r++)
             {
-                (FindName($"StpP{pIndex}Discard{r}") as StackPanel).Children.Clear();
+                this.FindPanel($"StpDiscard{r}P", pIndex).Children.Clear();
             }
 
             bool reversed = pIndex == 1 || pIndex == 2;
@@ -877,7 +877,8 @@ namespace Gnoj_HamView
             int i = 0;
             foreach (TilePivot tile in _game.Round.Discards.ElementAt(pIndex))
             {
-                StackPanel panel = FindName($"StpP{pIndex}Discard{(i < 6 ? 1 : (i < 12 ? 2 : 3))}") as StackPanel;
+                int r = i < 6 ? 1 : (i < 12 ? 2 : 3);
+                Panel panel = this.FindPanel($"StpDiscard{r}P", pIndex);
                 AnglePivot angle = (AnglePivot)pIndex;
                 if (_game.Round.IsRiichiRank(pIndex, i))
                 {
@@ -898,7 +899,7 @@ namespace Gnoj_HamView
         // Adds to the player stack its last combination.
         private void FillCombinationStack(int pIndex)
         {
-            StackPanel panel = FindName($"StpCombosP{pIndex}") as StackPanel;
+            Panel panel = this.FindPanel("StpCombosP", pIndex);
 
             panel.Children.Clear();
             foreach (TileComboPivot combo in _game.Round.Hands.ElementAt(pIndex).DeclaredCombinations)

@@ -22,11 +22,11 @@ namespace Gnoj_HamView
             List<PlayerScorePivot> playerScores = ScoreTools.ComputeCurrentRanking(game);
             for (int i = 0; i < playerScores.Count; i++)
             {
-                (FindName($"LblRank{i}") as Label).Content = playerScores[i].Rank;
-                (FindName($"LblPlayer{i}") as Label).Content = playerScores[i].Player.Name;
-                (FindName($"LblPoints{i}") as Label).Content = playerScores[i].Player.Points;
-                (FindName($"LblUma{i}") as Label).ApplyGainAndLostStyle(playerScores[i].Uma);
-                (FindName($"LblScore{i}") as Label).ApplyGainAndLostStyle(playerScores[i].Score);
+                this.FindControl("LblRank", i).Content = playerScores[i].Rank;
+                this.FindControl("LblPlayer", i).Content = playerScores[i].Player.Name;
+                this.FindControl("LblPoints", i).Content = playerScores[i].Player.Points;
+                this.FindControl("LblUma", i).ApplyGainAndLostStyle(playerScores[i].Uma);
+                this.FindControl("LblScore", i).ApplyGainAndLostStyle(playerScores[i].Score);
             }
         }
     }

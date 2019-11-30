@@ -43,9 +43,9 @@ namespace Gnoj_HamView
 
             for (int i = 0; i < 4; i++)
             {
-                (FindName($"LblPlayer{i}") as Label).Content = players[i].Name;
-                (FindName($"LblScore{i}") as Label).Content = players[i].Points;
-                (FindName($"LblGain{i}") as Label).ApplyGainAndLostStyle(endOfRoundInformations.GetPlayerPointsGain(i));
+                this.FindControl("LblPlayer", i).Content = players[i].Name;
+                this.FindControl("LblScore", i).Content = players[i].Points;
+                this.FindControl("LblGain", i).ApplyGainAndLostStyle(endOfRoundInformations.GetPlayerPointsGain(i));
             }
         }
     }
