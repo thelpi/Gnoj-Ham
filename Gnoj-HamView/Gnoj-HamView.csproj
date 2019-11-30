@@ -67,6 +67,7 @@
       <DependentUpon>EndOfGameWindow.xaml</DependentUpon>
     </Compile>
     <Compile Include="GraphicTools.cs" />
+    <Compile Include="PanelButton.cs" />
     <Compile Include="ScoreWindow.xaml.cs">
       <DependentUpon>ScoreWindow.xaml</DependentUpon>
     </Compile>

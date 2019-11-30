@@ -18,14 +18,9 @@
         internal int? RonPlayerId { get; set; }
 
         /// <summary>
-        /// Stackpanel name which contains a button to click.
+        /// The panel button to action.
         /// </summary>
-        internal string PanelName { get; set; }
-
-        /// <summary>
-        /// Index, in the <see cref="PanelName"/> children, of the button to click.
-        /// </summary>
-        internal int ChildrenIndex { get; set; }
+        internal PanelButton PanelButton { get; set; }
 
         #endregion Embedded properties
     }

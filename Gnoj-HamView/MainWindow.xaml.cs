@@ -123,8 +123,7 @@ namespace Gnoj_HamView
 
                 if (tileChoices.Keys.Count > 0)
                 {
-                    Tuple<string, int> restrictResult = RestrictDiscardWithTilesSelection(tileChoices, BtnChiiChoice_Click);
-                    RaiseButtonClickEvent(restrictResult.Item1, restrictResult.Item2);
+                    RaiseButtonClickEvent(RestrictDiscardWithTilesSelection(tileChoices, BtnChiiChoice_Click));
                 }
             }
         }
@@ -138,8 +137,7 @@ namespace Gnoj_HamView
                 {
                     if (_game.Round.IsHumanPlayer)
                     {
-                        Tuple<string, int> restrictResult = RestrictDiscardWithTilesSelection(kanTiles.ToDictionary(t => t, t => false), BtnKanChoice_Click);
-                        RaiseButtonClickEvent(restrictResult.Item1, restrictResult.Item2);
+                        RaiseButtonClickEvent(RestrictDiscardWithTilesSelection(kanTiles.ToDictionary(t => t, t => false), BtnKanChoice_Click));
                     }
                     else
                     {
@@ -174,7 +172,7 @@ namespace Gnoj_HamView
             }
             else if (StpPickP0.Children.Count > 0)
             {
-                RaiseButtonClickEvent("StpPickP0", 0);
+                RaiseButtonClickEvent(new PanelButton("StpPickP", 0));
             }
         }
 
@@ -183,15 +181,14 @@ namespace Gnoj_HamView
         #region Human decisions
 
         // Manages riichi call opportunities.
-        private Tuple<bool, string, int> HumanCallRiichi(List<TilePivot> tiles)
+        private Tuple<bool, PanelButton> HumanCallRiichi(List<TilePivot> tiles)
         {
             if (tiles.Count > 0 && MessageBox.Show("Declare riichi ?", WINDOW_TITLE, MessageBoxButton.YesNo) == MessageBoxResult.Yes)
             {
                 InvokeOverlay("Riichi", GamePivot.HUMAN_INDEX);
-                Tuple<string, int> restrictResult =  RestrictDiscardWithTilesSelection(tiles.ToDictionary(t => t, t => false), BtnRiichiChoice_Click);
-                return new Tuple<bool, string, int>(true, restrictResult.Item1, restrictResult.Item2);
+                return new Tuple<bool, PanelButton>(true, RestrictDiscardWithTilesSelection(tiles.ToDictionary(t => t, t => false), BtnRiichiChoice_Click));
             }
-            return new Tuple<bool, string, int>(false, null, -1);
+            return new Tuple<bool, PanelButton>(false, null);
         }
 
         // Checks a tsumo call for the human player.
@@ -243,7 +240,7 @@ namespace Gnoj_HamView
                 }
                 else
                 {
-                    Tuple<bool, string, int> riichiResult = HumanCallRiichi(_game.Round.CanCallRiichi());
+                    Tuple<bool, PanelButton> riichiResult = HumanCallRiichi(_game.Round.CanCallRiichi());
                     if (!riichiResult.Item1)
                     {
                         ActivateTimer(GetFirstAvailableDiscardButton());
@@ -270,9 +267,8 @@ namespace Gnoj_HamView
                 Tuple<int, TilePivot, int?> kanInProgress = null;
                 AutoPlayResult result = new AutoPlayResult
                 {
-                    ChildrenIndex = -1,
                     EndOfRound = false,
-                    PanelName = null,
+                    PanelButton = null,
                     RonPlayerId = null
                 };
                 while (true)
@@ -373,7 +369,7 @@ namespace Gnoj_HamView
                 }
                 else
                 {
-                    RaiseButtonClickEvent(autoPlayResult.PanelName, autoPlayResult.ChildrenIndex);
+                    RaiseButtonClickEvent(autoPlayResult.PanelButton);
                 }
             };
         }
@@ -438,23 +434,21 @@ namespace Gnoj_HamView
             {
                 Dispatcher.Invoke(() =>
                 {
-                    Tuple<bool, string, int> riichiResult = HumanCallRiichi(tilesRiichi);
+                    Tuple<bool, PanelButton> riichiResult = HumanCallRiichi(tilesRiichi);
                     if (!riichiResult.Item1)
                     {
                         ActivateTimer(StpPickP0.Children[0] as Button);
                     }
-                    else if (!string.IsNullOrWhiteSpace(riichiResult.Item2))
+                    else if (riichiResult.Item2 != null)
                     {
-                        result.PanelName = riichiResult.Item2;
-                        result.ChildrenIndex = riichiResult.Item3;
+                        result.PanelButton = riichiResult.Item2;
                     }
                 });
             }
             else if (Properties.Settings.Default.AutoDiscardAfterRiichi && _game.Round.HumanCanAutoDiscard())
             {
                 Thread.Sleep(((CpuSpeedPivot)Properties.Settings.Default.CpuSpeed).ParseSpeed());
-                result.PanelName = "StpPickP0";
-                result.ChildrenIndex = 0;
+                result.PanelButton = new PanelButton("StpPickP", 0);
             }
             else
             {
@@ -466,9 +460,9 @@ namespace Gnoj_HamView
         }
 
         // Restrict possible discards on the specified selection of tiles.
-        private Tuple<string, int> RestrictDiscardWithTilesSelection(IDictionary<TilePivot, bool> tileChoices, RoutedEventHandler handler)
+        private PanelButton RestrictDiscardWithTilesSelection(IDictionary<TilePivot, bool> tileChoices, RoutedEventHandler handler)
         {
-            Tuple<string, int> result = new Tuple<string, int>(null, -1);
+            PanelButton result = null;
 
             SetActionButtonsVisibility();
 
@@ -500,11 +494,11 @@ namespace Gnoj_HamView
                 int buttonIndexInHandPanel = StpHandP0.Children.IndexOf(clickableButtons[0]);
                 if (buttonIndexInHandPanel >= 0)
                 {
-                    result = new Tuple<string, int>(nameof(StpHandP0), buttonIndexInHandPanel);
+                    result = new PanelButton("StpHandP", buttonIndexInHandPanel);
                 }
                 else
                 {
-                    result = new Tuple<string, int>(nameof(StpPickP0), StpPickP0.Children.IndexOf(clickableButtons[0]));
+                    result = new PanelButton("StpPickP", 0);
                 }
             }
             else
@@ -974,11 +968,13 @@ namespace Gnoj_HamView
         #region Other methods
 
         // Raises the button click event, from the panel specified at the index (of children) specified.
-        private void RaiseButtonClickEvent(string panelName, int childrenIndex)
+        private void RaiseButtonClickEvent(PanelButton pButton)
         {
-            if (!string.IsNullOrWhiteSpace(panelName))
+            if (pButton != null)
             {
-                ((FindName(panelName) as StackPanel).Children[childrenIndex] as Button).RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent));
+                
+                (this.FindPanel(pButton.PanelBaseName, GamePivot.HUMAN_INDEX).Children[pButton.ChildrenButtonIndex] as Button)
+                    .RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent));
             }
         }
 
