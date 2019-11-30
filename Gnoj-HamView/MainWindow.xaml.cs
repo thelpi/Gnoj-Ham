@@ -26,6 +26,7 @@ namespace Gnoj_HamView
         private System.Timers.ElapsedEventHandler _currentTimerHandler;
         private BackgroundWorker _autoPlay;
         private Storyboard _overlayStoryboard;
+        private bool _waitForDecision;
 
         /// <summary>
         /// Constructor.
@@ -94,6 +95,7 @@ namespace Gnoj_HamView
         {
             if (IsCurrentlyClickable(e))
             {
+                _waitForDecision = false;
                 Tuple<TilePivot, bool> tag = (Tuple<TilePivot, bool>)((sender as Button).Tag);
                 ChiiCall(tag);
             }
@@ -103,6 +105,7 @@ namespace Gnoj_HamView
         {
             if (IsCurrentlyClickable(e))
             {
+                _waitForDecision = false;
                 HumanKanCallProcess((sender as Button).Tag as TilePivot, null);
             }
         }
@@ -151,13 +154,14 @@ namespace Gnoj_HamView
         {
             if (IsCurrentlyClickable(e))
             {
+                _waitForDecision = false;
                 CallRiichi((sender as Button).Tag as TilePivot);
             }
         }
 
         private void Window_MouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
-            if (_autoPlay.IsBusy)
+            if (_autoPlay.IsBusy || _waitForDecision)
             {
                 return;
             }
@@ -503,6 +507,7 @@ namespace Gnoj_HamView
             }
             else
             {
+                _waitForDecision = true;
                 ActivateTimer(clickableButtons[0]);
             }
 
@@ -707,6 +712,7 @@ namespace Gnoj_HamView
 
         #region Graphic tools
 
+        // Common trunk of the kan call process.
         private void CommonCallKan(int? previousPlayerIndex, TilePivot compensationTile)
         {
             Dispatcher.Invoke(() =>
@@ -829,6 +835,7 @@ namespace Gnoj_HamView
         // Resets and refills every panels at a new round.
         private void NewRoundRefresh()
         {
+            LblWallTilesLeft.Foreground = System.Windows.Media.Brushes.Black;
             _game.Round.NotifyWallCount += OnNotifyWallCount;
             OnNotifyWallCount(null, null);
 
