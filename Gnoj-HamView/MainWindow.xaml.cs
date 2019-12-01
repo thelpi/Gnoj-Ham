@@ -180,6 +180,31 @@ namespace Gnoj_HamView
             }
         }
 
+        private void BtnRon_Click(object sender, RoutedEventArgs e)
+        {
+            if (IsCurrentlyClickable(e))
+            {
+
+            }
+        }
+
+        private void BtnTsumo_Click(object sender, RoutedEventArgs e)
+        {
+            if (IsCurrentlyClickable(e))
+            {
+                _overlayStoryboard.Completed += TriggerNewRoundAfterOverlayStoryboard;
+                InvokeOverlay("Tsumo", GamePivot.HUMAN_INDEX);
+            }
+        }
+
+        private void BtnRiichi_Click(object sender, RoutedEventArgs e)
+        {
+            if (IsCurrentlyClickable(e))
+            {
+
+            }
+        }
+
         #endregion Window events
 
         #region Human decisions
@@ -193,21 +218,6 @@ namespace Gnoj_HamView
                 return new Tuple<bool, PanelButton>(true, RestrictDiscardWithTilesSelection(tiles.ToDictionary(t => t, t => false), BtnRiichiChoice_Click));
             }
             return new Tuple<bool, PanelButton>(false, null);
-        }
-
-        // Checks a tsumo call for the human player.
-        private bool HumanCallTsumo(bool isKanCompensation)
-        {
-            if (_game.Round.CanCallTsumo(isKanCompensation))
-            {
-                if (Properties.Settings.Default.AutoCallMahjong
-                    || MessageBox.Show("Call tsumo ?", WINDOW_TITLE, MessageBoxButton.YesNo) == MessageBoxResult.Yes)
-                {
-                    InvokeOverlay("Tsumo", GamePivot.HUMAN_INDEX);
-                    return true;
-                }
-            }
-            return false;
         }
 
         // Checks a ron call for the human player.
@@ -238,9 +248,18 @@ namespace Gnoj_HamView
             else
             {
                 CommonCallKan(previousPlayerIndex, compensationTile);
-                if (HumanCallTsumo(true))
+
+                if (_game.Round.CanCallTsumo(true))
                 {
-                    NewRound(null);
+                    BtnTsumo.Visibility = Visibility.Visible;
+                    if (Properties.Settings.Default.AutoCallMahjong)
+                    {
+                        BtnTsumo.RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent));
+                    }
+                    else
+                    {
+                        ActivateTimer(null);
+                    }
                 }
                 else
                 {
@@ -348,7 +367,7 @@ namespace Gnoj_HamView
 
                     if (_game.Round.IsHumanPlayer)
                     {
-                        HumanAutoPlay(result);
+                        result.PanelButton = HumanAutoPlay();
                         break;
                     }
                     else
@@ -423,36 +442,41 @@ namespace Gnoj_HamView
         }
 
         // Proceeds to autoplay for human player.
-        private void HumanAutoPlay(AutoPlayResult result)
+        private PanelButton HumanAutoPlay()
         {
             Pick();
 
-            if (HumanCallTsumo(false))
+            if (_game.Round.CanCallTsumo(false))
             {
-                result.EndOfRound = true;
-                return;
+                Dispatcher.Invoke(() =>
+                {
+                    BtnTsumo.Visibility = Visibility.Visible;
+                });
+                ActivateTimer(null);
+                return Properties.Settings.Default.AutoCallMahjong ? new PanelButton("BtnTsumo", -1) : null;
             }
 
             List<TilePivot> tilesRiichi = _game.Round.CanCallRiichi();
             if (tilesRiichi.Count > 0)
             {
+                Tuple<bool, PanelButton> riichiResult = null;
                 Dispatcher.Invoke(() =>
                 {
-                    Tuple<bool, PanelButton> riichiResult = HumanCallRiichi(tilesRiichi);
+                    riichiResult = HumanCallRiichi(tilesRiichi);
                     if (!riichiResult.Item1)
                     {
                         ActivateTimer(StpPickP0.Children[0] as Button);
                     }
-                    else if (riichiResult.Item2 != null)
-                    {
-                        result.PanelButton = riichiResult.Item2;
-                    }
                 });
+                if (riichiResult?.Item2 != null)
+                {
+                    return riichiResult.Item2;
+                }
             }
             else if (Properties.Settings.Default.AutoDiscardAfterRiichi && _game.Round.HumanCanAutoDiscard())
             {
                 Thread.Sleep(((CpuSpeedPivot)Properties.Settings.Default.CpuSpeed).ParseSpeed());
-                result.PanelButton = new PanelButton("StpPickP", 0);
+                return new PanelButton("StpPickP", 0);
             }
             else
             {
@@ -461,6 +485,8 @@ namespace Gnoj_HamView
                     ActivateTimer(StpPickP0.Children[0] as Button);
                 });
             }
+
+            return null;
         }
 
         // Restrict possible discards on the specified selection of tiles.
@@ -835,6 +861,8 @@ namespace Gnoj_HamView
         // Resets and refills every panels at a new round.
         private void NewRoundRefresh()
         {
+            _overlayStoryboard.Completed -= TriggerNewRoundAfterOverlayStoryboard;
+
             LblWallTilesLeft.Foreground = System.Windows.Media.Brushes.Black;
             _game.Round.NotifyWallCount += OnNotifyWallCount;
             OnNotifyWallCount(null, null);
@@ -944,6 +972,7 @@ namespace Gnoj_HamView
             BtnChii.Visibility = Visibility.Collapsed;
             BtnPon.Visibility = Visibility.Collapsed;
             BtnKan.Visibility = Visibility.Collapsed;
+            BtnTsumo.Visibility = Visibility.Collapsed;
 
             if (preDiscard)
             {
@@ -979,9 +1008,9 @@ namespace Gnoj_HamView
         {
             if (pButton != null)
             {
-                
-                (this.FindPanel(pButton.PanelBaseName, GamePivot.HUMAN_INDEX).Children[pButton.ChildrenButtonIndex] as Button)
-                    .RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent));
+                Button btn = (pButton.ChildrenButtonIndex < 0 ? FindName(pButton.PanelBaseName) :
+                    this.FindPanel(pButton.PanelBaseName, GamePivot.HUMAN_INDEX).Children[pButton.ChildrenButtonIndex]) as Button;
+                btn.RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent));
             }
         }
 
@@ -1058,6 +1087,12 @@ namespace Gnoj_HamView
         {
             (_overlayStoryboard.Children.Last() as ObjectAnimationUsingKeyFrames).KeyFrames[1].KeyTime =
                 KeyTime.FromTimeSpan(new TimeSpan(0, 0, 0, 0, ((CpuSpeedPivot)Properties.Settings.Default.CpuSpeed).ParseSpeed()));
+        }
+
+        // Handler to trigger a new round at the end of the overlay storyboard animation.
+        private void TriggerNewRoundAfterOverlayStoryboard(object sender, EventArgs e)
+        {
+            NewRound(null);
         }
 
         #endregion Other methods

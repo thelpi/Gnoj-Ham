@@ -68,9 +68,12 @@
 
         <!-- Action buttons container -->
         <StackPanel Orientation="Horizontal" Grid.Column="3" Grid.Row="6">
-            <Button Name="BtnPon" Content="PON !" FontWeight="ExtraBold" Height="28" Width="75" Visibility="Collapsed" Click="BtnPon_Click" />
-            <Button Name="BtnChii" Content="CHII !" FontWeight="ExtraBold" Height="28" Width="75" Visibility="Collapsed" Click="BtnChii_Click" />
-            <Button Name="BtnKan" Content="KAN !" FontWeight="ExtraBold" Height="28" Width="75" Visibility="Collapsed" Click="BtnKan_Click" />
+            <Button Name="BtnRiichi" Content="RIICHI !" FontWeight="ExtraBold" Height="28" Width="75" Visibility="Collapsed" Margin="5, 0, 0, 0" Click="BtnRiichi_Click" Foreground="DarkMagenta" />
+            <Button Name="BtnTsumo" Content="TSUMO !"   FontWeight="ExtraBold" Height="28" Width="75" Visibility="Collapsed" Margin="5, 0, 0, 0" Click="BtnTsumo_Click" Foreground="DarkMagenta" />
+            <Button Name="BtnRon" Content="RON !"       FontWeight="ExtraBold" Height="28" Width="75" Visibility="Collapsed" Margin="5, 0, 0, 0" Click="BtnRon_Click" Foreground="DarkMagenta" />
+            <Button Name="BtnPon" Content="PON !"       FontWeight="ExtraBold" Height="28" Width="75" Visibility="Collapsed" Margin="5, 0, 0, 0" Click="BtnPon_Click" />
+            <Button Name="BtnChii" Content="CHII !"     FontWeight="ExtraBold" Height="28" Width="75" Visibility="Collapsed" Margin="5, 0, 0, 0" Click="BtnChii_Click" />
+            <Button Name="BtnKan" Content="KAN !"       FontWeight="ExtraBold" Height="28" Width="75" Visibility="Collapsed" Margin="5, 0, 0, 0" Click="BtnKan_Click" />
         </StackPanel>
 
         <!-- Hands stacks -->
