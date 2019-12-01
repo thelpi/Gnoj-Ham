@@ -18,9 +18,8 @@ namespace Gnoj_HamView
     public partial class MainWindow : Window
     {
         private const string WINDOW_TITLE = "Gnoj-Ham";
-
+        
         private readonly GamePivot _game;
-        private bool _pauseAutoplay;
         private System.Media.SoundPlayer _tickSound;
         private System.Timers.Timer _timer;
         private System.Timers.ElapsedEventHandler _currentTimerHandler;
@@ -59,6 +58,8 @@ namespace Gnoj_HamView
 
             InitializeAutoPlayWorker();
 
+            BindConfiguration();
+
             ContentRendered += delegate (object sender, EventArgs evt)
             {
                 RunAutoPlay();
@@ -70,22 +71,6 @@ namespace Gnoj_HamView
         private void Window_Closing(object sender, CancelEventArgs e)
         {
             _hardStopAutoplay = true;
-        }
-
-        private void BtnConfiguration_Click(object sender, RoutedEventArgs e)
-        {
-            bool timerWasRunning = _timer?.Enabled == true;
-            _timer?.Stop();
-            _pauseAutoplay = true;
-
-            new IntroWindow(_game).ShowDialog();
-            ApplyConfigurationToOverlayStoryboard();
-
-            _pauseAutoplay = false;
-            if (timerWasRunning && _timer != null)
-            {
-                _timer.Start();
-            }
         }
 
         private void BtnDiscard_Click(object sender, RoutedEventArgs e)
@@ -164,7 +149,7 @@ namespace Gnoj_HamView
             }
         }
 
-        private void Window_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+        private void Grid_MouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
             if (_autoPlay.IsBusy || _waitForDecision)
             {
@@ -213,6 +198,48 @@ namespace Gnoj_HamView
             }
         }
 
+        #region Configuration
+
+        private void CbbCpuSpeed_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (IsLoaded && CbbCpuSpeed.SelectedIndex >= 0)
+            {
+                Properties.Settings.Default.CpuSpeed = CbbCpuSpeed.SelectedIndex;
+                Properties.Settings.Default.Save();
+                ApplyConfigurationToOverlayStoryboard();
+            }
+        }
+
+        private void CbbChrono_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (IsLoaded && CbbChrono.SelectedIndex >= 0)
+            {
+                Properties.Settings.Default.ChronoSpeed = CbbChrono.SelectedIndex;
+                Properties.Settings.Default.Save();
+                SetChronoTime();
+            }
+        }
+
+        private void ChkSounds_Click(object sender, RoutedEventArgs e)
+        {
+            Properties.Settings.Default.PlaySounds = ChkSounds.IsChecked == true;
+            Properties.Settings.Default.Save();
+        }
+
+        private void ChkRiichiAutoDiscard_Click(object sender, RoutedEventArgs e)
+        {
+            Properties.Settings.Default.AutoDiscardAfterRiichi = ChkRiichiAutoDiscard.IsChecked == true;
+            Properties.Settings.Default.Save();
+        }
+
+        private void ChkAutoTsumoRon_Click(object sender, RoutedEventArgs e)
+        {
+            Properties.Settings.Default.AutoCallMahjong = ChkAutoTsumoRon.IsChecked == true;
+            Properties.Settings.Default.Save();
+        }
+
+        #endregion Configuration
+
         #endregion Window events
 
         #region General orchestration
@@ -239,11 +266,6 @@ namespace Gnoj_HamView
                 };
                 while (true && !_hardStopAutoplay)
                 {
-                    while (_pauseAutoplay)
-                    {
-                        // Do nothing until the autoplay is restarted.
-                    }
-
                     if (!skipCurrentAction && !humanRonPending && _game.Round.CanCallRon(GamePivot.HUMAN_INDEX))
                     {
                         Dispatcher.Invoke(() =>
@@ -792,19 +814,29 @@ namespace Gnoj_HamView
         {
             Title = WINDOW_TITLE;
 
-            Cod0.Width = new GridLength(GraphicTools.TILE_HEIGHT + GraphicTools.DEFAULT_TILE_MARGIN);
-            Cod1.Width = new GridLength(GraphicTools.TILE_HEIGHT + GraphicTools.DEFAULT_TILE_MARGIN);
-            Cod2.Width = new GridLength((GraphicTools.TILE_HEIGHT * 3) + (GraphicTools.DEFAULT_TILE_MARGIN * 2));
-            Cod4.Width = new GridLength((GraphicTools.TILE_HEIGHT * 3) + (GraphicTools.DEFAULT_TILE_MARGIN * 2));
-            Cod5.Width = new GridLength(GraphicTools.TILE_HEIGHT + GraphicTools.DEFAULT_TILE_MARGIN);
-            Cod6.Width = new GridLength(GraphicTools.TILE_HEIGHT + GraphicTools.DEFAULT_TILE_MARGIN);
+            GrdMain.Width = GraphicTools.EXPECTED_TABLE_SIZE;
+            GrdMain.Height = GraphicTools.EXPECTED_TABLE_SIZE;
+            Height = GraphicTools.EXPECTED_TABLE_SIZE + 50; // Ugly !
 
-            Rod0.Height = new GridLength(GraphicTools.TILE_HEIGHT + GraphicTools.DEFAULT_TILE_MARGIN);
-            Rod1.Height = new GridLength(GraphicTools.TILE_HEIGHT + GraphicTools.DEFAULT_TILE_MARGIN);
-            Rod2.Height = new GridLength((GraphicTools.TILE_HEIGHT * 3) + (GraphicTools.DEFAULT_TILE_MARGIN * 2));
-            Rod4.Height = new GridLength((GraphicTools.TILE_HEIGHT * 3) + (GraphicTools.DEFAULT_TILE_MARGIN * 2));
-            Rod5.Height = new GridLength(GraphicTools.TILE_HEIGHT + GraphicTools.DEFAULT_TILE_MARGIN);
-            Rod6.Height = new GridLength(GraphicTools.TILE_HEIGHT + GraphicTools.DEFAULT_TILE_MARGIN);
+            double dim1 = GraphicTools.TILE_HEIGHT + GraphicTools.DEFAULT_TILE_MARGIN;
+            double dim2 = (GraphicTools.TILE_HEIGHT * 3) + (GraphicTools.DEFAULT_TILE_MARGIN * 2);
+            double dim3 = GraphicTools.EXPECTED_TABLE_SIZE - ((dim1 * 4) + (dim2 * 2));
+
+            Cod0.Width = new GridLength(dim1);
+            Cod1.Width = new GridLength(dim1);
+            Cod2.Width = new GridLength(dim2);
+            Cod3.Width = new GridLength(dim3);
+            Cod4.Width = new GridLength(dim2);
+            Cod5.Width = new GridLength(dim1);
+            Cod6.Width = new GridLength(dim1);
+
+            Rod0.Height = new GridLength(dim1);
+            Rod1.Height = new GridLength(dim1);
+            Rod2.Height = new GridLength(dim2);
+            Rod3.Height = new GridLength(dim3);
+            Rod4.Height = new GridLength(dim2);
+            Rod5.Height = new GridLength(dim1);
+            Rod6.Height = new GridLength(dim1);
 
             for (int i = 0; i < _game.Players.Count; i++)
             {
@@ -1027,7 +1059,7 @@ namespace Gnoj_HamView
                     {
                         if (buttonToClick == null)
                         {
-                            Window_MouseDoubleClick(null, null);
+                            Grid_MouseDoubleClick(null, null);
                         }
                         else
                         {
@@ -1093,6 +1125,20 @@ namespace Gnoj_HamView
         {
             _overlayStoryboard.Completed -= TriggerHumanRonAfterOverlayStoryboard;
             RunAutoPlay(humanRonPending: true);
+        }
+
+        // Binds graphic elements with current configuration.
+        private void BindConfiguration()
+        {
+            CbbChrono.ItemsSource = GraphicTools.GetChronoDisplayValues();
+            CbbChrono.SelectedIndex = Properties.Settings.Default.ChronoSpeed;
+
+            CbbCpuSpeed.ItemsSource = GraphicTools.GetCpuSpeedDisplayValues();
+            CbbCpuSpeed.SelectedIndex = Properties.Settings.Default.CpuSpeed;
+
+            ChkSounds.IsChecked = Properties.Settings.Default.PlaySounds;
+            ChkRiichiAutoDiscard.IsChecked = Properties.Settings.Default.AutoDiscardAfterRiichi;
+            ChkAutoTsumoRon.IsChecked = Properties.Settings.Default.AutoCallMahjong;
         }
 
         #endregion Other methods

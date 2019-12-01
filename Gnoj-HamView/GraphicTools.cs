@@ -31,6 +31,10 @@ namespace Gnoj_HamView
         /// </summary>
         internal const int DEFAULT_TILE_MARGIN = 10;
         /// <summary>
+        /// The table size (width and height).
+        /// </summary>
+        internal const int EXPECTED_TABLE_SIZE = 920;
+        /// <summary>
         /// Tile concealed resource name.
         /// </summary>
         internal const string CONCEALED_TILE_RSC_NAME = "concealed";
@@ -248,6 +252,98 @@ namespace Gnoj_HamView
         {
             return window.FindName<Panel>(nameWithoutIndex, playerIndex);
         }
+
+        #region Enum converters
+
+        /// <summary>
+        /// Transforms the enumeration <see cref="CpuSpeedPivot"/> into a list of <see cref="string"/> (with matching index).
+        /// </summary>
+        /// <returns>List of strings ready for display.</returns>
+        internal static List<string> GetCpuSpeedDisplayValues()
+        {
+            return Enum.GetValues(typeof(CpuSpeedPivot)).OfType<CpuSpeedPivot>().Select(v =>
+            {
+                int intParsedValue = v.ParseSpeed();
+
+                if (intParsedValue >= 1000)
+                {
+                    return $"{intParsedValue / 1000} sec";
+                }
+                else
+                {
+                    return $"{intParsedValue} ms";
+                }
+            }).ToList();
+        }
+
+        /// <summary>
+        /// Transforms the enumeration <see cref="ChronoPivot"/> into a list of <see cref="string"/> (with matching index).
+        /// </summary>
+        /// <returns>List of strings ready for display.</returns>
+        internal static List<string> GetChronoDisplayValues()
+        {
+            var results = new List<string>();
+
+            foreach (ChronoPivot ch in Enum.GetValues(typeof(ChronoPivot)).OfType<ChronoPivot>())
+            {
+                switch (ch)
+                {
+                    case ChronoPivot.None:
+                        results.Add("None");
+                        break;
+                    case ChronoPivot.Short:
+                    case ChronoPivot.Long:
+                        results.Add($"{ch.ToString()} ({ch.GetDelay()} sec)");
+                        break;
+                }
+            }
+
+            return results;
+        }
+
+        /// <summary>
+        /// Transforms the enumeration <see cref="EndOfGameRulePivot"/> into a list of <see cref="string"/> (with matching index).
+        /// </summary>
+        /// <returns>List of strings ready for display.</returns>
+        internal static List<string> GetEndOfGameRuleDisplayValue()
+        {
+            var results = new List<string>();
+
+            foreach (EndOfGameRulePivot rule in Enum.GetValues(typeof(EndOfGameRulePivot)).OfType<EndOfGameRulePivot>())
+            {
+                switch (rule)
+                {
+                    case EndOfGameRulePivot.Enchousen:
+                        results.Add("Enchousen");
+                        break;
+                    case EndOfGameRulePivot.EnchousenAndTobi:
+                        results.Add("Enchousen & Tobi");
+                        break;
+                    case EndOfGameRulePivot.Oorasu:
+                        results.Add("Oorasu");
+                        break;
+                    case EndOfGameRulePivot.Tobi:
+                        results.Add("Tobi");
+                        break;
+                }
+            }
+
+            return results;
+        }
+
+        /// <summary>
+        /// Transforms the enumeration <see cref="InitialPointsRulePivot"/> into a list of <see cref="string"/> (with matching index).
+        /// </summary>
+        /// <returns>List of strings ready for display.</returns>
+        internal static List<string> GetInitialPointsRuleDisplayValue()
+        {
+            return Enum.GetValues(typeof(InitialPointsRulePivot))
+                    .OfType<InitialPointsRulePivot>()
+                    .Select(v => $"{Convert.ToInt32(v.ToString().Replace("K", string.Empty))},000")
+                    .ToList();
+        }
+
+        #endregion Enum converters
 
         #region Private methods
 

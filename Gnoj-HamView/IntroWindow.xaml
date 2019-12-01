@@ -3,58 +3,17 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:cvt="clr-namespace:Gnoj_HamView.Converters"
-        xmlns:view="clr-namespace:Gnoj_HamView"
-        xmlns:lib="clr-namespace:Gnoj_Ham;assembly=Gnoj-Ham"
         mc:Ignorable="d"
         WindowStartupLocation="CenterScreen"
         SizeToContent="WidthAndHeight"
         Background="Gainsboro"
         Title="New game">
-    <Window.Resources>
-        <cvt:CpuSpeedConverter x:Key="CpuSpeedConverter" />
-        <cvt:InitialPointsRuleConverter x:Key="InitialPointsRuleConverter" />
-        <cvt:EndOfGameRuleConverter x:Key="EndOfGameRuleConverter" />
-        <cvt:ChronoConverter x:Key="ChronoConverter" />
-        <view:CpuSpeedPivot x:Key="CpuSpeedEnum" />
-        <view:ChronoPivot x:Key="ChronoEnum" />
-        <lib:InitialPointsRulePivot x:Key="InitialPointsRuleEnum" />
-        <lib:EndOfGameRulePivot x:Key="EndOfGameRuleEnum" />
-    </Window.Resources>
     <DockPanel Margin="5">
         <StackPanel DockPanel.Dock="Bottom" Margin="0, 10, 0, 0" Orientation="Horizontal" HorizontalAlignment="Right">
             <Button Width="75" Height="25" Content="Start" Name="BtnStart" Click="BtnStart_Click" />
             <Button Width="75" Height="25" Content="Quit" Name="BtnQuit" Click="BtnQuit_Click" Margin="10, 0, 0, 0" />
         </StackPanel>
         <StackPanel Orientation="Vertical" DockPanel.Dock="Top">
-            <GroupBox Padding="5"  Header="Interface">
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="150" />
-                        <ColumnDefinition Width="150" />
-                    </Grid.ColumnDefinitions>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="30" />
-                        <RowDefinition Height="30" />
-                        <RowDefinition Height="30" />
-                        <RowDefinition Height="30" />
-                        <RowDefinition Height="30" />
-                        <RowDefinition Height="30" />
-                    </Grid.RowDefinitions>
-                    <Label Grid.Column="0" Grid.Row="0" HorizontalContentAlignment="Right" VerticalContentAlignment="Center" Content="Player name" />
-                    <Label Grid.Column="0" Grid.Row="1" HorizontalContentAlignment="Right" VerticalContentAlignment="Center" Content="CPU speed" />
-                    <Label Grid.Column="0" Grid.Row="2" HorizontalContentAlignment="Right" VerticalContentAlignment="Center" Content="Auto tsumo/ron" />
-                    <Label Grid.Column="0" Grid.Row="3" HorizontalContentAlignment="Right" VerticalContentAlignment="Center" Content="Riichi auto-discard" />
-                    <Label Grid.Column="0" Grid.Row="4" HorizontalContentAlignment="Right" VerticalContentAlignment="Center" Content="Sounds" />
-                    <Label Grid.Column="0" Grid.Row="5" HorizontalContentAlignment="Right" VerticalContentAlignment="Center" Content="Decision chrono" />
-                    <TextBox Margin="5, 0, 0, 0" Grid.Column="1" Grid.Row="0" Name="TxtPlayerName" Height="25" VerticalContentAlignment="Center" />
-                    <ComboBox Margin="5, 0, 0, 0" Grid.Column="1" Grid.Row="1" Name="CbbCpuSpeed" Height="25" VerticalContentAlignment="Center" ItemsSource="{Binding Source={StaticResource CpuSpeedEnum}, Converter={StaticResource CpuSpeedConverter}}" />
-                    <CheckBox Margin="5, 0, 0, 0" Grid.Column="1" Grid.Row="2" Name="ChkAutoTsumoRon" VerticalAlignment="Center" />
-                    <CheckBox Margin="5, 0, 0, 0" Grid.Column="1" Grid.Row="3" Name="ChkRiichiAutoDiscard" VerticalAlignment="Center" />
-                    <CheckBox Margin="5, 0, 0, 0" Grid.Column="1" Grid.Row="4" Name="ChkSounds" VerticalAlignment="Center" />
-                    <ComboBox Margin="5, 0, 0, 0" Grid.Column="1" Grid.Row="5" Name="CbbChrono" Height="25" VerticalContentAlignment="Center" ItemsSource="{Binding Source={StaticResource ChronoEnum}, Converter={StaticResource ChronoConverter}}" />
-                </Grid>
-            </GroupBox>
             <GroupBox Padding="5"  Header="Rules" Margin="0, 10, 0, 0">
                 <Grid>
                     <Grid.ColumnDefinitions>
@@ -67,17 +26,20 @@
                         <RowDefinition Height="30" />
                         <RowDefinition Height="30" />
                         <RowDefinition Height="30" />
+                        <RowDefinition Height="30" />
                     </Grid.RowDefinitions>
                     <Label Grid.Column="0" Grid.Row="0" HorizontalContentAlignment="Right" VerticalContentAlignment="Center" Content="Use red doras" />
                     <Label Grid.Column="0" Grid.Row="1" HorizontalContentAlignment="Right" VerticalContentAlignment="Center" Content="Initial points count" />
                     <Label Grid.Column="0" Grid.Row="2" HorizontalContentAlignment="Right" VerticalContentAlignment="Center" Content="Use nagashi mangan" />
                     <Label Grid.Column="0" Grid.Row="3" HorizontalContentAlignment="Right" VerticalContentAlignment="Center" Content="Use renhou" />
                     <Label Grid.Column="0" Grid.Row="4" HorizontalContentAlignment="Right" VerticalContentAlignment="Center" Content="End of game rule" />
+                    <Label Grid.Column="0" Grid.Row="5" HorizontalContentAlignment="Right" VerticalContentAlignment="Center" Content="Player name" />
                     <CheckBox Margin="5, 0, 0, 0" Grid.Column="1" Grid.Row="0" Name="ChkUseRedDoras" VerticalAlignment="Center" />
-                    <ComboBox Margin="5, 0, 0, 0" Grid.Column="1" Grid.Row="1" Name="CbbPointsRule" Height="25" VerticalContentAlignment="Center" ItemsSource="{Binding Source={StaticResource InitialPointsRuleEnum}, Converter={StaticResource InitialPointsRuleConverter}}" />
+                    <ComboBox Margin="5, 0, 0, 0" Grid.Column="1" Grid.Row="1" Name="CbbPointsRule" Height="25" VerticalContentAlignment="Center" />
                     <CheckBox Margin="5, 0, 0, 0" Grid.Column="1" Grid.Row="2" Name="ChkUseNagashiMangan" VerticalAlignment="Center" />
                     <CheckBox Margin="5, 0, 0, 0" Grid.Column="1" Grid.Row="3" Name="ChkUseRenhou" VerticalAlignment="Center" />
-                    <ComboBox Margin="5, 0, 0, 0" Grid.Column="1" Grid.Row="4" Name="CbbEndOfGameRule" Height="25" VerticalContentAlignment="Center" ItemsSource="{Binding Source={StaticResource EndOfGameRuleEnum}, Converter={StaticResource EndOfGameRuleConverter}}" />
+                    <ComboBox Margin="5, 0, 0, 0" Grid.Column="1" Grid.Row="4" Name="CbbEndOfGameRule" Height="25" VerticalContentAlignment="Center" />
+                    <TextBox Margin="5, 0, 0, 0" Grid.Column="1" Grid.Row="5" Name="TxtPlayerName" Height="25" VerticalContentAlignment="Center" />
                 </Grid>
             </GroupBox>
             <GroupBox Padding="5" Header="Debug" Margin="0, 10, 0, 0">

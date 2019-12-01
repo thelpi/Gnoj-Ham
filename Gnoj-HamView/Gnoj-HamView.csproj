@@ -26,7 +26,7 @@
     <InstallUrl>http://93.27.248.96:80/</InstallUrl>
     <CreateWebPageOnPublish>true</CreateWebPageOnPublish>
     <WebPage>publish.htm</WebPage>
-    <ApplicationRevision>2</ApplicationRevision>
+    <ApplicationRevision>3</ApplicationRevision>
     <ApplicationVersion>0.1.0.%2a</ApplicationVersion>
     <UseApplicationTrust>false</UseApplicationTrust>
     <PublishWizardCompleted>true</PublishWizardCompleted>
@@ -95,8 +95,6 @@
     <Compile Include="AnglePivot.cs" />
     <Compile Include="AutoPlayResult.cs" />
     <Compile Include="ChronoPivot.cs" />
-    <Compile Include="Converters\ChronoConverter.cs" />
-    <Compile Include="Converters\EndOfGameRuleConverter.cs" />
     <Compile Include="EndOfGameWindow.xaml.cs">
       <DependentUpon>EndOfGameWindow.xaml</DependentUpon>
     </Compile>
@@ -121,8 +119,6 @@
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Converters\CpuSpeedConverter.cs" />
-    <Compile Include="Converters\InitialPointsRuleConverter.cs" />
     <Compile Include="CpuSpeedPivot.cs" />
     <Compile Include="IntroWindow.xaml.cs">
       <DependentUpon>IntroWindow.xaml</DependentUpon>

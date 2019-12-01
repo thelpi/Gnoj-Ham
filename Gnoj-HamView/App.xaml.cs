@@ -11,7 +11,7 @@ namespace Gnoj_HamView
     {
         private void Application_Startup(object sender, StartupEventArgs e)
         {
-            new IntroWindow(null).ShowDialog();
+            new IntroWindow().ShowDialog();
         }
     }
 }
