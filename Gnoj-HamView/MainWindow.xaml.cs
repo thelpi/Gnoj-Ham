@@ -27,6 +27,8 @@ namespace Gnoj_HamView
         private BackgroundWorker _autoPlay;
         private Storyboard _overlayStoryboard;
         private bool _waitForDecision;
+        private List<TilePivot> _riichiTiles;
+        private bool _hardStopAutoplay = false;
 
         /// <summary>
         /// Constructor.
@@ -66,6 +68,11 @@ namespace Gnoj_HamView
         }
 
         #region Window events
+
+        private void Window_Closing(object sender, CancelEventArgs e)
+        {
+            _hardStopAutoplay = true;
+        }
 
         private void BtnConfiguration_Click(object sender, RoutedEventArgs e)
         {
@@ -201,24 +208,14 @@ namespace Gnoj_HamView
         {
             if (IsCurrentlyClickable(e))
             {
-
+                _overlayStoryboard.Completed += TriggerRiichiChoiceAfterOverlayStoryboard;
+                InvokeOverlay("Riichi", GamePivot.HUMAN_INDEX);
             }
         }
 
         #endregion Window events
 
         #region Human decisions
-
-        // Manages riichi call opportunities.
-        private Tuple<bool, PanelButton> HumanCallRiichi(List<TilePivot> tiles)
-        {
-            if (tiles.Count > 0 && MessageBox.Show("Declare riichi ?", WINDOW_TITLE, MessageBoxButton.YesNo) == MessageBoxResult.Yes)
-            {
-                InvokeOverlay("Riichi", GamePivot.HUMAN_INDEX);
-                return new Tuple<bool, PanelButton>(true, RestrictDiscardWithTilesSelection(tiles.ToDictionary(t => t, t => false), BtnRiichiChoice_Click));
-            }
-            return new Tuple<bool, PanelButton>(false, null);
-        }
 
         // Checks a ron call for the human player.
         private bool HumanCallRon()
@@ -263,10 +260,11 @@ namespace Gnoj_HamView
                 }
                 else
                 {
-                    Tuple<bool, PanelButton> riichiResult = HumanCallRiichi(_game.Round.CanCallRiichi());
-                    if (!riichiResult.Item1)
+                    _riichiTiles = _game.Round.CanCallRiichi();
+                    if (_riichiTiles.Count > 0)
                     {
-                        ActivateTimer(GetFirstAvailableDiscardButton());
+                        BtnRiichi.Visibility = Visibility.Visible;
+                        ActivateTimer(null);
                     }
                 }
             }
@@ -294,7 +292,7 @@ namespace Gnoj_HamView
                     PanelButton = null,
                     RonPlayerId = null
                 };
-                while (true)
+                while (true && !_hardStopAutoplay)
                 {
                     while (_pauseAutoplay)
                     {
@@ -385,14 +383,17 @@ namespace Gnoj_HamView
             };
             _autoPlay.RunWorkerCompleted += delegate (object sender, RunWorkerCompletedEventArgs evt)
             {
-                AutoPlayResult autoPlayResult = evt.Result as AutoPlayResult;
-                if (autoPlayResult.EndOfRound)
+                if (!_hardStopAutoplay)
                 {
-                    NewRound(autoPlayResult.RonPlayerId);
-                }
-                else
-                {
-                    RaiseButtonClickEvent(autoPlayResult.PanelButton);
+                    AutoPlayResult autoPlayResult = evt.Result as AutoPlayResult;
+                    if (autoPlayResult.EndOfRound)
+                    {
+                        NewRound(autoPlayResult.RonPlayerId);
+                    }
+                    else
+                    {
+                        RaiseButtonClickEvent(autoPlayResult.PanelButton);
+                    }
                 }
             };
         }
@@ -456,22 +457,15 @@ namespace Gnoj_HamView
                 return Properties.Settings.Default.AutoCallMahjong ? new PanelButton("BtnTsumo", -1) : null;
             }
 
-            List<TilePivot> tilesRiichi = _game.Round.CanCallRiichi();
-            if (tilesRiichi.Count > 0)
+            _riichiTiles = _game.Round.CanCallRiichi();
+            if (_riichiTiles.Count > 0)
             {
-                Tuple<bool, PanelButton> riichiResult = null;
                 Dispatcher.Invoke(() =>
                 {
-                    riichiResult = HumanCallRiichi(tilesRiichi);
-                    if (!riichiResult.Item1)
-                    {
-                        ActivateTimer(StpPickP0.Children[0] as Button);
-                    }
+                    BtnRiichi.Visibility = Visibility.Visible;
                 });
-                if (riichiResult?.Item2 != null)
-                {
-                    return riichiResult.Item2;
-                }
+                ActivateTimer(null);
+                return null;
             }
             else if (Properties.Settings.Default.AutoDiscardAfterRiichi && _game.Round.HumanCanAutoDiscard())
             {
@@ -861,8 +855,6 @@ namespace Gnoj_HamView
         // Resets and refills every panels at a new round.
         private void NewRoundRefresh()
         {
-            _overlayStoryboard.Completed -= TriggerNewRoundAfterOverlayStoryboard;
-
             LblWallTilesLeft.Foreground = System.Windows.Media.Brushes.Black;
             _game.Round.NotifyWallCount += OnNotifyWallCount;
             OnNotifyWallCount(null, null);
@@ -973,6 +965,7 @@ namespace Gnoj_HamView
             BtnPon.Visibility = Visibility.Collapsed;
             BtnKan.Visibility = Visibility.Collapsed;
             BtnTsumo.Visibility = Visibility.Collapsed;
+            BtnRiichi.Visibility = Visibility.Collapsed;
 
             if (preDiscard)
             {
@@ -1092,7 +1085,15 @@ namespace Gnoj_HamView
         // Handler to trigger a new round at the end of the overlay storyboard animation.
         private void TriggerNewRoundAfterOverlayStoryboard(object sender, EventArgs e)
         {
+            _overlayStoryboard.Completed -= TriggerNewRoundAfterOverlayStoryboard;
             NewRound(null);
+        }
+
+        // Handler to trigger a post-riichi "RestrictDiscardWithTilesSelection" at the end of the overlay storyboard animation.
+        private void TriggerRiichiChoiceAfterOverlayStoryboard(object sender, EventArgs e)
+        {
+            _overlayStoryboard.Completed -= TriggerRiichiChoiceAfterOverlayStoryboard;
+            RaiseButtonClickEvent(RestrictDiscardWithTilesSelection(_riichiTiles.ToDictionary(t => t, t => false), BtnRiichiChoice_Click));
         }
 
         #endregion Other methods

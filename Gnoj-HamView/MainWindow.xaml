@@ -8,6 +8,7 @@
         MouseDoubleClick="Window_MouseDoubleClick"
         WindowStartupLocation="CenterScreen"
         Height="960" Width="960"
+        Closing="Window_Closing"
         MinHeight="960" MinWidth="960">
     <Window.Resources>
         <Storyboard x:Key="StbHideOverlay">
