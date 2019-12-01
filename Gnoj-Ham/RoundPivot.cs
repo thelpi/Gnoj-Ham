@@ -233,7 +233,7 @@ namespace Gnoj_Ham
 
             _fullTilesList = TilePivot
                                 .GetCompleteSet(Game.WithRedDoras)
-                                .OrderBy(t => Game.SortedDraw ? 1 : GlobalTools.Randomizer.NextDouble())
+                                .OrderBy(t => GlobalTools.Randomizer.NextDouble())
                                 .ToList();
 
             // Add below specific calls to sort the draw

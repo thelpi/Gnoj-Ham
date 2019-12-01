@@ -57,10 +57,6 @@ namespace Gnoj_Ham
         /// </summary>
         public RoundPivot Round { get; private set; }
         /// <summary>
-        /// Debug option to not randomize the tile draw.
-        /// </summary>
-        public bool SortedDraw { get; private set; }
-        /// <summary>
         /// <c>True</c> if akadora are used; <c>False</c> otherwise.
         /// </summary>
         public bool WithRedDoras { get; private set; }
@@ -128,11 +124,10 @@ namespace Gnoj_Ham
         /// <param name="initialPointsRule">The <see cref="InitialPointsRule"/> value.</param>
         /// <param name="endOfGameRule">The <see cref="EndOfGameRule"/> value.</param>
         /// <param name="withRedDoras">Optionnal; the <see cref="WithRedDoras"/> value; default value is <c>False</c>.</param>
-        /// <param name="sortedDraw">Optionnal; the <see cref="SortedDraw"/> value; default value is <c>False</c>.</param>
         /// <param name="useNagashiMangan">Optionnal; the <see cref="UseNagashiMangan"/> value; default value is <c>False</c>.</param>
         /// <param name="useRenhou">Optionnal; the <see cref="UseRenhou"/> value; default value is <c>False</c>.</param>
         public GamePivot(string humanPlayerName, InitialPointsRulePivot initialPointsRule, EndOfGameRulePivot endOfGameRule,
-            bool withRedDoras = false, bool sortedDraw = false, bool useNagashiMangan = false, bool useRenhou = false)
+            bool withRedDoras = false, bool useNagashiMangan = false, bool useRenhou = false)
         {
             InitialPointsRule = initialPointsRule;
             EndOfGameRule = endOfGameRule;
@@ -142,7 +137,6 @@ namespace Gnoj_Ham
             EastIndex = FirstEastIndex;
             EastRank = 1;
             WithRedDoras = withRedDoras;
-            SortedDraw = sortedDraw;
             UseNagashiMangan = useNagashiMangan;
             UseRenhou = useRenhou;
 
@@ -158,14 +152,12 @@ namespace Gnoj_Ham
         /// </summary>
         /// <param name="humanPlayerName"></param>
         /// <param name="withRedDoras">The new <see cref="WithRedDoras"/> value.</param>
-        /// <param name="sortedDraw">The new <see cref="SortedDraw"/> value.</param>
         /// <param name="useNagashiMangan">The new <see cref="UseNagashiMangan"/> value.</param>
         /// <param name="useRenhou">The new <see cref="UseRenhou"/> value.</param>
-        public void UpdateConfiguration(string humanPlayerName, bool withRedDoras, bool sortedDraw, bool useNagashiMangan, bool useRenhou)
+        public void UpdateConfiguration(string humanPlayerName, bool withRedDoras, bool useNagashiMangan, bool useRenhou)
         {
             PlayerPivot.UpdateHumanPlayerName(this, humanPlayerName);
             WithRedDoras = withRedDoras;
-            SortedDraw = sortedDraw;
             UseNagashiMangan = useNagashiMangan;
             UseRenhou = useRenhou;
         }

@@ -47,7 +47,6 @@ namespace Gnoj_HamView
             {
                 _game.UpdateConfiguration(TxtPlayerName.Text,
                     ChkUseRedDoras.IsChecked == true,
-                    ChkSortedDraw.IsChecked == true,
                     ChkUseNagashiMangan.IsChecked == true,
                     ChkUseRenhou.IsChecked == true);
                 Close();
@@ -61,7 +60,6 @@ namespace Gnoj_HamView
                     (InitialPointsRulePivot)CbbPointsRule.SelectedIndex,
                     (EndOfGameRulePivot)CbbEndOfGameRule.SelectedIndex,
                     ChkUseRedDoras.IsChecked == true,
-                    ChkSortedDraw.IsChecked == true,
                     ChkUseNagashiMangan.IsChecked == true,
                     ChkUseRenhou.IsChecked == true
                 ).ShowDialog();
@@ -100,7 +98,6 @@ namespace Gnoj_HamView
             ChkAutoTsumoRon.IsChecked = Settings.Default.AutoCallMahjong;
             ChkRiichiAutoDiscard.IsChecked = Settings.Default.AutoDiscardAfterRiichi;
             ChkDebugMode.IsChecked = Settings.Default.DebugMode;
-            ChkSortedDraw.IsChecked = Settings.Default.SortedDraw;
             ChkUseNagashiMangan.IsChecked = Settings.Default.UseNagashiMangan;
             ChkUseRenhou.IsChecked = Settings.Default.UseRenhou;
             ChkSounds.IsChecked = Settings.Default.PlaySounds;
@@ -117,7 +114,6 @@ namespace Gnoj_HamView
             Settings.Default.AutoCallMahjong = ChkAutoTsumoRon.IsChecked == true;
             Settings.Default.AutoDiscardAfterRiichi = ChkRiichiAutoDiscard.IsChecked == true;
             Settings.Default.DebugMode = ChkDebugMode.IsChecked == true;
-            Settings.Default.SortedDraw = ChkSortedDraw.IsChecked == true;
             Settings.Default.UseNagashiMangan = ChkUseNagashiMangan.IsChecked == true;
             Settings.Default.UseRenhou = ChkUseRenhou.IsChecked == true;
             Settings.Default.PlaySounds = ChkSounds.IsChecked == true;

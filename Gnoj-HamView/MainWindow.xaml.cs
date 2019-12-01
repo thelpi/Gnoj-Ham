@@ -37,15 +37,13 @@ namespace Gnoj_HamView
         /// <param name="pointRule">Indicates the initial points count for every players.</param>
         /// <param name="endOfGameRule">The ruel to end a game.</param>
         /// <param name="useRedDoras">Indicates if red doras should be used.</param>
-        /// <param name="sortedDraw"><c>True</c> to not randomize the tile draw.</param>
         /// <param name="useNagashiMangan"><c>True</c> to use the yaku 'Nagashi Mangan'.</param>
         /// <param name="useRenhou"><c>True</c> to use the yakuman 'Renhou'.</param>
-        public MainWindow(string playerName, InitialPointsRulePivot pointRule, EndOfGameRulePivot endOfGameRule,
-            bool useRedDoras, bool sortedDraw, bool useNagashiMangan, bool useRenhou)
+        public MainWindow(string playerName, InitialPointsRulePivot pointRule, EndOfGameRulePivot endOfGameRule, bool useRedDoras, bool useNagashiMangan, bool useRenhou)
         {
             InitializeComponent();
 
-            _game = new GamePivot(playerName, pointRule, endOfGameRule, useRedDoras, sortedDraw, useNagashiMangan, useRenhou);
+            _game = new GamePivot(playerName, pointRule, endOfGameRule, useRedDoras, useNagashiMangan, useRenhou);
             _tickSound = new System.Media.SoundPlayer(Properties.Resources.tick);
 
             _overlayStoryboard = FindResource("StbHideOverlay") as Storyboard;

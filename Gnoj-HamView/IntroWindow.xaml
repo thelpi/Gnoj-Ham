@@ -88,12 +88,9 @@
                     </Grid.ColumnDefinitions>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="30" />
-                        <RowDefinition Height="30" />
                     </Grid.RowDefinitions>
                     <Label Grid.Column="0" Grid.Row="0" HorizontalContentAlignment="Right" VerticalContentAlignment="Center" Content="Debug mode" />
-                    <Label Grid.Column="0" Grid.Row="1" HorizontalContentAlignment="Right" VerticalContentAlignment="Center" Content="Sorted draw" />
                     <CheckBox Margin="5, 0, 0, 0" Grid.Column="1" Grid.Row="0" Name="ChkDebugMode" VerticalAlignment="Center" />
-                    <CheckBox Margin="5, 0, 0, 0" Grid.Column="1" Grid.Row="1" Name="ChkSortedDraw" VerticalAlignment="Center" />
                 </Grid>
             </GroupBox>
         </StackPanel>

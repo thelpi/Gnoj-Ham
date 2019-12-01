@@ -98,18 +98,6 @@ namespace Gnoj_HamView.Properties {
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("False")]
-        public bool SortedDraw {
-            get {
-                return ((bool)(this["SortedDraw"]));
-            }
-            set {
-                this["SortedDraw"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("False")]
         public bool DebugMode {
             get {
                 return ((bool)(this["DebugMode"]));
