@@ -177,9 +177,10 @@ namespace Gnoj_HamView
 
             if (BtnPon.Visibility == Visibility.Visible
                 || BtnChii.Visibility == Visibility.Visible
-                || BtnKan.Visibility == Visibility.Visible)
+                || BtnKan.Visibility == Visibility.Visible
+                || BtnRon.Visibility == Visibility.Visible)
             {
-                RunAutoPlay(true);
+                RunAutoPlay(skipCurrentAction: true);
             }
             else if (StpPickP0.Children.Count > 0)
             {
@@ -191,7 +192,8 @@ namespace Gnoj_HamView
         {
             if (IsCurrentlyClickable(e))
             {
-
+                _overlayStoryboard.Completed += TriggerHumanRonAfterOverlayStoryboard;
+                InvokeOverlay("Ron", GamePivot.HUMAN_INDEX);
             }
         }
 
@@ -215,63 +217,6 @@ namespace Gnoj_HamView
 
         #endregion Window events
 
-        #region Human decisions
-
-        // Checks a ron call for the human player.
-        private bool HumanCallRon()
-        {
-            if (_game.Round.CanCallRon(GamePivot.HUMAN_INDEX))
-            {
-                if (Properties.Settings.Default.AutoCallMahjong
-                    || MessageBox.Show("Call ron ?", WINDOW_TITLE, MessageBoxButton.YesNo) == MessageBoxResult.Yes)
-                {
-                    InvokeOverlay("Ron", GamePivot.HUMAN_INDEX);
-                    return true;
-                }
-            }
-            return false;
-        }
-
-        // Inner process kan call.
-        private void HumanKanCallProcess(TilePivot tile, int? previousPlayerIndex)
-        {
-            TilePivot compensationTile = _game.Round.CallKan(GamePivot.HUMAN_INDEX, tile);
-            InvokeOverlay("Kan", GamePivot.HUMAN_INDEX);
-            if (CheckCallRonForEveryone())
-            {
-                _game.Round.UndoPickCompensationTile();
-                NewRound(_game.Round.CurrentPlayerIndex);
-            }
-            else
-            {
-                CommonCallKan(previousPlayerIndex, compensationTile);
-
-                if (_game.Round.CanCallTsumo(true))
-                {
-                    BtnTsumo.Visibility = Visibility.Visible;
-                    if (Properties.Settings.Default.AutoCallMahjong)
-                    {
-                        BtnTsumo.RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent));
-                    }
-                    else
-                    {
-                        ActivateTimer(null);
-                    }
-                }
-                else
-                {
-                    _riichiTiles = _game.Round.CanCallRiichi();
-                    if (_riichiTiles.Count > 0)
-                    {
-                        BtnRiichi.Visibility = Visibility.Visible;
-                        ActivateTimer(null);
-                    }
-                }
-            }
-        }
-
-        #endregion Human decisions
-
         #region General orchestration
 
         // Initializes a background worker which orchestrates the CPU actions.
@@ -284,7 +229,9 @@ namespace Gnoj_HamView
             };
             _autoPlay.DoWork += delegate (object sender, DoWorkEventArgs evt)
             {
-                bool skipCurrentAction = (bool)evt.Argument;
+                object[] argumentsList = evt.Argument as object[];
+                bool skipCurrentAction = (bool)argumentsList[0];
+                bool humanRonPending = (bool)argumentsList[1];
                 Tuple<int, TilePivot, int?> kanInProgress = null;
                 AutoPlayResult result = new AutoPlayResult
                 {
@@ -299,7 +246,21 @@ namespace Gnoj_HamView
                         // Do nothing until the autoplay is restarted.
                     }
 
-                    if (CheckCallRonForEveryone())
+                    if (!skipCurrentAction && !humanRonPending && _game.Round.CanCallRon(GamePivot.HUMAN_INDEX))
+                    {
+                        Dispatcher.Invoke(() =>
+                        {
+                            BtnRon.Visibility = Visibility.Visible;
+                        });
+                        ActivateTimer(null);
+                        if (Properties.Settings.Default.AutoCallMahjong)
+                        {
+                            result.PanelButton = new PanelButton("BtnRon", -1);
+                        }
+                        break;
+                    }
+
+                    if (CheckOpponensRonCall(humanRonPending))
                     {
                         result.EndOfRound = true;
                         result.RonPlayerId = kanInProgress != null ? kanInProgress.Item1 : _game.Round.PreviousPlayerIndex;
@@ -416,30 +377,24 @@ namespace Gnoj_HamView
         }
 
         // Starts the background worker.
-        private void RunAutoPlay(bool skipCurrentAction = false)
+        private void RunAutoPlay(bool skipCurrentAction = false, bool humanRonPending = false)
         {
             if (!_autoPlay.IsBusy)
             {
-                _autoPlay.RunWorkerAsync(skipCurrentAction);
+                _autoPlay.RunWorkerAsync(new object[] { skipCurrentAction, humanRonPending });
             }
         }
 
         // Checks ron call for every players.
-        private bool CheckCallRonForEveryone()
+        private bool CheckOpponensRonCall(bool humanRonPending)
         {
-            bool humanCallRon = false;
-            if (HumanCallRon())
-            {
-                humanCallRon = true;
-            }
-
-            List<int> opponentsCallRon = _game.Round.IaManager.RonDecision(humanCallRon);
+            List<int> opponentsCallRon = _game.Round.IaManager.RonDecision(humanRonPending);
             foreach (int opponentPlayerIndex in opponentsCallRon)
             {
                 InvokeOverlay("Ron", opponentPlayerIndex);
             }
 
-            return humanCallRon || opponentsCallRon.Count > 0;
+            return humanRonPending || opponentsCallRon.Count > 0;
         }
 
         // Proceeds to autoplay for human player.
@@ -728,6 +683,44 @@ namespace Gnoj_HamView
             return false;
         }
 
+        // Inner process kan call.
+        private void HumanKanCallProcess(TilePivot tile, int? previousPlayerIndex)
+        {
+            TilePivot compensationTile = _game.Round.CallKan(GamePivot.HUMAN_INDEX, tile);
+            InvokeOverlay("Kan", GamePivot.HUMAN_INDEX);
+            if (CheckOpponensRonCall(false))
+            {
+                _game.Round.UndoPickCompensationTile();
+                NewRound(_game.Round.CurrentPlayerIndex);
+            }
+            else
+            {
+                CommonCallKan(previousPlayerIndex, compensationTile);
+
+                if (_game.Round.CanCallTsumo(true))
+                {
+                    BtnTsumo.Visibility = Visibility.Visible;
+                    if (Properties.Settings.Default.AutoCallMahjong)
+                    {
+                        BtnTsumo.RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent));
+                    }
+                    else
+                    {
+                        ActivateTimer(null);
+                    }
+                }
+                else
+                {
+                    _riichiTiles = _game.Round.CanCallRiichi();
+                    if (_riichiTiles.Count > 0)
+                    {
+                        BtnRiichi.Visibility = Visibility.Visible;
+                        ActivateTimer(null);
+                    }
+                }
+            }
+        }
+
         #endregion General orchestration
 
         #region Graphic tools
@@ -966,6 +959,7 @@ namespace Gnoj_HamView
             BtnKan.Visibility = Visibility.Collapsed;
             BtnTsumo.Visibility = Visibility.Collapsed;
             BtnRiichi.Visibility = Visibility.Collapsed;
+            BtnRon.Visibility = Visibility.Collapsed;
 
             if (preDiscard)
             {
@@ -1094,6 +1088,13 @@ namespace Gnoj_HamView
         {
             _overlayStoryboard.Completed -= TriggerRiichiChoiceAfterOverlayStoryboard;
             RaiseButtonClickEvent(RestrictDiscardWithTilesSelection(_riichiTiles.ToDictionary(t => t, t => false), BtnRiichiChoice_Click));
+        }
+
+        // Handler to trigger a human ron at the end of the overlay storyboard animation.
+        private void TriggerHumanRonAfterOverlayStoryboard(object sender, EventArgs e)
+        {
+            _overlayStoryboard.Completed -= TriggerHumanRonAfterOverlayStoryboard;
+            RunAutoPlay(humanRonPending: true);
         }
 
         #endregion Other methods
