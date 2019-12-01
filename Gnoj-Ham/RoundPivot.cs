@@ -230,11 +230,14 @@ namespace Gnoj_Ham
             }
 
             Game = game;
-            
+
             _fullTilesList = TilePivot
                                 .GetCompleteSet(Game.WithRedDoras)
                                 .OrderBy(t => Game.SortedDraw ? 1 : GlobalTools.Randomizer.NextDouble())
                                 .ToList();
+
+            // Add below specific calls to sort the draw
+            // DrivenDrawPivot.HumanTenpai(_fullTilesList);
 
             _hands = Enumerable.Range(0, 4).Select(i => new HandPivot(_fullTilesList.GetRange(i * 13, 13))).ToList();
             _discards = Enumerable.Range(0, 4).Select(i => new List<TilePivot>()).ToList();
