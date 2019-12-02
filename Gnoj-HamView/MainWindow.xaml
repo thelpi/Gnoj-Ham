@@ -16,275 +16,265 @@
             </ObjectAnimationUsingKeyFrames>
         </Storyboard>
     </Window.Resources>
-    <StackPanel Orientation="Horizontal" Margin="5">
-        <Expander ExpandDirection="Right">
-            <Grid VerticalAlignment="Center">
+    <!-- ContentControl allows to use double click -->
+    <ContentControl Margin="5" MouseDoubleClick="Grid_MouseDoubleClick">
+        <Grid Name="GrdMain">
+            <Grid.Background>
+                <RadialGradientBrush>
+                    <GradientStop Color="LightGreen" Offset="0.25" />
+                    <GradientStop Color="LimeGreen" Offset="1" />
+                </RadialGradientBrush>
+            </Grid.Background>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Name="Cod0" />
+                <ColumnDefinition Name="Cod1" />
+                <ColumnDefinition Name="Cod2" />
+                <ColumnDefinition Name="Cod3" />
+                <ColumnDefinition Name="Cod4" />
+                <ColumnDefinition Name="Cod5" />
+                <ColumnDefinition Name="Cod6" />
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Name="Rod0" />
+                <RowDefinition Name="Rod1" />
+                <RowDefinition Name="Rod2" />
+                <RowDefinition Name="Rod3" />
+                <RowDefinition Name="Rod4" />
+                <RowDefinition Name="Rod5" />
+                <RowDefinition Name="Rod6" />
+            </Grid.RowDefinitions>
+
+            <!-- Combinations stacks -->
+            <!-- P1 (bottom) -->
+            <Grid Grid.Column="1" Grid.Row="6" Grid.ColumnSpan="6">
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="120" />
-                    <ColumnDefinition Width="120" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="30" />
-                    <RowDefinition Height="30" />
-                    <RowDefinition Height="30" />
-                    <RowDefinition Height="30" />
-                    <RowDefinition Height="30" />
-                </Grid.RowDefinitions>
-                <Label Grid.Column="0" Grid.Row="0" HorizontalContentAlignment="Right" VerticalContentAlignment="Center" Content="CPU speed" />
-                <Label Grid.Column="0" Grid.Row="1" HorizontalContentAlignment="Right" VerticalContentAlignment="Center" Content="Auto tsumo/ron" />
-                <Label Grid.Column="0" Grid.Row="2" HorizontalContentAlignment="Right" VerticalContentAlignment="Center" Content="Riichi auto-discard" />
-                <Label Grid.Column="0" Grid.Row="3" HorizontalContentAlignment="Right" VerticalContentAlignment="Center" Content="Sounds" />
-                <Label Grid.Column="0" Grid.Row="4" HorizontalContentAlignment="Right" VerticalContentAlignment="Center" Content="Decision chrono" />
-                <ComboBox Margin="5, 0, 0, 0" Grid.Column="1" Grid.Row="0" VerticalContentAlignment="Center" Name="CbbCpuSpeed" Height="25" SelectionChanged="CbbCpuSpeed_SelectionChanged" />
-                <CheckBox Margin="5, 0, 0, 0" Grid.Column="1" Grid.Row="1" VerticalAlignment="Center" Name="ChkAutoTsumoRon" Click="ChkAutoTsumoRon_Click" />
-                <CheckBox Margin="5, 0, 0, 0" Grid.Column="1" Grid.Row="2" VerticalAlignment="Center" Name="ChkRiichiAutoDiscard" Click="ChkRiichiAutoDiscard_Click" />
-                <CheckBox Margin="5, 0, 0, 0" Grid.Column="1" Grid.Row="3" VerticalAlignment="Center" Name="ChkSounds" Click="ChkSounds_Click" />
-                <ComboBox Margin="5, 0, 0, 0" Grid.Column="1" Grid.Row="4" VerticalContentAlignment="Center" Name="CbbChrono" Height="25" SelectionChanged="CbbChrono_SelectionChanged" />
+                <DockPanel Grid.Column="1">
+                    <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Name="StpCombosP0" />
+                </DockPanel>
             </Grid>
-        </Expander>
-        <!-- ContentControl allows to use double click -->
-        <ContentControl MouseDoubleClick="Grid_MouseDoubleClick" Margin="5, 0, 0, 0">
-            <Grid Name="GrdMain">
-                <Grid.Background>
-                    <RadialGradientBrush>
-                        <GradientStop Color="LightGreen" Offset="0.25" />
-                        <GradientStop Color="LimeGreen" Offset="1" />
-                    </RadialGradientBrush>
-                </Grid.Background>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Name="Cod0" />
-                    <ColumnDefinition Name="Cod1" />
-                    <ColumnDefinition Name="Cod2" />
-                    <ColumnDefinition Name="Cod3" />
-                    <ColumnDefinition Name="Cod4" />
-                    <ColumnDefinition Name="Cod5" />
-                    <ColumnDefinition Name="Cod6" />
-                </Grid.ColumnDefinitions>
+            <!-- P2 (right) -->
+            <StackPanel Orientation="Vertical" Grid.Column="6" Grid.Row="0" Grid.RowSpan="6" Name="StpCombosP1" />
+            <!-- P3 (top) -->
+            <StackPanel Orientation="Horizontal" Grid.Column="0" Grid.Row="0" Grid.ColumnSpan="6" Name="StpCombosP2" />
+            <!-- P4 (left) -->
+            <Grid Grid.Column="0" Grid.Row="1" Grid.RowSpan="6">
                 <Grid.RowDefinitions>
-                    <RowDefinition Name="Rod0" />
-                    <RowDefinition Name="Rod1" />
-                    <RowDefinition Name="Rod2" />
-                    <RowDefinition Name="Rod3" />
-                    <RowDefinition Name="Rod4" />
-                    <RowDefinition Name="Rod5" />
-                    <RowDefinition Name="Rod6" />
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
+                <StackPanel Orientation="Vertical" Grid.Row="1" Name="StpCombosP3" />
+            </Grid>
 
-                <!-- Combinations stacks -->
-                <!-- P1 (bottom) -->
-                <Grid Grid.Column="1" Grid.Row="6" Grid.ColumnSpan="6">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="Auto" />
-                    </Grid.ColumnDefinitions>
-                    <DockPanel Grid.Column="1">
-                        <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Name="StpCombosP0" />
-                    </DockPanel>
-                </Grid>
-                <!-- P2 (right) -->
-                <StackPanel Orientation="Vertical" Grid.Column="6" Grid.Row="0" Grid.RowSpan="6" Name="StpCombosP1" />
-                <!-- P3 (top) -->
-                <StackPanel Orientation="Horizontal" Grid.Column="0" Grid.Row="0" Grid.ColumnSpan="6" Name="StpCombosP2" />
-                <!-- P4 (left) -->
-                <Grid Grid.Column="0" Grid.Row="1" Grid.RowSpan="6">
+            <!-- Configuration expander -->
+            <Expander Grid.Column="1" Grid.Row="6" Grid.ColumnSpan="6" HorizontalAlignment="Right" Background="Gainsboro" Opacity="0.5" Name="ExpConfiguration" Expanded="ExpConfiguration_Expanded" Collapsed="ExpConfiguration_Collapsed" IsExpanded="False"  ExpandDirection="Left" Panel.ZIndex="2">
+                <StackPanel Margin="10" Orientation="Vertical">
+                    <StackPanel Orientation="Horizontal">
+                        <Label Content="CPU speed:" />
+                        <ComboBox Margin="5, 0, 0, 0" Height="23" Width="120" Name="CbbCpuSpeed" SelectionChanged="CbbCpuSpeed_SelectionChanged" />
+                        <Label Margin="20, 0, 0, 0" Content="Decision chrono:" />
+                        <ComboBox Margin="5, 0, 0, 0" Height="23" Width="120" Name="CbbChrono" SelectionChanged="CbbChrono_SelectionChanged" />
+                    </StackPanel>
+                    <StackPanel HorizontalAlignment="Center" Margin="0, 5, 0, 0" Orientation="Horizontal">
+                        <CheckBox Name="ChkAutoTsumoRon" Click="ChkAutoTsumoRon_Click">Auto tsumo/ron</CheckBox>
+                        <CheckBox Margin="20, 0, 0, 0" Name="ChkRiichiAutoDiscard" Click="ChkRiichiAutoDiscard_Click">Riichi auto-discard</CheckBox>
+                        <CheckBox Margin="20, 0, 0, 0" Name="ChkSounds" Click="ChkSounds_Click">Sounds</CheckBox>
+                    </StackPanel>
+                </StackPanel>
+            </Expander>
+            
+            <!-- Action buttons container -->
+            <StackPanel Orientation="Horizontal" Grid.Column="3" Grid.Row="6">
+                <Button Name="BtnRiichi" Content="RIICHI !" FontWeight="ExtraBold" Height="28" Width="75" Visibility="Collapsed" Margin="5, 0, 0, 0" Click="BtnRiichi_Click" Foreground="DarkMagenta" />
+                <Button Name="BtnTsumo" Content="TSUMO !"   FontWeight="ExtraBold" Height="28" Width="75" Visibility="Collapsed" Margin="5, 0, 0, 0" Click="BtnTsumo_Click" Foreground="DarkMagenta" />
+                <Button Name="BtnRon" Content="RON !"       FontWeight="ExtraBold" Height="28" Width="75" Visibility="Collapsed" Margin="5, 0, 0, 0" Click="BtnRon_Click" Foreground="DarkMagenta" />
+                <Button Name="BtnPon" Content="PON !"       FontWeight="ExtraBold" Height="28" Width="75" Visibility="Collapsed" Margin="5, 0, 0, 0" Click="BtnPon_Click" />
+                <Button Name="BtnChii" Content="CHII !"     FontWeight="ExtraBold" Height="28" Width="75" Visibility="Collapsed" Margin="5, 0, 0, 0" Click="BtnChii_Click" />
+                <Button Name="BtnKan" Content="KAN !"       FontWeight="ExtraBold" Height="28" Width="75" Visibility="Collapsed" Margin="5, 0, 0, 0" Click="BtnKan_Click" />
+            </StackPanel>
+
+            <!-- Hands stacks -->
+            <!-- P1 (bottom) -->
+            <DockPanel Grid.Column="2" Grid.Row="5" Grid.ColumnSpan="4">
+                <StackPanel Orientation="Horizontal" DockPanel.Dock="Left" Name="StpHandP0" />
+                <!-- Tile just picked (separate view) -->
+                <StackPanel Orientation="Horizontal" DockPanel.Dock="Left" Name="StpPickP0" Margin="5, 0, 0, 0" />
+            </DockPanel>
+            <!-- P2 (right) -->
+            <Grid Grid.Column="5" Grid.Row="1" Grid.RowSpan="4" >
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <DockPanel Grid.Row="1">
+                    <StackPanel Orientation="Vertical" DockPanel.Dock="Bottom" Name="StpHandP1" />
+                    <!-- Tile just picked (separate view) -->
+                    <StackPanel Orientation="Vertical" DockPanel.Dock="Bottom" Name="StpPickP1" Margin="0, 0, 0, 5" />
+                </DockPanel>
+            </Grid>
+            <!-- P3 (top) -->
+            <Grid Grid.Column="1" Grid.Row="1" Grid.ColumnSpan="4">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <DockPanel Grid.Row="1">
+                    <StackPanel Orientation="Horizontal" DockPanel.Dock="Right" Name="StpHandP2" />
+                    <!-- Tile just picked (separate view) -->
+                    <StackPanel Orientation="Horizontal" DockPanel.Dock="Right" Name="StpPickP2" Margin="0, 0, 5, 0" HorizontalAlignment="Right" />
+                </DockPanel>
+            </Grid>
+            <!-- P4 (left) -->
+            <DockPanel Grid.Column="1" Grid.Row="2" Grid.RowSpan="4">
+                <StackPanel Orientation="Vertical" DockPanel.Dock="Top" Name="StpHandP3" />
+                <!-- Tile just picked (separate view) -->
+                <StackPanel Orientation="Vertical" DockPanel.Dock="Top" Name="StpPickP3" Margin="0, 5, 0, 0" />
+            </DockPanel>
+
+            <!-- Discards -->
+            <!-- P1 (bottom) -->
+            <StackPanel Orientation="Vertical" Grid.Row="4" Grid.Column="3" Grid.ColumnSpan="2">
+                <StackPanel Orientation="Horizontal" Name="StpDiscard1P0" />
+                <StackPanel Orientation="Horizontal" Name="StpDiscard2P0" />
+                <StackPanel Orientation="Horizontal" Name="StpDiscard3P0" />
+            </StackPanel>
+            <!-- P2 (right) -->
+            <StackPanel Orientation="Horizontal" Grid.Row="2" Grid.Column="4" Grid.RowSpan="2">
+                <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="*" />
                         <RowDefinition Height="Auto" />
                     </Grid.RowDefinitions>
-                    <StackPanel Orientation="Vertical" Grid.Row="1" Name="StpCombosP3" />
+                    <StackPanel Grid.Row="1" Orientation="Vertical" Name="StpDiscard1P1" />
                 </Grid>
-
-                <!-- Action buttons container -->
-                <StackPanel Orientation="Horizontal" Grid.Column="3" Grid.Row="6">
-                    <Button Name="BtnRiichi" Content="RIICHI !" FontWeight="ExtraBold" Height="28" Width="75" Visibility="Collapsed" Margin="5, 0, 0, 0" Click="BtnRiichi_Click" Foreground="DarkMagenta" />
-                    <Button Name="BtnTsumo" Content="TSUMO !"   FontWeight="ExtraBold" Height="28" Width="75" Visibility="Collapsed" Margin="5, 0, 0, 0" Click="BtnTsumo_Click" Foreground="DarkMagenta" />
-                    <Button Name="BtnRon" Content="RON !"       FontWeight="ExtraBold" Height="28" Width="75" Visibility="Collapsed" Margin="5, 0, 0, 0" Click="BtnRon_Click" Foreground="DarkMagenta" />
-                    <Button Name="BtnPon" Content="PON !"       FontWeight="ExtraBold" Height="28" Width="75" Visibility="Collapsed" Margin="5, 0, 0, 0" Click="BtnPon_Click" />
-                    <Button Name="BtnChii" Content="CHII !"     FontWeight="ExtraBold" Height="28" Width="75" Visibility="Collapsed" Margin="5, 0, 0, 0" Click="BtnChii_Click" />
-                    <Button Name="BtnKan" Content="KAN !"       FontWeight="ExtraBold" Height="28" Width="75" Visibility="Collapsed" Margin="5, 0, 0, 0" Click="BtnKan_Click" />
-                </StackPanel>
-
-                <!-- Hands stacks -->
-                <!-- P1 (bottom) -->
-                <DockPanel Grid.Column="2" Grid.Row="5" Grid.ColumnSpan="4">
-                    <StackPanel Orientation="Horizontal" DockPanel.Dock="Left" Name="StpHandP0" />
-                    <!-- Tile just picked (separate view) -->
-                    <StackPanel Orientation="Horizontal" DockPanel.Dock="Left" Name="StpPickP0" Margin="5, 0, 0, 0" />
-                </DockPanel>
-                <!-- P2 (right) -->
-                <Grid Grid.Column="5" Grid.Row="1" Grid.RowSpan="4" >
+                <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="*" />
                         <RowDefinition Height="Auto" />
                     </Grid.RowDefinitions>
-                    <DockPanel Grid.Row="1">
-                        <StackPanel Orientation="Vertical" DockPanel.Dock="Bottom" Name="StpHandP1" />
-                        <!-- Tile just picked (separate view) -->
-                        <StackPanel Orientation="Vertical" DockPanel.Dock="Bottom" Name="StpPickP1" Margin="0, 0, 0, 5" />
-                    </DockPanel>
+                    <StackPanel Grid.Row="1" Orientation="Vertical" Name="StpDiscard2P1" />
                 </Grid>
-                <!-- P3 (top) -->
-                <Grid Grid.Column="1" Grid.Row="1" Grid.ColumnSpan="4">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+                    <StackPanel Grid.Row="1" Orientation="Vertical" Name="StpDiscard3P1" />
+                </Grid>
+            </StackPanel>
+            <!-- P3 (top) -->
+            <StackPanel Orientation="Vertical" Grid.Row="2" Grid.Column="2" Grid.ColumnSpan="2">
+                <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*" />
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
-                    <DockPanel Grid.Row="1">
-                        <StackPanel Orientation="Horizontal" DockPanel.Dock="Right" Name="StpHandP2" />
-                        <!-- Tile just picked (separate view) -->
-                        <StackPanel Orientation="Horizontal" DockPanel.Dock="Right" Name="StpPickP2" Margin="0, 0, 5, 0" HorizontalAlignment="Right" />
-                    </DockPanel>
+                    <StackPanel Orientation="Horizontal" Grid.Column="1" Name="StpDiscard3P2" />
                 </Grid>
-                <!-- P4 (left) -->
-                <DockPanel Grid.Column="1" Grid.Row="2" Grid.RowSpan="4">
-                    <StackPanel Orientation="Vertical" DockPanel.Dock="Top" Name="StpHandP3" />
-                    <!-- Tile just picked (separate view) -->
-                    <StackPanel Orientation="Vertical" DockPanel.Dock="Top" Name="StpPickP3" Margin="0, 5, 0, 0" />
-                </DockPanel>
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Orientation="Horizontal" Grid.Column="1" Name="StpDiscard2P2" />
+                </Grid>
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Orientation="Horizontal" Grid.Column="1" Name="StpDiscard1P2" />
+                </Grid>
+            </StackPanel>
+            <!-- P4 (left) -->
+            <StackPanel Orientation="Horizontal" Grid.Row="3" Grid.Column="2" Grid.RowSpan="2">
+                <StackPanel Orientation="Vertical" Name="StpDiscard3P3" />
+                <StackPanel Orientation="Vertical" Name="StpDiscard2P3" />
+                <StackPanel Orientation="Vertical" Name="StpDiscard1P3" />
+            </StackPanel>
 
-                <!-- Discards -->
-                <!-- P1 (bottom) -->
-                <StackPanel Orientation="Vertical" Grid.Row="4" Grid.Column="3" Grid.ColumnSpan="2">
-                    <StackPanel Orientation="Horizontal" Name="StpDiscard1P0" />
-                    <StackPanel Orientation="Horizontal" Name="StpDiscard2P0" />
-                    <StackPanel Orientation="Horizontal" Name="StpDiscard3P0" />
-                </StackPanel>
-                <!-- P2 (right) -->
-                <StackPanel Orientation="Horizontal" Grid.Row="2" Grid.Column="4" Grid.RowSpan="2">
-                    <Grid>
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="*" />
-                            <RowDefinition Height="Auto" />
-                        </Grid.RowDefinitions>
-                        <StackPanel Grid.Row="1" Orientation="Vertical" Name="StpDiscard1P1" />
-                    </Grid>
-                    <Grid>
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="*" />
-                            <RowDefinition Height="Auto" />
-                        </Grid.RowDefinitions>
-                        <StackPanel Grid.Row="1" Orientation="Vertical" Name="StpDiscard2P1" />
-                    </Grid>
-                    <Grid>
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="*" />
-                            <RowDefinition Height="Auto" />
-                        </Grid.RowDefinitions>
-                        <StackPanel Grid.Row="1" Orientation="Vertical" Name="StpDiscard3P1" />
-                    </Grid>
-                </StackPanel>
-                <!-- P3 (top) -->
-                <StackPanel Orientation="Vertical" Grid.Row="2" Grid.Column="2" Grid.ColumnSpan="2">
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="Auto" />
-                        </Grid.ColumnDefinitions>
-                        <StackPanel Orientation="Horizontal" Grid.Column="1" Name="StpDiscard3P2" />
-                    </Grid>
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="Auto" />
-                        </Grid.ColumnDefinitions>
-                        <StackPanel Orientation="Horizontal" Grid.Column="1" Name="StpDiscard2P2" />
-                    </Grid>
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="Auto" />
-                        </Grid.ColumnDefinitions>
-                        <StackPanel Orientation="Horizontal" Grid.Column="1" Name="StpDiscard1P2" />
-                    </Grid>
-                </StackPanel>
-                <!-- P4 (left) -->
-                <StackPanel Orientation="Horizontal" Grid.Row="3" Grid.Column="2" Grid.RowSpan="2">
-                    <StackPanel Orientation="Vertical" Name="StpDiscard3P3" />
-                    <StackPanel Orientation="Vertical" Name="StpDiscard2P3" />
-                    <StackPanel Orientation="Vertical" Name="StpDiscard1P3" />
-                </StackPanel>
-
-                <!-- Player infos -->
-                <!-- P1 (bottom) -->
-                <StackPanel Orientation="Vertical" VerticalAlignment="Center" HorizontalAlignment="Center" Grid.Row="5" Grid.Column="1">
-                    <Image Name="ImgLedP0" Stretch="None" />
-                    <Label Name="LblWindP0" HorizontalContentAlignment="Center" />
-                </StackPanel>
-                <!-- P2 (right) -->
-                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center" Grid.Row="5" Grid.Column="5">
-                    <Image Name="ImgLedP1" Stretch="None" />
-                    <Label Name="LblWindP1" HorizontalContentAlignment="Center">
+            <!-- Player infos -->
+            <!-- P1 (bottom) -->
+            <StackPanel Orientation="Vertical" VerticalAlignment="Center" HorizontalAlignment="Center" Grid.Row="5" Grid.Column="1">
+                <Image Name="ImgLedP0" Stretch="None" />
+                <Label Name="LblWindP0" HorizontalContentAlignment="Center" />
+            </StackPanel>
+            <!-- P2 (right) -->
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center" Grid.Row="5" Grid.Column="5">
+                <Image Name="ImgLedP1" Stretch="None" />
+                <Label Name="LblWindP1" HorizontalContentAlignment="Center">
+                    <Label.LayoutTransform>
+                        <RotateTransform Angle="270" />
+                    </Label.LayoutTransform>
+                </Label>
+            </StackPanel>
+            <!-- P3 (top) -->
+            <Grid Grid.Row="1" Grid.Column="5" VerticalAlignment="Center" HorizontalAlignment="Center">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <StackPanel Orientation="Vertical" Grid.Column="1">
+                    <Label Name="LblWindP2" HorizontalContentAlignment="Center">
                         <Label.LayoutTransform>
-                            <RotateTransform Angle="270" />
+                            <RotateTransform Angle="180" />
                         </Label.LayoutTransform>
                     </Label>
+                    <Image Name="ImgLedP2" Stretch="None" />
                 </StackPanel>
-                <!-- P3 (top) -->
-                <Grid Grid.Row="1" Grid.Column="5" VerticalAlignment="Center" HorizontalAlignment="Center">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="Auto" />
-                    </Grid.ColumnDefinitions>
-                    <StackPanel Orientation="Vertical" Grid.Column="1">
-                        <Label Name="LblWindP2" HorizontalContentAlignment="Center">
-                            <Label.LayoutTransform>
-                                <RotateTransform Angle="180" />
-                            </Label.LayoutTransform>
-                        </Label>
-                        <Image Name="ImgLedP2" Stretch="None" />
-                    </StackPanel>
-                </Grid>
-                <!-- P4 (left) -->
-                <Grid Grid.Row="1" Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Center">
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="*" />
-                        <RowDefinition Height="Auto" />
-                    </Grid.RowDefinitions>
-                    <StackPanel Orientation="Horizontal" Grid.Row="1">
-                        <Label Name="LblWindP3" VerticalContentAlignment="Center">
-                            <Label.LayoutTransform>
-                                <RotateTransform Angle="90" />
-                            </Label.LayoutTransform>
-                        </Label>
-                        <Image Name="ImgLedP3" Stretch="None" />
-                    </StackPanel>
-                </Grid>
-
-                <!-- General informations -->
-                <DockPanel Grid.Row="3" Grid.Column="3" HorizontalAlignment="Center" VerticalAlignment="Center">
-                    <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Name="StpDoras" />
-                    <Grid DockPanel.Dock="Bottom" Margin="0, 5, 0, 0">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="90" />
-                            <ColumnDefinition Width="45" />
-                            <ColumnDefinition Width="60" />
-                            <ColumnDefinition Width="60" />
-                        </Grid.ColumnDefinitions>
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="30" />
-                            <RowDefinition Height="30" />
-                            <RowDefinition Height="30" />
-                            <RowDefinition Height="30" />
-                        </Grid.RowDefinitions>
-                        <Label Grid.Row="0" Grid.Column="0" Name="LblNameP0" />
-                        <Label Grid.Row="1" Grid.Column="0" Name="LblNameP1" />
-                        <Label Grid.Row="2" Grid.Column="0" Name="LblNameP2" />
-                        <Label Grid.Row="3" Grid.Column="0" Name="LblNameP3" />
-                        <Label Grid.Row="0" Grid.Column="1" Name="LblPointsP0" />
-                        <Label Grid.Row="1" Grid.Column="1" Name="LblPointsP1" />
-                        <Label Grid.Row="2" Grid.Column="1" Name="LblPointsP2" />
-                        <Label Grid.Row="3" Grid.Column="1" Name="LblPointsP3" />
-                        <Label Grid.Row="0" Grid.RowSpan="2" Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="20" Name="LblDominantWind" />
-                        <Label Grid.Row="2" Grid.RowSpan="2" Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="20" Name="LblEastTurnCount" />
-                        <Label Grid.Row="0" Grid.RowSpan="5" Grid.Column="3" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="20" Name="LblWallTilesLeft" />
-                    </Grid>
-                </DockPanel>
-
-                <!-- Call overlay -->
-                <Grid Name="GrdOverlayCall" Background="Black" Panel.ZIndex="2" Grid.Row="2" Grid.Column="2" Grid.ColumnSpan="3" Grid.RowSpan="3" Visibility="Collapsed">
-                    <Button Name="BtnOpponentCall" FontWeight="ExtraBold" FontSize="20" Height="36" Width="120" />
-                </Grid>
             </Grid>
-        </ContentControl>
-    </StackPanel>
+            <!-- P4 (left) -->
+            <Grid Grid.Row="1" Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Center">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <StackPanel Orientation="Horizontal" Grid.Row="1">
+                    <Label Name="LblWindP3" VerticalContentAlignment="Center">
+                        <Label.LayoutTransform>
+                            <RotateTransform Angle="90" />
+                        </Label.LayoutTransform>
+                    </Label>
+                    <Image Name="ImgLedP3" Stretch="None" />
+                </StackPanel>
+            </Grid>
+
+            <!-- General informations -->
+            <DockPanel Grid.Row="3" Grid.Column="3" HorizontalAlignment="Center" VerticalAlignment="Center">
+                <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Name="StpDoras" />
+                <Grid DockPanel.Dock="Bottom" Margin="0, 5, 0, 0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="90" />
+                        <ColumnDefinition Width="45" />
+                        <ColumnDefinition Width="60" />
+                        <ColumnDefinition Width="60" />
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="30" />
+                        <RowDefinition Height="30" />
+                        <RowDefinition Height="30" />
+                        <RowDefinition Height="30" />
+                    </Grid.RowDefinitions>
+                    <Label Grid.Row="0" Grid.Column="0" Name="LblNameP0" />
+                    <Label Grid.Row="1" Grid.Column="0" Name="LblNameP1" />
+                    <Label Grid.Row="2" Grid.Column="0" Name="LblNameP2" />
+                    <Label Grid.Row="3" Grid.Column="0" Name="LblNameP3" />
+                    <Label Grid.Row="0" Grid.Column="1" Name="LblPointsP0" />
+                    <Label Grid.Row="1" Grid.Column="1" Name="LblPointsP1" />
+                    <Label Grid.Row="2" Grid.Column="1" Name="LblPointsP2" />
+                    <Label Grid.Row="3" Grid.Column="1" Name="LblPointsP3" />
+                    <Label Grid.Row="0" Grid.RowSpan="2" Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="20" Name="LblDominantWind" />
+                    <Label Grid.Row="2" Grid.RowSpan="2" Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="20" Name="LblEastTurnCount" />
+                    <Label Grid.Row="0" Grid.RowSpan="5" Grid.Column="3" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="20" Name="LblWallTilesLeft" />
+                </Grid>
+            </DockPanel>
+
+            <!-- Call overlay -->
+            <Grid Name="GrdOverlayCall" Background="Black" Panel.ZIndex="2" Grid.Row="2" Grid.Column="2" Grid.ColumnSpan="3" Grid.RowSpan="3" Visibility="Collapsed">
+                <Button Name="BtnOpponentCall" FontWeight="ExtraBold" FontSize="20" Height="36" Width="120" />
+            </Grid>
+        </Grid>
+    </ContentControl>
 </Window>

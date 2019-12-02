@@ -151,7 +151,7 @@ namespace Gnoj_HamView
 
         private void Grid_MouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
-            if (_autoPlay.IsBusy || _waitForDecision)
+            if (_autoPlay.IsBusy || _waitForDecision || ExpConfiguration.IsMouseOver)
             {
                 return;
             }
@@ -196,6 +196,16 @@ namespace Gnoj_HamView
                 _overlayStoryboard.Completed += TriggerRiichiChoiceAfterOverlayStoryboard;
                 InvokeOverlay("Riichi", GamePivot.HUMAN_INDEX);
             }
+        }
+
+        private void ExpConfiguration_Expanded(object sender, RoutedEventArgs e)
+        {
+            ExpConfiguration.Opacity = 0.9;
+        }
+
+        private void ExpConfiguration_Collapsed(object sender, RoutedEventArgs e)
+        {
+            ExpConfiguration.Opacity = 0.5;
         }
 
         #region Configuration
