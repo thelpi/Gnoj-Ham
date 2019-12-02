@@ -403,6 +403,16 @@ namespace Gnoj_HamView.Properties {
         /// <summary>
         ///   Recherche une ressource localisée de type System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap gohome {
+            get {
+                object obj = ResourceManager.GetObject("gohome", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Recherche une ressource localisée de type System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap ledgreen {
             get {
                 object obj = ResourceManager.GetObject("ledgreen", resourceCulture);
@@ -416,16 +426,6 @@ namespace Gnoj_HamView.Properties {
         internal static System.Drawing.Bitmap ledred {
             get {
                 object obj = ResourceManager.GetObject("ledred", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Recherche une ressource localisée de type System.Drawing.Bitmap.
-        /// </summary>
-        internal static System.Drawing.Bitmap misc {
-            get {
-                object obj = ResourceManager.GetObject("misc", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }

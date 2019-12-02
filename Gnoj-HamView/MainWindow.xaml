@@ -69,21 +69,40 @@
             </Grid>
 
             <!-- Configuration expander -->
-            <Expander Grid.Column="1" Grid.Row="6" Grid.ColumnSpan="6" HorizontalAlignment="Right" Background="Gainsboro" Opacity="0.5" Name="ExpConfiguration" Expanded="ExpConfiguration_Expanded" Collapsed="ExpConfiguration_Collapsed" IsExpanded="False"  ExpandDirection="Left" Panel.ZIndex="2">
-                <StackPanel Margin="10" Orientation="Vertical">
-                    <StackPanel Orientation="Horizontal">
-                        <Label Content="CPU speed:" />
-                        <ComboBox Margin="5, 0, 0, 0" Height="23" Width="120" Name="CbbCpuSpeed" SelectionChanged="CbbCpuSpeed_SelectionChanged" />
-                        <Label Margin="20, 0, 0, 0" Content="Decision chrono:" />
-                        <ComboBox Margin="5, 0, 0, 0" Height="23" Width="120" Name="CbbChrono" SelectionChanged="CbbChrono_SelectionChanged" />
-                    </StackPanel>
-                    <StackPanel HorizontalAlignment="Center" Margin="0, 5, 0, 0" Orientation="Horizontal">
-                        <CheckBox Name="ChkAutoTsumoRon" Click="ChkAutoTsumoRon_Click">Auto tsumo/ron</CheckBox>
-                        <CheckBox Margin="20, 0, 0, 0" Name="ChkRiichiAutoDiscard" Click="ChkRiichiAutoDiscard_Click">Riichi auto-discard</CheckBox>
-                        <CheckBox Margin="20, 0, 0, 0" Name="ChkSounds" Click="ChkSounds_Click">Sounds</CheckBox>
-                    </StackPanel>
-                </StackPanel>
-            </Expander>
+            <Border Grid.Column="1" Grid.Row="6" Grid.ColumnSpan="6" Panel.ZIndex="2" BorderThickness="2" BorderBrush="LimeGreen" CornerRadius="8">
+                <Expander HorizontalAlignment="Right" Background="White" Opacity="0.5" Name="ExpConfiguration" Expanded="ExpConfiguration_Expanded" Collapsed="ExpConfiguration_Collapsed" IsExpanded="False" ExpandDirection="Left">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="120" />
+                            <ColumnDefinition Width="120" />
+                            <ColumnDefinition Width="120" />
+                            <ColumnDefinition Width="20" />
+                            <ColumnDefinition Width="120" />
+                            <ColumnDefinition Width="20" />
+                            <ColumnDefinition Width="75" />
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition />
+                            <RowDefinition />
+                        </Grid.RowDefinitions>
+                        <Label Grid.Row="0" Grid.Column="0" HorizontalContentAlignment="Right" VerticalContentAlignment="Center" Content="CPU speed" />
+                        <Label Grid.Row="1" Grid.Column="0" HorizontalContentAlignment="Right" VerticalContentAlignment="Center" Content="Decision chrono" />
+                        <Label Grid.Row="0" Grid.Column="2" HorizontalContentAlignment="Right" VerticalContentAlignment="Center" Content="Riichi auto-discard" />
+                        <Label Grid.Row="1" Grid.Column="2" HorizontalContentAlignment="Right" VerticalContentAlignment="Center" Content="Auto tsumo/ron" />
+                        <Label Grid.Row="0" Grid.Column="4" HorizontalContentAlignment="Right" VerticalContentAlignment="Center" VerticalAlignment="Center" Grid.RowSpan="2" Content="Sounds" />
+                        <ComboBox Grid.Row="0" Grid.Column="1" VerticalContentAlignment="Center" Height="23" Name="CbbCpuSpeed" SelectionChanged="CbbCpuSpeed_SelectionChanged" />
+                        <ComboBox Grid.Row="1" Grid.Column="1" VerticalContentAlignment="Center" Height="23" Name="CbbChrono" SelectionChanged="CbbChrono_SelectionChanged" />
+                        <CheckBox Grid.Row="0" Grid.Column="3" VerticalContentAlignment="Center" VerticalAlignment="Center" Name="ChkRiichiAutoDiscard" Click="ChkRiichiAutoDiscard_Click" />
+                        <CheckBox Grid.Row="1" Grid.Column="3" VerticalContentAlignment="Center" VerticalAlignment="Center" Name="ChkAutoTsumoRon" Click="ChkAutoTsumoRon_Click" />
+                        <CheckBox Grid.Row="0" Grid.Column="5" VerticalContentAlignment="Center" VerticalAlignment="Center" Grid.RowSpan="2" Name="ChkSounds" Click="ChkSounds_Click" />
+                        <Button Grid.Row="0" Grid.Column="6" Grid.RowSpan="2" Height="32" Width="32" Name="BtnNewGame" Click="BtnNewGame_Click" ToolTip="Back to home / configure a new game">
+                            <Button.Content>
+                                <Image Source="Resources/gohome.png" />
+                            </Button.Content>
+                        </Button>
+                    </Grid>
+                </Expander>
+            </Border>
             
             <!-- Action buttons container -->
             <StackPanel Orientation="Horizontal" Grid.Column="3" Grid.Row="6">

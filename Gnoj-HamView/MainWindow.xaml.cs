@@ -200,12 +200,19 @@ namespace Gnoj_HamView
 
         private void ExpConfiguration_Expanded(object sender, RoutedEventArgs e)
         {
-            ExpConfiguration.Opacity = 0.9;
+            ExpConfiguration.Opacity = 0.8;
+            ExpConfiguration.HorizontalAlignment = HorizontalAlignment.Stretch;
         }
 
         private void ExpConfiguration_Collapsed(object sender, RoutedEventArgs e)
         {
             ExpConfiguration.Opacity = 0.5;
+            ExpConfiguration.HorizontalAlignment = HorizontalAlignment.Right;
+        }
+
+        private void BtnNewGame_Click(object sender, RoutedEventArgs e)
+        {
+            Close();
         }
 
         #region Configuration
