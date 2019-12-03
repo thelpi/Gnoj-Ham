@@ -563,7 +563,6 @@ namespace Gnoj_HamView
 
                 Dispatcher.Invoke(() =>
                 {
-                    PlayTickSound();
                     FillHandPanel(_game.Round.CurrentPlayerIndex);
                     FillCombinationStack(_game.Round.CurrentPlayerIndex);
                     FillDiscardPanel(_game.Round.PreviousPlayerIndex);
@@ -606,7 +605,6 @@ namespace Gnoj_HamView
                     {
                         SetPlayersLed();
                     }
-                    PlayTickSound();
                     FillHandPanel(playerIndex);
                     FillCombinationStack(playerIndex);
                     FillDiscardPanel(previousPlayerIndex);
@@ -631,14 +629,6 @@ namespace Gnoj_HamView
             Dispatcher.Invoke(() =>
             {
                 SetPlayersLed();
-                PlayTickSound();
-                this.FindPanel("StpPickP", _game.Round.CurrentPlayerIndex).Children.Add(
-                    pick.GenerateTileButton(
-                        _game.Round.IsHumanPlayer ? BtnDiscard_Click : (RoutedEventHandler)null,
-                        (AnglePivot)_game.Round.CurrentPlayerIndex,
-                        !_game.Round.IsHumanPlayer && !Properties.Settings.Default.DebugMode
-                    )
-                );
                 if (_game.Round.IsHumanPlayer)
                 {
                     SetActionButtonsVisibility(preDiscard: true);
@@ -767,15 +757,6 @@ namespace Gnoj_HamView
         {
             Dispatcher.Invoke(() =>
             {
-                PlayTickSound();
-                FillHandPanel(_game.Round.CurrentPlayerIndex, compensationTile);
-                this.FindPanel("StpPickP", _game.Round.CurrentPlayerIndex).Children.Add(
-                    compensationTile.GenerateTileButton(
-                        _game.Round.IsHumanPlayer ? BtnDiscard_Click : (RoutedEventHandler)null,
-                        (AnglePivot)_game.Round.CurrentPlayerIndex,
-                        !_game.Round.IsHumanPlayer && !Properties.Settings.Default.DebugMode
-                    )
-                );
                 if (previousPlayerIndex.HasValue)
                 {
                     FillDiscardPanel(previousPlayerIndex.Value);
@@ -873,7 +854,7 @@ namespace Gnoj_HamView
         }
 
         // Clears and refills the hand panel of the specified player index.
-        private void FillHandPanel(int pIndex, TilePivot excludedTile = null)
+        private void FillHandPanel(int pIndex, TilePivot pickTile = null)
         {
             bool isHuman = pIndex == GamePivot.HUMAN_INDEX;
 
@@ -884,11 +865,22 @@ namespace Gnoj_HamView
             panel.Children.Clear();
             foreach (TilePivot tile in _game.Round.Hands.ElementAt(pIndex).ConcealedTiles)
             {
-                if (excludedTile == null || !ReferenceEquals(excludedTile, tile))
+                if (pickTile == null || !ReferenceEquals(pickTile, tile))
                 {
                     panel.Children.Add(tile.GenerateTileButton(isHuman && !_game.Round.IsRiichi(pIndex) ?
                         BtnDiscard_Click : (RoutedEventHandler)null, (AnglePivot)pIndex, !isHuman && !Properties.Settings.Default.DebugMode));
                 }
+            }
+
+            if (pickTile != null)
+            {
+                this.FindPanel("StpPickP", pIndex).Children.Add(
+                    pickTile.GenerateTileButton(
+                        _game.Round.IsHumanPlayer ? BtnDiscard_Click : (RoutedEventHandler)null,
+                        (AnglePivot)pIndex,
+                        !_game.Round.IsHumanPlayer && !Properties.Settings.Default.DebugMode
+                    )
+                );
             }
         }
 
@@ -897,6 +889,20 @@ namespace Gnoj_HamView
         {
             LblWallTilesLeft.Foreground = System.Windows.Media.Brushes.Black;
             _game.Round.NotifyWallCount += OnNotifyWallCount;
+            _game.Round.NotifyPick += delegate(TileEventArgs e)
+            {
+                if (Properties.Settings.Default.PlaySounds)
+                {
+                    _tickSound.Play();
+                }
+                if (e != null)
+                {
+                    Dispatcher.Invoke(() =>
+                    {
+                        FillHandPanel(e.PlayerIndex, e.Tile);
+                    });
+                }
+            };
             OnNotifyWallCount(null, null);
 
             StpDoras.SetDorasPanel(_game.Round.DoraIndicatorTiles, _game.Round.VisibleDorasCount);
@@ -1104,15 +1110,6 @@ namespace Gnoj_HamView
             else
             {
                 _timer = new System.Timers.Timer(chronoValue.GetDelay() * 1000);
-            }
-        }
-
-        // Plays the tick sound if sounds activated.
-        private void PlayTickSound()
-        {
-            if (Properties.Settings.Default.PlaySounds)
-            {
-                _tickSound.Play();
             }
         }
 

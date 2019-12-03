@@ -47,6 +47,7 @@
     <Compile Include="DragonPivot.cs" />
     <Compile Include="DrawTypePivot.cs" />
     <Compile Include="EndOfRoundInformationsPivot.cs" />
+    <Compile Include="TileEventArgs.cs" />
     <Compile Include="PlayerScorePivot.cs" />
     <Compile Include="RiichiPivot.cs" />
     <Compile Include="RoundPivot.cs" />

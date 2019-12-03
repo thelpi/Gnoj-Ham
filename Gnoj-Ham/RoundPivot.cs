@@ -212,6 +212,11 @@ namespace Gnoj_Ham
         /// </summary>
         public event EventHandler NotifyWallCount;
 
+        /// <summary>
+        /// Event triggered when a tile is picked.
+        /// </summary>
+        public event TileEventHandler NotifyPick;
+
         #endregion Events
 
         #region Constructors
@@ -276,6 +281,7 @@ namespace Gnoj_Ham
             _wallTiles.Remove(tile);
             NotifyWallCount?.Invoke(null, null);
             _hands[CurrentPlayerIndex].Pick(tile);
+            NotifyPick?.Invoke(new TileEventArgs(CurrentPlayerIndex, tile));
             _waitForDiscard = true;
             return tile;
         }
@@ -881,6 +887,7 @@ namespace Gnoj_Ham
             NotifyWallCount?.Invoke(null, null);
 
             _hands[CurrentPlayerIndex].Pick(compensationTile);
+            NotifyPick?.Invoke(new TileEventArgs(CurrentPlayerIndex, compensationTile));
 
             if (isClosedKan)
             {
