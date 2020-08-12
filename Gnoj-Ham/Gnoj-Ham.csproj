@@ -41,7 +41,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="DrivenDrawPivot.cs" />
     <Compile Include="EndOfGameRulePivot.cs" />
     <Compile Include="IaManagerPivot.cs" />
     <Compile Include="DragonPivot.cs" />
