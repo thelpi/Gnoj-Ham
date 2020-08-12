@@ -144,7 +144,7 @@ namespace Gnoj_Ham
             int opponentPlayerId = Round.OpponentsCanCallPon();
             if (opponentPlayerId > -1)
             {
-                TilePivot tile = Round.Discards.ElementAt(Round.PreviousPlayerIndex).Last();
+                TilePivot tile = Round.GetDiscard(Round.PreviousPlayerIndex).Last();
                 // Call the pon if :
                 // - the hand is already open
                 // - it's valuable for "Yakuhai"
@@ -302,7 +302,7 @@ namespace Gnoj_Ham
 
         private bool IsSafeForPlayer(TilePivot tile, int opponentPlayerIndex, List<TilePivot> deadtiles)
         {
-            return Round.Discards.ElementAt(opponentPlayerIndex).Contains(tile) || (
+            return Round.GetDiscard(opponentPlayerIndex).Contains(tile) || (
                 tile.IsHonor
                 && deadtiles.Count(t => t == tile) == 4
                 && deadtiles.GroupBy(t => t).Any(t => t.Key != tile && t.Key.IsHonor && t.Count() == 4)

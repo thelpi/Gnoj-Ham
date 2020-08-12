@@ -942,7 +942,7 @@ namespace Gnoj_HamView
             bool reversed = pIndex == 1 || pIndex == 2;
 
             int i = 0;
-            foreach (TilePivot tile in _game.Round.Discards.ElementAt(pIndex))
+            foreach (TilePivot tile in _game.Round.GetDiscard(pIndex))
             {
                 int r = i < 6 ? 1 : (i < 12 ? 2 : 3);
                 Panel panel = this.FindPanel($"StpDiscard{r}P", pIndex);

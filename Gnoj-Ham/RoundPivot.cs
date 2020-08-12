@@ -107,17 +107,6 @@ namespace Gnoj_Ham
         }
 
         /// <summary>
-        /// Discards of four players.
-        /// </summary>
-        public IReadOnlyCollection<IReadOnlyCollection<TilePivot>> Discards
-        {
-            get
-            {
-                return _discards.Select(d => d as IReadOnlyCollection<TilePivot>).ToList();
-            }
-        }
-
-        /// <summary>
         /// Riichi informations of four players.
         /// </summary>
         /// <remarks>The list if filled by default with <c>Null</c> for every players.</remarks>
@@ -849,6 +838,19 @@ namespace Gnoj_Ham
             return true;
         }
 
+        /// <summary>
+        /// Gets the discard of a specified player.
+        /// </summary>
+        /// <param name="playerIndex">Player index.</param>
+        /// <returns>Collection of discarded <see cref="TilePivot"/> instances.</returns>
+        /// <exception cref="ArgumentOutOfRangeException"><paramref name="playerIndex"/> should be between 0 and 3.</exception>
+        public IReadOnlyCollection<TilePivot> GetDiscard(int playerIndex)
+        {
+            CheckPlayerIndex(playerIndex);
+
+            return _discards[playerIndex];
+        }
+
         #endregion Public methods
 
         #region Private methods
@@ -993,6 +995,15 @@ namespace Gnoj_Ham
             }
 
             return playerIndexList;
+        }
+
+        // Checks for playerIndex argument validity.
+        private void CheckPlayerIndex(int playerIndex)
+        {
+            if (playerIndex < 0 || playerIndex > 3)
+            {
+                throw new ArgumentOutOfRangeException(nameof(playerIndex), playerIndex, "Player index should be between 0 and 3.");
+            }
         }
 
         #endregion Private methods

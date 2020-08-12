@@ -469,7 +469,7 @@ namespace Gnoj_Ham
                 // The tile discarded by the latest player is the tile we ron !
                 if (i > 0)
                 {
-                    TilePivot lastFromDiscard = currentRound.Discards.ElementAt(currentRound.PlayerIndexHistory.ElementAt(i)).LastOrDefault();
+                    TilePivot lastFromDiscard = currentRound.GetDiscard(currentRound.PlayerIndexHistory.ElementAt(i)).LastOrDefault();
                     if (lastFromDiscard != null && IsCompleteFull(new List<TilePivot>(ConcealedTiles) { lastFromDiscard }, DeclaredCombinations.ToList()))
                     {
                         Yakus = null;
