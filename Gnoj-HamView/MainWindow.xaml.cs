@@ -863,7 +863,7 @@ namespace Gnoj_HamView
             this.FindPanel("StpPickP", pIndex).Children.Clear();
 
             panel.Children.Clear();
-            foreach (TilePivot tile in _game.Round.Hands.ElementAt(pIndex).ConcealedTiles)
+            foreach (TilePivot tile in _game.Round.GetHand(pIndex).ConcealedTiles)
             {
                 if (pickTile == null || !ReferenceEquals(pickTile, tile))
                 {
@@ -969,7 +969,7 @@ namespace Gnoj_HamView
             Panel panel = this.FindPanel("StpCombosP", pIndex);
 
             panel.Children.Clear();
-            foreach (TileComboPivot combo in _game.Round.Hands.ElementAt(pIndex).DeclaredCombinations)
+            foreach (TileComboPivot combo in _game.Round.GetHand(pIndex).DeclaredCombinations)
             {
                 panel.Children.Add(CreateCombinationPanel(pIndex, combo));
             }

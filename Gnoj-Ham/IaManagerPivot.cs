@@ -45,7 +45,7 @@ namespace Gnoj_Ham
                 return null;
             }
 
-            List<TilePivot> concealedTiles = Round.Hands.ElementAt(Round.CurrentPlayerIndex).ConcealedTiles.ToList();
+            List<TilePivot> concealedTiles = Round.GetHand(Round.CurrentPlayerIndex).ConcealedTiles.ToList();
 
             List<TilePivot> discardableTiles = concealedTiles
                                                 .Where(t => Round.CanDiscard(t))
@@ -148,7 +148,7 @@ namespace Gnoj_Ham
                 // Call the pon if :
                 // - the hand is already open
                 // - it's valuable for "Yakuhai"
-                if (!Round.Hands.ElementAt(opponentPlayerId).IsConcealed
+                if (!Round.GetHand(opponentPlayerId).IsConcealed
                     || tile.Family == FamilyPivot.Dragon
                     || (tile.Family == FamilyPivot.Wind
                         && (tile.Wind == Round.Game.GetPlayerCurrentWind(opponentPlayerId)
@@ -207,7 +207,7 @@ namespace Gnoj_Ham
                     // - the hand is already open
                     // - it's valuable for "Yakuhai"
                     if (checkConcealedOnly
-                        || !Round.Hands.ElementAt(opponentPlayerIdWithTiles.Item1).IsConcealed
+                        || !Round.GetHand(opponentPlayerIdWithTiles.Item1).IsConcealed
                         || tile.Family == FamilyPivot.Dragon
                         || (tile.Family == FamilyPivot.Wind
                             && (tile.Wind == Round.Game.GetPlayerCurrentWind(opponentPlayerIdWithTiles.Item1)
@@ -272,16 +272,16 @@ namespace Gnoj_Ham
                 // Proceeds to chii if :
                 // - The hand is already open (we assume it's open for a good reason)
                 // - The sequence does not already exist in the end
-                if (!Round.Hands.ElementAt(Round.CurrentPlayerIndex).IsConcealed)
+                if (!Round.GetHand(Round.CurrentPlayerIndex).IsConcealed)
                 {
                     Tuple<TilePivot, bool> tileChoice = null;
                     foreach (TilePivot tileKey in chiiTiles.Keys)
                     {
-                        bool m2 = Round.Hands.ElementAt(Round.CurrentPlayerIndex).ConcealedTiles.Any(t => t.Family == tileKey.Family && t.Number == tileKey.Number - 2);
-                        bool m1 = Round.Hands.ElementAt(Round.CurrentPlayerIndex).ConcealedTiles.Any(t => t.Family == tileKey.Family && t.Number == tileKey.Number - 1);
-                        bool m0 = Round.Hands.ElementAt(Round.CurrentPlayerIndex).ConcealedTiles.Any(t => t == tileKey);
-                        bool p1 = Round.Hands.ElementAt(Round.CurrentPlayerIndex).ConcealedTiles.Any(t => t.Family == tileKey.Family && t.Number == tileKey.Number + 1);
-                        bool p2 = Round.Hands.ElementAt(Round.CurrentPlayerIndex).ConcealedTiles.Any(t => t.Family == tileKey.Family && t.Number == tileKey.Number + 2);
+                        bool m2 = Round.GetHand(Round.CurrentPlayerIndex).ConcealedTiles.Any(t => t.Family == tileKey.Family && t.Number == tileKey.Number - 2);
+                        bool m1 = Round.GetHand(Round.CurrentPlayerIndex).ConcealedTiles.Any(t => t.Family == tileKey.Family && t.Number == tileKey.Number - 1);
+                        bool m0 = Round.GetHand(Round.CurrentPlayerIndex).ConcealedTiles.Any(t => t == tileKey);
+                        bool p1 = Round.GetHand(Round.CurrentPlayerIndex).ConcealedTiles.Any(t => t.Family == tileKey.Family && t.Number == tileKey.Number + 1);
+                        bool p2 = Round.GetHand(Round.CurrentPlayerIndex).ConcealedTiles.Any(t => t.Family == tileKey.Family && t.Number == tileKey.Number + 2);
 
                         if (!((m2 && m1 && m0) || (m1 && m0 && p1) || (m0 && p1 && p2)))
                         {

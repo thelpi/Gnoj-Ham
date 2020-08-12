@@ -52,17 +52,6 @@ namespace Gnoj_Ham
         }
 
         /// <summary>
-        /// Hands of four players.
-        /// </summary>
-        public IReadOnlyCollection<HandPivot> Hands
-        {
-            get
-            {
-                return _hands;
-            }
-        }
-
-        /// <summary>
         /// List of compensation tiles. 4 at the beginning, between 0 and 4 at the end.
         /// </summary>
         public IReadOnlyCollection<TilePivot> CompensationTiles
@@ -849,6 +838,17 @@ namespace Gnoj_Ham
             CheckPlayerIndex(playerIndex);
 
             return _discards[playerIndex];
+        }
+
+        /// <summary>
+        /// Gets the hand of a specified player.
+        /// </summary>
+        /// <param name="playerIndex">Player index.</param>
+        /// <returns>Instance of <see cref="HandPivot"/>.</returns>
+        /// <exception cref="ArgumentOutOfRangeException"><paramref name="playerIndex"/> should be between 0 and 3.</exception>
+        public HandPivot GetHand(int playerIndex)
+        {
+            return _hands[playerIndex];
         }
 
         #endregion Public methods
