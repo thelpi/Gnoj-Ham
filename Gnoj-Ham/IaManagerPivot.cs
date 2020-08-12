@@ -69,7 +69,7 @@ namespace Gnoj_Ham
                     if (_round.IsRiichi(i))
                     {
                         oneRiichi = true;
-                        if (IsSafeForPlayer(tile, i, deadtiles))
+                        if (IsSafeForPlayer(tile, i, deadTiles))
                         {
                             tilesSafety[tile].Add(TileSafety.Safe);
                         }
