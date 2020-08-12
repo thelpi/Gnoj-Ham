@@ -9,25 +9,18 @@ namespace Gnoj_Ham
     /// </summary>
     public class IaManagerPivot
     {
-        #region Embedded properties
-
-        /// <summary>
-        /// Current round.
-        /// </summary>
-        public RoundPivot Round { get; private set; }
-
-        #endregion Embedded properties
+        private RoundPivot _round;
 
         #region Constructors
 
         /// <summary>
         /// Constructor.
         /// </summary>
-        /// <param name="round">The <see cref="Round"/> value.</param>
+        /// <param name="round">The <see cref="_round"/> value.</param>
         /// <exception cref="ArgumentNullException"><paramref name="round"/> is <c>Null</c>.</exception>
         internal IaManagerPivot(RoundPivot round)
         {
-            Round = round ?? throw new ArgumentNullException(nameof(round));
+            _round = round ?? throw new ArgumentNullException(nameof(round));
         }
 
         #endregion Constructors
@@ -40,15 +33,15 @@ namespace Gnoj_Ham
         /// <returns>The tile to discard.</returns>
         public TilePivot DiscardDecision()
         {
-            if (Round.IsHumanPlayer)
+            if (_round.IsHumanPlayer)
             {
                 return null;
             }
 
-            List<TilePivot> concealedTiles = Round.GetHand(Round.CurrentPlayerIndex).ConcealedTiles.ToList();
+            List<TilePivot> concealedTiles = _round.GetHand(_round.CurrentPlayerIndex).ConcealedTiles.ToList();
 
             List<TilePivot> discardableTiles = concealedTiles
-                                                .Where(t => Round.CanDiscard(t))
+                                                .Where(t => _round.CanDiscard(t))
                                                 .Distinct()
                                                 .ToList();
 
@@ -57,13 +50,13 @@ namespace Gnoj_Ham
                 return discardableTiles.First();
             }
 
-            List<TilePivot> discards = Round.ExtractDiscardChoicesFromTenpai(Round.CurrentPlayerIndex);
+            List<TilePivot> discards = _round.ExtractDiscardChoicesFromTenpai(_round.CurrentPlayerIndex);
             if (discards.Count > 0)
             {
                 return discards.First();
             }
 
-            List<TilePivot> deadtiles = Round.DeadTilesFromIndexPointOfView(Round.CurrentPlayerIndex).ToList();
+            List<TilePivot> deadTiles = _round.DeadTilesFromIndexPointOfView(_round.CurrentPlayerIndex).ToList();
 
             var tilesSafety = new Dictionary<TilePivot, List<TileSafety>>();
 
@@ -71,9 +64,9 @@ namespace Gnoj_Ham
             foreach (TilePivot tile in discardableTiles)
             {
                 tilesSafety.Add(tile, new List<TileSafety>());
-                foreach (int i in Enumerable.Range(0, 4).Where(i => i != Round.CurrentPlayerIndex))
+                foreach (int i in Enumerable.Range(0, 4).Where(i => i != _round.CurrentPlayerIndex))
                 {
-                    if (Round.IsRiichi(i))
+                    if (_round.IsRiichi(i))
                     {
                         oneRiichi = true;
                         if (IsSafeForPlayer(tile, i, deadtiles))
@@ -121,12 +114,12 @@ namespace Gnoj_Ham
         /// <returns>The tile to discard; <c>Null</c> if no decision made.</returns>
         public TilePivot RiichiDecision()
         {
-            if (Round.IsHumanPlayer)
+            if (_round.IsHumanPlayer)
             {
                 return null;
             }
 
-            List<TilePivot> riichiTiles = Round.CanCallRiichi();
+            List<TilePivot> riichiTiles = _round.CanCallRiichi();
             if (riichiTiles.Count > 0)
             {
                 return riichiTiles.First();
@@ -141,18 +134,18 @@ namespace Gnoj_Ham
         /// <returns>The player index who makes the call; <c>-1</c> is none.</returns>
         public int PonDecision()
         {
-            int opponentPlayerId = Round.OpponentsCanCallPon();
+            int opponentPlayerId = _round.OpponentsCanCallPon();
             if (opponentPlayerId > -1)
             {
-                TilePivot tile = Round.GetDiscard(Round.PreviousPlayerIndex).Last();
+                TilePivot tile = _round.GetDiscard(_round.PreviousPlayerIndex).Last();
                 // Call the pon if :
                 // - the hand is already open
                 // - it's valuable for "Yakuhai"
-                if (!Round.GetHand(opponentPlayerId).IsConcealed
+                if (!_round.GetHand(opponentPlayerId).IsConcealed
                     || tile.Family == FamilyPivot.Dragon
                     || (tile.Family == FamilyPivot.Wind
-                        && (tile.Wind == Round.Game.GetPlayerCurrentWind(opponentPlayerId)
-                            || tile.Wind == Round.Game.DominantWind)))
+                        && (tile.Wind == _round.Game.GetPlayerCurrentWind(opponentPlayerId)
+                            || tile.Wind == _round.Game.DominantWind)))
                 {
                     return opponentPlayerId;
                 }
@@ -169,12 +162,12 @@ namespace Gnoj_Ham
         /// <returns><c>True</c> if the decision is made; <c>False</c> otherwise.</returns>
         public bool TsumoDecision(bool isKanCompensation)
         {
-            if (Round.IsHumanPlayer)
+            if (_round.IsHumanPlayer)
             {
                 return false;
             }
 
-            if (!Round.CanCallTsumo(isKanCompensation))
+            if (!_round.CanCallTsumo(isKanCompensation))
             {
                 return false;
             }
@@ -197,7 +190,7 @@ namespace Gnoj_Ham
         /// </returns>
         public Tuple<int, TilePivot> KanDecision(bool checkConcealedOnly)
         {
-            Tuple<int, List<TilePivot>> opponentPlayerIdWithTiles = Round.OpponentsCanCallKan(checkConcealedOnly);
+            Tuple<int, List<TilePivot>> opponentPlayerIdWithTiles = _round.OpponentsCanCallKan(checkConcealedOnly);
             if (opponentPlayerIdWithTiles != null)
             {
                 foreach (TilePivot tile in opponentPlayerIdWithTiles.Item2)
@@ -207,11 +200,11 @@ namespace Gnoj_Ham
                     // - the hand is already open
                     // - it's valuable for "Yakuhai"
                     if (checkConcealedOnly
-                        || !Round.GetHand(opponentPlayerIdWithTiles.Item1).IsConcealed
+                        || !_round.GetHand(opponentPlayerIdWithTiles.Item1).IsConcealed
                         || tile.Family == FamilyPivot.Dragon
                         || (tile.Family == FamilyPivot.Wind
-                            && (tile.Wind == Round.Game.GetPlayerCurrentWind(opponentPlayerIdWithTiles.Item1)
-                                || tile.Wind == Round.Game.DominantWind)))
+                            && (tile.Wind == _round.Game.GetPlayerCurrentWind(opponentPlayerIdWithTiles.Item1)
+                                || tile.Wind == _round.Game.DominantWind)))
                     {
                         return new Tuple<int, TilePivot>(opponentPlayerIdWithTiles.Item1, tile);
                     }
@@ -233,7 +226,7 @@ namespace Gnoj_Ham
 
             for (int i = 0; i < 4; i++)
             {
-                if (i != GamePivot.HUMAN_INDEX && Round.CanCallRon(i))
+                if (i != GamePivot.HUMAN_INDEX && _round.CanCallRon(i))
                 {
                     if (ronCalled || callers.Count > 0)
                     {
@@ -261,27 +254,27 @@ namespace Gnoj_Ham
         /// </returns>
         public Tuple<TilePivot, bool> ChiiDecision()
         {
-            if (Round.IsHumanPlayer)
+            if (_round.IsHumanPlayer)
             {
                 return null;
             }
 
-            Dictionary<TilePivot, bool> chiiTiles = Round.OpponentsCanCallChii();
+            Dictionary<TilePivot, bool> chiiTiles = _round.OpponentsCanCallChii();
             if (chiiTiles.Count > 0)
             {
                 // Proceeds to chii if :
                 // - The hand is already open (we assume it's open for a good reason)
                 // - The sequence does not already exist in the end
-                if (!Round.GetHand(Round.CurrentPlayerIndex).IsConcealed)
+                if (!_round.GetHand(_round.CurrentPlayerIndex).IsConcealed)
                 {
                     Tuple<TilePivot, bool> tileChoice = null;
                     foreach (TilePivot tileKey in chiiTiles.Keys)
                     {
-                        bool m2 = Round.GetHand(Round.CurrentPlayerIndex).ConcealedTiles.Any(t => t.Family == tileKey.Family && t.Number == tileKey.Number - 2);
-                        bool m1 = Round.GetHand(Round.CurrentPlayerIndex).ConcealedTiles.Any(t => t.Family == tileKey.Family && t.Number == tileKey.Number - 1);
-                        bool m0 = Round.GetHand(Round.CurrentPlayerIndex).ConcealedTiles.Any(t => t == tileKey);
-                        bool p1 = Round.GetHand(Round.CurrentPlayerIndex).ConcealedTiles.Any(t => t.Family == tileKey.Family && t.Number == tileKey.Number + 1);
-                        bool p2 = Round.GetHand(Round.CurrentPlayerIndex).ConcealedTiles.Any(t => t.Family == tileKey.Family && t.Number == tileKey.Number + 2);
+                        bool m2 = _round.GetHand(_round.CurrentPlayerIndex).ConcealedTiles.Any(t => t.Family == tileKey.Family && t.Number == tileKey.Number - 2);
+                        bool m1 = _round.GetHand(_round.CurrentPlayerIndex).ConcealedTiles.Any(t => t.Family == tileKey.Family && t.Number == tileKey.Number - 1);
+                        bool m0 = _round.GetHand(_round.CurrentPlayerIndex).ConcealedTiles.Any(t => t == tileKey);
+                        bool p1 = _round.GetHand(_round.CurrentPlayerIndex).ConcealedTiles.Any(t => t.Family == tileKey.Family && t.Number == tileKey.Number + 1);
+                        bool p2 = _round.GetHand(_round.CurrentPlayerIndex).ConcealedTiles.Any(t => t.Family == tileKey.Family && t.Number == tileKey.Number + 2);
 
                         if (!((m2 && m1 && m0) || (m1 && m0 && p1) || (m0 && p1 && p2)))
                         {
@@ -302,7 +295,7 @@ namespace Gnoj_Ham
 
         private bool IsSafeForPlayer(TilePivot tile, int opponentPlayerIndex, List<TilePivot> deadtiles)
         {
-            return Round.GetDiscard(opponentPlayerIndex).Contains(tile) || (
+            return _round.GetDiscard(opponentPlayerIndex).Contains(tile) || (
                 tile.IsHonor
                 && deadtiles.Count(t => t == tile) == 4
                 && deadtiles.GroupBy(t => t).Any(t => t.Key != tile && t.Key.IsHonor && t.Count() == 4)
