@@ -69,9 +69,17 @@ namespace Gnoj_Ham
                     if (_round.IsRiichi(i))
                     {
                         oneRiichi = true;
-                        if (IsSafeForPlayer(tile, i, deadTiles))
+                        if (IsDiscardedOrUnusable(tile, i, deadTiles))
                         {
                             tilesSafety[tile].Add(TileSafety.Safe);
+                        }
+                        else if (IsOutsiderSuji(tile, i) || IsDoubleInsiderSuji(tile, i) || IsMaxedFamilyInDiscard(tile, i))
+                        {
+                            tilesSafety[tile].Add(TileSafety.QuiteSafe);
+                        }
+                        else if (IsInsiderSuji(tile, i) || tile.IsHonorOrTerminal)
+                        {
+                            tilesSafety[tile].Add(TileSafety.QuiteUnsafe);
                         }
                         else
                         {
@@ -80,7 +88,7 @@ namespace Gnoj_Ham
                     }
                     else
                     {
-                        tilesSafety[tile].Add(TileSafety.Unknown);
+                        tilesSafety[tile].Add(TileSafety.AverageOrUnknown);
                     }
                 }
             }
@@ -293,13 +301,52 @@ namespace Gnoj_Ham
 
         #region Private methods
 
-        private bool IsSafeForPlayer(TilePivot tile, int opponentPlayerIndex, List<TilePivot> deadtiles)
+        private bool IsDiscardedOrUnusable(TilePivot tile, int opponentPlayerIndex, List<TilePivot> deadtiles)
         {
             return _round.GetDiscard(opponentPlayerIndex).Contains(tile) || (
                 tile.IsHonor
                 && deadtiles.Count(t => t == tile) == 4
                 && deadtiles.GroupBy(t => t).Any(t => t.Key != tile && t.Key.IsHonor && t.Count() == 4)
             );
+        }
+        
+        // suji on the middle (least safe)
+        private bool IsInsiderSuji(TilePivot tile, int opponentPlayerIndex)
+        {
+            return GetSujisFromDiscard(tile, opponentPlayerIndex)
+                .Any(_ => !new[] { 4, 5, 6 }.Contains(_.Number));
+        }
+        
+        // suji on the edge (safer)
+        private bool IsOutsiderSuji(TilePivot tile, int opponentPlayerIndex)
+        {
+            return GetSujisFromDiscard(tile, opponentPlayerIndex)
+                .Any(_ => new[] { 4, 5, 6 }.Contains(_.Number));
+        }
+        
+        // suji on both side
+        private bool IsDoubleInsiderSuji(TilePivot tile, int opponentPlayerIndex)
+        {
+            return GetSujisFromDiscard(tile, opponentPlayerIndex).Distinct().Count() > 1;
+        }
+
+        private IEnumerable<TilePivot> GetSujisFromDiscard(TilePivot tile, int opponentPlayerIndex)
+        {
+            if (tile.IsHonor)
+            {
+                return Enumerable.Empty<TilePivot>();
+            }
+
+            return _round
+                .GetDiscard(opponentPlayerIndex)
+                .Where(_ => _.Family == tile.Family && (_.Number == tile.Number + 3 || _.Number == tile.Number - 3));
+        }
+
+        // a family is over-represented in the opponent discard (at least 9 overal, and at least 3 distinct values)
+        private bool IsMaxedFamilyInDiscard(TilePivot tile, int opponentPlayerIndex)
+        {
+            return !tile.IsHonor && _round.GetDiscard(opponentPlayerIndex).Count(_ => _.Family == tile.Family) >= 9
+                && _round.GetDiscard(opponentPlayerIndex).Where(_ => _.Family == tile.Family).Distinct().Count() >= 3;
         }
 
         #endregion Private methods
@@ -320,7 +367,7 @@ namespace Gnoj_Ham
             /// <summary>
             /// Unable to detect the safety level of the tile.
             /// </summary>
-            Unknown,
+            AverageOrUnknown,
             /// <summary>
             /// The tile seems unsafe.
             /// </summary>
