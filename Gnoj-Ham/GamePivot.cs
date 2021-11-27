@@ -45,9 +45,14 @@ namespace Gnoj_Ham
         /// </summary>
         public int EastIndexTurnCount { get; private set; }
         /// <summary>
-        /// Honba count; TODO: incorrect
+        /// Honba count.
         /// </summary>
-        public int HonbaCount { get { return EastIndexTurnCount - 1; } }
+        /// <remarks>For scoring, <see cref="HonbaCountBeforeScoring"/> should be used.</remarks>
+        public int HonbaCount { get; private set; }
+        /// <summary>
+        /// Honba count before scoring.
+        /// </summary>
+        public int HonbaCountBeforeScoring { get { return HonbaCount > 0 ? HonbaCount - 1 : 0; } }
         /// <summary>
         /// Pending riichi count.
         /// </summary>
@@ -194,6 +199,11 @@ namespace Gnoj_Ham
             if (!endOfRoundInformations.Ryuukyoku)
             {
                 PendingRiichiCount = 0;
+            }
+
+            if (!endOfRoundInformations.ToNextEast || endOfRoundInformations.Ryuukyoku)
+            {
+                HonbaCount++;
             }
 
             if (EndOfGameRule.TobiRuleApply() && _players.Any(p => p.Points < 0))
