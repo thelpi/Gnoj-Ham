@@ -42,6 +42,8 @@ namespace Gnoj_HamView
         {
             InitializeComponent();
 
+            LblHumanPlayer.Content = playerName;
+
             _game = new GamePivot(playerName, pointRule, endOfGameRule, useRedDoras, useNagashiMangan, useRenhou);
             _tickSound = new System.Media.SoundPlayer(Properties.Resources.tick);
 

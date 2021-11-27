@@ -221,12 +221,18 @@
             <!-- P1 (bottom) -->
             <StackPanel Orientation="Vertical" VerticalAlignment="Center" HorizontalAlignment="Center" Grid.Row="5" Grid.Column="1">
                 <Image Name="ImgLedP0" Stretch="None" />
-                <Label Name="LblWindP0" HorizontalContentAlignment="Center" />
+                <Label Name="LblWindP0" HorizontalContentAlignment="Center" Foreground="White" />
+                <Label Name="LblHumanPlayer" HorizontalContentAlignment="Center" Foreground="White" />
             </StackPanel>
             <!-- P2 (right) -->
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center" Grid.Row="5" Grid.Column="5">
                 <Image Name="ImgLedP1" Stretch="None" />
-                <Label Name="LblWindP1" HorizontalContentAlignment="Center">
+                <Label Name="LblWindP1" HorizontalContentAlignment="Center" Foreground="White">
+                    <Label.LayoutTransform>
+                        <RotateTransform Angle="270" />
+                    </Label.LayoutTransform>
+                </Label>
+                <Label Content="CPU1" HorizontalContentAlignment="Center" Foreground="White">
                     <Label.LayoutTransform>
                         <RotateTransform Angle="270" />
                     </Label.LayoutTransform>
@@ -239,7 +245,12 @@
                     <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
                 <StackPanel Orientation="Vertical" Grid.Column="1">
-                    <Label Name="LblWindP2" HorizontalContentAlignment="Center">
+                    <Label Content="CPU2" HorizontalContentAlignment="Center" Foreground="White">
+                        <Label.LayoutTransform>
+                            <RotateTransform Angle="180" />
+                        </Label.LayoutTransform>
+                    </Label>
+                    <Label Name="LblWindP2" HorizontalContentAlignment="Center" Foreground="White">
                         <Label.LayoutTransform>
                             <RotateTransform Angle="180" />
                         </Label.LayoutTransform>
@@ -254,7 +265,12 @@
                     <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
                 <StackPanel Orientation="Horizontal" Grid.Row="1">
-                    <Label Name="LblWindP3" VerticalContentAlignment="Center">
+                    <Label Content="CPU3" VerticalContentAlignment="Center" Foreground="White">
+                        <Label.LayoutTransform>
+                            <RotateTransform Angle="90" />
+                        </Label.LayoutTransform>
+                    </Label>
+                    <Label Name="LblWindP3" VerticalContentAlignment="Center" Foreground="White">
                         <Label.LayoutTransform>
                             <RotateTransform Angle="90" />
                         </Label.LayoutTransform>
