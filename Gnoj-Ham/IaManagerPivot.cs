@@ -7,6 +7,15 @@ namespace Gnoj_Ham
     /// <summary>
     /// Manages IA (decisions made by the CPU).
     /// </summary>
+    /// <remarks>
+    /// Some stuff we should improve:
+    /// <list type="bullet">
+    /// <item>Kokushi musou</item>
+    /// <item>Open on chii in very specific cases</item>
+    /// <item>To not discard doras</item>
+    /// <item>Defense on opponents when opened hand.</item>
+    /// </list>
+    /// </remarks>
     public class IaManagerPivot
     {
         private RoundPivot _round;
@@ -98,7 +107,11 @@ namespace Gnoj_Ham
                 return tilesSafety.OrderBy(t => t.Value.Sum(s => (int)s)).First().Key;
             }
 
-            IEnumerable<IGrouping<TilePivot, TilePivot>> tilesGroup =
+            // it's a bit flawed because it allows to discard a dora
+            // in at least two cases we should not :
+            // - when we have a choice between similar probabilities
+            // - when dora was the precondition to open the hand in the first place
+            var tilesGroup =
                 concealedTiles
                     .GroupBy(t => t)
                     .OrderByDescending(t => t.Count())
@@ -148,12 +161,9 @@ namespace Gnoj_Ham
                 TilePivot tile = _round.GetDiscard(_round.PreviousPlayerIndex).Last();
                 // Call the pon if :
                 // - the hand is already open
-                // - it's valuable for "Yakuhai"
-                if (!_round.GetHand(opponentPlayerId).IsConcealed
-                    || tile.Family == FamilyPivot.Dragon
-                    || (tile.Family == FamilyPivot.Wind
-                        && (tile.Wind == _round.Game.GetPlayerCurrentWind(opponentPlayerId)
-                            || tile.Wind == _round.Game.DominantWind)))
+                // - it's valuable (see "HandCanBeOpened")
+                var opponentHand = _round.GetHand(opponentPlayerId);
+                if (!opponentHand.IsConcealed || HandCanBeOpened(opponentPlayerId, tile, opponentHand))
                 {
                     return opponentPlayerId;
                 }
@@ -201,6 +211,12 @@ namespace Gnoj_Ham
             Tuple<int, List<TilePivot>> opponentPlayerIdWithTiles = _round.OpponentsCanCallKan(checkConcealedOnly);
             if (opponentPlayerIdWithTiles != null)
             {
+                // riichi from opponents, and current not tenpai: no call
+                if (_round.Riichis.Count > 0 && !_round.IsTenpai(opponentPlayerIdWithTiles.Item1))
+                {
+                    return null;
+                }
+
                 foreach (TilePivot tile in opponentPlayerIdWithTiles.Item2)
                 {
                     // Call the kan if :
@@ -347,6 +363,49 @@ namespace Gnoj_Ham
         {
             return !tile.IsHonor && _round.GetDiscard(opponentPlayerIndex).Count(_ => _.Family == tile.Family) >= 9
                 && _round.GetDiscard(opponentPlayerIndex).Where(_ => _.Family == tile.Family).Distinct().Count() >= 3;
+        }
+
+        private bool HandCanBeOpened(int playerId, TilePivot tile, HandPivot hand)
+        {
+            var valuableWinds = new[] { _round.Game.GetPlayerCurrentWind(playerId), _round.Game.DominantWind };
+
+            var canPonForYakuhai = IsDragonOrValuableWind(tile, valuableWinds);
+
+            // >= 75% of the tile family
+            var closeToChinitsu = hand.ConcealedTiles.Count(_ => _.Family == tile.Family) >= 11;
+
+            // how much pair (or better) of valuable honors ?
+            var valuableHonorPairs = hand.ConcealedTiles.GroupBy(_ => _)
+                .Count(_ => _.Key.IsHonor && _.Count() >= 2 && IsDragonOrValuableWind(_.Key, valuableWinds));
+            
+            if (!canPonForYakuhai && valuableHonorPairs < 2 && !closeToChinitsu)
+            {
+                return false;
+            }
+
+            int dorasCount = hand.ConcealedTiles
+                .Sum(t => _round.DoraIndicatorTiles
+                    .Take(_round.VisibleDorasCount)
+                    .Count(d => t.IsDoraNext(d)));
+            int redDorasCount = hand.ConcealedTiles.Count(t => t.IsRedDora);
+
+            var hasValuablePair = hand.ConcealedTiles.GroupBy(_ => _)
+                .Any(_ => _.Count() >= 2 && _.Key != tile && IsDragonOrValuableWind(_.Key, valuableWinds));
+
+            // >= 66% of one family or honor
+            var closeToHonitsu = new[] { FamilyPivot.Bamboo, FamilyPivot.Caracter, FamilyPivot.Circle }
+                .Any(f => hand.ConcealedTiles.Count(t => t.Family == f || t.IsHonor) > 9);
+
+            return hasValuablePair
+                || (dorasCount + redDorasCount) > 0
+                || closeToHonitsu
+                || valuableWinds[0] == WindPivot.East;
+        }
+
+        private static bool IsDragonOrValuableWind(TilePivot tile, WindPivot[] winds)
+        {
+            return tile.Family == FamilyPivot.Dragon
+                || (tile.Family == FamilyPivot.Wind && winds.Contains(tile.Wind.Value));
         }
 
         #endregion Private methods
