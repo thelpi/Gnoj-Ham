@@ -45,6 +45,10 @@ namespace Gnoj_Ham
         /// </summary>
         public int EastIndexTurnCount { get; private set; }
         /// <summary>
+        /// Honba count; TODO: incorrect
+        /// </summary>
+        public int HonbaCount { get { return EastIndexTurnCount - 1; } }
+        /// <summary>
         /// Pending riichi count.
         /// </summary>
         public int PendingRiichiCount { get; private set; }

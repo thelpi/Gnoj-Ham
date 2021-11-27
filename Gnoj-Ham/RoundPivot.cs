@@ -1162,7 +1162,7 @@ namespace Gnoj_Ham
 
                     int riichiPart = Game.PendingRiichiCount * ScoreTools.RIICHI_COST;
 
-                    int honbaPoints = ScoreTools.GetHonbaPoints(Game.EastIndexTurnCount - 1, winners.Count, !ronPlayerIndex.HasValue);
+                    int honbaPoints = ScoreTools.GetHonbaPoints(Game.HonbaCount, winners.Count, !ronPlayerIndex.HasValue);
 
                     // In case of ron with multiple winners, only the one who comes right next to "ronPlayerIndex" takes the stack of riichi.
                     if (winners.Count > 1)
@@ -1251,7 +1251,7 @@ namespace Gnoj_Ham
                 Game.Players.ElementAt(p.Index).AddPoints(p.PointsGain);
             }
 
-            return new EndOfRoundInformationsPivot(ryuukyoku, turnWind, displayUraDoraTiles, playerInfos, Game.EastIndexTurnCount - 1,
+            return new EndOfRoundInformationsPivot(ryuukyoku, turnWind, displayUraDoraTiles, playerInfos, Game.HonbaCount,
                 Game.PendingRiichiCount, DoraIndicatorTiles, UraDoraIndicatorTiles, VisibleDorasCount);
         }
 

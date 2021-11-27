@@ -286,8 +286,8 @@
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="90" />
                         <ColumnDefinition Width="45" />
-                        <ColumnDefinition Width="60" />
-                        <ColumnDefinition Width="60" />
+                        <ColumnDefinition Width="45" />
+                        <ColumnDefinition Width="75" />
                     </Grid.ColumnDefinitions>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="30" />
@@ -303,9 +303,9 @@
                     <Label Grid.Row="1" Grid.Column="1" Name="LblPointsP1" />
                     <Label Grid.Row="2" Grid.Column="1" Name="LblPointsP2" />
                     <Label Grid.Row="3" Grid.Column="1" Name="LblPointsP3" />
-                    <Label Grid.Row="0" Grid.RowSpan="2" Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="20" Name="LblDominantWind" />
-                    <Label Grid.Row="2" Grid.RowSpan="2" Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="20" Name="LblEastTurnCount" />
-                    <Label Grid.Row="0" Grid.RowSpan="5" Grid.Column="3" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="20" Name="LblWallTilesLeft" />
+                    <Label Grid.Row="0" Grid.RowSpan="2" Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="20" Name="LblDominantWind" ToolTip="Dominant wind" />
+                    <Label Grid.Row="2" Grid.RowSpan="2" Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="20" Name="LblEastTurnCount" ToolTip="Index of current east player / Honba count" />
+                    <Label Grid.Row="0" Grid.RowSpan="5" Grid.Column="3" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="20" Name="LblWallTilesLeft" ToolTip="Tiles remaining in the wall." BorderBrush="DarkMagenta" BorderThickness="1" />
                 </Grid>
             </DockPanel>
 

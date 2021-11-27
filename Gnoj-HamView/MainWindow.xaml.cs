@@ -911,7 +911,7 @@ namespace Gnoj_HamView
 
             StpDoras.SetDorasPanel(_game.Round.DoraIndicatorTiles, _game.Round.VisibleDorasCount);
             LblDominantWind.Content = _game.DominantWind.ToWindDisplay();
-            LblEastTurnCount.Content = _game.EastRank;
+            LblEastTurnCount.Content = $"{_game.EastRank}/{_game.HonbaCount}";
             for (int pIndex = 0; pIndex < _game.Players.Count; pIndex++)
             {
                 this.FindPanel("StpCombosP", pIndex).Children.Clear();
