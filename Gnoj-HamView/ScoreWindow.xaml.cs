@@ -47,5 +47,10 @@ namespace Gnoj_HamView
                 this.FindControl("LblGain", i).ApplyGainAndLostStyle(endOfRoundInformations.GetPlayerPointsGain(i));
             }
         }
+
+        private void BtnGoToNext_Click(object sender, RoutedEventArgs e)
+        {
+            Close();
+        }
     }
 }

@@ -17,6 +17,12 @@ namespace Gnoj_HamView
         {
             InitializeComponent();
 
+#if DEBUG
+            GrbDebugOptions.Visibility = Visibility.Visible;
+#else
+            GrbDebugOptions.Visibility = Visibility.Collapsed;
+#endif
+
             LoadConfiguration();
 
             CbbEndOfGameRule.ItemsSource = GraphicTools.GetEndOfGameRuleDisplayValue();

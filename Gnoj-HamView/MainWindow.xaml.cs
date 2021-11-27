@@ -499,8 +499,10 @@ namespace Gnoj_HamView
                 {
                     buttonClickable.Tag = new Tuple<TilePivot, bool>(tileKey, tileChoices[tileKey]);
                 }
+                buttonClickable.Style = FindResource("StyleHighlightTile") as Style;
                 clickableButtons.Add(buttonClickable);
             }
+
             // ...and disables every buttons not concerned.
             buttons.Where(b => !clickableButtons.Contains(b)).All(b => { b.IsEnabled = false; return true; });
 

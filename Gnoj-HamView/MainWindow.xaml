@@ -15,14 +15,17 @@
                 <DiscreteObjectKeyFrame KeyTime="00:00:00.7500000" Value="{x:Static Visibility.Collapsed}"/>
             </ObjectAnimationUsingKeyFrames>
         </Storyboard>
+        <Style x:Key="StyleHighlightTile" TargetType="Button">
+            <Setter Property="Background" Value="DarkMagenta" />
+        </Style>
     </Window.Resources>
     <!-- ContentControl allows to use double click -->
     <ContentControl Margin="5" MouseDoubleClick="Grid_MouseDoubleClick">
         <Grid Name="GrdMain">
             <Grid.Background>
                 <RadialGradientBrush>
-                    <GradientStop Color="LightGreen" Offset="0.25" />
-                    <GradientStop Color="LimeGreen" Offset="1" />
+                    <GradientStop Color="LightGreen" Offset="0.10" />
+                    <GradientStop Color="DarkGreen" Offset="1" />
                 </RadialGradientBrush>
             </Grid.Background>
             <Grid.ColumnDefinitions>
@@ -69,7 +72,7 @@
             </Grid>
 
             <!-- Configuration expander -->
-            <Border Grid.Column="1" Grid.Row="6" Grid.ColumnSpan="6" Panel.ZIndex="2" BorderThickness="2" BorderBrush="LimeGreen" CornerRadius="8">
+            <Border Grid.Column="1" Grid.Row="6" Grid.ColumnSpan="6" Panel.ZIndex="2" BorderThickness="2" BorderBrush="DarkGreen" CornerRadius="8">
                 <Expander HorizontalAlignment="Right" Background="White" Opacity="0.5" Name="ExpConfiguration" Expanded="ExpConfiguration_Expanded" Collapsed="ExpConfiguration_Collapsed" IsExpanded="False" ExpandDirection="Left">
                     <Grid>
                         <Grid.ColumnDefinitions>

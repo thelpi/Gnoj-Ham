@@ -38,11 +38,19 @@
                     <ComboBox Margin="5, 0, 0, 0" Grid.Column="1" Grid.Row="1" Name="CbbPointsRule" Height="25" VerticalContentAlignment="Center" />
                     <CheckBox Margin="5, 0, 0, 0" Grid.Column="1" Grid.Row="2" Name="ChkUseNagashiMangan" VerticalAlignment="Center" />
                     <CheckBox Margin="5, 0, 0, 0" Grid.Column="1" Grid.Row="3" Name="ChkUseRenhou" VerticalAlignment="Center" />
-                    <ComboBox Margin="5, 0, 0, 0" Grid.Column="1" Grid.Row="4" Name="CbbEndOfGameRule" Height="25" VerticalContentAlignment="Center" />
+                    <ComboBox Margin="5, 0, 0, 0" Grid.Column="1" Grid.Row="4" Name="CbbEndOfGameRule" Height="25" VerticalContentAlignment="Center">
+                        <ComboBox.ToolTip>
+                            <TextBlock>
+                                - Oorasu: the game ends after south 4; no bankruptcy.<LineBreak/>
+                                - Tobi: the game ends if bankruptcy, in addition to Oorasu.<LineBreak/>
+                                - Enchousen: the game continues if every players are under 30k when Oorasu occurs; must be a 25k game.
+                            </TextBlock>
+                        </ComboBox.ToolTip>
+                    </ComboBox>
                     <TextBox Margin="5, 0, 0, 0" Grid.Column="1" Grid.Row="5" Name="TxtPlayerName" Height="25" VerticalContentAlignment="Center" />
                 </Grid>
             </GroupBox>
-            <GroupBox Padding="5" Header="Debug" Margin="0, 10, 0, 0">
+            <GroupBox Padding="5" Header="Debug" Margin="0, 10, 0, 0" Name="GrbDebugOptions">
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="150" />
