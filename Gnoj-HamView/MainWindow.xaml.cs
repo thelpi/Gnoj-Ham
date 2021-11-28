@@ -494,7 +494,10 @@ namespace Gnoj_HamView
             foreach (TilePivot tileKey in tileChoices.Keys)
             {
                 // Changes the event of every buttons concerned by the call...
-                Button buttonClickable = buttons.First(b => b.Tag as TilePivot == tileKey);
+                Button buttonClickable = buttons
+                    .Where(b => b.Tag as TilePivot == tileKey)
+                    .OrderBy(b => (b.Tag as TilePivot).IsRedDora) // in case of autoplay, we don't want the red dora discarded where there's a not-red tile
+                    .First();
                 buttonClickable.Click += handler;
                 buttonClickable.Click -= BtnDiscard_Click;
                 if (handler == BtnChiiChoice_Click)
