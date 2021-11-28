@@ -14,6 +14,9 @@ namespace Gnoj_Ham
     /// <item>Open on chii in very specific cases</item>
     /// <item>To not discard doras</item>
     /// <item>Defense on opponents when opened hand.</item>
+    /// <item>Rinshan kaihou even if an opponent is riichi</item>
+    /// <item>Change playstyle depending on ranking</item>
+    /// <item>To no defende when the hand is very good</item>
     /// </list>
     /// </remarks>
     public class IaManagerPivot
@@ -211,8 +214,9 @@ namespace Gnoj_Ham
             Tuple<int, List<TilePivot>> opponentPlayerIdWithTiles = _round.OpponentsCanCallKan(checkConcealedOnly);
             if (opponentPlayerIdWithTiles != null)
             {
-                // riichi from opponents, and current not tenpai: no call
-                if (_round.Riichis.Count > 0 && !_round.IsTenpai(opponentPlayerIdWithTiles.Item1))
+                // riichi from opponents: no call
+                // TODO: fix tenpai check
+                if (_round.Riichis.Count > 0) //  && !_round.IsTenpai(opponentPlayerIdWithTiles.Item1)
                 {
                     return null;
                 }
