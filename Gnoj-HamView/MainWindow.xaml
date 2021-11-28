@@ -115,6 +115,7 @@
                 <Button Name="BtnPon" Content="PON !"       FontWeight="ExtraBold" Height="28" Width="75" Visibility="Collapsed" Margin="5, 0, 0, 0" Click="BtnPon_Click" />
                 <Button Name="BtnChii" Content="CHII !"     FontWeight="ExtraBold" Height="28" Width="75" Visibility="Collapsed" Margin="5, 0, 0, 0" Click="BtnChii_Click" />
                 <Button Name="BtnKan" Content="KAN !"       FontWeight="ExtraBold" Height="28" Width="75" Visibility="Collapsed" Margin="5, 0, 0, 0" Click="BtnKan_Click" />
+                <Button Name="BtnSkipCall" Content="X"      FontWeight="ExtraBold" Height="28" Width="28" Visibility="Collapsed" Margin="5, 0, 0, 0" Click="BtnSkipCall_Click" />
             </StackPanel>
 
             <!-- Hands stacks -->

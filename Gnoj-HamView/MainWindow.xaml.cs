@@ -200,6 +200,11 @@ namespace Gnoj_HamView
             }
         }
 
+        private void BtnSkipCall_Click(object sender, RoutedEventArgs e)
+        {
+            Grid_MouseDoubleClick(null, null);
+        }
+
         private void ExpConfiguration_Expanded(object sender, RoutedEventArgs e)
         {
             ExpConfiguration.Opacity = 0.8;
@@ -290,6 +295,7 @@ namespace Gnoj_HamView
                         Dispatcher.Invoke(() =>
                         {
                             BtnRon.Visibility = Visibility.Visible;
+                            BtnSkipCall.Visibility = Visibility.Visible;
                         });
                         ActivateTimer(null);
                         if (Properties.Settings.Default.AutoCallMahjong)
@@ -446,6 +452,7 @@ namespace Gnoj_HamView
                 Dispatcher.Invoke(() =>
                 {
                     BtnTsumo.Visibility = Visibility.Visible;
+                    BtnSkipCall.Visibility = Visibility.Visible;
                 });
                 ActivateTimer(null);
                 return Properties.Settings.Default.AutoCallMahjong ? new PanelButton("BtnTsumo", -1) : null;
@@ -457,6 +464,7 @@ namespace Gnoj_HamView
                 Dispatcher.Invoke(() =>
                 {
                     BtnRiichi.Visibility = Visibility.Visible;
+                    BtnSkipCall.Visibility = Visibility.Visible;
                 });
                 ActivateTimer(null);
                 return null;
@@ -734,6 +742,7 @@ namespace Gnoj_HamView
                 if (_game.Round.CanCallTsumo(true))
                 {
                     BtnTsumo.Visibility = Visibility.Visible;
+                    BtnSkipCall.Visibility = Visibility.Visible;
                     if (Properties.Settings.Default.AutoCallMahjong)
                     {
                         BtnTsumo.RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent));
@@ -749,6 +758,7 @@ namespace Gnoj_HamView
                     if (_riichiTiles.Count > 0)
                     {
                         BtnRiichi.Visibility = Visibility.Visible;
+                        BtnSkipCall.Visibility = Visibility.Visible;
                         ActivateTimer(null);
                     }
                 }
@@ -1020,13 +1030,12 @@ namespace Gnoj_HamView
             BtnTsumo.Visibility = Visibility.Collapsed;
             BtnRiichi.Visibility = Visibility.Collapsed;
             BtnRon.Visibility = Visibility.Collapsed;
+            BtnSkipCall.Visibility = Visibility.Collapsed;
 
             if (preDiscard)
             {
                 // When the player has 14 tiles and need to discard
                 // A kan call might be possible
-                BtnChii.Visibility = Visibility.Collapsed;
-                BtnPon.Visibility = Visibility.Collapsed;
                 BtnKan.Visibility = _game.Round.CanCallKan(GamePivot.HUMAN_INDEX).Count > 0 ? Visibility.Visible : Visibility.Collapsed;
             }
             else if (cpuPlay)
@@ -1042,6 +1051,7 @@ namespace Gnoj_HamView
                 || BtnPon.Visibility == Visibility.Visible
                 || BtnKan.Visibility == Visibility.Visible)
             {
+                BtnSkipCall.Visibility = Visibility.Visible;
                 ActivateTimer(null);
             }
         }
