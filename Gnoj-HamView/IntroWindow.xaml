@@ -14,7 +14,35 @@
             <Button Width="75" Height="25" Content="Quit" Name="BtnQuit" Click="BtnQuit_Click" Margin="10, 0, 0, 0" />
         </StackPanel>
         <StackPanel Orientation="Vertical" DockPanel.Dock="Top">
-            <GroupBox Padding="5"  Header="Rules" Margin="0, 10, 0, 0">
+            <GroupBox Padding="5"  Header="Options" Margin="0, 10, 0, 0">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="150" />
+                        <ColumnDefinition Width="150" />
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="30" />
+                        <RowDefinition Height="30" />
+                        <RowDefinition Height="30" />
+                        <RowDefinition Height="30" />
+                        <RowDefinition Height="30" />
+                        <RowDefinition Height="30" />
+                    </Grid.RowDefinitions>
+                    <Label Grid.Column="0" Grid.Row="0" HorizontalContentAlignment="Right" VerticalContentAlignment="Center" Content="Player name" />
+                    <Label Grid.Column="0" Grid.Row="1" HorizontalContentAlignment="Right" VerticalContentAlignment="Center" Content="Chrono" />
+                    <Label Grid.Column="0" Grid.Row="2" HorizontalContentAlignment="Right" VerticalContentAlignment="Center" Content="CPU speed" />
+                    <Label Grid.Column="0" Grid.Row="3" HorizontalContentAlignment="Right" VerticalContentAlignment="Center" Content="Sounds" />
+                    <Label Grid.Column="0" Grid.Row="4" HorizontalContentAlignment="Right" VerticalContentAlignment="Center" Content="Auto-ron/tsumo" />
+                    <Label Grid.Column="0" Grid.Row="5" HorizontalContentAlignment="Right" VerticalContentAlignment="Center" Content="Auto riichi discard" />
+                    <TextBox Margin="5, 0, 0, 0" Grid.Column="1" Grid.Row="0" Name="TxtPlayerName" Height="25" VerticalContentAlignment="Center" />
+                    <ComboBox Margin="5, 0, 0, 0" Grid.Column="1" Grid.Row="1" Name="CbbChronoSpeed" Height="25" VerticalContentAlignment="Center" />
+                    <ComboBox Margin="5, 0, 0, 0" Grid.Column="1" Grid.Row="2" Name="CbbCpuSpeed" Height="25" VerticalContentAlignment="Center" />
+                    <CheckBox Margin="5, 0, 0, 0" Grid.Column="1" Grid.Row="3" Name="ChkSounds" VerticalAlignment="Center" />
+                    <CheckBox Margin="5, 0, 0, 0" Grid.Column="1" Grid.Row="4" Name="ChkAutoTsumoRon" VerticalAlignment="Center" />
+                    <CheckBox Margin="5, 0, 0, 0" Grid.Column="1" Grid.Row="5" Name="ChkAutoRiichiDiscard" VerticalAlignment="Center" />
+                </Grid>
+            </GroupBox>
+            <Expander IsExpanded="False" Padding="5"  Header="Rules" Margin="0, 10, 0, 0">
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="150" />
@@ -46,35 +74,7 @@
                         </ComboBox.ToolTip>
                     </ComboBox>
                 </Grid>
-            </GroupBox>
-            <GroupBox Padding="5"  Header="Options" Margin="0, 10, 0, 0">
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="150" />
-                        <ColumnDefinition Width="150" />
-                    </Grid.ColumnDefinitions>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="30" />
-                        <RowDefinition Height="30" />
-                        <RowDefinition Height="30" />
-                        <RowDefinition Height="30" />
-                        <RowDefinition Height="30" />
-                        <RowDefinition Height="30" />
-                    </Grid.RowDefinitions>
-                    <Label Grid.Column="0" Grid.Row="0" HorizontalContentAlignment="Right" VerticalContentAlignment="Center" Content="Player name" />
-                    <Label Grid.Column="0" Grid.Row="1" HorizontalContentAlignment="Right" VerticalContentAlignment="Center" Content="Chrono" />
-                    <Label Grid.Column="0" Grid.Row="2" HorizontalContentAlignment="Right" VerticalContentAlignment="Center" Content="CPU speed" />
-                    <Label Grid.Column="0" Grid.Row="3" HorizontalContentAlignment="Right" VerticalContentAlignment="Center" Content="Sounds" />
-                    <Label Grid.Column="0" Grid.Row="4" HorizontalContentAlignment="Right" VerticalContentAlignment="Center" Content="Auto-ron/tsumo" />
-                    <Label Grid.Column="0" Grid.Row="5" HorizontalContentAlignment="Right" VerticalContentAlignment="Center" Content="Auto riichi discard" />
-                    <TextBox Margin="5, 0, 0, 0" Grid.Column="1" Grid.Row="0" Name="TxtPlayerName" Height="25" VerticalContentAlignment="Center" />
-                    <ComboBox Margin="5, 0, 0, 0" Grid.Column="1" Grid.Row="1" Name="CbbChronoSpeed" Height="25" VerticalContentAlignment="Center" />
-                    <ComboBox Margin="5, 0, 0, 0" Grid.Column="1" Grid.Row="2" Name="CbbCpuSpeed" Height="25" VerticalContentAlignment="Center" />
-                    <CheckBox Margin="5, 0, 0, 0" Grid.Column="1" Grid.Row="3" Name="ChkSounds" VerticalAlignment="Center" />
-                    <CheckBox Margin="5, 0, 0, 0" Grid.Column="1" Grid.Row="4" Name="ChkAutoTsumoRon" VerticalAlignment="Center" />
-                    <CheckBox Margin="5, 0, 0, 0" Grid.Column="1" Grid.Row="5" Name="ChkAutoRiichiDiscard" VerticalAlignment="Center" />
-                </Grid>
-            </GroupBox>
+            </Expander>
             <GroupBox Padding="5" Header="Debug" Margin="0, 10, 0, 0" Name="GrbDebugOptions" Visibility="Collapsed">
                 <Grid>
                     <Grid.ColumnDefinitions>

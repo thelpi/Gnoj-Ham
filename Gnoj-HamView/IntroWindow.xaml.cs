@@ -41,6 +41,7 @@ namespace Gnoj_HamView
                 TxtPlayerName.Text,
                 (InitialPointsRulePivot)CbbPointsRule.SelectedIndex,
                 (EndOfGameRulePivot)CbbEndOfGameRule.SelectedIndex,
+                PlayerSavePivot.GetOrCreateSave(),
                 ChkUseRedDoras.IsChecked == true,
                 ChkUseNagashiMangan.IsChecked == true,
                 ChkUseRenhou.IsChecked == true

@@ -19,7 +19,8 @@ namespace Gnoj_Ham
         #endregion Constants
 
         #region Embedded properties
-        
+
+        private PlayerSavePivot _save;
         private readonly List<PlayerPivot> _players;
 
         /// <summary>
@@ -132,12 +133,20 @@ namespace Gnoj_Ham
         /// <param name="humanPlayerName">The name of the human player; other players will be <see cref="PlayerPivot.IsCpu"/>.</param>
         /// <param name="initialPointsRule">The <see cref="InitialPointsRule"/> value.</param>
         /// <param name="endOfGameRule">The <see cref="EndOfGameRule"/> value.</param>
+        /// <param name="save">Player save stats.</param>
         /// <param name="withRedDoras">Optionnal; the <see cref="WithRedDoras"/> value; default value is <c>False</c>.</param>
         /// <param name="useNagashiMangan">Optionnal; the <see cref="UseNagashiMangan"/> value; default value is <c>False</c>.</param>
         /// <param name="useRenhou">Optionnal; the <see cref="UseRenhou"/> value; default value is <c>False</c>.</param>
-        public GamePivot(string humanPlayerName, InitialPointsRulePivot initialPointsRule, EndOfGameRulePivot endOfGameRule,
-            bool withRedDoras = false, bool useNagashiMangan = false, bool useRenhou = false)
+        public GamePivot(string humanPlayerName,
+            InitialPointsRulePivot initialPointsRule,
+            EndOfGameRulePivot endOfGameRule,
+            PlayerSavePivot save,
+            bool withRedDoras = false,
+            bool useNagashiMangan = false,
+            bool useRenhou = false)
         {
+            _save = save;
+
             InitialPointsRule = initialPointsRule;
             EndOfGameRule = endOfGameRule;
             _players = PlayerPivot.GetFourPlayers(humanPlayerName, InitialPointsRule);
@@ -194,7 +203,11 @@ namespace Gnoj_Ham
         /// <returns>An instance of <see cref="EndOfRoundInformationsPivot"/>.</returns>
         public EndOfRoundInformationsPivot NextRound(int? ronPlayerIndex)
         {
-            EndOfRoundInformationsPivot endOfRoundInformations = Round.EndOfRound(ronPlayerIndex);
+            var endOfRoundInformations = Round.EndOfRound(ronPlayerIndex);
+
+            // used for stats
+            var humanIsRiichi = Round.IsRiichi(HUMAN_INDEX);
+            var humanIsConcealed = Round.GetHand(HUMAN_INDEX).IsConcealed;
 
             if (!endOfRoundInformations.Ryuukyoku)
             {
@@ -210,7 +223,7 @@ namespace Gnoj_Ham
             {
                 endOfRoundInformations.EndOfGame = true;
                 ClearPendingRiichi();
-                return endOfRoundInformations;
+                goto Exit;
             }
 
             if (DominantWind == WindPivot.West || DominantWind == WindPivot.North)
@@ -219,7 +232,7 @@ namespace Gnoj_Ham
                 {
                     endOfRoundInformations.EndOfGame = true;
                     ClearPendingRiichi();
-                    return endOfRoundInformations;
+                    goto Exit;
                 }
             }
 
@@ -244,7 +257,7 @@ namespace Gnoj_Ham
                         {
                             endOfRoundInformations.EndOfGame = true;
                             ClearPendingRiichi();
-                            return endOfRoundInformations;
+                            goto Exit;
                         }
                     }
                     else if (DominantWind == WindPivot.West)
@@ -255,7 +268,7 @@ namespace Gnoj_Ham
                     {
                         endOfRoundInformations.EndOfGame = true;
                         ClearPendingRiichi();
-                        return endOfRoundInformations;
+                        goto Exit;
                     }
                     else
                     {
@@ -270,8 +283,20 @@ namespace Gnoj_Ham
 
             Round = new RoundPivot(this, EastIndex);
 
+        Exit:
+            var me = Players.Single(_ => !_.IsCpu);
+
+            _save.UpdateAndSave(endOfRoundInformations,
+                ronPlayerIndex.HasValue,
+                humanIsRiichi,
+                humanIsConcealed,
+                Players.OrderByDescending(_ => _.Points).ToList().IndexOf(me),
+                me.Points);
+
             return endOfRoundInformations;
         }
+
+        
 
         /// <summary>
         /// Gets the current <see cref="WindPivot"/> of the specified player.

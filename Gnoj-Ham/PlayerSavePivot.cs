@@ -1,0 +1,157 @@
+﻿using System;
+using System.IO;
+using System.Linq;
+using System.Runtime.Serialization.Formatters.Binary;
+
+namespace Gnoj_Ham
+{
+    /// <summary>
+    /// Player save file
+    /// </summary>
+    [Serializable]
+    public class PlayerSavePivot
+    {
+        private const string SAVE_FILE_NAME = "save_file.dat";
+
+        private static string FullFileName => $"{Environment.CurrentDirectory}\\{SAVE_FILE_NAME}";
+
+        /// <summary>
+        /// A marker to avoid double count.
+        /// </summary>
+        private bool InProgressGame { get; set; }
+        /// <summary>
+        /// Date of the first game (with at least one round completed).
+        /// </summary>
+        public DateTime? FirstGame { get; private set; }
+        /// <summary>
+        /// Date of the most recent completed game (with at least one round completed).
+        /// </summary>
+        public DateTime? LastGame { get; private set; }
+        /// <summary>
+        /// Number of games.
+        /// </summary>
+        public int GameCount { get; private set; }
+        /// <summary>
+        /// Number of games by ranking position.
+        /// </summary>
+        public int[] ByPositionCount { get; private set; } = new[] { 0, 0, 0, 0 };
+        /// <summary>
+        /// Number of riichi declarations.
+        /// </summary>
+        public int RiichiCount { get; private set; }
+        /// <summary>
+        /// Number of bankrupts.
+        /// </summary>
+        public int BankruptCount { get; private set; }
+        /// <summary>
+        /// Number of tsumo declarations.
+        /// </summary>
+        public int TsumoCount { get; private set; }
+        /// <summary>
+        /// Number of ron declarations.
+        /// </summary>
+        public int RonCount { get; private set; }
+        /// <summary>
+        /// Number of yakuman hands.
+        /// </summary>
+        public int YakumanCount { get; private set; }
+        /// <summary>
+        /// Number of opened hands.
+        /// </summary>
+        public int OpenedHandCount { get; private set; }
+
+        /// <summary>
+        /// Gets or creates the player save file.
+        /// </summary>
+        /// <returns>Player save file.</returns>
+        public static PlayerSavePivot GetOrCreateSave()
+        {
+            var save = new PlayerSavePivot();
+
+            try
+            {
+                
+                if (File.Exists(FullFileName))
+                {
+                    // TODO decrypt
+                    using (var stream = new FileStream(FullFileName, FileMode.Open, FileAccess.Read, FileShare.Read))
+                    {
+                        save = (PlayerSavePivot)new BinaryFormatter().Deserialize(stream);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                // TODO find something for release mode
+#if DEBUG
+                System.Diagnostics.Debug.WriteLine(ex.Message);
+#endif
+            }
+
+            return save;
+        }
+        
+        private void SavePlayerFile()
+        {
+            try
+            {
+                using (var stream = new FileStream(FullFileName, FileMode.Create, FileAccess.Write, FileShare.None))
+                {
+                    new BinaryFormatter().Serialize(stream, this);
+                }
+            }
+            catch (Exception ex)
+            {
+                // TODO find something for release mode
+#if DEBUG
+                System.Diagnostics.Debug.WriteLine(ex.Message);
+#endif
+            }
+        }
+
+        internal void UpdateAndSave(EndOfRoundInformationsPivot endOfRoundInformations,
+            bool isRon, bool humanIsRiichi, bool humanIsConcealed, int scoreIndexPosition, int meScore)
+        {
+            var now = DateTime.Now;
+            var pHand = endOfRoundInformations.PlayersInfo?.FirstOrDefault(_ => _.Index == GamePivot.HUMAN_INDEX);
+
+            if (!InProgressGame)
+            {
+                if (!FirstGame.HasValue)
+                {
+                    FirstGame = now;
+                }
+                LastGame = now;
+                ++GameCount;
+                InProgressGame = true;
+            }
+
+            if (pHand?.Yakus?.Count > 0)
+            {
+                YakumanCount += pHand.Yakus.Count(_ => _.IsYakuman);
+                if (isRon)
+                    ++RonCount;
+                else
+                    ++TsumoCount;
+            }
+
+            if (humanIsRiichi)
+                ++RiichiCount;
+
+            if (!humanIsConcealed)
+                ++OpenedHandCount;
+
+            if (endOfRoundInformations.EndOfGame)
+            {
+                if (meScore < 0)
+                    ++BankruptCount;
+                
+                ++ByPositionCount[scoreIndexPosition];
+                InProgressGame = false;
+            }
+
+            // save at each round (so rounds on given up games are kept)
+            SavePlayerFile();
+        }
+    }
+}
