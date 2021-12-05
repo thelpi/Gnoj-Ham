@@ -70,7 +70,6 @@ namespace Gnoj_Ham
 
             try
             {
-                
                 if (File.Exists(FullFileName))
                 {
                     // TODO decrypt

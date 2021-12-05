@@ -762,6 +762,12 @@ namespace Gnoj_HamView
                         BtnSkipCall.Visibility = Visibility.Visible;
                         ActivateTimer(null);
                     }
+                    else if (Properties.Settings.Default.AutoDiscardAfterRiichi && _game.Round.HumanCanAutoDiscard())
+                    {
+                        // Auto discard if riichi and the compensation tile is not interesting
+                        // Never tested!
+                        RaiseButtonClickEvent(new PanelButton("StpPickP", 0));
+                    }
                 }
             }
         }
