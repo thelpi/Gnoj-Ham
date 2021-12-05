@@ -111,5 +111,10 @@ namespace Gnoj_HamView
         }
 
         #endregion Private methods
+
+        private void PlayerStatsHlk_Click(object sender, RoutedEventArgs e)
+        {
+            new PlayerSaveStatsWindow(PlayerSavePivot.GetOrCreateSave()).ShowDialog();
+        }
     }
 }

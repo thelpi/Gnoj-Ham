@@ -32,6 +32,10 @@ namespace Gnoj_Ham
         /// </summary>
         public int GameCount { get; private set; }
         /// <summary>
+        /// Number of rounds.
+        /// </summary>
+        public int RoundCount { get; private set; }
+        /// <summary>
         /// Number of games by ranking position.
         /// </summary>
         public int[] ByPositionCount { get; private set; } = new[] { 0, 0, 0, 0 };
@@ -116,14 +120,10 @@ namespace Gnoj_Ham
 
             if (!InProgressGame)
             {
-                if (!FirstGame.HasValue)
-                {
-                    FirstGame = now;
-                }
-                LastGame = now;
-                ++GameCount;
                 InProgressGame = true;
             }
+
+            ++RoundCount;
 
             if (pHand?.Yakus?.Count > 0)
             {
@@ -146,6 +146,12 @@ namespace Gnoj_Ham
                     ++BankruptCount;
                 
                 ++ByPositionCount[scoreIndexPosition];
+                if (!FirstGame.HasValue)
+                {
+                    FirstGame = now;
+                }
+                LastGame = now;
+                ++GameCount;
                 InProgressGame = false;
             }
 

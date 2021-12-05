@@ -100,6 +100,9 @@
     </Compile>
     <Compile Include="GraphicTools.cs" />
     <Compile Include="PanelButton.cs" />
+    <Compile Include="PlayerSaveStatsWindow.xaml.cs">
+      <DependentUpon>PlayerSaveStatsWindow.xaml</DependentUpon>
+    </Compile>
     <Compile Include="ScoreWindow.xaml.cs">
       <DependentUpon>ScoreWindow.xaml</DependentUpon>
     </Compile>
@@ -127,6 +130,10 @@
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Page Include="PlayerSaveStatsWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="ScoreWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
