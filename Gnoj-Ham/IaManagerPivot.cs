@@ -21,7 +21,7 @@ namespace Gnoj_Ham
     /// </remarks>
     public class IaManagerPivot
     {
-        private RoundPivot _round;
+        private readonly RoundPivot _round;
 
         #region Constructors
 
@@ -192,7 +192,7 @@ namespace Gnoj_Ham
             {
                 return false;
             }
-            
+
             return true;
         }
 
@@ -342,21 +342,21 @@ namespace Gnoj_Ham
                 && deadtiles.GroupBy(t => t).Any(t => t.Key != tile && t.Key.IsHonor && t.Count() == 4)
             );
         }
-        
+
         // suji on the middle (least safe)
         private bool IsInsiderSuji(TilePivot tile, int opponentPlayerIndex)
         {
             return GetSujisFromDiscard(tile, opponentPlayerIndex)
                 .Any(_ => !new[] { 4, 5, 6 }.Contains(_.Number));
         }
-        
+
         // suji on the edge (safer)
         private bool IsOutsiderSuji(TilePivot tile, int opponentPlayerIndex)
         {
             return GetSujisFromDiscard(tile, opponentPlayerIndex)
                 .Any(_ => new[] { 4, 5, 6 }.Contains(_.Number));
         }
-        
+
         // suji on both side
         private bool IsDoubleInsiderSuji(TilePivot tile, int opponentPlayerIndex)
         {
@@ -394,7 +394,7 @@ namespace Gnoj_Ham
             // how much pair (or better) of valuable honors ?
             var valuableHonorPairs = hand.ConcealedTiles.GroupBy(_ => _)
                 .Count(_ => _.Key.IsHonor && _.Count() >= 2 && IsDragonOrValuableWind(_.Key, valuableWinds));
-            
+
             if (!canPonForYakuhai && valuableHonorPairs < 2 && !closeToChinitsu)
             {
                 return false;

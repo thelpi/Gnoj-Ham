@@ -32,13 +32,7 @@ namespace Gnoj_Ham
         /// The rank, in the virtual discard of each opponent, when the riichi call has been made.
         /// </summary>
         /// <remarks>Key is the opponent index, value is the rank (<c>-1</c> if none).</remarks>
-        public IReadOnlyDictionary<int, int> OpponentsVirtualDiscardRank
-        {
-            get
-            {
-                return _opponentsVirtualDiscardRank;
-            }
-        }
+        public IReadOnlyDictionary<int, int> OpponentsVirtualDiscardRank => _opponentsVirtualDiscardRank;
 
         #endregion Embedded properties
 

@@ -18,13 +18,13 @@ namespace Gnoj_HamView
     public partial class MainWindow : Window
     {
         private const string WINDOW_TITLE = "Gnoj-Ham";
-        
+
         private readonly GamePivot _game;
-        private System.Media.SoundPlayer _tickSound;
+        private readonly System.Media.SoundPlayer _tickSound;
         private System.Timers.Timer _timer;
         private System.Timers.ElapsedEventHandler _currentTimerHandler;
         private BackgroundWorker _autoPlay;
-        private Storyboard _overlayStoryboard;
+        private readonly Storyboard _overlayStoryboard;
         private bool _waitForDecision;
         private List<TilePivot> _riichiTiles;
         private bool _hardStopAutoplay = false;
@@ -913,7 +913,7 @@ namespace Gnoj_HamView
         {
             LblWallTilesLeft.Foreground = System.Windows.Media.Brushes.Black;
             _game.Round.NotifyWallCount += OnNotifyWallCount;
-            _game.Round.NotifyPick += delegate(TileEventArgs e)
+            _game.Round.NotifyPick += delegate (TileEventArgs e)
             {
                 if (Properties.Settings.Default.PlaySounds)
                 {

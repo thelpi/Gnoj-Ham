@@ -48,35 +48,17 @@ namespace Gnoj_Ham
         /// <summary>
         /// Informations relative to each player.
         /// </summary>
-        public IReadOnlyCollection<PlayerInformationsPivot> PlayersInfo
-        {
-            get
-            {
-                return _playersInfo;
-            }
-        }
+        public IReadOnlyCollection<PlayerInformationsPivot> PlayersInfo => _playersInfo;
 
         /// <summary>
         /// List of dora indicators for this round.
         /// </summary>
-        public IReadOnlyCollection<TilePivot> DoraTiles
-        {
-            get
-            {
-                return _doraTiles;
-            }
-        }
+        public IReadOnlyCollection<TilePivot> DoraTiles => _doraTiles;
 
         /// <summary>
         /// List of uradora indicators for this round.
         /// </summary>
-        public IReadOnlyCollection<TilePivot> UraDoraTiles
-        {
-            get
-            {
-                return _uraDoraTiles;
-            }
-        }
+        public IReadOnlyCollection<TilePivot> UraDoraTiles => _uraDoraTiles;
 
         #endregion Embedded properties
 
@@ -86,13 +68,7 @@ namespace Gnoj_Ham
         /// <summary>
         /// Inferred; count of uradora to display.
         /// </summary>
-        public int UraDoraVisibleCount
-        {
-            get
-            {
-                return DisplayUraDora ? DoraVisibleCount : 0;
-            }
-        }
+        public int UraDoraVisibleCount => DisplayUraDora ? DoraVisibleCount : 0;
 
         #endregion Inferred properties
 
@@ -160,7 +136,7 @@ namespace Gnoj_Ham
         public class PlayerInformationsPivot
         {
             #region Embedded properties
-            
+
             private readonly HandPivot _hand;
 
             /// <summary>
@@ -203,24 +179,12 @@ namespace Gnoj_Ham
             /// <summary>
             /// Inferred; list of yakus in the hand.
             /// </summary>
-            public IReadOnlyCollection<YakuPivot> Yakus
-            {
-                get
-                {
-                    return _hand?.Yakus;
-                }
-            }
+            public IReadOnlyCollection<YakuPivot> Yakus => _hand?.Yakus;
 
             /// <summary>
             /// Inferred; <c>True</c> if concealed hand; <c>False</c> otherwise.
             /// </summary>
-            public bool Concealed
-            {
-                get
-                {
-                    return _hand?.IsConcealed == true;
-                }
-            }
+            public bool Concealed => _hand?.IsConcealed == true;
 
             #endregion Inferred properties
 

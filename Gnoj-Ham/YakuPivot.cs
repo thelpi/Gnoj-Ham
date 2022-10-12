@@ -40,13 +40,7 @@ namespace Gnoj_Ham
         /// Yakumans are not in this list as they make every other yakus obsolete.
         /// </summary>
         /// <remarks>Empty for yakumans.</remarks>
-        public IReadOnlyCollection<YakuPivot> Upgrades
-        {
-            get
-            {
-                return _upgrades;
-            }
-        }
+        public IReadOnlyCollection<YakuPivot> Upgrades => _upgrades;
 
         #endregion Embedded properties
 
@@ -55,33 +49,15 @@ namespace Gnoj_Ham
         /// <summary>
         /// Inferred; indicates if the yaku is only valid when concealed.
         /// </summary>
-        public bool IsConcealedOnly
-        {
-            get
-            {
-                return FanCount == 0;
-            }
-        }
+        public bool IsConcealedOnly => FanCount == 0;
         /// <summary>
         /// Inferred; indicates the fan count when concealed.
         /// </summary>
-        public int ConcealedFanCount
-        {
-            get
-            {
-                return FanCount + ConcealedBonusFanCount;
-            }
-        }
+        public int ConcealedFanCount => FanCount + ConcealedBonusFanCount;
         /// <summary>
         /// Inferred; indicates if the yaku is a yakuman (when concealed, at least).
         /// </summary>
-        public bool IsYakuman
-        {
-            get
-            {
-                return ConcealedFanCount == 13;
-            }
-        }
+        public bool IsYakuman => ConcealedFanCount == 13;
 
         #endregion Inferred properties
 
@@ -379,7 +355,7 @@ namespace Gnoj_Ham
         private const string YAKUHAI = "Yakuhai";
         private const string RIICHI = "Riichi";
         private const string IPPATSU = "Ippatsu";
-        private const string MENZEN_TSUMO  = "Menzen tsumo";
+        private const string MENZEN_TSUMO = "Menzen tsumo";
         private const string PINFU = "Pinfu";
         private const string IIPEIKOU = "Iipeikou";
 

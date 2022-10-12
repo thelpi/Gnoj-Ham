@@ -32,80 +32,38 @@ namespace Gnoj_Ham
         /// First on the list is the latest to play.
         /// The list is cleared when a jump (ie a call) is made.
         /// </summary>
-        public IReadOnlyCollection<int> PlayerIndexHistory
-        {
-            get
-            {
-                return _playerIndexHistory;
-            }
-        }
+        public IReadOnlyCollection<int> PlayerIndexHistory => _playerIndexHistory;
 
         /// <summary>
         /// Wall tiles.
         /// </summary>
-        public IReadOnlyCollection<TilePivot> WallTiles
-        {
-            get
-            {
-                return _wallTiles;
-            }
-        }
+        public IReadOnlyCollection<TilePivot> WallTiles => _wallTiles;
 
         /// <summary>
         /// List of compensation tiles. 4 at the beginning, between 0 and 4 at the end.
         /// </summary>
-        public IReadOnlyCollection<TilePivot> CompensationTiles
-        {
-            get
-            {
-                return _compensationTiles;
-            }
-        }
+        public IReadOnlyCollection<TilePivot> CompensationTiles => _compensationTiles;
 
         /// <summary>
         /// List of dora indicator tiles. Always 5 (doesn't mean they're all visible).
         /// </summary>
-        public IReadOnlyCollection<TilePivot> DoraIndicatorTiles
-        {
-            get
-            {
-                return _doraIndicatorTiles;
-            }
-        }
+        public IReadOnlyCollection<TilePivot> DoraIndicatorTiles => _doraIndicatorTiles;
 
         /// <summary>
         /// List of ura-dora indicator tiles. Always 5 (doesn't mean they're all visible).
         /// </summary>
-        public IReadOnlyCollection<TilePivot> UraDoraIndicatorTiles
-        {
-            get
-            {
-                return _uraDoraIndicatorTiles;
-            }
-        }
+        public IReadOnlyCollection<TilePivot> UraDoraIndicatorTiles => _uraDoraIndicatorTiles;
 
         /// <summary>
         /// Other tiles of the treasure Always 4 minus the number of tiles of <see cref="_compensationTiles"/>.
         /// </summary>
-        public IReadOnlyCollection<TilePivot> DeadTreasureTiles
-        {
-            get
-            {
-                return _deadTreasureTiles;
-            }
-        }
+        public IReadOnlyCollection<TilePivot> DeadTreasureTiles => _deadTreasureTiles;
 
         /// <summary>
         /// Riichi informations of four players.
         /// </summary>
         /// <remarks>The list if filled by default with <c>Null</c> for every players.</remarks>
-        public IReadOnlyCollection<RiichiPivot> Riichis
-        {
-            get
-            {
-                return _riichis;
-            }
-        }
+        public IReadOnlyCollection<RiichiPivot> Riichis => _riichis;
 
         /// <summary>
         /// The current player index, between 0 and 3.
@@ -129,57 +87,27 @@ namespace Gnoj_Ham
         /// <summary>
         /// Inferred; indicates if the current player is the human player.
         /// </summary>
-        public bool IsHumanPlayer
-        {
-            get
-            {
-                return CurrentPlayerIndex == GamePivot.HUMAN_INDEX && !Game.CpuVs;
-            }
-        }
+        public bool IsHumanPlayer => CurrentPlayerIndex == GamePivot.HUMAN_INDEX && !Game.CpuVs;
 
         /// <summary>
         /// Inferred; indicates if the previous player is the human player.
         /// </summary>
-        public bool PreviousIsHumanPlayer
-        {
-            get
-            {
-                return PreviousPlayerIndex == GamePivot.HUMAN_INDEX && !Game.CpuVs;
-            }
-        }
+        public bool PreviousIsHumanPlayer => PreviousPlayerIndex == GamePivot.HUMAN_INDEX && !Game.CpuVs;
 
         /// <summary>
         /// Inferred; indicates the index of the player before <see cref="CurrentPlayerIndex"/>.
         /// </summary>
-        public int PreviousPlayerIndex
-        {
-            get
-            {
-                return CurrentPlayerIndex.RelativePlayerIndex(-1);
-            }
-        }
+        public int PreviousPlayerIndex => CurrentPlayerIndex.RelativePlayerIndex(-1);
 
         /// <summary>
         /// Inferred; indicates if the current round is over by wall exhaustion.
         /// </summary>
-        public bool IsWallExhaustion
-        {
-            get
-            {
-                return WallTiles.Count == 0;
-            }
-        }
+        public bool IsWallExhaustion => WallTiles.Count == 0;
 
         /// <summary>
         /// Inferred; count of visible doras.
         /// </summary>
-        public int VisibleDorasCount
-        {
-            get
-            {
-                return 1 + (4 - _compensationTiles.Count);
-            }
-        }
+        public int VisibleDorasCount => 1 + (4 - _compensationTiles.Count);
 
         #endregion Inferred properties
 
@@ -341,7 +269,7 @@ namespace Gnoj_Ham
             {
                 return new List<TilePivot>();
             }
-            
+
             if (CurrentPlayerIndex == playerIndex && _waitForDiscard)
             {
                 IEnumerable<TilePivot> kansFromConcealed =
@@ -476,7 +404,7 @@ namespace Gnoj_Ham
                     if (tileChoice == null)
                     {
                         tileChoice = _hands[playerIndex].ConcealedTiles.First(t => _hands[playerIndex].DeclaredCombinations.Any(c => c.IsBrelan && c.OpenTile == t));
-                        fromPreviousPon = _hands[playerIndex].DeclaredCombinations.First(c =>  c.OpenTile == tileChoice);
+                        fromPreviousPon = _hands[playerIndex].DeclaredCombinations.First(c => c.OpenTile == tileChoice);
                     }
                 }
 
@@ -525,7 +453,7 @@ namespace Gnoj_Ham
             {
                 throw new InvalidOperationException(Messages.UnexpectedDiscardFail);
             }
-            
+
             _riichis[PreviousPlayerIndex] = new RiichiPivot(riichiTurnsCount, isUninterruptedFirstTurn, tile,
                 Enumerable.Range(0, 4).Where(i => i != PreviousPlayerIndex).Select(i => new KeyValuePair<int, int>(i, _virtualDiscards[i].Count)).ToDictionary(kvp => kvp.Key, kvp => kvp.Value));
             Game.AddPendingRiichi(PreviousPlayerIndex);
@@ -725,7 +653,7 @@ namespace Gnoj_Ham
             {
                 return;
             }
-            
+
             _compensationTiles.Insert(0, compensationTile);
 
             _wallTiles.Add(_deadTreasureTiles.Last());
@@ -1079,7 +1007,7 @@ namespace Gnoj_Ham
                     winners.AddRange(iNagashiList);
                 }
             }
-            
+
             var playerInfos = new List<EndOfRoundInformationsPivot.PlayerInformationsPivot>();
 
             // Ryuukyoku (no winner).
@@ -1189,7 +1117,7 @@ namespace Gnoj_Ham
                             }
                         }
                     }
-                    
+
                     playerInfos.Add(new EndOfRoundInformationsPivot.PlayerInformationsPivot(
                         pIndex, fanCount, fuCount, phand, basePoints + riichiPart + honbaPoints,
                         dorasCount, uraDorasCount, redDorasCount, basePoints));
@@ -1258,7 +1186,7 @@ namespace Gnoj_Ham
 
                 ryuukyoku = false;
             }
-            
+
             foreach (EndOfRoundInformationsPivot.PlayerInformationsPivot p in playerInfos)
             {
                 Game.Players.ElementAt(p.Index).AddPoints(p.PointsGain);

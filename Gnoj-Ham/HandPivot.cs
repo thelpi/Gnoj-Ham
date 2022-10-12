@@ -17,23 +17,11 @@ namespace Gnoj_Ham
         /// <summary>
         /// List of concealed tiles.
         /// </summary>
-        public IReadOnlyCollection<TilePivot> ConcealedTiles
-        {
-            get
-            {
-                return _concealedTiles;
-            }
-        }
+        public IReadOnlyCollection<TilePivot> ConcealedTiles => _concealedTiles;
         /// <summary>
         /// List of declared <see cref="TileComboPivot"/>.
         /// </summary>
-        public IReadOnlyCollection<TileComboPivot> DeclaredCombinations
-        {
-            get
-            {
-                return _declaredCombinations;
-            }
-        }
+        public IReadOnlyCollection<TileComboPivot> DeclaredCombinations => _declaredCombinations;
 
         /// <summary>
         /// The latest pick; can't be known by <see cref="_concealedTiles"/> (sorted list).
@@ -58,24 +46,12 @@ namespace Gnoj_Ham
         /// <summary>
         /// Inferred; indicates if the hand is complete (can tsumo or ron depending on context).
         /// </summary>
-        public bool IsComplete
-        {
-            get
-            {
-                return Yakus != null && Yakus.Count > 0;
-            }
-        }
+        public bool IsComplete => Yakus != null && Yakus.Count > 0;
 
         /// <summary>
         /// Inferred; indicates if the hand is concealed.
         /// </summary>
-        public bool IsConcealed
-        {
-            get
-            {
-                return !_declaredCombinations.Any(c => !c.IsConcealed);
-            }
-        }
+        public bool IsConcealed => !_declaredCombinations.Any(c => !c.IsConcealed);
 
         /// <summary>
         /// Inferred; every tiles of the hand; concealed or not; into combination or not.
@@ -172,7 +148,7 @@ namespace Gnoj_Ham
             {
                 throw new ArgumentNullException(nameof(concealedTiles));
             }
-            
+
             if (declaredCombinations.Count * 3 + concealedTiles.Count != 14)
             {
                 throw new ArgumentException(Messages.InvalidHandTilesCount, nameof(concealedTiles));
@@ -206,7 +182,7 @@ namespace Gnoj_Ham
                 // Empty list.
                 return combinationsSequences;
             }
-            
+
             foreach (IGrouping<FamilyPivot, TilePivot> familyGroup in familyGroups)
             {
                 switch (familyGroup.Key)
@@ -278,7 +254,7 @@ namespace Gnoj_Ham
         private static List<TileComboPivot> GetCombinationsForTile(TilePivot tile, IEnumerable<TilePivot> tiles)
         {
             var combinations = new List<TileComboPivot>();
-            
+
             List<TilePivot> sameNumber = tiles.Where(t => t.Number == tile.Number).ToList();
 
             if (sameNumber.Count > 1)
@@ -301,10 +277,10 @@ namespace Gnoj_Ham
                 }
             }
 
-            TilePivot secondLow = tiles.FirstOrDefault(t =>  t.Number == tile.Number - 2);
-            TilePivot firstLow = tiles.FirstOrDefault(t =>  t.Number == tile.Number - 1);
-            TilePivot firstHigh = tiles.FirstOrDefault(t =>  t.Number == tile.Number + 1);
-            TilePivot secondHigh = tiles.FirstOrDefault(t =>  t.Number == tile.Number + 2);
+            TilePivot secondLow = tiles.FirstOrDefault(t => t.Number == tile.Number - 2);
+            TilePivot firstLow = tiles.FirstOrDefault(t => t.Number == tile.Number - 1);
+            TilePivot firstHigh = tiles.FirstOrDefault(t => t.Number == tile.Number + 1);
+            TilePivot secondHigh = tiles.FirstOrDefault(t => t.Number == tile.Number + 2);
 
             if (secondLow != null && firstLow != null)
             {
@@ -465,7 +441,7 @@ namespace Gnoj_Ham
             {
                 return false;
             }
-            
+
             int i = 0;
             while (currentRound.PlayerIndexHistory.Count < i
                 && currentRound.PlayerIndexHistory.ElementAt(i) == playerIndex.RelativePlayerIndex(-(i + 1))

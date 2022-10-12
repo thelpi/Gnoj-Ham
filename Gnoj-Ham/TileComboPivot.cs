@@ -18,13 +18,7 @@ namespace Gnoj_Ham
         /// Inferred; list of tiles; includes <see cref="OpenTile"/>.
         /// </summary>
         /// <remarks>Sorted by <see cref="IComparable{TilePivot}"/>.</remarks>
-        public IReadOnlyCollection<TilePivot> Tiles
-        {
-            get
-            {
-                return _tiles;
-            }
-        }
+        public IReadOnlyCollection<TilePivot> Tiles => _tiles;
         /// <summary>
         /// Optionnal tile not concealed (from a call "pon", "chi" or "kan").
         /// The tile from a call "ron" is not considered as an open tile.
@@ -42,136 +36,58 @@ namespace Gnoj_Ham
         /// <summary>
         /// Inferred; indicates if the combination is concealed.
         /// </summary>
-        public bool IsConcealed
-        {
-            get
-            {
-                return OpenTile == null;
-            }
-        }
+        public bool IsConcealed => OpenTile == null;
 
         /// <summary>
         /// Inferred; indicates if the combination is a pair.
         /// </summary>
-        public bool IsPair
-        {
-            get
-            {
-                return _tiles.Count == 2;
-            }
-        }
+        public bool IsPair => _tiles.Count == 2;
         /// <summary>
         /// Inferred; indicates if the combination is a brelan.
         /// </summary>
-        public bool IsBrelan
-        {
-            get
-            {
-                return _tiles.Count == 3 && !IsSequence;
-            }
-        }
+        public bool IsBrelan => _tiles.Count == 3 && !IsSequence;
         /// <summary>
         /// Inferred; indicates if the combination is a square.
         /// </summary>
-        public bool IsSquare
-        {
-            get
-            {
-                return _tiles.Count == 4;
-            }
-        }
+        public bool IsSquare => _tiles.Count == 4;
         /// <summary>
         /// Inferred; indicates if the combination is a sequence.
         /// </summary>
-        public bool IsSequence
-        {
-            get
-            {
-                return _tiles.Count == 3 && _tiles[0].Number != _tiles[1].Number;
-            }
-        }
+        public bool IsSequence => _tiles.Count == 3 && _tiles[0].Number != _tiles[1].Number;
         /// <summary>
         /// Inferred; indicates if the combination is a brelan or a square.
         /// </summary>
-        public bool IsBrelanOrSquare
-        {
-            get
-            {
-                return IsBrelan || IsSquare;
-            }
-        }
+        public bool IsBrelanOrSquare => IsBrelan || IsSquare;
 
         /// <summary>
         /// Inferred; gets the combination <see cref="FamilyPivot"/>.
         /// </summary>
-        public FamilyPivot Family
-        {
-            get
-            {
-                return _tiles[0].Family;
-            }
-        }
+        public FamilyPivot Family => _tiles[0].Family;
         /// <summary>
         /// Inferred; indicates if the combination is formed of honors.
         /// </summary>
-        public bool IsHonor
-        {
-            get
-            {
-                return Family == FamilyPivot.Dragon || Family == FamilyPivot.Wind;
-            }
-        }
+        public bool IsHonor => Family == FamilyPivot.Dragon || Family == FamilyPivot.Wind;
         /// <summary>
         /// Inferred; indicates if the combination is formed of terminals.
         /// </summary>
         /// <remarks><see cref="HasTerminal"/> is necessarily <c>True</c> in that case.</remarks>
-        public bool IsTerminal
-        {
-            get
-            {
-                return !IsHonor && _tiles.All(t => t.Number == 1 || t.Number == 9);
-            }
-        }
+        public bool IsTerminal => !IsHonor && _tiles.All(t => t.Number == 1 || t.Number == 9);
         /// <summary>
         /// Inferred; indicates if the combination is formed with at least one terminal.
         /// </summary>
-        public bool HasTerminal
-        {
-            get
-            {
-                return !IsHonor && _tiles.Any(t => t.Number == 1 || t.Number == 9);
-            }
-        }
+        public bool HasTerminal => !IsHonor && _tiles.Any(t => t.Number == 1 || t.Number == 9);
         /// <summary>
         /// Inferred; indicates if the combination is <see cref="HasTerminal"/> or <see cref="IsHonor"/>.
         /// </summary>
-        public bool HasTerminalOrHonor
-        {
-            get
-            {
-                return HasTerminal || IsHonor;
-            }
-        }
+        public bool HasTerminalOrHonor => HasTerminal || IsHonor;
         /// <summary>
         /// Inferred; if sequence, the first number of it; otherwise <c>0</c>.
         /// </summary>
-        public byte SequenceFirstNumber
-        {
-            get
-            {
-                return _tiles.Min(t => t.Number);
-            }
-        }
+        public byte SequenceFirstNumber => _tiles.Min(t => t.Number);
         /// <summary>
         /// Inferred; if sequence, the last number of it; otherwise <c>0</c>.
         /// </summary>
-        public byte SequenceLastNumber
-        {
-            get
-            {
-                return _tiles.Max(t => t.Number);
-            }
-        }
+        public byte SequenceLastNumber => _tiles.Max(t => t.Number);
 
         #endregion Inferred properties
 
@@ -258,7 +174,7 @@ namespace Gnoj_Ham
         {
             return !(other is null) && _tiles.IsBijection(other.Tiles);
         }
-        
+
         /// <summary>
         /// Overriden; provides an hashcode for this instance.
         /// </summary>

@@ -20,19 +20,13 @@ namespace Gnoj_Ham
 
         #region Embedded properties
 
-        private PlayerSavePivot _save;
+        private readonly PlayerSavePivot _save;
         private readonly List<PlayerPivot> _players;
 
         /// <summary>
         /// List of players.
         /// </summary>
-        public IReadOnlyCollection<PlayerPivot> Players
-        {
-            get
-            {
-                return _players;
-            }
-        }
+        public IReadOnlyCollection<PlayerPivot> Players => _players;
         /// <summary>
         /// Current dominant wind.
         /// </summary>
@@ -53,7 +47,7 @@ namespace Gnoj_Ham
         /// <summary>
         /// Honba count before scoring.
         /// </summary>
-        public int HonbaCountBeforeScoring { get { return HonbaCount > 0 ? HonbaCount - 1 : 0; } }
+        public int HonbaCountBeforeScoring => HonbaCount > 0 ? HonbaCount - 1 : 0;
         /// <summary>
         /// Pending riichi count.
         /// </summary>
@@ -94,34 +88,16 @@ namespace Gnoj_Ham
         /// <summary>
         /// Inferred; current east player.
         /// </summary>
-        public PlayerPivot CurrentEastPlayer
-        {
-            get
-            {
-                return _players[EastIndex];
-            }
-        }
+        public PlayerPivot CurrentEastPlayer => _players[EastIndex];
         /// <summary>
         /// Inferred; get players sorted by their ranking.
         /// </summary>
-        public IReadOnlyCollection<PlayerPivot> PlayersRanked
-        {
-            get
-            {
-                return _players.OrderByDescending(p => p.Points).ThenBy(p => (int)p.InitialWind).ToList();
-            }
-        }
+        public IReadOnlyCollection<PlayerPivot> PlayersRanked => _players.OrderByDescending(p => p.Points).ThenBy(p => (int)p.InitialWind).ToList();
 
         /// <summary>
         /// Inferred; gets the player index which was the first <see cref="WindPivot.East"/>.
         /// </summary>
-        public int FirstEastIndex
-        {
-            get
-            {
-                return _players.FindIndex(p => p.InitialWind == WindPivot.East);
-            }
-        }
+        public int FirstEastIndex => _players.FindIndex(p => p.InitialWind == WindPivot.East);
 
         /// <summary>
         /// Inferred; indicates the game is between CPU only.
@@ -304,7 +280,7 @@ namespace Gnoj_Ham
             return endOfRoundInformations;
         }
 
-        
+
 
         /// <summary>
         /// Gets the current <see cref="WindPivot"/> of the specified player.

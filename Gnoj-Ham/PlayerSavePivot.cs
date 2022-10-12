@@ -93,7 +93,7 @@ namespace Gnoj_Ham
 
             return save;
         }
-        
+
         private void SavePlayerFile()
         {
             try
@@ -144,7 +144,7 @@ namespace Gnoj_Ham
             {
                 if (meScore < 0)
                     ++BankruptCount;
-                
+
                 ++ByPositionCount[scoreIndexPosition];
                 if (!FirstGame.HasValue)
                 {

@@ -44,33 +44,15 @@ namespace Gnoj_Ham
         /// <summary>
         /// Inferred; indicates if the instance is an honor.
         /// </summary>
-        public bool IsHonor
-        {
-            get
-            {
-                return Family == FamilyPivot.Dragon || Family == FamilyPivot.Wind;
-            }
-        }
+        public bool IsHonor => Family == FamilyPivot.Dragon || Family == FamilyPivot.Wind;
         /// <summary>
         /// Inferred; indicates if the instance is a terminal.
         /// </summary>
-        public bool IsTerminal
-        {
-            get
-            {
-                return Number == 1 || Number == 9;
-            }
-        }
+        public bool IsTerminal => Number == 1 || Number == 9;
         /// <summary>
         /// Inferred; indicates if the instance is an honor or a terminal.
         /// </summary>
-        public bool IsHonorOrTerminal
-        {
-            get
-            {
-                return IsTerminal || IsHonor;
-            }
-        }
+        public bool IsHonorOrTerminal => IsTerminal || IsHonor;
 
         #endregion Inferred properties
 
