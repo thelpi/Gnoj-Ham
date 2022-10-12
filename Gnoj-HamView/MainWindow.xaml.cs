@@ -291,7 +291,7 @@ namespace Gnoj_HamView
                 };
                 while (true && !_hardStopAutoplay)
                 {
-                    if (!skipCurrentAction && !humanRonPending && _game.Round.CanCallRon(GamePivot.HUMAN_INDEX))
+                    if (!skipCurrentAction && !humanRonPending && !_game.CpuVs && _game.Round.CanCallRon(GamePivot.HUMAN_INDEX))
                     {
                         Dispatcher.Invoke(() =>
                         {
@@ -322,7 +322,7 @@ namespace Gnoj_HamView
                         CommonCallKan(kanInProgress.Item3, kanInProgress.Item2);
                     }
 
-                    if (!skipCurrentAction && _game.Round.CanCallPonOrKan(GamePivot.HUMAN_INDEX))
+                    if (!skipCurrentAction && !_game.CpuVs && _game.Round.CanCallPonOrKan(GamePivot.HUMAN_INDEX))
                     {
                         break;
                     }
@@ -605,7 +605,7 @@ namespace Gnoj_HamView
         {
             // Note : this value is stored here because the call to "CallPon" makes it change.
             int previousPlayerIndex = _game.Round.PreviousPlayerIndex;
-            bool isCpu = playerIndex != GamePivot.HUMAN_INDEX;
+            bool isCpu = _game.CpuVs || playerIndex != GamePivot.HUMAN_INDEX;
 
             if (_game.Round.CallPon(playerIndex))
             {
@@ -825,7 +825,7 @@ namespace Gnoj_HamView
                 GrdOverlayCall.Visibility = Visibility.Visible;
                 _overlayStoryboard.Begin();
             });
-            if (playerIndex != GamePivot.HUMAN_INDEX)
+            if (_game.CpuVs || playerIndex != GamePivot.HUMAN_INDEX)
             {
                 Thread.Sleep(((CpuSpeedPivot)Properties.Settings.Default.CpuSpeed).ParseSpeed());
             }
@@ -880,7 +880,7 @@ namespace Gnoj_HamView
         // Clears and refills the hand panel of the specified player index.
         private void FillHandPanel(int pIndex, TilePivot pickTile = null)
         {
-            bool isHuman = pIndex == GamePivot.HUMAN_INDEX;
+            bool isHuman = pIndex == GamePivot.HUMAN_INDEX && !_game.CpuVs;
 
             Panel panel = this.FindPanel("StpHandP", pIndex);
 
@@ -1043,15 +1043,15 @@ namespace Gnoj_HamView
             {
                 // When the player has 14 tiles and need to discard
                 // A kan call might be possible
-                BtnKan.Visibility = _game.Round.CanCallKan(GamePivot.HUMAN_INDEX).Count > 0 ? Visibility.Visible : Visibility.Collapsed;
+                BtnKan.Visibility = !_game.CpuVs && _game.Round.CanCallKan(GamePivot.HUMAN_INDEX).Count > 0 ? Visibility.Visible : Visibility.Collapsed;
             }
             else if (cpuPlay)
             {
                 // When the CPU is playing
                 // Or it's player's turn but he has not pick yet
                 BtnChii.Visibility = _game.Round.IsHumanPlayer && _game.Round.CanCallChii().Keys.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
-                BtnPon.Visibility = _game.Round.CanCallPon(GamePivot.HUMAN_INDEX) ? Visibility.Visible : Visibility.Collapsed;
-                BtnKan.Visibility = _game.Round.CanCallKan(GamePivot.HUMAN_INDEX).Count > 0 ? Visibility.Visible : Visibility.Collapsed;
+                BtnPon.Visibility = !_game.CpuVs && _game.Round.CanCallPon(GamePivot.HUMAN_INDEX) ? Visibility.Visible : Visibility.Collapsed;
+                BtnKan.Visibility = !_game.CpuVs && _game.Round.CanCallKan(GamePivot.HUMAN_INDEX).Count > 0 ? Visibility.Visible : Visibility.Collapsed;
             }
 
             if (BtnChii.Visibility == Visibility.Visible

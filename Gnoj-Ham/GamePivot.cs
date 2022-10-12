@@ -123,6 +123,11 @@ namespace Gnoj_Ham
             }
         }
 
+        /// <summary>
+        /// Inferred; indicates the game is between CPU only.
+        /// </summary>
+        public bool CpuVs => _players.All(_ => _.IsCpu);
+
         #endregion
 
         #region Constructors
@@ -284,14 +289,17 @@ namespace Gnoj_Ham
             Round = new RoundPivot(this, EastIndex);
 
         Exit:
-            var me = Players.Single(_ => !_.IsCpu);
+            var humanPlayer = Players.SingleOrDefault(_ => !_.IsCpu);
 
-            _save.UpdateAndSave(endOfRoundInformations,
-                ronPlayerIndex.HasValue,
-                humanIsRiichi,
-                humanIsConcealed,
-                Players.OrderByDescending(_ => _.Points).ToList().IndexOf(me),
-                me.Points);
+            if (humanPlayer != null)
+            {
+                _save.UpdateAndSave(endOfRoundInformations,
+                    ronPlayerIndex.HasValue,
+                    humanIsRiichi,
+                    humanIsConcealed,
+                    Players.OrderByDescending(_ => _.Points).ToList().IndexOf(humanPlayer),
+                    humanPlayer.Points);
+            }
 
             return endOfRoundInformations;
         }

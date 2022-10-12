@@ -254,7 +254,7 @@ namespace Gnoj_Ham
 
             for (int i = 0; i < 4; i++)
             {
-                if (i != GamePivot.HUMAN_INDEX && _round.CanCallRon(i))
+                if ((i != GamePivot.HUMAN_INDEX || _round.Game.CpuVs) && _round.CanCallRon(i))
                 {
                     if (ronCalled || callers.Count > 0)
                     {

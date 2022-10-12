@@ -75,16 +75,18 @@ namespace Gnoj_Ham
         {
             humanPlayerName = CheckName(humanPlayerName);
 
+            bool cpuVs = humanPlayerName == null;
+
             int eastIndex = GlobalTools.Randomizer.Next(0, 4);
 
             var players = new List<PlayerPivot>();
             for (int i = 0; i < 4; i++)
             {
                 players.Add(new PlayerPivot(
-                    i == GamePivot.HUMAN_INDEX ? humanPlayerName : $"{CPU_NAME_PREFIX}{i}",
+                    i == GamePivot.HUMAN_INDEX && !cpuVs ? humanPlayerName : $"{CPU_NAME_PREFIX}{i}",
                     i == eastIndex ? WindPivot.East : (i > eastIndex ? (WindPivot)(i - eastIndex) : (WindPivot)(4 - eastIndex + i)),
                     initialPointsRulePivot,
-                    i != GamePivot.HUMAN_INDEX
+                    cpuVs || i != GamePivot.HUMAN_INDEX
                 ));
             }
 
@@ -97,7 +99,7 @@ namespace Gnoj_Ham
 
             if (humanPlayerName == string.Empty || humanPlayerName.ToUpperInvariant().StartsWith(CPU_NAME_PREFIX.ToUpperInvariant()))
             {
-                throw new ArgumentException(Messages.InvalidPlayerName, nameof(humanPlayerName));
+                return null;
             }
 
             return humanPlayerName;
@@ -115,9 +117,14 @@ namespace Gnoj_Ham
                 throw new ArgumentNullException(nameof(game));
             }
 
-            humanPlayerName = CheckName(humanPlayerName);
+            if (!game.CpuVs)
+            {
+                humanPlayerName = CheckName(humanPlayerName);
+                if (humanPlayerName == null)
+                    throw new ArgumentNullException(nameof(humanPlayerName));
 
-            game.Players.ElementAt(GamePivot.HUMAN_INDEX).Name = humanPlayerName;
+                game.Players.ElementAt(GamePivot.HUMAN_INDEX).Name = humanPlayerName;
+            }
         }
 
         #endregion Static methods

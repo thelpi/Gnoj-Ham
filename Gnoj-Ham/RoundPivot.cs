@@ -133,7 +133,7 @@ namespace Gnoj_Ham
         {
             get
             {
-                return CurrentPlayerIndex == GamePivot.HUMAN_INDEX;
+                return CurrentPlayerIndex == GamePivot.HUMAN_INDEX && !Game.CpuVs;
             }
         }
 
@@ -144,7 +144,7 @@ namespace Gnoj_Ham
         {
             get
             {
-                return PreviousPlayerIndex == GamePivot.HUMAN_INDEX;
+                return PreviousPlayerIndex == GamePivot.HUMAN_INDEX && !Game.CpuVs;
             }
         }
 
@@ -698,7 +698,7 @@ namespace Gnoj_Ham
         public bool HumanCanAutoDiscard()
         {
             return IsRiichi(GamePivot.HUMAN_INDEX)
-                && CanCallKan(GamePivot.HUMAN_INDEX).Count == 0
+                && (Game.CpuVs || CanCallKan(GamePivot.HUMAN_INDEX).Count == 0)
                 && _waitForDiscard;
         }
 
@@ -740,7 +740,7 @@ namespace Gnoj_Ham
         {
             for (int i = 0; i < 4; i++)
             {
-                if (i != GamePivot.HUMAN_INDEX)
+                if (i != GamePivot.HUMAN_INDEX || Game.CpuVs)
                 {
                     List<TilePivot> kanTiles = CanCallKanWithChoices(i, concealed);
                     if (kanTiles.Count > 0)
@@ -783,7 +783,7 @@ namespace Gnoj_Ham
         {
             List<int> opponentsIndex = Enumerable.Range(0, 4).Where(i =>
             {
-                return i != GamePivot.HUMAN_INDEX && CanCallPon(i);
+                return (i != GamePivot.HUMAN_INDEX || Game.CpuVs) && CanCallPon(i);
             }).ToList();
 
             return opponentsIndex.Count > 0 ? opponentsIndex[0] : -1;
