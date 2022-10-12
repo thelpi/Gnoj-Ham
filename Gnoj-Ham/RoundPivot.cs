@@ -651,12 +651,25 @@ namespace Gnoj_Ham
         /// Checks if the hand of the specified player is tenpai.
         /// </summary>
         /// <param name="playerIndex">The player index.</param>
+        /// <param name="tileToRemoveFromConcealed">A tile to remove from the hand first; only if <see cref="HandPivot.IsFullHand"/> is <c>True</c> for this hand.</param>
         /// <returns><c>True</c> if tenpai; <c>False</c> otherwise.</returns>
-        public bool IsTenpai(int playerIndex)
+        /// <exception cref="ArgumentException">A tile to remove has to be specified in this context of hand.</exception>
+        /// <exception cref="ArgumentException">A tile to remove can't be specified in this context of hand.</exception>
+        public bool IsTenpai(int playerIndex, TilePivot tileToRemoveFromConcealed)
         {
+            var hand = _hands[playerIndex];
+            if (hand.IsFullHand && (tileToRemoveFromConcealed == null || !hand.ConcealedTiles.Contains(tileToRemoveFromConcealed)))
+            {
+                throw new ArgumentException("A tile to remove has to be specified in this context of hand.", nameof(tileToRemoveFromConcealed));
+            }
+            else if (!hand.IsFullHand && tileToRemoveFromConcealed != null)
+            {
+                throw new ArgumentException("A tile to remove can't be specified in this context of hand.", nameof(tileToRemoveFromConcealed));
+            }
+
             // TODO : there're (maybe) specific rules about it:
             // for instance, what if I have a single wait on tile "4 circle" but every tiles "4 circle" are already in my hand ?
-            return _hands[playerIndex].IsTenpai(_fullTilesList);
+            return hand.IsTenpai(_fullTilesList, tileToRemoveFromConcealed);
         }
 
         /// <summary>
@@ -1072,7 +1085,7 @@ namespace Gnoj_Ham
             // Ryuukyoku (no winner).
             if (winners.Count == 0)
             {
-                List<int> tenpaiPlayersIndex = Enumerable.Range(0, 4).Where(i => IsTenpai(i)).ToList();
+                List<int> tenpaiPlayersIndex = Enumerable.Range(0, 4).Where(i => IsTenpai(i, null)).ToList();
                 List<int> notTenpaiPlayersIndex = Enumerable.Range(0, 4).Except(tenpaiPlayersIndex).ToList();
 
                 // Wind turns if East is not tenpai.

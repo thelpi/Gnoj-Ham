@@ -214,11 +214,24 @@ namespace Gnoj_Ham
             Tuple<int, List<TilePivot>> opponentPlayerIdWithTiles = _round.OpponentsCanCallKan(checkConcealedOnly);
             if (opponentPlayerIdWithTiles != null)
             {
-                // riichi from opponents: no call
-                // TODO: fix tenpai check
-                if (_round.Riichis.Count > 0) //  && !_round.IsTenpai(opponentPlayerIdWithTiles.Item1)
+                // Rinshan kaihou possibility: call
+                // TODO: not perfect because the kan can break the tenpai
+                TilePivot tileToRemove = null;
+                if (_round.GetHand(opponentPlayerIdWithTiles.Item1).IsFullHand)
                 {
-                    return null;
+                    tileToRemove = opponentPlayerIdWithTiles.Item2.First();
+                }
+
+                var meIsTenpai = _round.IsTenpai(opponentPlayerIdWithTiles.Item1, tileToRemove);
+                if (!meIsTenpai)
+                {
+                    // riichi from opponents: no call
+                    // TODO: we could also check open hands obviously tenpai
+                    var otherIsRiichi = Enumerable.Range(0, 4).Where(i => i != opponentPlayerIdWithTiles.Item1).Any(i => _round.IsRiichi(i));
+                    if (otherIsRiichi)
+                    {
+                        return null;
+                    }
                 }
 
                 foreach (TilePivot tile in opponentPlayerIdWithTiles.Item2)

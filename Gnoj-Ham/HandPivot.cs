@@ -94,6 +94,11 @@ namespace Gnoj_Ham
             }
         }
 
+        /// <summary>
+        /// Inferred; indicates if the hand, including openings, contains 14 tiles (4th tile from kans not included).
+        /// </summary>
+        public bool IsFullHand => _declaredCombinations.Count * 3 + _concealedTiles.Count == 14;
+
         #endregion Inferred properties
 
         #region Constructors
@@ -749,7 +754,7 @@ namespace Gnoj_Ham
         /// <exception cref="InvalidOperationException"><see cref="Messages.InvalidDraw"/></exception>
         internal void Pick(TilePivot tile)
         {
-            if (_concealedTiles.Count + _declaredCombinations.Count * 3 != 13)
+            if (IsFullHand)
             {
                 throw new InvalidOperationException(Messages.InvalidDraw);
             }
@@ -763,10 +768,20 @@ namespace Gnoj_Ham
         /// Checks if the hand is tenpai; hand must contain <c>13</c> tiles.
         /// </summary>
         /// <param name="subTiles">List of substitution tiles.</param>
+        /// <param name="tileToRemoveFromConcealed">A tile to remove from the hand first.</param>
         /// <returns><c>True</c> if tenpai; <c>False</c> otherwise.</returns>
-        internal bool IsTenpai(List<TilePivot> subTiles)
+        internal bool IsTenpai(List<TilePivot> subTiles, TilePivot tileToRemoveFromConcealed)
         {
-            return IsTenpai(ConcealedTiles, DeclaredCombinations, subTiles);
+            var concealedTilesCopy = ConcealedTiles;
+            if (tileToRemoveFromConcealed != null)
+            {
+                var concealedTilesCopyList = concealedTilesCopy.ToList();
+                var indexToRemove = concealedTilesCopyList.IndexOf(tileToRemoveFromConcealed);
+                concealedTilesCopyList.RemoveAt(indexToRemove);
+                concealedTilesCopy = concealedTilesCopyList;
+            }
+
+            return IsTenpai(concealedTilesCopy, DeclaredCombinations, subTiles);
         }
 
         /// <summary>
