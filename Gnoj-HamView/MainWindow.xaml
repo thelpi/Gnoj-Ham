@@ -106,17 +106,6 @@
                     </Grid>
                 </Expander>
             </Border>
-            
-            <!-- Action buttons container -->
-            <StackPanel Orientation="Horizontal" Grid.Column="3" Grid.Row="6">
-                <Button Name="BtnRiichi" Content="RIICHI !" FontWeight="ExtraBold" Height="28" Width="75" Visibility="Collapsed" Margin="5, 0, 0, 0" Click="BtnRiichi_Click" Foreground="DarkMagenta" />
-                <Button Name="BtnTsumo" Content="TSUMO !"   FontWeight="ExtraBold" Height="28" Width="75" Visibility="Collapsed" Margin="5, 0, 0, 0" Click="BtnTsumo_Click" Foreground="DarkMagenta" />
-                <Button Name="BtnRon" Content="RON !"       FontWeight="ExtraBold" Height="28" Width="75" Visibility="Collapsed" Margin="5, 0, 0, 0" Click="BtnRon_Click" Foreground="DarkMagenta" />
-                <Button Name="BtnPon" Content="PON !"       FontWeight="ExtraBold" Height="28" Width="75" Visibility="Collapsed" Margin="5, 0, 0, 0" Click="BtnPon_Click" />
-                <Button Name="BtnChii" Content="CHII !"     FontWeight="ExtraBold" Height="28" Width="75" Visibility="Collapsed" Margin="5, 0, 0, 0" Click="BtnChii_Click" />
-                <Button Name="BtnKan" Content="KAN !"       FontWeight="ExtraBold" Height="28" Width="75" Visibility="Collapsed" Margin="5, 0, 0, 0" Click="BtnKan_Click" />
-                <Button Name="BtnSkipCall" Content="X"      FontWeight="ExtraBold" Height="28" Width="28" Visibility="Collapsed" Margin="5, 0, 0, 0" Click="BtnSkipCall_Click" />
-            </StackPanel>
 
             <!-- Hands stacks -->
             <!-- P1 (bottom) -->
@@ -310,10 +299,26 @@
                 </Grid>
             </DockPanel>
 
-            <!-- Call overlay -->
+            <!-- Call overlay for opponents -->
             <Grid Name="GrdOverlayCall" Background="Black" Panel.ZIndex="2" Grid.Row="2" Grid.Column="2" Grid.ColumnSpan="3" Grid.RowSpan="3" Visibility="Collapsed">
                 <Button Name="BtnOpponentCall" FontWeight="ExtraBold" FontSize="20" Height="36" Width="120" />
             </Grid>
+
+            <!-- Call overlay with actions for player -->
+            <Border Name="GrdOverlayCanCall" Panel.ZIndex="2" Grid.Row="4" Grid.Column="2" Grid.ColumnSpan="3" Visibility="Collapsed" VerticalAlignment="Bottom" HorizontalAlignment="Center" Padding="30, 36, 30, 36">
+                <Border.Background>
+                    <SolidColorBrush Color="Black" Opacity="0.3" />
+                </Border.Background>
+                <StackPanel Orientation="Horizontal">
+                    <Button Name="BtnRiichi"    Content="RIICHI !"  FontWeight="ExtraBold" FontSize="20" Height="36" Width="120" Visibility="Collapsed" Margin="0, 0, 0, 0" Click="BtnRiichi_Click"    VerticalAlignment="Center" HorizontalAlignment="Center" Foreground="DarkMagenta" />
+                    <Button Name="BtnTsumo"     Content="TSUMO !"   FontWeight="ExtraBold" FontSize="20" Height="36" Width="120" Visibility="Collapsed" Margin="5, 0, 0, 0" Click="BtnTsumo_Click"     VerticalAlignment="Center" HorizontalAlignment="Center" Foreground="DarkMagenta" />
+                    <Button Name="BtnRon"       Content="RON !"     FontWeight="ExtraBold" FontSize="20" Height="36" Width="120" Visibility="Collapsed" Margin="5, 0, 0, 0" Click="BtnRon_Click"       VerticalAlignment="Center" HorizontalAlignment="Center" Foreground="DarkMagenta" />
+                    <Button Name="BtnPon"       Content="PON !"     FontWeight="ExtraBold" FontSize="20" Height="36" Width="120" Visibility="Collapsed" Margin="5, 0, 0, 0" Click="BtnPon_Click"       VerticalAlignment="Center" HorizontalAlignment="Center" />
+                    <Button Name="BtnChii"      Content="CHII !"    FontWeight="ExtraBold" FontSize="20" Height="36" Width="120" Visibility="Collapsed" Margin="5, 0, 0, 0" Click="BtnChii_Click"      VerticalAlignment="Center" HorizontalAlignment="Center" />
+                    <Button Name="BtnKan"       Content="KAN !"     FontWeight="ExtraBold" FontSize="20" Height="36" Width="120" Visibility="Collapsed" Margin="5, 0, 0, 0" Click="BtnKan_Click"       VerticalAlignment="Center" HorizontalAlignment="Center" />
+                    <Button Name="BtnSkipCall"  Content="X"         FontWeight="ExtraBold" FontSize="20" Height="36" Width="120" Visibility="Collapsed" Margin="5, 0, 0, 0" Click="BtnSkipCall_Click"  VerticalAlignment="Center" HorizontalAlignment="Center" />
+                </StackPanel>
+            </Border>
         </Grid>
     </ContentControl>
 </Window>

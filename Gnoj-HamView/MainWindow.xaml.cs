@@ -295,6 +295,7 @@ namespace Gnoj_HamView
                     {
                         Dispatcher.Invoke(() =>
                         {
+                            GrdOverlayCanCall.Visibility = Visibility.Visible;
                             BtnRon.Visibility = Visibility.Visible;
                             BtnSkipCall.Visibility = Visibility.Visible;
                         });
@@ -452,6 +453,7 @@ namespace Gnoj_HamView
             {
                 Dispatcher.Invoke(() =>
                 {
+                    GrdOverlayCanCall.Visibility = Visibility.Visible;
                     BtnTsumo.Visibility = Visibility.Visible;
                     BtnSkipCall.Visibility = Visibility.Visible;
                 });
@@ -464,6 +466,7 @@ namespace Gnoj_HamView
             {
                 Dispatcher.Invoke(() =>
                 {
+                    GrdOverlayCanCall.Visibility = Visibility.Visible;
                     BtnRiichi.Visibility = Visibility.Visible;
                     BtnSkipCall.Visibility = Visibility.Visible;
                 });
@@ -742,6 +745,7 @@ namespace Gnoj_HamView
 
                 if (_game.Round.CanCallTsumo(true))
                 {
+                    GrdOverlayCanCall.Visibility = Visibility.Visible;
                     BtnTsumo.Visibility = Visibility.Visible;
                     BtnSkipCall.Visibility = Visibility.Visible;
                     if (Properties.Settings.Default.AutoCallMahjong)
@@ -760,6 +764,7 @@ namespace Gnoj_HamView
                     {
                         BtnRiichi.Visibility = Visibility.Visible;
                         BtnSkipCall.Visibility = Visibility.Visible;
+                        GrdOverlayCanCall.Visibility = Visibility.Visible;
                         ActivateTimer(null);
                     }
                     else if (Properties.Settings.Default.AutoDiscardAfterRiichi && _game.Round.HumanCanAutoDiscard())
@@ -1038,6 +1043,7 @@ namespace Gnoj_HamView
             BtnRiichi.Visibility = Visibility.Collapsed;
             BtnRon.Visibility = Visibility.Collapsed;
             BtnSkipCall.Visibility = Visibility.Collapsed;
+            GrdOverlayCanCall.Visibility = Visibility.Collapsed;
 
             if (preDiscard)
             {
@@ -1059,6 +1065,7 @@ namespace Gnoj_HamView
                 || BtnKan.Visibility == Visibility.Visible)
             {
                 BtnSkipCall.Visibility = Visibility.Visible;
+                GrdOverlayCanCall.Visibility = Visibility.Visible;
                 ActivateTimer(null);
             }
         }
