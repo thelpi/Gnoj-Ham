@@ -360,6 +360,7 @@ namespace Gnoj_HamView
                     {
                         if (OpponentAfterPick(ref kanInProgress))
                         {
+                            result.EndOfRound = true;
                             break;
                         }
                         continue;
