@@ -7,6 +7,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Input;
+using System.Windows.Media;
 using System.Windows.Media.Animation;
 using Gnoj_Ham;
 
@@ -108,6 +109,7 @@ namespace Gnoj_HamView
             if (IsCurrentlyClickable(e))
             {
                 PonCall(GamePivot.HUMAN_INDEX);
+                SuggestDiscard();
             }
         }
 
@@ -120,6 +122,7 @@ namespace Gnoj_HamView
                 if (tileChoices.Keys.Count > 0)
                 {
                     RaiseButtonClickEvent(RestrictDiscardWithTilesSelection(tileChoices, BtnChiiChoice_Click));
+                    SuggestDiscard();
                 }
             }
         }
@@ -139,6 +142,7 @@ namespace Gnoj_HamView
                     {
                         HumanKanCallProcess(null, _game.Round.PreviousPlayerIndex);
                     }
+                    SuggestDiscard();
                 }
             }
         }
@@ -1014,7 +1018,7 @@ namespace Gnoj_HamView
             var highlightButton = FillDiscardPanel(_game.Round.PreviousPlayerIndex);
             if (highlightButton != null)
             {
-                highlightButton.Background = System.Windows.Media.Brushes.Red;
+                highlightButton.Style = FindResource("StyleHighlightTile") as Style;
             }
         }
 
@@ -1115,6 +1119,10 @@ namespace Gnoj_HamView
                 Button btn = (pButton.ChildrenButtonIndex < 0 ? FindName(pButton.PanelBaseName) :
                     this.FindPanel(pButton.PanelBaseName, GamePivot.HUMAN_INDEX).Children[pButton.ChildrenButtonIndex]) as Button;
                 btn.RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent));
+            }
+            else
+            {
+                SuggestDiscard();
             }
         }
 
@@ -1217,6 +1225,26 @@ namespace Gnoj_HamView
             ChkSounds.IsChecked = Properties.Settings.Default.PlaySounds;
             ChkRiichiAutoDiscard.IsChecked = Properties.Settings.Default.AutoDiscardAfterRiichi;
             ChkAutoTsumoRon.IsChecked = Properties.Settings.Default.AutoCallMahjong;
+        }
+
+        private void SuggestDiscard()
+        {
+            if (_game.Round.IsHumanPlayer && _game.Round.GetHand(GamePivot.HUMAN_INDEX).IsFullHand)
+            {
+                try
+                {
+                    var discardChoice = _game.Round.IaManager.DiscardDecision();
+                    var button = StpHandP0.Children.OfType<Button>().FirstOrDefault(x => x.Tag == discardChoice);
+                    if (button != null)
+                    {
+                        button.Style = FindResource("StyleHighlightTile") as Style;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"The discard suggestion has crashed with the following error: {ex.Message}\r\nPlease provide a maximum of details about the context of the crash.");
+                }
+            }
         }
 
         #endregion Other methods

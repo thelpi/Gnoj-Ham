@@ -2,3 +2,4 @@
 Riichi call from CPU should be longer even when CPU delay is off
 	-> "Resolved" by quick fix
 Overlays are stacking in a weird way
+Every consequence of a kan are probably not managed (2 kans in a row for instance)

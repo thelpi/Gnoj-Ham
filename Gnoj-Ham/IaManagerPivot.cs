@@ -45,11 +45,6 @@ namespace Gnoj_Ham
         /// <returns>The tile to discard.</returns>
         public TilePivot DiscardDecision()
         {
-            if (_round.IsHumanPlayer)
-            {
-                return null;
-            }
-
             List<TilePivot> concealedTiles = _round.GetHand(_round.CurrentPlayerIndex).ConcealedTiles.ToList();
 
             List<TilePivot> discardableTiles = concealedTiles
@@ -138,11 +133,6 @@ namespace Gnoj_Ham
         /// <returns>The tile to discard; <c>Null</c> if no decision made.</returns>
         public TilePivot RiichiDecision()
         {
-            if (_round.IsHumanPlayer)
-            {
-                return null;
-            }
-
             List<TilePivot> riichiTiles = _round.CanCallRiichi();
             if (riichiTiles.Count > 0)
             {
@@ -183,17 +173,7 @@ namespace Gnoj_Ham
         /// <returns><c>True</c> if the decision is made; <c>False</c> otherwise.</returns>
         public bool TsumoDecision(bool isKanCompensation)
         {
-            if (_round.IsHumanPlayer)
-            {
-                return false;
-            }
-
-            if (!_round.CanCallTsumo(isKanCompensation))
-            {
-                return false;
-            }
-
-            return true;
+            return _round.CanCallTsumo(isKanCompensation);
         }
 
         /// <summary>
@@ -295,11 +275,6 @@ namespace Gnoj_Ham
         /// </returns>
         public Tuple<TilePivot, bool> ChiiDecision()
         {
-            if (_round.IsHumanPlayer)
-            {
-                return null;
-            }
-
             Dictionary<TilePivot, bool> chiiTiles = _round.OpponentsCanCallChii();
             if (chiiTiles.Count > 0)
             {
