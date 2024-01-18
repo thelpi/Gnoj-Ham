@@ -531,7 +531,7 @@ namespace Gnoj_HamView
                 {
                     buttonClickable.Tag = new Tuple<TilePivot, bool>(tileKey, tileChoices[tileKey]);
                 }
-                buttonClickable.Style = FindResource("StyleHighlightTile") as Style;
+                SetHighlight(buttonClickable);
                 clickableButtons.Add(buttonClickable);
             }
 
@@ -1018,7 +1018,7 @@ namespace Gnoj_HamView
             var highlightButton = FillDiscardPanel(_game.Round.PreviousPlayerIndex);
             if (highlightButton != null)
             {
-                highlightButton.Style = FindResource("StyleHighlightTile") as Style;
+                SetHighlight(highlightButton);
             }
         }
 
@@ -1105,6 +1105,13 @@ namespace Gnoj_HamView
                 GrdOverlayCanCall.Visibility = Visibility.Visible;
                 ActivateTimer(null);
             }
+        }
+
+        // Highlights a tile
+        private void SetHighlight(Button buttonClickable)
+        {
+            buttonClickable.Style = FindResource("StyleHighlightTile") as Style;
+            (buttonClickable.Content as Image).Opacity = 0.8;
         }
 
         #endregion Graphic tools
@@ -1234,10 +1241,12 @@ namespace Gnoj_HamView
                 try
                 {
                     var discardChoice = _game.Round.IaManager.DiscardDecision();
-                    var button = StpHandP0.Children.OfType<Button>().FirstOrDefault(x => x.Tag == discardChoice);
+                    var button = StpHandP0.Children.OfType<Button>()
+                        .Concat(StpPickP0.Children.OfType<Button>())
+                        .FirstOrDefault(x => x.Tag == discardChoice);
                     if (button != null)
                     {
-                        button.Style = FindResource("StyleHighlightTile") as Style;
+                        SetHighlight(button);
                     }
                 }
                 catch (Exception ex)
