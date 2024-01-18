@@ -1,0 +1,4 @@
+﻿The akadora marker disapears from the hand when a riichi decision is made on the "not akadora" (but identical) tile
+Riichi call from CPU should be longer even when CPU delay is off
+	-> "Resolved" by quick fix
+Overlays are stacking in a weird way

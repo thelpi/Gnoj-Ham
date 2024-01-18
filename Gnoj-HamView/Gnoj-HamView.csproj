@@ -377,6 +377,7 @@
     <Resource Include="Resources\gohome.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Resource>
+    <Resource Include="Notes.txt" />
     <Content Include="Resources\tick.wav">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>

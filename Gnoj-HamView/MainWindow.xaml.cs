@@ -1181,7 +1181,7 @@ namespace Gnoj_HamView
         private void ApplyConfigurationToOverlayStoryboard()
         {
             (_overlayStoryboard.Children.Last() as ObjectAnimationUsingKeyFrames).KeyFrames[1].KeyTime =
-                KeyTime.FromTimeSpan(new TimeSpan(0, 0, 0, 0, ((CpuSpeedPivot)Properties.Settings.Default.CpuSpeed).ParseSpeed()));
+                KeyTime.FromTimeSpan(new TimeSpan(0, 0, 0, 0, CpuSpeedPivot.S500.ParseSpeed()));
         }
 
         // Handler to trigger a new round at the end of the overlay storyboard animation.
