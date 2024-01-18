@@ -166,6 +166,7 @@ namespace Gnoj_HamView
                 || BtnKan.Visibility == Visibility.Visible
                 || BtnRon.Visibility == Visibility.Visible)
             {
+                CancelDiscardHighlight();
                 RunAutoPlay(skipCurrentAction: true);
             }
             else if (StpPickP0.Children.Count > 0)
@@ -306,7 +307,7 @@ namespace Gnoj_HamView
                         }
                         else
                         {
-                            Dispatcher.Invoke(() => FillDiscardPanel(_game.Round.PreviousPlayerIndex, true));
+                            Dispatcher.Invoke(() => HighlightPreviousPlayerDiscard());
                         }
                         break;
                     }
@@ -331,7 +332,7 @@ namespace Gnoj_HamView
                     {
                         if (!isSelfKan)
                         {
-                            Dispatcher.Invoke(() => FillDiscardPanel(_game.Round.PreviousPlayerIndex, true));
+                            Dispatcher.Invoke(() => HighlightPreviousPlayerDiscard());
                         }
                         break;
                     }
@@ -354,7 +355,7 @@ namespace Gnoj_HamView
 
                     if (!skipCurrentAction && _game.Round.IsHumanPlayer && _game.Round.CanCallChii().Count > 0)
                     {
-                        Dispatcher.Invoke(() => FillDiscardPanel(_game.Round.PreviousPlayerIndex, true));
+                        Dispatcher.Invoke(() => HighlightPreviousPlayerDiscard());
                         break;
                     }
 
@@ -971,7 +972,7 @@ namespace Gnoj_HamView
         }
 
         // Rebuilds the discard panel of the specified player.
-        private void FillDiscardPanel(int pIndex, bool highlistLast = false)
+        private Button FillDiscardPanel(int pIndex)
         {
             for (int r = 1; r <= 3; r++)
             {
@@ -1004,10 +1005,24 @@ namespace Gnoj_HamView
                 i++;
             }
 
-            if (lastButton != null && highlistLast)
+            return lastButton;
+        }
+
+        // Highlights the last tile of the previous player discard (to show it's available for a call)
+        private void HighlightPreviousPlayerDiscard()
+        {
+            var highlightButton = FillDiscardPanel(_game.Round.PreviousPlayerIndex);
+            if (highlightButton != null)
             {
-                lastButton.Background = System.Windows.Media.Brushes.Red;
+                highlightButton.Background = System.Windows.Media.Brushes.Red;
             }
+        }
+
+        // Cancels the Highlighting of the previous player discard
+        private void CancelDiscardHighlight()
+        {
+            // TODO: lazy
+            FillDiscardPanel(_game.Round.PreviousPlayerIndex);
         }
 
         // Adds to the player stack its last combination.
