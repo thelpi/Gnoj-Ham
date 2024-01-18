@@ -666,9 +666,11 @@ namespace Gnoj_Ham
         /// Checks if a priority call can be made by the specified player.
         /// </summary>
         /// <param name="playerIndex">Player index.</param>
+        /// <param name="isSelfKan">If the method returns <c>True</c>, this indicates a self kan if <c>True</c>.</param>
         /// <returns><c>True</c> if call available; <c>False otherwise</c>.</returns>
-        public bool CanCallPonOrKan(int playerIndex)
+        public bool CanCallPonOrKan(int playerIndex, out bool isSelfKan)
         {
+            isSelfKan = _waitForDiscard;
             return CanCallKan(playerIndex).Count > 0 || CanCallPon(playerIndex);
         }
 

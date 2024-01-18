@@ -304,6 +304,10 @@ namespace Gnoj_HamView
                         {
                             result.PanelButton = new PanelButton("BtnRon", -1);
                         }
+                        else
+                        {
+                            Dispatcher.Invoke(() => FillDiscardPanel(_game.Round.PreviousPlayerIndex, true));
+                        }
                         break;
                     }
 
@@ -323,8 +327,12 @@ namespace Gnoj_HamView
                         CommonCallKan(kanInProgress.Item3, kanInProgress.Item2);
                     }
 
-                    if (!skipCurrentAction && !_game.CpuVs && _game.Round.CanCallPonOrKan(GamePivot.HUMAN_INDEX))
+                    if (!skipCurrentAction && !_game.CpuVs && _game.Round.CanCallPonOrKan(GamePivot.HUMAN_INDEX, out var isSelfKan))
                     {
+                        if (!isSelfKan)
+                        {
+                            Dispatcher.Invoke(() => FillDiscardPanel(_game.Round.PreviousPlayerIndex, true));
+                        }
                         break;
                     }
 
@@ -346,6 +354,7 @@ namespace Gnoj_HamView
 
                     if (!skipCurrentAction && _game.Round.IsHumanPlayer && _game.Round.CanCallChii().Count > 0)
                     {
+                        Dispatcher.Invoke(() => FillDiscardPanel(_game.Round.PreviousPlayerIndex, true));
                         break;
                     }
 
@@ -962,7 +971,7 @@ namespace Gnoj_HamView
         }
 
         // Rebuilds the discard panel of the specified player.
-        private void FillDiscardPanel(int pIndex)
+        private void FillDiscardPanel(int pIndex, bool highlistLast = false)
         {
             for (int r = 1; r <= 3; r++)
             {
@@ -971,6 +980,7 @@ namespace Gnoj_HamView
 
             bool reversed = pIndex == 1 || pIndex == 2;
 
+            Button lastButton = null;
             int i = 0;
             foreach (TilePivot tile in _game.Round.GetDiscard(pIndex))
             {
@@ -983,13 +993,20 @@ namespace Gnoj_HamView
                 }
                 if (reversed)
                 {
-                    panel.Children.Insert(0, tile.GenerateTileButton(angle: angle));
+                    lastButton = tile.GenerateTileButton(angle: angle);
+                    panel.Children.Insert(0, lastButton);
                 }
                 else
                 {
-                    panel.Children.Add(tile.GenerateTileButton(angle: angle));
+                    lastButton = tile.GenerateTileButton(angle: angle);
+                    panel.Children.Add(lastButton);
                 }
                 i++;
+            }
+
+            if (lastButton != null && highlistLast)
+            {
+                lastButton.Background = System.Windows.Media.Brushes.Red;
             }
         }
 
