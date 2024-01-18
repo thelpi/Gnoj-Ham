@@ -228,11 +228,28 @@ namespace Gnoj_Ham
             switch (Family)
             {
                 case FamilyPivot.Dragon:
+                    return $"{Family}\r\n{Dragon.Value}";
+                case FamilyPivot.Wind:
+                    return $"{Family}\r\n{Wind.Value}";
+                default:
+                    return $"{Family}\r\n{Number}" + (IsRedDora ? "\r\nRed" : string.Empty);
+            }
+        }
+
+        /// <summary>
+        /// Provides the resource name ( a file) associated to the tile.
+        /// </summary>
+        /// <returns>The resource name.</returns>
+        public string ToResourceName()
+        {
+            switch (Family)
+            {
+                case FamilyPivot.Dragon:
                     return $"{Family.ToString().ToLowerInvariant()}_{Dragon.Value.ToString().ToLowerInvariant()}";
                 case FamilyPivot.Wind:
                     return $"{Family.ToString().ToLowerInvariant()}_{Wind.Value.ToString().ToLowerInvariant()}";
                 default:
-                    return $"{Family.ToString().ToLowerInvariant()}_{Number.ToString()}" + (IsRedDora ? "_red" : string.Empty);
+                    return $"{Family.ToString().ToLowerInvariant()}_{Number}" + (IsRedDora ? "_red" : string.Empty);
             }
         }
 

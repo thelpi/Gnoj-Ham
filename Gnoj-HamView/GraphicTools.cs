@@ -49,7 +49,7 @@ namespace Gnoj_HamView
         /// <returns>A button representing the tile.</returns>
         internal static Button GenerateTileButton(this TilePivot tile, RoutedEventHandler handler = null, AnglePivot angle = AnglePivot.A0, bool concealed = false)
         {
-            string rscName = concealed ? CONCEALED_TILE_RSC_NAME : tile.ToString();
+            string rscName = concealed ? CONCEALED_TILE_RSC_NAME : tile.ToResourceName();
 
             Bitmap tileBitmap = Properties.Resources.ResourceManager.GetObject(rscName) as Bitmap;
 
@@ -62,7 +62,8 @@ namespace Gnoj_HamView
                     Source = tileBitmap.ToBitmapImage(),
                     LayoutTransform = new RotateTransform(Convert.ToDouble(angle.ToString().Replace("A", string.Empty)))
                 },
-                Tag = tile
+                Tag = tile,
+                ToolTip = concealed ? null : tile.ToString()
             };
 
             if (handler != null)
