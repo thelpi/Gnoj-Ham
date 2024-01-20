@@ -469,10 +469,6 @@ namespace Gnoj_Ham
                 {
                     addYaku = context.IsChiihou();
                 }
-                else if (yaku == Renhou)
-                {
-                    addYaku = context.IsRenhou();
-                }
                 else if (yaku == KokushiMusou)
                 {
                     // Do nothing here, but prevents the exception below.
@@ -640,6 +636,10 @@ namespace Gnoj_Ham
                 else if (yaku == Junchan)
                 {
                     addYaku = combinationsSequence.All(c => c.HasTerminal);
+                }
+                else if (yaku == Renhou)
+                {
+                    addYaku = context.IsRenhou();
                 }
                 else if (yaku == NagashiMangan)
                 {
