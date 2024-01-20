@@ -48,6 +48,7 @@
     <Compile Include="DrawTypePivot.cs" />
     <Compile Include="EndOfRoundInformationsPivot.cs" />
     <Compile Include="PlayerSavePivot.cs" />
+    <Compile Include="RulePivot.cs" />
     <Compile Include="TileEventArgs.cs" />
     <Compile Include="PlayerScorePivot.cs" />
     <Compile Include="RiichiPivot.cs" />

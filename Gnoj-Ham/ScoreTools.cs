@@ -335,7 +335,7 @@ namespace Gnoj_Ham
             int i = 1;
             foreach (PlayerPivot player in game.Players.OrderByDescending(p => p.Points))
             {
-                playersOrdered.Add(new PlayerScorePivot(player, i, ComputeUma(i), game.InitialPointsRule.GetInitialPointsFromRule()));
+                playersOrdered.Add(new PlayerScorePivot(player, i, ComputeUma(i), game.Ruleset.InitialPointsRule.GetInitialPointsFromRule()));
                 i++;
             }
 

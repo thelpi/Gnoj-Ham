@@ -14,13 +14,16 @@
     Height should display the bottom line of first TabItem
     -->
     <DockPanel Margin="5">
-        <StackPanel DockPanel.Dock="Bottom" Margin="0, 10, 0, 0" Orientation="Horizontal" HorizontalAlignment="Right">
-            <TextBlock VerticalAlignment="Center" Margin="0, 0, 10, 0">
-                <Hyperlink Name="PlayerStatsHlk" Click="PlayerStatsHlk_Click">Player stats</Hyperlink>
-            </TextBlock>
-            <Button Width="75" Height="25" Content="Start" Name="BtnStart" Click="BtnStart_Click" />
-            <Button Width="75" Height="25" Content="Quit" Name="BtnQuit" Click="BtnQuit_Click" Margin="10, 0, 0, 0" />
-        </StackPanel>
+        <DockPanel DockPanel.Dock="Bottom" Margin="0, 10, 0, 0">
+            <Button DockPanel.Dock="Left" Width="75" Height="25" Content="Reset" Name="BtnReset" Click="BtnReset_Click" ToolTip="Reset every option to default value." />
+            <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" HorizontalAlignment="Right">
+                <TextBlock VerticalAlignment="Center" Margin="0, 0, 10, 0">
+                    <Hyperlink Name="PlayerStatsHlk" Click="PlayerStatsHlk_Click">Player stats</Hyperlink>
+                </TextBlock>
+                <Button Width="75" Height="25" Content="Start" Name="BtnStart" Click="BtnStart_Click" />
+                <Button Width="75" Height="25" Content="Quit" Name="BtnQuit" Click="BtnQuit_Click" Margin="10, 0, 0, 0" />
+            </StackPanel>
+        </DockPanel>
         <StackPanel Orientation="Vertical" DockPanel.Dock="Top">
             <TabControl>
                 <TabItem Header="Options">

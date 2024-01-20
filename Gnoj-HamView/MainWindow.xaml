@@ -59,10 +59,9 @@
                     <Label Width="110"  HorizontalContentAlignment="Right" Content="Sounds" />
                     <CheckBox VerticalContentAlignment="Center" Name="ChkSounds" Click="ChkSounds_Click" />
                 </StackPanel>
-                <StackPanel Orientation="Horizontal">
-                    <Label Width="110"  HorizontalContentAlignment="Right" Content="Discard tip" />
-                    <CheckBox VerticalContentAlignment="Center" Name="ChkDiscardTip" Click="ChkDiscardTip_Click" />
-                </StackPanel>
+                <TextBlock HorizontalAlignment="Center" Margin="0, 10, 0, 0">
+                    <Hyperlink Name="PlayerStatsHlk" Click="PlayerStatsHlk_Click">Player stats</Hyperlink>
+                </TextBlock>
             </StackPanel>
         </Expander>
         <!-- ContentControl allows to use double click -->

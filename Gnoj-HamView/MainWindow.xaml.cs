@@ -7,7 +7,6 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Input;
-using System.Windows.Media;
 using System.Windows.Media.Animation;
 using Gnoj_Ham;
 
@@ -29,28 +28,20 @@ namespace Gnoj_HamView
         private bool _waitForDecision;
         private List<TilePivot> _riichiTiles;
         private bool _hardStopAutoplay = false;
-        private readonly bool _debugMode = false;
 
         /// <summary>
         /// Constructor.
         /// </summary>
         /// <param name="playerName">Human player name.</param>
-        /// <param name="pointRule">Indicates the initial points count for every players.</param>
-        /// <param name="endOfGameRule">The ruel to end a game.</param>
+        /// <param name="ruleset">The ruleset.</param>
         /// <param name="save">Player save file.</param>
-        /// <param name="useRedDoras">Indicates if red doras should be used.</param>
-        /// <param name="useNagashiMangan"><c>True</c> to use the yaku 'Nagashi Mangan'.</param>
-        /// <param name="debugMode">Enable the debug mode.</param>
-        /// <param name="fourCpus">Enable four CPU players.</param>
-        public MainWindow(string playerName, InitialPointsRulePivot pointRule, EndOfGameRulePivot endOfGameRule, PlayerSavePivot save, bool useRedDoras, bool useNagashiMangan, bool debugMode, bool fourCpus)
+        public MainWindow(string playerName, RulePivot ruleset, PlayerSavePivot save)
         {
             InitializeComponent();
 
-            _debugMode = debugMode;
-
             LblHumanPlayer.Content = playerName;
 
-            _game = new GamePivot(playerName, pointRule, endOfGameRule, save, useRedDoras, useNagashiMangan, fourCpus);
+            _game = new GamePivot(playerName, ruleset, save);
             _tickSound = new System.Media.SoundPlayer(Properties.Resources.tick);
 
             _overlayStoryboard = FindResource("StbHideOverlay") as Storyboard;
@@ -248,12 +239,6 @@ namespace Gnoj_HamView
             Properties.Settings.Default.Save();
         }
 
-        private void ChkDiscardTip_Click(object sender, RoutedEventArgs e)
-        {
-            Properties.Settings.Default.DiscardTip = ChkDiscardTip.IsChecked == true;
-            Properties.Settings.Default.Save();
-        }
-
         private void ChkRiichiAutoDiscard_Click(object sender, RoutedEventArgs e)
         {
             Properties.Settings.Default.AutoDiscardAfterRiichi = ChkRiichiAutoDiscard.IsChecked == true;
@@ -264,6 +249,18 @@ namespace Gnoj_HamView
         {
             Properties.Settings.Default.AutoCallMahjong = ChkAutoTsumoRon.IsChecked == true;
             Properties.Settings.Default.Save();
+        }
+
+        private void PlayerStatsHlk_Click(object sender, RoutedEventArgs e)
+        {
+            var (save, error) = PlayerSavePivot.GetOrCreateSave();
+
+            if (!string.IsNullOrWhiteSpace(error))
+            {
+                MessageBox.Show($"Something went wrong during the loading of player's stat file; statistics will be empty.\n\nError details:\n{error}", "Gnoj-Ham - warning");
+            }
+
+            new PlayerSaveStatsWindow(save).ShowDialog();
         }
 
         #endregion Configuration
@@ -917,7 +914,7 @@ namespace Gnoj_HamView
                 if (pickTile == null || !ReferenceEquals(pickTile, tile))
                 {
                     panel.Children.Add(tile.GenerateTileButton(isHuman && !_game.Round.IsRiichi(pIndex) ?
-                        BtnDiscard_Click : (RoutedEventHandler)null, (AnglePivot)pIndex, !isHuman && !_debugMode));
+                        BtnDiscard_Click : (RoutedEventHandler)null, (AnglePivot)pIndex, !isHuman && !_game.Ruleset.DebugMode));
                 }
             }
 
@@ -927,7 +924,7 @@ namespace Gnoj_HamView
                     pickTile.GenerateTileButton(
                         _game.Round.IsHumanPlayer ? BtnDiscard_Click : (RoutedEventHandler)null,
                         (AnglePivot)pIndex,
-                        !_game.Round.IsHumanPlayer && !_debugMode
+                        !_game.Round.IsHumanPlayer && !_game.Ruleset.DebugMode
                     )
                 );
             }
@@ -1239,9 +1236,10 @@ namespace Gnoj_HamView
             ChkAutoTsumoRon.IsChecked = Properties.Settings.Default.AutoCallMahjong;
         }
 
+        // Suggest a discard by changing the skin of a button
         private void SuggestDiscard()
         {
-            if (!Properties.Settings.Default.DiscardTip)
+            if (!_game.Ruleset.DiscardTip)
             {
                 return;
             }

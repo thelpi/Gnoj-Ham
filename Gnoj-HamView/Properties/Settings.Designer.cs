@@ -25,18 +25,6 @@ namespace Gnoj_HamView.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("True")]
-        public bool DefaultUseRedDoras {
-            get {
-                return ((bool)(this["DefaultUseRedDoras"]));
-            }
-            set {
-                this["DefaultUseRedDoras"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("Lpi")]
         public string DefaultPlayerName {
             get {
@@ -44,18 +32,6 @@ namespace Gnoj_HamView.Properties {
             }
             set {
                 this["DefaultPlayerName"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("0")]
-        public int InitialPointsRule {
-            get {
-                return ((int)(this["InitialPointsRule"]));
-            }
-            set {
-                this["InitialPointsRule"] = value;
             }
         }
         
@@ -98,36 +74,12 @@ namespace Gnoj_HamView.Properties {
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("True")]
-        public bool UseNagashiMangan {
-            get {
-                return ((bool)(this["UseNagashiMangan"]));
-            }
-            set {
-                this["UseNagashiMangan"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("True")]
         public bool PlaySounds {
             get {
                 return ((bool)(this["PlaySounds"]));
             }
             set {
                 this["PlaySounds"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("1")]
-        public int EndOfGameRule {
-            get {
-                return ((int)(this["EndOfGameRule"]));
-            }
-            set {
-                this["EndOfGameRule"] = value;
             }
         }
         
@@ -140,18 +92,6 @@ namespace Gnoj_HamView.Properties {
             }
             set {
                 this["ChronoSpeed"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("False")]
-        public bool DiscardTip {
-            get {
-                return ((bool)(this["DiscardTip"]));
-            }
-            set {
-                this["DiscardTip"] = value;
             }
         }
     }

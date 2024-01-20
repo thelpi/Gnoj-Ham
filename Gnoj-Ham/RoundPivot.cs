@@ -143,7 +143,7 @@ namespace Gnoj_Ham
             Game = game;
 
             _fullTilesList = TilePivot
-                                .GetCompleteSet(Game.WithRedDoras)
+                                .GetCompleteSet(Game.Ruleset.UseRedDoras)
                                 .OrderBy(t => GlobalTools.Randomizer.NextDouble())
                                 .ToList();
 
@@ -1000,7 +1000,7 @@ namespace Gnoj_Ham
 
             List<int> winners = _hands.Where(h => h.IsComplete).Select(w => _hands.IndexOf(w)).ToList();
 
-            if (winners.Count == 0 && Game.UseNagashiMangan)
+            if (winners.Count == 0 && Game.Ruleset.UseNagashiMangan)
             {
                 List<int> iNagashiList = CheckForNagashiMangan();
                 if (iNagashiList.Count > 0)

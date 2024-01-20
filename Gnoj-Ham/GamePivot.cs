@@ -61,21 +61,9 @@ namespace Gnoj_Ham
         /// </summary>
         public RoundPivot Round { get; private set; }
         /// <summary>
-        /// <c>True</c> if akadora are used; <c>False</c> otherwise.
+        /// The ruleset for the game.
         /// </summary>
-        public bool WithRedDoras { get; private set; }
-        /// <summary>
-        /// Indicates if the yaku <see cref="YakuPivot.NagashiMangan"/> is used or not.
-        /// </summary>
-        public bool UseNagashiMangan { get; private set; }
-        /// <summary>
-        /// The rule to check end of the game.
-        /// </summary>
-        public EndOfGameRulePivot EndOfGameRule { get; private set; }
-        /// <summary>
-        /// The rule for players initial points.
-        /// </summary>
-        public InitialPointsRulePivot InitialPointsRule { get; private set; }
+        public RulePivot Ruleset { get; }
 
         #endregion Embedded properties
 
@@ -108,31 +96,18 @@ namespace Gnoj_Ham
         /// Constructor.
         /// </summary>
         /// <param name="humanPlayerName">The name of the human player; other players will be <see cref="PlayerPivot.IsCpu"/>.</param>
-        /// <param name="initialPointsRule">The <see cref="InitialPointsRule"/> value.</param>
-        /// <param name="endOfGameRule">The <see cref="EndOfGameRule"/> value.</param>
+        /// <param name="ruleset">Ruleset for the game.</param>
         /// <param name="save">Player save stats.</param>
-        /// <param name="withRedDoras">Optionnal; the <see cref="WithRedDoras"/> value; default value is <c>False</c>.</param>
-        /// <param name="useNagashiMangan">Optionnal; the <see cref="UseNagashiMangan"/> value; default value is <c>False</c>.</param>
-        /// <param name="fourCpus">Optionnal; enables a game with four CPU players.</param>
-        public GamePivot(string humanPlayerName,
-            InitialPointsRulePivot initialPointsRule,
-            EndOfGameRulePivot endOfGameRule,
-            PlayerSavePivot save,
-            bool withRedDoras = false,
-            bool useNagashiMangan = false,
-            bool fourCpus = false)
+        public GamePivot(string humanPlayerName, RulePivot ruleset, PlayerSavePivot save)
         {
             _save = save;
 
-            InitialPointsRule = initialPointsRule;
-            EndOfGameRule = endOfGameRule;
-            _players = PlayerPivot.GetFourPlayers(humanPlayerName, InitialPointsRule, fourCpus);
+            Ruleset = ruleset;
+            _players = PlayerPivot.GetFourPlayers(humanPlayerName, Ruleset.InitialPointsRule, Ruleset.FourCpus);
             DominantWind = WindPivot.East;
             EastIndexTurnCount = 1;
             EastIndex = FirstEastIndex;
             EastRank = 1;
-            WithRedDoras = withRedDoras;
-            UseNagashiMangan = useNagashiMangan;
 
             Round = new RoundPivot(this, EastIndex);
         }
@@ -180,7 +155,7 @@ namespace Gnoj_Ham
                 HonbaCount++;
             }
 
-            if (EndOfGameRule.TobiRuleApply() && _players.Any(p => p.Points < 0))
+            if (Ruleset.EndOfGameRule.TobiRuleApply() && _players.Any(p => p.Points < 0))
             {
                 endOfRoundInformations.EndOfGame = true;
                 ClearPendingRiichi();
@@ -208,8 +183,8 @@ namespace Gnoj_Ham
                     EastRank = 1;
                     if (DominantWind == WindPivot.South)
                     {
-                        if (EndOfGameRule.EnchousenRuleApply()
-                            && InitialPointsRule == InitialPointsRulePivot.K25
+                        if (Ruleset.EndOfGameRule.EnchousenRuleApply()
+                            && Ruleset.InitialPointsRule == InitialPointsRulePivot.K25
                             && _players.All(p => p.Points < 30000))
                         {
                             DominantWind = WindPivot.West;
@@ -245,11 +220,11 @@ namespace Gnoj_Ham
             Round = new RoundPivot(this, EastIndex);
 
         Exit:
-            var humanPlayer = Players.SingleOrDefault(_ => !_.IsCpu);
-
             string error = null;
-            if (humanPlayer != null)
+            if (Ruleset.AreDefaultRules())
             {
+                var humanPlayer = Players.First(_ => !_.IsCpu);
+
                 error = _save.UpdateAndSave(endOfRoundInformations,
                     ronPlayerIndex.HasValue,
                     humanIsRiichi,

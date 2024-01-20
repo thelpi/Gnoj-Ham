@@ -17,15 +17,13 @@ namespace Gnoj_HamView
         {
             InitializeComponent();
 
-            LoadConfiguration();
-
             CbbEndOfGameRule.ItemsSource = GraphicTools.GetEndOfGameRuleDisplayValue();
             CbbPointsRule.ItemsSource = GraphicTools.GetInitialPointsRuleDisplayValue();
             CbbChronoSpeed.ItemsSource = GraphicTools.GetChronoDisplayValues();
             CbbCpuSpeed.ItemsSource = GraphicTools.GetCpuSpeedDisplayValues();
-        }
 
-        #region Page events
+            LoadConfiguration();
+        }
 
         private void BtnStart_Click(object sender, RoutedEventArgs e)
         {
@@ -40,16 +38,15 @@ namespace Gnoj_HamView
                 MessageBox.Show($"Something went wrong during the loading of player's stat file; statistics will not be saved.\n\nError details:\n{error}", "Gnoj-Ham - warning");
             }
 
-            new MainWindow(
-                TxtPlayerName.Text,
-                (InitialPointsRulePivot)CbbPointsRule.SelectedIndex,
+            var ruleset = new RulePivot((InitialPointsRulePivot)CbbPointsRule.SelectedIndex,
                 (EndOfGameRulePivot)CbbEndOfGameRule.SelectedIndex,
-                save,
                 ChkUseRedDoras.IsChecked == true,
                 ChkUseNagashiMangan.IsChecked == true,
+                ChkFourCpus.IsChecked == true,
                 ChkDebugMode.IsChecked == true,
-                ChkFourCpus.IsChecked == true
-            ).ShowDialog();
+                ChkDiscardTip.IsChecked == true);
+
+            new MainWindow(TxtPlayerName.Text, ruleset, save).ShowDialog();
 
             // The configuration might be updated in-game.
             LoadConfiguration();
@@ -62,17 +59,16 @@ namespace Gnoj_HamView
             Environment.Exit(0);
         }
 
-        #endregion Page events
-
-        #region Private methods
-
         private void LoadConfiguration()
         {
             // Rules
-            CbbPointsRule.SelectedIndex = Settings.Default.InitialPointsRule;
-            CbbEndOfGameRule.SelectedIndex = Settings.Default.EndOfGameRule;
-            ChkUseRedDoras.IsChecked = Settings.Default.DefaultUseRedDoras;
-            ChkUseNagashiMangan.IsChecked = Settings.Default.UseNagashiMangan;
+            CbbPointsRule.SelectedIndex = (int)RulePivot.Default.InitialPointsRule;
+            CbbEndOfGameRule.SelectedIndex = (int)RulePivot.Default.EndOfGameRule;
+            ChkUseRedDoras.IsChecked = RulePivot.Default.UseRedDoras;
+            ChkUseNagashiMangan.IsChecked = RulePivot.Default.UseNagashiMangan;
+
+            // Options as rules
+            ChkDiscardTip.IsChecked = RulePivot.Default.DiscardTip;
 
             // Options
             TxtPlayerName.Text = Settings.Default.DefaultPlayerName;
@@ -81,30 +77,23 @@ namespace Gnoj_HamView
             ChkSounds.IsChecked = Settings.Default.PlaySounds;
             ChkAutoTsumoRon.IsChecked = Settings.Default.AutoCallMahjong;
             ChkAutoRiichiDiscard.IsChecked = Settings.Default.AutoDiscardAfterRiichi;
-            ChkDiscardTip.IsChecked = Settings.Default.DiscardTip;
+
+            // Dvelopment tools
+            ChkDebugMode.IsChecked = false;
+            ChkFourCpus.IsChecked = false;
         }
 
         private void SaveConfiguration()
         {
-            // Rules
-            Settings.Default.InitialPointsRule = CbbPointsRule.SelectedIndex;
-            Settings.Default.EndOfGameRule = CbbEndOfGameRule.SelectedIndex;
-            Settings.Default.DefaultUseRedDoras = ChkUseRedDoras.IsChecked == true;
-            Settings.Default.UseNagashiMangan = ChkUseNagashiMangan.IsChecked == true;
-
-            // Options
             Settings.Default.DefaultPlayerName = TxtPlayerName.Text;
             Settings.Default.ChronoSpeed = CbbChronoSpeed.SelectedIndex;
             Settings.Default.CpuSpeed = CbbCpuSpeed.SelectedIndex;
             Settings.Default.PlaySounds = ChkSounds.IsChecked == true;
             Settings.Default.AutoCallMahjong = ChkAutoTsumoRon.IsChecked == true;
             Settings.Default.AutoDiscardAfterRiichi = ChkAutoRiichiDiscard.IsChecked == true;
-            Settings.Default.DiscardTip = ChkDiscardTip.IsChecked == true;
 
             Settings.Default.Save();
         }
-
-        #endregion Private methods
 
         private void PlayerStatsHlk_Click(object sender, RoutedEventArgs e)
         {
@@ -116,6 +105,11 @@ namespace Gnoj_HamView
             }
 
             new PlayerSaveStatsWindow(save).ShowDialog();
+        }
+
+        private void BtnReset_Click(object sender, RoutedEventArgs e)
+        {
+            LoadConfiguration();
         }
     }
 }
