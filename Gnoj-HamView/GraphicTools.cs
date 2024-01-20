@@ -294,7 +294,7 @@ namespace Gnoj_HamView
                         break;
                     case ChronoPivot.Short:
                     case ChronoPivot.Long:
-                        results.Add($"{ch.ToString()} ({ch.GetDelay()} sec)");
+                        results.Add($"{ch} ({ch.GetDelay()} sec)");
                         break;
                 }
             }

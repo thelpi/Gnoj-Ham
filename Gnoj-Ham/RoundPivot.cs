@@ -15,7 +15,6 @@ namespace Gnoj_Ham
         private TilePivot _closedKanInProgress;
         private TilePivot _openedKanInProgress;
         private bool _waitForDiscard;
-        private int _currentPlayerIndex;
         private readonly List<int> _playerIndexHistory;
         private readonly List<TilePivot> _wallTiles;
         private readonly List<HandPivot> _hands;
@@ -69,18 +68,7 @@ namespace Gnoj_Ham
         /// <summary>
         /// The current player index, between 0 and 3.
         /// </summary>
-        public int CurrentPlayerIndex
-        {
-            get
-            {
-                return _currentPlayerIndex;
-            }
-            set
-            {
-                _currentPlayerIndex = value;
-                NotifyPlayerIndex?.Invoke(null, null);
-            }
-        }
+        public int CurrentPlayerIndex { get; private set; }
 
         /// <summary>
         /// IA manager.
@@ -134,11 +122,6 @@ namespace Gnoj_Ham
         /// Event triggered when a tile is picked.
         /// </summary>
         public event TileEventHandler NotifyPick;
-
-        /// <summary>
-        /// Event triggered when the current player changes.
-        /// </summary>
-        public event EventHandler NotifyPlayerIndex;
 
         #endregion Events
 

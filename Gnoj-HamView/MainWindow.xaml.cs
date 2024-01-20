@@ -591,6 +591,7 @@ namespace Gnoj_HamView
         // Chii call action (human or CPU).
         private void ChiiCall(Tuple<TilePivot, bool> chiiTilePick)
         {
+            RefreshPlayerTurnStyle();
             if (_game.Round.CallChii(chiiTilePick.Item2 ? chiiTilePick.Item1.Number - 1 : chiiTilePick.Item1.Number))
             {
                 InvokeOverlay("Chii", _game.Round.CurrentPlayerIndex);
@@ -617,6 +618,8 @@ namespace Gnoj_HamView
         // Pon call action (human or CPU).
         private void PonCall(int playerIndex)
         {
+            RefreshPlayerTurnStyle();
+
             // Note : this value is stored here because the call to "CallPon" makes it change.
             int previousPlayerIndex = _game.Round.PreviousPlayerIndex;
             bool isCpu = _game.CpuVs || playerIndex != GamePivot.HUMAN_INDEX;
@@ -647,6 +650,7 @@ namespace Gnoj_HamView
         // Pick action (human or CPU).
         private void Pick()
         {
+            RefreshPlayerTurnStyle();
             TilePivot pick = _game.Round.Pick();
             Dispatcher.Invoke(() =>
             {
@@ -685,6 +689,8 @@ namespace Gnoj_HamView
         // Proceeds to call a kan for an opponent.
         private TilePivot OpponentBeginCallKan(int playerId, TilePivot kanTilePick, bool concealedKan)
         {
+            RefreshPlayerTurnStyle();
+
             TilePivot compensationTile = _game.Round.CallKan(playerId, concealedKan ? kanTilePick : null);
             if (compensationTile != null)
             {
@@ -726,6 +732,8 @@ namespace Gnoj_HamView
         // Inner process kan call.
         private void HumanKanCallProcess(TilePivot tile, int? previousPlayerIndex)
         {
+            RefreshPlayerTurnStyle();
+
             _game.Round.CallKan(GamePivot.HUMAN_INDEX, tile);
             InvokeOverlay("Kan", GamePivot.HUMAN_INDEX);
             if (CheckOpponensRonCall(false))
@@ -907,7 +915,6 @@ namespace Gnoj_HamView
         private void NewRoundRefresh()
         {
             LblWallTilesLeft.Foreground = Brushes.Black;
-            _game.Round.NotifyPlayerIndex += OnNotifyPlayerIndex;
             _game.Round.NotifyWallCount += OnNotifyWallCount;
             _game.Round.NotifyPick += delegate (TileEventArgs e)
             {
@@ -924,9 +931,8 @@ namespace Gnoj_HamView
                 }
             };
 
-            // thse events are forced because the subscription is made too late relative to first triggered event
+            // event is forced because the subscription is made too late relative to first triggered event
             OnNotifyWallCount(null, null);
-            OnNotifyPlayerIndex(null, null);
 
             StpDoras.SetDorasPanel(_game.Round.DoraIndicatorTiles, _game.Round.VisibleDorasCount);
             LblDominantWind.Content = _game.DominantWind.ToWindDisplay();
@@ -942,11 +948,12 @@ namespace Gnoj_HamView
                 this.FindControl("LblPointsP", pIndex).Content = $"{_game.Players.ElementAt(pIndex).Points / 1000}k";
             }
 
+            RefreshPlayerTurnStyle();
             SetActionButtonsVisibility(preDiscard: true);
         }
 
-        // Triggered when the current player is updated.
-        private void OnNotifyPlayerIndex(object sender, EventArgs e)
+        // Refresh the style of players when turn changes.
+        private void RefreshPlayerTurnStyle()
         {
             Dispatcher.Invoke(() =>
             {
