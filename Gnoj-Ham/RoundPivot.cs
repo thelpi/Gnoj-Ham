@@ -875,8 +875,7 @@ namespace Gnoj_Ham
                 playerWind: Game.GetPlayerCurrentWind(playerIndex),
                 isFirstOrLast: IsWallExhaustion ? (bool?)null : (_discards[playerIndex].Count == 0 && IsUninterruptedHistory(playerIndex)),
                 isRiichi: IsRiichi(playerIndex) ? (_riichis[playerIndex].IsDaburu ? (bool?)null : true) : false,
-                isIppatsu: IsIppatsu(playerIndex),
-                useRenhou: Game.UseRenhou
+                isIppatsu: IsIppatsu(playerIndex)
             ));
         }
 

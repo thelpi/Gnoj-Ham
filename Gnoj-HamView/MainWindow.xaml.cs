@@ -39,14 +39,13 @@ namespace Gnoj_HamView
         /// <param name="save">Player save file.</param>
         /// <param name="useRedDoras">Indicates if red doras should be used.</param>
         /// <param name="useNagashiMangan"><c>True</c> to use the yaku 'Nagashi Mangan'.</param>
-        /// <param name="useRenhou"><c>True</c> to use the yakuman 'Renhou'.</param>
-        public MainWindow(string playerName, InitialPointsRulePivot pointRule, EndOfGameRulePivot endOfGameRule, PlayerSavePivot save, bool useRedDoras, bool useNagashiMangan, bool useRenhou)
+        public MainWindow(string playerName, InitialPointsRulePivot pointRule, EndOfGameRulePivot endOfGameRule, PlayerSavePivot save, bool useRedDoras, bool useNagashiMangan)
         {
             InitializeComponent();
 
             LblHumanPlayer.Content = playerName;
 
-            _game = new GamePivot(playerName, pointRule, endOfGameRule, save, useRedDoras, useNagashiMangan, useRenhou);
+            _game = new GamePivot(playerName, pointRule, endOfGameRule, save, useRedDoras, useNagashiMangan);
             _tickSound = new System.Media.SoundPlayer(Properties.Resources.tick);
 
             _overlayStoryboard = FindResource("StbHideOverlay") as Storyboard;
@@ -79,7 +78,7 @@ namespace Gnoj_HamView
 
         private void BtnDiscard_Click(object sender, RoutedEventArgs e)
         {
-            if (IsCurrentlyClickable(e))
+            if (IsCurrentlyClickable())
             {
                 Discard((sender as Button).Tag as TilePivot);
             }
@@ -87,7 +86,7 @@ namespace Gnoj_HamView
 
         private void BtnChiiChoice_Click(object sender, RoutedEventArgs e)
         {
-            if (IsCurrentlyClickable(e))
+            if (IsCurrentlyClickable())
             {
                 _waitForDecision = false;
                 Tuple<TilePivot, bool> tag = (Tuple<TilePivot, bool>)((sender as Button).Tag);
@@ -97,7 +96,7 @@ namespace Gnoj_HamView
 
         private void BtnKanChoice_Click(object sender, RoutedEventArgs e)
         {
-            if (IsCurrentlyClickable(e))
+            if (IsCurrentlyClickable())
             {
                 _waitForDecision = false;
                 HumanKanCallProcess((sender as Button).Tag as TilePivot, null);
@@ -106,7 +105,7 @@ namespace Gnoj_HamView
 
         private void BtnPon_Click(object sender, RoutedEventArgs e)
         {
-            if (IsCurrentlyClickable(e))
+            if (IsCurrentlyClickable())
             {
                 PonCall(GamePivot.HUMAN_INDEX);
                 SuggestDiscard();
@@ -115,7 +114,7 @@ namespace Gnoj_HamView
 
         private void BtnChii_Click(object sender, RoutedEventArgs e)
         {
-            if (IsCurrentlyClickable(e))
+            if (IsCurrentlyClickable())
             {
                 Dictionary<TilePivot, bool> tileChoices = _game.Round.CanCallChii();
 
@@ -129,7 +128,7 @@ namespace Gnoj_HamView
 
         private void BtnKan_Click(object sender, RoutedEventArgs e)
         {
-            if (IsCurrentlyClickable(e))
+            if (IsCurrentlyClickable())
             {
                 List<TilePivot> kanTiles = _game.Round.CanCallKan(GamePivot.HUMAN_INDEX);
                 if (kanTiles.Count > 0)
@@ -149,7 +148,7 @@ namespace Gnoj_HamView
 
         private void BtnRiichiChoice_Click(object sender, RoutedEventArgs e)
         {
-            if (IsCurrentlyClickable(e))
+            if (IsCurrentlyClickable())
             {
                 _waitForDecision = false;
                 CallRiichi((sender as Button).Tag as TilePivot);
@@ -181,7 +180,7 @@ namespace Gnoj_HamView
 
         private void BtnRon_Click(object sender, RoutedEventArgs e)
         {
-            if (IsCurrentlyClickable(e))
+            if (IsCurrentlyClickable())
             {
                 _overlayStoryboard.Completed += TriggerHumanRonAfterOverlayStoryboard;
                 InvokeOverlay("Ron", GamePivot.HUMAN_INDEX);
@@ -190,7 +189,7 @@ namespace Gnoj_HamView
 
         private void BtnTsumo_Click(object sender, RoutedEventArgs e)
         {
-            if (IsCurrentlyClickable(e))
+            if (IsCurrentlyClickable())
             {
                 _overlayStoryboard.Completed += TriggerNewRoundAfterOverlayStoryboard;
                 InvokeOverlay("Tsumo", GamePivot.HUMAN_INDEX);
@@ -199,7 +198,7 @@ namespace Gnoj_HamView
 
         private void BtnRiichi_Click(object sender, RoutedEventArgs e)
         {
-            if (IsCurrentlyClickable(e))
+            if (IsCurrentlyClickable())
             {
                 _overlayStoryboard.Completed += TriggerRiichiChoiceAfterOverlayStoryboard;
                 InvokeOverlay("Riichi", GamePivot.HUMAN_INDEX);
@@ -253,6 +252,12 @@ namespace Gnoj_HamView
         private void ChkSounds_Click(object sender, RoutedEventArgs e)
         {
             Properties.Settings.Default.PlaySounds = ChkSounds.IsChecked == true;
+            Properties.Settings.Default.Save();
+        }
+
+        private void ChkDiscardTip_Click(object sender, RoutedEventArgs e)
+        {
+            Properties.Settings.Default.DiscardTip = ChkDiscardTip.IsChecked == true;
             Properties.Settings.Default.Save();
         }
 
@@ -329,7 +334,7 @@ namespace Gnoj_HamView
 
                     if (kanInProgress != null)
                     {
-                        CommonCallKan(kanInProgress.Item3, kanInProgress.Item2);
+                        CommonCallKan(kanInProgress.Item3);
                     }
 
                     if (!skipCurrentAction && !_game.CpuVs && _game.Round.CanCallPonOrKan(GamePivot.HUMAN_INDEX, out var isSelfKan))
@@ -345,7 +350,7 @@ namespace Gnoj_HamView
                     if (opponentWithKanTilePick != null)
                     {
                         int previousPlayerIndex = _game.Round.PreviousPlayerIndex;
-                        TilePivot compensationTile = OpponentBeginCallKan(opponentWithKanTilePick.Item1, opponentWithKanTilePick.Item2, false, false);
+                        TilePivot compensationTile = OpponentBeginCallKan(opponentWithKanTilePick.Item1, opponentWithKanTilePick.Item2, false);
                         kanInProgress = new Tuple<int, TilePivot, int?>(opponentWithKanTilePick.Item1, compensationTile, previousPlayerIndex);
                         continue;
                     }
@@ -696,7 +701,7 @@ namespace Gnoj_HamView
         }
 
         // Proceeds to call a kan for an opponent.
-        private TilePivot OpponentBeginCallKan(int playerId, TilePivot kanTilePick, bool concealedKan, bool fromPreviousKan)
+        private TilePivot OpponentBeginCallKan(int playerId, TilePivot kanTilePick, bool concealedKan)
         {
             TilePivot compensationTile = _game.Round.CallKan(playerId, concealedKan ? kanTilePick : null);
             if (compensationTile != null)
@@ -726,7 +731,7 @@ namespace Gnoj_HamView
             Tuple<int, TilePivot> opponentWithKanTilePick = _game.Round.IaManager.KanDecision(true);
             if (opponentWithKanTilePick != null)
             {
-                TilePivot compensationTile = OpponentBeginCallKan(_game.Round.CurrentPlayerIndex, opponentWithKanTilePick.Item2, true, kanInProgress != null);
+                TilePivot compensationTile = OpponentBeginCallKan(_game.Round.CurrentPlayerIndex, opponentWithKanTilePick.Item2, true);
                 kanInProgress = new Tuple<int, TilePivot, int?>(_game.Round.CurrentPlayerIndex, compensationTile, null);
                 return false;
             }
@@ -747,7 +752,7 @@ namespace Gnoj_HamView
         // Inner process kan call.
         private void HumanKanCallProcess(TilePivot tile, int? previousPlayerIndex)
         {
-            TilePivot compensationTile = _game.Round.CallKan(GamePivot.HUMAN_INDEX, tile);
+            _game.Round.CallKan(GamePivot.HUMAN_INDEX, tile);
             InvokeOverlay("Kan", GamePivot.HUMAN_INDEX);
             if (CheckOpponensRonCall(false))
             {
@@ -756,7 +761,7 @@ namespace Gnoj_HamView
             }
             else
             {
-                CommonCallKan(previousPlayerIndex, compensationTile);
+                CommonCallKan(previousPlayerIndex);
 
                 if (_game.Round.CanCallTsumo(true))
                 {
@@ -797,7 +802,7 @@ namespace Gnoj_HamView
         #region Graphic tools
 
         // Common trunk of the kan call process.
-        private void CommonCallKan(int? previousPlayerIndex, TilePivot compensationTile)
+        private void CommonCallKan(int? previousPlayerIndex)
         {
             Dispatcher.Invoke(() =>
             {
@@ -1134,7 +1139,7 @@ namespace Gnoj_HamView
         }
 
         // Checks if the button clicked was ready.
-        private bool IsCurrentlyClickable(RoutedEventArgs e)
+        private bool IsCurrentlyClickable()
         {
             bool isCurrentlyClickable = !_autoPlay.IsBusy;
 
@@ -1236,6 +1241,11 @@ namespace Gnoj_HamView
 
         private void SuggestDiscard()
         {
+            if (!Properties.Settings.Default.DiscardTip)
+            {
+                return;
+            }
+
             if (_game.Round.IsHumanPlayer && _game.Round.GetHand(GamePivot.HUMAN_INDEX).IsFullHand)
             {
                 try

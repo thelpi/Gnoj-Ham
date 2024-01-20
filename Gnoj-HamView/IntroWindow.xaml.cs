@@ -17,10 +17,6 @@ namespace Gnoj_HamView
         {
             InitializeComponent();
 
-#if DEBUG
-            GrbDebugOptions.Visibility = Visibility.Visible;
-#endif
-
             LoadConfiguration();
 
             CbbEndOfGameRule.ItemsSource = GraphicTools.GetEndOfGameRuleDisplayValue();
@@ -43,8 +39,7 @@ namespace Gnoj_HamView
                 (EndOfGameRulePivot)CbbEndOfGameRule.SelectedIndex,
                 PlayerSavePivot.GetOrCreateSave(),
                 ChkUseRedDoras.IsChecked == true,
-                ChkUseNagashiMangan.IsChecked == true,
-                ChkUseRenhou.IsChecked == true
+                ChkUseNagashiMangan.IsChecked == true
             ).ShowDialog();
 
             // The configuration might be updated in-game.
@@ -69,7 +64,6 @@ namespace Gnoj_HamView
             CbbEndOfGameRule.SelectedIndex = Settings.Default.EndOfGameRule;
             ChkUseRedDoras.IsChecked = Settings.Default.DefaultUseRedDoras;
             ChkUseNagashiMangan.IsChecked = Settings.Default.UseNagashiMangan;
-            ChkUseRenhou.IsChecked = Settings.Default.UseRenhou;
 
             // Options
             TxtPlayerName.Text = Settings.Default.DefaultPlayerName;
@@ -78,11 +72,10 @@ namespace Gnoj_HamView
             ChkSounds.IsChecked = Settings.Default.PlaySounds;
             ChkAutoTsumoRon.IsChecked = Settings.Default.AutoCallMahjong;
             ChkAutoRiichiDiscard.IsChecked = Settings.Default.AutoDiscardAfterRiichi;
+            ChkDiscardTip.IsChecked = Settings.Default.DiscardTip;
 
             // Debug
-#if DEBUG
             ChkDebugMode.IsChecked = Settings.Default.DebugMode;
-#endif
         }
 
         private void SaveConfiguration()
@@ -92,7 +85,6 @@ namespace Gnoj_HamView
             Settings.Default.EndOfGameRule = CbbEndOfGameRule.SelectedIndex;
             Settings.Default.DefaultUseRedDoras = ChkUseRedDoras.IsChecked == true;
             Settings.Default.UseNagashiMangan = ChkUseNagashiMangan.IsChecked == true;
-            Settings.Default.UseRenhou = ChkUseRenhou.IsChecked == true;
 
             // Options
             Settings.Default.DefaultPlayerName = TxtPlayerName.Text;
@@ -101,6 +93,7 @@ namespace Gnoj_HamView
             Settings.Default.PlaySounds = ChkSounds.IsChecked == true;
             Settings.Default.AutoCallMahjong = ChkAutoTsumoRon.IsChecked == true;
             Settings.Default.AutoDiscardAfterRiichi = ChkAutoRiichiDiscard.IsChecked == true;
+            Settings.Default.DiscardTip = ChkDiscardTip.IsChecked == true;
 
             // Debug
 #if DEBUG

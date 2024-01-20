@@ -92,12 +92,14 @@
                         <Label Grid.Row="1" Grid.Column="0" HorizontalContentAlignment="Right" VerticalContentAlignment="Center" Content="Decision chrono" />
                         <Label Grid.Row="0" Grid.Column="2" HorizontalContentAlignment="Right" VerticalContentAlignment="Center" Content="Riichi auto-discard" />
                         <Label Grid.Row="1" Grid.Column="2" HorizontalContentAlignment="Right" VerticalContentAlignment="Center" Content="Auto tsumo/ron" />
-                        <Label Grid.Row="0" Grid.Column="4" HorizontalContentAlignment="Right" VerticalContentAlignment="Center" VerticalAlignment="Center" Grid.RowSpan="2" Content="Sounds" />
+                        <Label Grid.Row="0" Grid.Column="4" HorizontalContentAlignment="Right" VerticalContentAlignment="Center" Content="Sounds" />
+                        <Label Grid.Row="1" Grid.Column="4" HorizontalContentAlignment="Right" VerticalContentAlignment="Center" Content="Discard tip" />
                         <ComboBox Grid.Row="0" Grid.Column="1" VerticalContentAlignment="Center" Height="23" Name="CbbCpuSpeed" SelectionChanged="CbbCpuSpeed_SelectionChanged" />
                         <ComboBox Grid.Row="1" Grid.Column="1" VerticalContentAlignment="Center" Height="23" Name="CbbChrono" SelectionChanged="CbbChrono_SelectionChanged" />
                         <CheckBox Grid.Row="0" Grid.Column="3" VerticalContentAlignment="Center" VerticalAlignment="Center" Name="ChkRiichiAutoDiscard" Click="ChkRiichiAutoDiscard_Click" />
                         <CheckBox Grid.Row="1" Grid.Column="3" VerticalContentAlignment="Center" VerticalAlignment="Center" Name="ChkAutoTsumoRon" Click="ChkAutoTsumoRon_Click" />
-                        <CheckBox Grid.Row="0" Grid.Column="5" VerticalContentAlignment="Center" VerticalAlignment="Center" Grid.RowSpan="2" Name="ChkSounds" Click="ChkSounds_Click" />
+                        <CheckBox Grid.Row="0" Grid.Column="5" VerticalContentAlignment="Center" VerticalAlignment="Center" Name="ChkSounds" Click="ChkSounds_Click" />
+                        <CheckBox Grid.Row="1" Grid.Column="5" VerticalContentAlignment="Center" VerticalAlignment="Center" Name="ChkDiscardTip" Click="ChkDiscardTip_Click" />
                         <Button Grid.Row="0" Grid.Column="6" Grid.RowSpan="2" Height="32" Width="32" Name="BtnNewGame" Click="BtnNewGame_Click" ToolTip="Back to home / configure a new game">
                             <Button.Content>
                                 <Image Source="Resources/gohome.png" />

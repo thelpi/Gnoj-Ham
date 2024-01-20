@@ -106,8 +106,7 @@ namespace Gnoj_Ham
                         new YakuPivot(SUUKANTSU, "Four kans", 13, "Four declared squares (concealed or not)."),
                         new YakuPivot(TENHOU, "Heavenly hand", 0, "14th first tiles form a valid hand for east player.", 13),
                         new YakuPivot(CHIIHOU, "Earthly hand", 0, "14th first tiles form a valid hand for south/west/north player.", 13),
-                        // Depending on rules, might not be a yakuman.
-                        new YakuPivot(RENHOU, "Hand of man", 0, "Ron on first turn, no other call made.", 13),
+                        new YakuPivot(RENHOU, "Hand of man", 5, "Ron on first turn, no other call made."),
                         // Depending on rules, might be ignored.
                         new YakuPivot(NAGASHI_MANGAN, "Discard mangan", 0, "Round ending in Ryuukyoku: the discard of the player contains only terminals and honors. No call has been made by the player, nor by opponents on player's discards.", 5),
                         new YakuPivot(CHINIISOU, "Flush", 5, "One family only.", 1),

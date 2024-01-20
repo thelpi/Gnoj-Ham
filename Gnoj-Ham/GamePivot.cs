@@ -69,10 +69,6 @@ namespace Gnoj_Ham
         /// </summary>
         public bool UseNagashiMangan { get; private set; }
         /// <summary>
-        /// Indicates if the yakuman <see cref="YakuPivot.Renhou"/> is used or not.
-        /// </summary>
-        public bool UseRenhou { get; private set; }
-        /// <summary>
         /// The rule to check end of the game.
         /// </summary>
         public EndOfGameRulePivot EndOfGameRule { get; private set; }
@@ -117,14 +113,12 @@ namespace Gnoj_Ham
         /// <param name="save">Player save stats.</param>
         /// <param name="withRedDoras">Optionnal; the <see cref="WithRedDoras"/> value; default value is <c>False</c>.</param>
         /// <param name="useNagashiMangan">Optionnal; the <see cref="UseNagashiMangan"/> value; default value is <c>False</c>.</param>
-        /// <param name="useRenhou">Optionnal; the <see cref="UseRenhou"/> value; default value is <c>False</c>.</param>
         public GamePivot(string humanPlayerName,
             InitialPointsRulePivot initialPointsRule,
             EndOfGameRulePivot endOfGameRule,
             PlayerSavePivot save,
             bool withRedDoras = false,
-            bool useNagashiMangan = false,
-            bool useRenhou = false)
+            bool useNagashiMangan = false)
         {
             _save = save;
 
@@ -137,7 +131,6 @@ namespace Gnoj_Ham
             EastRank = 1;
             WithRedDoras = withRedDoras;
             UseNagashiMangan = useNagashiMangan;
-            UseRenhou = useRenhou;
 
             Round = new RoundPivot(this, EastIndex);
         }
@@ -152,13 +145,11 @@ namespace Gnoj_Ham
         /// <param name="humanPlayerName"></param>
         /// <param name="withRedDoras">The new <see cref="WithRedDoras"/> value.</param>
         /// <param name="useNagashiMangan">The new <see cref="UseNagashiMangan"/> value.</param>
-        /// <param name="useRenhou">The new <see cref="UseRenhou"/> value.</param>
-        public void UpdateConfiguration(string humanPlayerName, bool withRedDoras, bool useNagashiMangan, bool useRenhou)
+        public void UpdateConfiguration(string humanPlayerName, bool withRedDoras, bool useNagashiMangan)
         {
             PlayerPivot.UpdateHumanPlayerName(this, humanPlayerName);
             WithRedDoras = withRedDoras;
             UseNagashiMangan = useNagashiMangan;
-            UseRenhou = useRenhou;
         }
 
         /// <summary>

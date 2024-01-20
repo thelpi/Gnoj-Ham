@@ -5,9 +5,14 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d"
         WindowStartupLocation="CenterScreen"
-        SizeToContent="WidthAndHeight"
         Background="Gainsboro"
+        Width="345"
+        Height="322"
         Title="New game">
+    <!-- Fixed Width and Height:
+    Width should adjust the left of button Start with checkbox above.
+    Height should display the bottom line of first TabItem
+    -->
     <DockPanel Margin="5">
         <StackPanel DockPanel.Dock="Bottom" Margin="0, 10, 0, 0" Orientation="Horizontal" HorizontalAlignment="Right">
             <TextBlock VerticalAlignment="Center" Margin="0, 0, 10, 0">
@@ -17,81 +22,84 @@
             <Button Width="75" Height="25" Content="Quit" Name="BtnQuit" Click="BtnQuit_Click" Margin="10, 0, 0, 0" />
         </StackPanel>
         <StackPanel Orientation="Vertical" DockPanel.Dock="Top">
-            <GroupBox Padding="5"  Header="Options" Margin="0, 10, 0, 0">
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="150" />
-                        <ColumnDefinition Width="150" />
-                    </Grid.ColumnDefinitions>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="30" />
-                        <RowDefinition Height="30" />
-                        <RowDefinition Height="30" />
-                        <RowDefinition Height="30" />
-                        <RowDefinition Height="30" />
-                        <RowDefinition Height="30" />
-                    </Grid.RowDefinitions>
-                    <Label Grid.Column="0" Grid.Row="0" HorizontalContentAlignment="Right" VerticalContentAlignment="Center" Content="Player name" />
-                    <Label Grid.Column="0" Grid.Row="1" HorizontalContentAlignment="Right" VerticalContentAlignment="Center" Content="Chrono" />
-                    <Label Grid.Column="0" Grid.Row="2" HorizontalContentAlignment="Right" VerticalContentAlignment="Center" Content="CPU speed" />
-                    <Label Grid.Column="0" Grid.Row="3" HorizontalContentAlignment="Right" VerticalContentAlignment="Center" Content="Sounds" />
-                    <Label Grid.Column="0" Grid.Row="4" HorizontalContentAlignment="Right" VerticalContentAlignment="Center" Content="Auto-ron/tsumo" />
-                    <Label Grid.Column="0" Grid.Row="5" HorizontalContentAlignment="Right" VerticalContentAlignment="Center" Content="Auto riichi discard" />
-                    <TextBox Margin="5, 0, 0, 0" Grid.Column="1" Grid.Row="0" Name="TxtPlayerName" Height="25" VerticalContentAlignment="Center" />
-                    <ComboBox Margin="5, 0, 0, 0" Grid.Column="1" Grid.Row="1" Name="CbbChronoSpeed" Height="25" VerticalContentAlignment="Center" />
-                    <ComboBox Margin="5, 0, 0, 0" Grid.Column="1" Grid.Row="2" Name="CbbCpuSpeed" Height="25" VerticalContentAlignment="Center" />
-                    <CheckBox Margin="5, 0, 0, 0" Grid.Column="1" Grid.Row="3" Name="ChkSounds" VerticalAlignment="Center" />
-                    <CheckBox Margin="5, 0, 0, 0" Grid.Column="1" Grid.Row="4" Name="ChkAutoTsumoRon" VerticalAlignment="Center" />
-                    <CheckBox Margin="5, 0, 0, 0" Grid.Column="1" Grid.Row="5" Name="ChkAutoRiichiDiscard" VerticalAlignment="Center" />
-                </Grid>
-            </GroupBox>
-            <Expander IsExpanded="False" Padding="5"  Header="Rules" Margin="0, 10, 0, 0">
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="150" />
-                        <ColumnDefinition Width="150" />
-                    </Grid.ColumnDefinitions>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="30" />
-                        <RowDefinition Height="30" />
-                        <RowDefinition Height="30" />
-                        <RowDefinition Height="30" />
-                        <RowDefinition Height="30" />
-                    </Grid.RowDefinitions>
-                    <Label Grid.Column="0" Grid.Row="0" HorizontalContentAlignment="Right" VerticalContentAlignment="Center" Content="Use red doras" />
-                    <Label Grid.Column="0" Grid.Row="1" HorizontalContentAlignment="Right" VerticalContentAlignment="Center" Content="Initial points count" />
-                    <Label Grid.Column="0" Grid.Row="2" HorizontalContentAlignment="Right" VerticalContentAlignment="Center" Content="Use nagashi mangan" />
-                    <Label Grid.Column="0" Grid.Row="3" HorizontalContentAlignment="Right" VerticalContentAlignment="Center" Content="Use renhou" />
-                    <Label Grid.Column="0" Grid.Row="4" HorizontalContentAlignment="Right" VerticalContentAlignment="Center" Content="End of game rule" />
-                    <CheckBox Margin="5, 0, 0, 0" Grid.Column="1" Grid.Row="0" Name="ChkUseRedDoras" VerticalAlignment="Center" />
-                    <ComboBox Margin="5, 0, 0, 0" Grid.Column="1" Grid.Row="1" Name="CbbPointsRule" Height="25" VerticalContentAlignment="Center" />
-                    <CheckBox Margin="5, 0, 0, 0" Grid.Column="1" Grid.Row="2" Name="ChkUseNagashiMangan" VerticalAlignment="Center" />
-                    <CheckBox Margin="5, 0, 0, 0" Grid.Column="1" Grid.Row="3" Name="ChkUseRenhou" VerticalAlignment="Center" />
-                    <ComboBox Margin="5, 0, 0, 0" Grid.Column="1" Grid.Row="4" Name="CbbEndOfGameRule" Height="25" VerticalContentAlignment="Center">
-                        <ComboBox.ToolTip>
-                            <TextBlock>
-                                - Oorasu: the game ends after south 4; no bankruptcy.<LineBreak/>
-                                - Tobi: the game ends if bankruptcy, in addition to Oorasu.<LineBreak/>
-                                - Enchousen: the game continues if every players are under 30k when Oorasu occurs; must be a 25k game.
-                            </TextBlock>
-                        </ComboBox.ToolTip>
-                    </ComboBox>
-                </Grid>
-            </Expander>
-            <GroupBox Padding="5" Header="Debug" Margin="0, 10, 0, 0" Name="GrbDebugOptions" Visibility="Collapsed">
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="44.4" />
-                        <ColumnDefinition Width="105.6"/>
-                        <ColumnDefinition Width="150" />
-                    </Grid.ColumnDefinitions>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="30" />
-                    </Grid.RowDefinitions>
-                    <Label Grid.Column="0" Grid.Row="0" HorizontalContentAlignment="Right" VerticalContentAlignment="Center" Content="Debug mode" Grid.ColumnSpan="2" />
-                    <CheckBox Margin="5,9,0,9" Grid.Column="2" Grid.Row="0" Name="ChkDebugMode" VerticalAlignment="Center" />
-                </Grid>
-            </GroupBox>
+            <TabControl>
+                <TabItem Header="Options">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="150" />
+                            <ColumnDefinition Width="150" />
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="30" />
+                            <RowDefinition Height="30" />
+                            <RowDefinition Height="30" />
+                            <RowDefinition Height="30" />
+                            <RowDefinition Height="30" />
+                            <RowDefinition Height="30" />
+                            <RowDefinition Height="30" />
+                        </Grid.RowDefinitions>
+                        <Label Grid.Column="0" Grid.Row="0" HorizontalContentAlignment="Right" VerticalContentAlignment="Center" Content="Player name" />
+                        <Label Grid.Column="0" Grid.Row="1" HorizontalContentAlignment="Right" VerticalContentAlignment="Center" Content="Chrono" />
+                        <Label Grid.Column="0" Grid.Row="2" HorizontalContentAlignment="Right" VerticalContentAlignment="Center" Content="CPU speed" />
+                        <Label Grid.Column="0" Grid.Row="3" HorizontalContentAlignment="Right" VerticalContentAlignment="Center" Content="Sounds" />
+                        <Label Grid.Column="0" Grid.Row="4" HorizontalContentAlignment="Right" VerticalContentAlignment="Center" Content="Auto-ron/tsumo" />
+                        <Label Grid.Column="0" Grid.Row="5" HorizontalContentAlignment="Right" VerticalContentAlignment="Center" Content="Auto riichi discard" />
+                        <Label Grid.Column="0" Grid.Row="6" HorizontalContentAlignment="Right" VerticalContentAlignment="Center" Content="Discard tip" />
+                        <TextBox Margin="5, 0, 0, 0" Grid.Column="1" Grid.Row="0" Name="TxtPlayerName" Height="25" VerticalContentAlignment="Center" />
+                        <ComboBox Margin="5, 0, 0, 0" Grid.Column="1" Grid.Row="1" Name="CbbChronoSpeed" Height="25" VerticalContentAlignment="Center" />
+                        <ComboBox Margin="5, 0, 0, 0" Grid.Column="1" Grid.Row="2" Name="CbbCpuSpeed" Height="25" VerticalContentAlignment="Center" />
+                        <CheckBox Margin="5, 0, 0, 0" Grid.Column="1" Grid.Row="3" Name="ChkSounds" VerticalAlignment="Center" />
+                        <CheckBox Margin="5, 0, 0, 0" Grid.Column="1" Grid.Row="4" Name="ChkAutoTsumoRon" VerticalAlignment="Center" />
+                        <CheckBox Margin="5, 0, 0, 0" Grid.Column="1" Grid.Row="5" Name="ChkAutoRiichiDiscard" VerticalAlignment="Center" />
+                        <CheckBox Margin="5, 0, 0, 0" Grid.Column="1" Grid.Row="6" Name="ChkDiscardTip" VerticalAlignment="Center" />
+                    </Grid>
+                </TabItem>
+                <TabItem Header="Rules">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="43.204" />
+                            <ColumnDefinition Width="106.796"/>
+                            <ColumnDefinition Width="150" />
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="30" />
+                            <RowDefinition Height="30" />
+                            <RowDefinition Height="30" />
+                            <RowDefinition Height="30" />
+                        </Grid.RowDefinitions>
+                        <Label Grid.Column="0" Grid.Row="0" HorizontalContentAlignment="Right" VerticalContentAlignment="Center" Content="Use red doras" Grid.ColumnSpan="2" />
+                        <Label Grid.Column="0" Grid.Row="1" HorizontalContentAlignment="Right" VerticalContentAlignment="Center" Content="Initial points count" Grid.ColumnSpan="2" />
+                        <Label Grid.Column="0" Grid.Row="2" HorizontalContentAlignment="Right" VerticalContentAlignment="Center" Content="Use nagashi mangan" Grid.ColumnSpan="2" />
+                        <Label Grid.Column="0" Grid.Row="3" HorizontalContentAlignment="Right" VerticalContentAlignment="Center" Content="End of game rule" Grid.ColumnSpan="2" />
+                        <CheckBox Margin="5,0,0,0" Grid.Column="2" Name="ChkUseRedDoras" VerticalAlignment="Center" />
+                        <ComboBox Margin="5,2,0,2" Grid.Column="2" Grid.Row="1" Name="CbbPointsRule" Height="25" VerticalContentAlignment="Center" />
+                        <CheckBox Margin="5,0,0,0" Grid.Column="2" Grid.Row="2" Name="ChkUseNagashiMangan" VerticalAlignment="Center" />
+                        <ComboBox Margin="5,2,0,2" Grid.Column="2" Grid.Row="3" Name="CbbEndOfGameRule" Height="25" VerticalContentAlignment="Center">
+                            <ComboBox.ToolTip>
+                                <TextBlock>
+                - Oorasu: the game ends after south 4; no bankruptcy.<LineBreak/>
+                - Tobi: the game ends if bankruptcy, in addition to Oorasu.<LineBreak/>
+                - Enchousen: the game continues if every players are under 30k when Oorasu occurs; must be a 25k game.
+                                </TextBlock>
+                            </ComboBox.ToolTip>
+                        </ComboBox>
+                    </Grid>
+                </TabItem>
+                <TabItem Header="Development">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="44.4" />
+                            <ColumnDefinition Width="105.6"/>
+                            <ColumnDefinition Width="150" />
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="30" />
+                        </Grid.RowDefinitions>
+                        <Label Grid.Column="0" Grid.Row="0" HorizontalContentAlignment="Right" VerticalContentAlignment="Center" Content="Debug mode" Grid.ColumnSpan="2" />
+                        <CheckBox Margin="5,9,0,9" Grid.Column="2" Grid.Row="0" Name="ChkDebugMode" VerticalAlignment="Center" />
+                    </Grid>
+                </TabItem>
+            </TabControl>
         </StackPanel>
     </DockPanel>
 </Window>
