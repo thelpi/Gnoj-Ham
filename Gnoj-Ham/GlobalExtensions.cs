@@ -151,7 +151,7 @@ namespace Gnoj_Ham
 
             if (nIndex > 0 && newIndex > 3)
             {
-                newIndex = newIndex % 4;
+                newIndex %= 4;
             }
             else if (nIndex < 0 && newIndex < 0)
             {

@@ -157,7 +157,7 @@ namespace Gnoj_HamView
 
         private void Grid_MouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
-            if (_autoPlay.IsBusy || _waitForDecision || ExpConfiguration.IsMouseOver)
+            if (_autoPlay.IsBusy || _waitForDecision)
             {
                 return;
             }
@@ -208,18 +208,6 @@ namespace Gnoj_HamView
         private void BtnSkipCall_Click(object sender, RoutedEventArgs e)
         {
             Grid_MouseDoubleClick(null, null);
-        }
-
-        private void ExpConfiguration_Expanded(object sender, RoutedEventArgs e)
-        {
-            ExpConfiguration.Opacity = 0.8;
-            ExpConfiguration.HorizontalAlignment = HorizontalAlignment.Stretch;
-        }
-
-        private void ExpConfiguration_Collapsed(object sender, RoutedEventArgs e)
-        {
-            ExpConfiguration.Opacity = 0.5;
-            ExpConfiguration.HorizontalAlignment = HorizontalAlignment.Right;
         }
 
         private void BtnNewGame_Click(object sender, RoutedEventArgs e)
