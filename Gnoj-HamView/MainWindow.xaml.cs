@@ -7,6 +7,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Input;
+using System.Windows.Media;
 using System.Windows.Media.Animation;
 using Gnoj_Ham;
 
@@ -39,7 +40,7 @@ namespace Gnoj_HamView
         {
             InitializeComponent();
 
-            LblHumanPlayer.Content = playerName;
+            LblPlayerP0.Content = playerName;
 
             _game = new GamePivot(playerName, ruleset, save);
             _tickSound = new System.Media.SoundPlayer(Properties.Resources.tick);
@@ -492,6 +493,7 @@ namespace Gnoj_HamView
             }
             else if (Properties.Settings.Default.AutoDiscardAfterRiichi && _game.Round.HumanCanAutoDiscard())
             {
+                // Not a real CPU sleep: the auto-discard by human player is considered as such
                 Thread.Sleep(((CpuSpeedPivot)Properties.Settings.Default.CpuSpeed).ParseSpeed());
                 return new PanelButton("StpPickP", 0);
             }
@@ -565,13 +567,13 @@ namespace Gnoj_HamView
         // Discard action (human or CPU).
         private void Discard(TilePivot tile)
         {
+            if (!_game.Round.IsHumanPlayer)
+            {
+                Thread.Sleep(((CpuSpeedPivot)Properties.Settings.Default.CpuSpeed).ParseSpeed());
+            }
+
             if (_game.Round.Discard(tile))
             {
-                if (!_game.Round.PreviousIsHumanPlayer)
-                {
-                    Thread.Sleep(((CpuSpeedPivot)Properties.Settings.Default.CpuSpeed).ParseSpeed());
-                }
-
                 Dispatcher.Invoke(() =>
                 {
                     FillHandPanel(_game.Round.PreviousPlayerIndex);
@@ -592,10 +594,6 @@ namespace Gnoj_HamView
             if (_game.Round.CallChii(chiiTilePick.Item2 ? chiiTilePick.Item1.Number - 1 : chiiTilePick.Item1.Number))
             {
                 InvokeOverlay("Chii", _game.Round.CurrentPlayerIndex);
-                if (!_game.Round.IsHumanPlayer)
-                {
-                    Thread.Sleep(((CpuSpeedPivot)Properties.Settings.Default.CpuSpeed).ParseSpeed());
-                }
 
                 Dispatcher.Invoke(() =>
                 {
@@ -606,10 +604,6 @@ namespace Gnoj_HamView
                     if (_game.Round.IsHumanPlayer)
                     {
                         ActivateTimer(GetFirstAvailableDiscardButton());
-                    }
-                    else
-                    {
-                        SetPlayersLed();
                     }
                 });
 
@@ -630,17 +624,9 @@ namespace Gnoj_HamView
             if (_game.Round.CallPon(playerIndex))
             {
                 InvokeOverlay("Pon", playerIndex);
-                if (isCpu)
-                {
-                    Thread.Sleep(((CpuSpeedPivot)Properties.Settings.Default.CpuSpeed).ParseSpeed());
-                }
 
                 Dispatcher.Invoke(() =>
                 {
-                    if (isCpu)
-                    {
-                        SetPlayersLed();
-                    }
                     FillHandPanel(playerIndex);
                     FillCombinationStack(playerIndex);
                     FillDiscardPanel(previousPlayerIndex);
@@ -664,7 +650,6 @@ namespace Gnoj_HamView
             TilePivot pick = _game.Round.Pick();
             Dispatcher.Invoke(() =>
             {
-                SetPlayersLed();
                 if (_game.Round.IsHumanPlayer)
                 {
                     SetActionButtonsVisibility(preDiscard: true);
@@ -675,14 +660,14 @@ namespace Gnoj_HamView
         // Riichi call action (human or CPU).
         private void CallRiichi(TilePivot tile)
         {
+            if (!_game.Round.IsHumanPlayer)
+            {
+                InvokeOverlay("Riichi", _game.Round.CurrentPlayerIndex);
+                Thread.Sleep(((CpuSpeedPivot)Properties.Settings.Default.CpuSpeed).ParseSpeed());
+            }
+
             if (_game.Round.CallRiichi(tile))
             {
-                if (!_game.Round.PreviousIsHumanPlayer)
-                {
-                    InvokeOverlay("Riichi", _game.Round.PreviousPlayerIndex);
-                    Thread.Sleep(((CpuSpeedPivot)Properties.Settings.Default.CpuSpeed).ParseSpeed());
-                }
-
                 Dispatcher.Invoke(() =>
                 {
                     FillHandPanel(_game.Round.PreviousPlayerIndex);
@@ -704,14 +689,6 @@ namespace Gnoj_HamView
             if (compensationTile != null)
             {
                 InvokeOverlay("Kan", playerId);
-                Thread.Sleep(((CpuSpeedPivot)Properties.Settings.Default.CpuSpeed).ParseSpeed());
-                Dispatcher.Invoke(() =>
-                {
-                    if (!concealedKan)
-                    {
-                        SetPlayersLed();
-                    }
-                });
             }
             return compensationTile;
         }
@@ -847,10 +824,6 @@ namespace Gnoj_HamView
                 GrdOverlayCall.Visibility = Visibility.Visible;
                 _overlayStoryboard.Begin();
             });
-            if (_game.CpuVs || playerIndex != GamePivot.HUMAN_INDEX)
-            {
-                Thread.Sleep(((CpuSpeedPivot)Properties.Settings.Default.CpuSpeed).ParseSpeed());
-            }
         }
 
         // Fix dimensions of the window and every panels (when it's required).
@@ -933,7 +906,8 @@ namespace Gnoj_HamView
         // Resets and refills every panels at a new round.
         private void NewRoundRefresh()
         {
-            LblWallTilesLeft.Foreground = System.Windows.Media.Brushes.Black;
+            LblWallTilesLeft.Foreground = Brushes.Black;
+            _game.Round.NotifyPlayerIndex += OnNotifyPlayerIndex;
             _game.Round.NotifyWallCount += OnNotifyWallCount;
             _game.Round.NotifyPick += delegate (TileEventArgs e)
             {
@@ -949,7 +923,10 @@ namespace Gnoj_HamView
                     });
                 }
             };
+
+            // thse events are forced because the subscription is made too late relative to first triggered event
             OnNotifyWallCount(null, null);
+            OnNotifyPlayerIndex(null, null);
 
             StpDoras.SetDorasPanel(_game.Round.DoraIndicatorTiles, _game.Round.VisibleDorasCount);
             LblDominantWind.Content = _game.DominantWind.ToWindDisplay();
@@ -959,22 +936,26 @@ namespace Gnoj_HamView
                 this.FindPanel("StpCombosP", pIndex).Children.Clear();
                 FillHandPanel(pIndex);
                 FillDiscardPanel(pIndex);
-                this.FindControl("LblWindP", pIndex).Content = _game.GetPlayerCurrentWind(pIndex).ToString();
+                this.FindName<Panel>("StpPlayerP", pIndex).ToolTip = _game.GetPlayerCurrentWind(pIndex).ToString();
+                this.FindControl("LblWindP", pIndex).Content = _game.GetPlayerCurrentWind(pIndex).ToWindDisplay();
                 this.FindControl("LblNameP", pIndex).Content = _game.Players.ElementAt(pIndex).Name;
                 this.FindControl("LblPointsP", pIndex).Content = $"{_game.Players.ElementAt(pIndex).Points / 1000}k";
             }
-            SetPlayersLed();
+
             SetActionButtonsVisibility(preDiscard: true);
         }
 
-        // Resets the LED associated to each player.
-        private void SetPlayersLed()
+        // Triggered when the current player is updated.
+        private void OnNotifyPlayerIndex(object sender, EventArgs e)
         {
-            for (int pIndex = 0; pIndex < _game.Players.Count; pIndex++)
+            Dispatcher.Invoke(() =>
             {
-                this.FindName<Image>("ImgLedP", pIndex).Source =
-                    (pIndex == _game.Round.CurrentPlayerIndex ? Properties.Resources.ledgreen : Properties.Resources.ledred).ToBitmapImage();
-            }
+                for (int pIndex = 0; pIndex < _game.Players.Count; pIndex++)
+                {
+                    this.FindName<Label>("LblPlayerP", pIndex).Foreground = pIndex == _game.Round.CurrentPlayerIndex ? Brushes.OrangeRed : Brushes.White;
+                    this.FindName<Label>("LblWindP", pIndex).Foreground = pIndex == _game.Round.CurrentPlayerIndex ? Brushes.OrangeRed : Brushes.White;
+                }
+            });
         }
 
         // Rebuilds the discard panel of the specified player.
