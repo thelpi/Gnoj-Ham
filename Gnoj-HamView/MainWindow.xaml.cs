@@ -29,6 +29,7 @@ namespace Gnoj_HamView
         private bool _waitForDecision;
         private List<TilePivot> _riichiTiles;
         private bool _hardStopAutoplay = false;
+        private readonly bool _debugMode = false;
 
         /// <summary>
         /// Constructor.
@@ -39,13 +40,17 @@ namespace Gnoj_HamView
         /// <param name="save">Player save file.</param>
         /// <param name="useRedDoras">Indicates if red doras should be used.</param>
         /// <param name="useNagashiMangan"><c>True</c> to use the yaku 'Nagashi Mangan'.</param>
-        public MainWindow(string playerName, InitialPointsRulePivot pointRule, EndOfGameRulePivot endOfGameRule, PlayerSavePivot save, bool useRedDoras, bool useNagashiMangan)
+        /// <param name="debugMode">Enable the debug mode.</param>
+        /// <param name="fourCpus">Enable four CPU players.</param>
+        public MainWindow(string playerName, InitialPointsRulePivot pointRule, EndOfGameRulePivot endOfGameRule, PlayerSavePivot save, bool useRedDoras, bool useNagashiMangan, bool debugMode, bool fourCpus)
         {
             InitializeComponent();
 
+            _debugMode = debugMode;
+
             LblHumanPlayer.Content = playerName;
 
-            _game = new GamePivot(playerName, pointRule, endOfGameRule, save, useRedDoras, useNagashiMangan);
+            _game = new GamePivot(playerName, pointRule, endOfGameRule, save, useRedDoras, useNagashiMangan, fourCpus);
             _tickSound = new System.Media.SoundPlayer(Properties.Resources.tick);
 
             _overlayStoryboard = FindResource("StbHideOverlay") as Storyboard;
@@ -417,9 +422,16 @@ namespace Gnoj_HamView
         // Proceeds to new round.
         private void NewRound(int? ronPlayerIndex)
         {
-            EndOfRoundInformationsPivot endOfRoundInfos = _game.NextRound(ronPlayerIndex);
-            new ScoreWindow(_game.Players.ToList(), endOfRoundInfos).ShowDialog();
-            if (endOfRoundInfos.EndOfGame)
+            var (endOfRoundInfo, error) = _game.NextRound(ronPlayerIndex);
+
+            if (!string.IsNullOrWhiteSpace(error))
+            {
+                MessageBox.Show($"Something went wrong during the save of player's stat file.\n\nError details:\n{error}", "Gnoj-Ham - warning");
+            }
+
+            new ScoreWindow(_game.Players.ToList(), endOfRoundInfo).ShowDialog();
+
+            if (endOfRoundInfo.EndOfGame)
             {
                 new EndOfGameWindow(_game).ShowDialog();
                 Close();
@@ -905,7 +917,7 @@ namespace Gnoj_HamView
                 if (pickTile == null || !ReferenceEquals(pickTile, tile))
                 {
                     panel.Children.Add(tile.GenerateTileButton(isHuman && !_game.Round.IsRiichi(pIndex) ?
-                        BtnDiscard_Click : (RoutedEventHandler)null, (AnglePivot)pIndex, !isHuman && !Properties.Settings.Default.DebugMode));
+                        BtnDiscard_Click : (RoutedEventHandler)null, (AnglePivot)pIndex, !isHuman && !_debugMode));
                 }
             }
 
@@ -915,7 +927,7 @@ namespace Gnoj_HamView
                     pickTile.GenerateTileButton(
                         _game.Round.IsHumanPlayer ? BtnDiscard_Click : (RoutedEventHandler)null,
                         (AnglePivot)pIndex,
-                        !_game.Round.IsHumanPlayer && !Properties.Settings.Default.DebugMode
+                        !_game.Round.IsHumanPlayer && !_debugMode
                     )
                 );
             }

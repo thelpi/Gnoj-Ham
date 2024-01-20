@@ -68,7 +68,7 @@ namespace Gnoj_Ham
         /// Gets or creates the player save file.
         /// </summary>
         /// <returns>Player save file.</returns>
-        public static PlayerSavePivot GetOrCreateSave()
+        public static (PlayerSavePivot save, string error) GetOrCreateSave()
         {
             var save = new PlayerSavePivot();
 
@@ -85,16 +85,13 @@ namespace Gnoj_Ham
             }
             catch (Exception ex)
             {
-                // TODO find something for release mode
-#if DEBUG
-                System.Diagnostics.Debug.WriteLine(ex.Message);
-#endif
+                return (save, ex.Message);
             }
 
-            return save;
+            return (save, null);
         }
 
-        private void SavePlayerFile()
+        private string SavePlayerFile()
         {
             try
             {
@@ -105,14 +102,13 @@ namespace Gnoj_Ham
             }
             catch (Exception ex)
             {
-                // TODO find something for release mode
-#if DEBUG
-                System.Diagnostics.Debug.WriteLine(ex.Message);
-#endif
+                return ex.Message;
             }
+
+            return null;
         }
 
-        internal void UpdateAndSave(EndOfRoundInformationsPivot endOfRoundInformations,
+        internal string UpdateAndSave(EndOfRoundInformationsPivot endOfRoundInformations,
             bool isRon, bool humanIsRiichi, bool humanIsConcealed, int scoreIndexPosition, int meScore)
         {
             var now = DateTime.Now;
@@ -156,7 +152,7 @@ namespace Gnoj_Ham
             }
 
             // save at each round (so rounds on given up games are kept)
-            SavePlayerFile();
+            return SavePlayerFile();
         }
     }
 }

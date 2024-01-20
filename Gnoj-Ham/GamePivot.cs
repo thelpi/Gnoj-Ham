@@ -113,18 +113,20 @@ namespace Gnoj_Ham
         /// <param name="save">Player save stats.</param>
         /// <param name="withRedDoras">Optionnal; the <see cref="WithRedDoras"/> value; default value is <c>False</c>.</param>
         /// <param name="useNagashiMangan">Optionnal; the <see cref="UseNagashiMangan"/> value; default value is <c>False</c>.</param>
+        /// <param name="fourCpus">Optionnal; enables a game with four CPU players.</param>
         public GamePivot(string humanPlayerName,
             InitialPointsRulePivot initialPointsRule,
             EndOfGameRulePivot endOfGameRule,
             PlayerSavePivot save,
             bool withRedDoras = false,
-            bool useNagashiMangan = false)
+            bool useNagashiMangan = false,
+            bool fourCpus = false)
         {
             _save = save;
 
             InitialPointsRule = initialPointsRule;
             EndOfGameRule = endOfGameRule;
-            _players = PlayerPivot.GetFourPlayers(humanPlayerName, InitialPointsRule);
+            _players = PlayerPivot.GetFourPlayers(humanPlayerName, InitialPointsRule, fourCpus);
             DominantWind = WindPivot.East;
             EastIndexTurnCount = 1;
             EastIndex = FirstEastIndex;
@@ -138,19 +140,6 @@ namespace Gnoj_Ham
         #endregion Constructors
 
         #region Public methods
-
-        /// <summary>
-        /// Updates the current game configuration.
-        /// </summary>
-        /// <param name="humanPlayerName"></param>
-        /// <param name="withRedDoras">The new <see cref="WithRedDoras"/> value.</param>
-        /// <param name="useNagashiMangan">The new <see cref="UseNagashiMangan"/> value.</param>
-        public void UpdateConfiguration(string humanPlayerName, bool withRedDoras, bool useNagashiMangan)
-        {
-            PlayerPivot.UpdateHumanPlayerName(this, humanPlayerName);
-            WithRedDoras = withRedDoras;
-            UseNagashiMangan = useNagashiMangan;
-        }
 
         /// <summary>
         /// Adds a pending riichi.
@@ -172,8 +161,8 @@ namespace Gnoj_Ham
         /// <see cref="Round"/> stays <c>Null</c> at the end of the game.
         /// </summary>
         /// <param name="ronPlayerIndex">The player index on who the call has been made; <c>Null</c> if tsumo or ryuukyoku.</param>
-        /// <returns>An instance of <see cref="EndOfRoundInformationsPivot"/>.</returns>
-        public EndOfRoundInformationsPivot NextRound(int? ronPlayerIndex)
+        /// <returns>An instance of <see cref="EndOfRoundInformationsPivot"/> and potentiel error on save of statistics.</returns>
+        public (EndOfRoundInformationsPivot endOfRoundInformation, string error) NextRound(int? ronPlayerIndex)
         {
             var endOfRoundInformations = Round.EndOfRound(ronPlayerIndex);
 
@@ -258,9 +247,10 @@ namespace Gnoj_Ham
         Exit:
             var humanPlayer = Players.SingleOrDefault(_ => !_.IsCpu);
 
+            string error = null;
             if (humanPlayer != null)
             {
-                _save.UpdateAndSave(endOfRoundInformations,
+                error = _save.UpdateAndSave(endOfRoundInformations,
                     ronPlayerIndex.HasValue,
                     humanIsRiichi,
                     humanIsConcealed,
@@ -268,7 +258,7 @@ namespace Gnoj_Ham
                     humanPlayer.Points);
             }
 
-            return endOfRoundInformations;
+            return (endOfRoundInformations, error);
         }
 
 

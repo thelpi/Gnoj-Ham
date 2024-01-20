@@ -33,13 +33,22 @@ namespace Gnoj_HamView
 
             Hide();
 
+            var (save, error) = PlayerSavePivot.GetOrCreateSave();
+
+            if (!string.IsNullOrWhiteSpace(error))
+            {
+                MessageBox.Show($"Something went wrong during the loading of player's stat file; statistics will not be saved.\n\nError details:\n{error}", "Gnoj-Ham - warning");
+            }
+
             new MainWindow(
                 TxtPlayerName.Text,
                 (InitialPointsRulePivot)CbbPointsRule.SelectedIndex,
                 (EndOfGameRulePivot)CbbEndOfGameRule.SelectedIndex,
-                PlayerSavePivot.GetOrCreateSave(),
+                save,
                 ChkUseRedDoras.IsChecked == true,
-                ChkUseNagashiMangan.IsChecked == true
+                ChkUseNagashiMangan.IsChecked == true,
+                ChkDebugMode.IsChecked == true,
+                ChkFourCpus.IsChecked == true
             ).ShowDialog();
 
             // The configuration might be updated in-game.
@@ -73,9 +82,6 @@ namespace Gnoj_HamView
             ChkAutoTsumoRon.IsChecked = Settings.Default.AutoCallMahjong;
             ChkAutoRiichiDiscard.IsChecked = Settings.Default.AutoDiscardAfterRiichi;
             ChkDiscardTip.IsChecked = Settings.Default.DiscardTip;
-
-            // Debug
-            ChkDebugMode.IsChecked = Settings.Default.DebugMode;
         }
 
         private void SaveConfiguration()
@@ -95,11 +101,6 @@ namespace Gnoj_HamView
             Settings.Default.AutoDiscardAfterRiichi = ChkAutoRiichiDiscard.IsChecked == true;
             Settings.Default.DiscardTip = ChkDiscardTip.IsChecked == true;
 
-            // Debug
-#if DEBUG
-            Settings.Default.DebugMode = ChkDebugMode.IsChecked == true;
-#endif
-
             Settings.Default.Save();
         }
 
@@ -107,7 +108,14 @@ namespace Gnoj_HamView
 
         private void PlayerStatsHlk_Click(object sender, RoutedEventArgs e)
         {
-            new PlayerSaveStatsWindow(PlayerSavePivot.GetOrCreateSave()).ShowDialog();
+            var (save, error) = PlayerSavePivot.GetOrCreateSave();
+
+            if (!string.IsNullOrWhiteSpace(error))
+            {
+                MessageBox.Show($"Something went wrong during the loading of player's stat file; statistics will be empty.\n\nError details:\n{error}", "Gnoj-Ham - warning");
+            }
+
+            new PlayerSaveStatsWindow(save).ShowDialog();
         }
     }
 }

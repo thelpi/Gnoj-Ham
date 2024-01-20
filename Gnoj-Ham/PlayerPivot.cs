@@ -69,13 +69,15 @@ namespace Gnoj_Ham
         /// </summary>
         /// <param name="humanPlayerName">The name of the human player; other players will be <see cref="IsCpu"/>.</param>
         /// <param name="initialPointsRulePivot">Rule for initial points count.</param>
+        /// <param name="fourCpus">Indicates if four players are CPU.</param>
         /// <returns>List of four <see cref="PlayerPivot"/>, not sorted.</returns>
         /// <exception cref="ArgumentException"><see cref="Messages.InvalidPlayerName"/></exception>
-        public static List<PlayerPivot> GetFourPlayers(string humanPlayerName, InitialPointsRulePivot initialPointsRulePivot)
+        public static List<PlayerPivot> GetFourPlayers(string humanPlayerName, InitialPointsRulePivot initialPointsRulePivot, bool fourCpus)
         {
-            humanPlayerName = CheckName(humanPlayerName);
-
-            bool cpuVs = humanPlayerName == null;
+            if (!fourCpus)
+            {
+                humanPlayerName = CheckName(humanPlayerName);
+            }
 
             int eastIndex = GlobalTools.Randomizer.Next(0, 4);
 
@@ -83,10 +85,10 @@ namespace Gnoj_Ham
             for (int i = 0; i < 4; i++)
             {
                 players.Add(new PlayerPivot(
-                    i == GamePivot.HUMAN_INDEX && !cpuVs ? humanPlayerName : $"{CPU_NAME_PREFIX}{i}",
+                    i == GamePivot.HUMAN_INDEX && !fourCpus ? humanPlayerName : $"{CPU_NAME_PREFIX}{i}",
                     i == eastIndex ? WindPivot.East : (i > eastIndex ? (WindPivot)(i - eastIndex) : (WindPivot)(4 - eastIndex + i)),
                     initialPointsRulePivot,
-                    cpuVs || i != GamePivot.HUMAN_INDEX
+                    fourCpus || i != GamePivot.HUMAN_INDEX
                 ));
             }
 
@@ -103,28 +105,6 @@ namespace Gnoj_Ham
             }
 
             return humanPlayerName;
-        }
-
-        /// <summary>
-        /// Updates the human player's name.
-        /// </summary>
-        /// <param name="game">The current game.</param>
-        /// <param name="humanPlayerName">The new <see cref="Name"/> value for human player.</param>
-        internal static void UpdateHumanPlayerName(GamePivot game, string humanPlayerName)
-        {
-            if (game == null)
-            {
-                throw new ArgumentNullException(nameof(game));
-            }
-
-            if (!game.CpuVs)
-            {
-                humanPlayerName = CheckName(humanPlayerName);
-                if (humanPlayerName == null)
-                    throw new ArgumentNullException(nameof(humanPlayerName));
-
-                game.Players.ElementAt(GamePivot.HUMAN_INDEX).Name = humanPlayerName;
-            }
         }
 
         #endregion Static methods

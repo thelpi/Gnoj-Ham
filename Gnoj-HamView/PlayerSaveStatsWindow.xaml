@@ -29,6 +29,7 @@
             <RowDefinition />
             <RowDefinition />
             <RowDefinition />
+            <RowDefinition />
         </Grid.RowDefinitions>
         <Label Grid.Row="0" Grid.Column="0" Content="First game" HorizontalContentAlignment="Right" />
         <Label Grid.Row="1" Grid.Column="0" Content="Latest completed game" HorizontalContentAlignment="Right" Background="LightGray" />
@@ -57,5 +58,6 @@
         <Label Grid.Row="7" Grid.Column="2" Name="LblRonPercent" Background="LightGray" />
         <Label Grid.Row="8" Grid.Column="2" Name="LblYakumanPercent" />
         <Label Grid.Row="9" Grid.Column="2" Name="LblOpenedHandsPercent" Background="LightGray" />
+        <TextBlock Margin="0, 5, 0, 0" Grid.Row="10" Grid.ColumnSpan="3" TextWrapping="WrapWithOverflow">Statistics are saved when rules are by default.<LineBreak />Statistics are saved at each round even if the game is later aborted.</TextBlock>
     </Grid>
 </Window>
