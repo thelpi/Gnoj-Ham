@@ -1249,7 +1249,7 @@ namespace Gnoj_HamView
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show($"The discard suggestion has crashed with the following error: {ex.Message}\r\nPlease provide a maximum of details about the context of the crash.");
+                    MessageBox.Show($"The discard suggestion has crashed with the following error: {ex.Message}\r\nPlease provide a maximum of details about the context of the crash.", "Gnoj-Ham - Error");
                 }
             }
         }
