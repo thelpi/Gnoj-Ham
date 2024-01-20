@@ -68,10 +68,19 @@
         <ContentControl MouseDoubleClick="Grid_MouseDoubleClick">
             <Grid Name="GrdMain">
                 <Grid.Background>
-                    <RadialGradientBrush>
-                        <GradientStop Color="LightGreen" Offset="0.10" />
-                        <GradientStop Color="DarkGreen" Offset="1" />
-                    </RadialGradientBrush>
+                    <VisualBrush>
+                        <VisualBrush.Visual>
+                            <StackPanel>
+                                <StackPanel.Background>
+                                    <RadialGradientBrush>
+                                        <GradientStop Color="LightGreen" Offset="0.10" />
+                                        <GradientStop Color="DarkGreen" Offset="1" />
+                                    </RadialGradientBrush>
+                                </StackPanel.Background>
+                                <Image Source="Resources/dragon.png" Opacity="0.1" Stretch="UniformToFill" />
+                            </StackPanel>
+                        </VisualBrush.Visual>
+                    </VisualBrush>
                 </Grid.Background>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Name="Cod0" />
