@@ -305,39 +305,45 @@
 
                 <!-- General informations -->
                 <DockPanel Grid.Row="3" Grid.Column="3" HorizontalAlignment="Center" VerticalAlignment="Center">
-                    <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Name="StpDoras" />
+                    <StackPanel HorizontalAlignment="Center" DockPanel.Dock="Top" Orientation="Horizontal" Name="StpDoras" />
                     <Grid DockPanel.Dock="Bottom" Margin="0, 5, 0, 0">
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="90" />
-                            <ColumnDefinition Width="45" />
-                            <ColumnDefinition Width="45" />
-                            <ColumnDefinition Width="75" />
+                            <ColumnDefinition Width="10" />
+                            <ColumnDefinition />
+                            <ColumnDefinition />
+                            <ColumnDefinition />
+                            <ColumnDefinition />
+                            <ColumnDefinition Width="10" />
                         </Grid.ColumnDefinitions>
                         <Grid.RowDefinitions>
-                            <RowDefinition Height="30" />
-                            <RowDefinition Height="30" />
-                            <RowDefinition Height="30" />
-                            <RowDefinition Height="30" />
+                            <RowDefinition Height="10" />
+                            <RowDefinition />
+                            <RowDefinition />
+                            <RowDefinition />
+                            <RowDefinition />
+                            <RowDefinition Height="10" />
                         </Grid.RowDefinitions>
-                        <Label Grid.Row="0" Grid.Column="0" Name="LblNameP0" />
-                        <Label Grid.Row="1" Grid.Column="0" Name="LblNameP1" />
-                        <Label Grid.Row="2" Grid.Column="0" Name="LblNameP2" />
-                        <Label Grid.Row="3" Grid.Column="0" Name="LblNameP3" />
-                        <Label Grid.Row="0" Grid.Column="1" Name="LblPointsP0" />
-                        <Label Grid.Row="1" Grid.Column="1" Name="LblPointsP1" />
-                        <Label Grid.Row="2" Grid.Column="1" Name="LblPointsP2" />
-                        <Label Grid.Row="3" Grid.Column="1" Name="LblPointsP3" />
-                        <StackPanel Grid.Column="2" Grid.Row="0" Grid.RowSpan="4" Orientation="Vertical">
-                            <Label Height="40" VerticalContentAlignment="Center" HorizontalAlignment="Center" FontSize="20" Name="LblDominantWind" />
-                            <Label Height="40" VerticalContentAlignment="Center" HorizontalAlignment="Center" FontSize="20" Name="LblEastTurnCount" />
-                            <StackPanel Orientation="Horizontal" Height="40">
-                                <Image Stretch="UniformToFill" Source="Resources/stick_100.png" ToolTip="Honba" />
-                                <TextBlock Margin="5, 0, 0, 0" VerticalAlignment="Center" FontSize="16" Name="TxtHonba" Text=" 0" ToolTip="Honba" />
-                                <Image Margin="5, 0, 0, 0" Stretch="UniformToFill" Source="Resources/stick_1000.png" ToolTip="Pending Riichi" />
-                                <TextBlock Margin="5, 0, 0, 0" VerticalAlignment="Center" FontSize="16" Name="TxtPendingRiichi" Text=" 3" ToolTip="Pending Riichi" />
-                            </StackPanel>
+                        <Label Grid.Row="1" Grid.Column="1" Name="LblNameP0" />
+                        <Label Grid.Row="2" Grid.Column="1" Name="LblNameP1" />
+                        <Label Grid.Row="3" Grid.Column="1" Name="LblNameP2" />
+                        <Label Grid.Row="4" Grid.Column="1" Name="LblNameP3" />
+                        <Label Grid.Row="1" Grid.Column="2" Name="LblPointsP0" HorizontalAlignment="Right" />
+                        <Label Grid.Row="2" Grid.Column="2" Name="LblPointsP1" HorizontalAlignment="Right" />
+                        <Label Grid.Row="3" Grid.Column="2" Name="LblPointsP2" HorizontalAlignment="Right" />
+                        <Label Grid.Row="4" Grid.Column="2" Name="LblPointsP3" HorizontalAlignment="Right" />
+                        <Label Grid.Row="1" Grid.RowSpan="2" Grid.Column="3" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="20" Name="LblDominantWind" />
+                        <Label Grid.Row="3" Grid.RowSpan="2" Grid.Column="3" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="20" Name="LblEastTurnCount" />
+                        <StackPanel Grid.Row="1" Grid.RowSpan="2" Grid.Column="4" VerticalAlignment="Center" HorizontalAlignment="Center" Orientation="Horizontal">
+                            <Image Height="30" Stretch="UniformToFill" Source="Resources/stick_100.png" ToolTip="Honba" />
+                            <TextBlock Margin="5, 0, 0, 0" VerticalAlignment="Center" FontSize="16" Name="TxtHonba" Text=" 0" ToolTip="Honba" />
+                            <Image Height="30" Margin="5, 0, 0, 0" Stretch="UniformToFill" Source="Resources/stick_1000.png" ToolTip="Pending Riichi" />
+                            <TextBlock Margin="5, 0, 0, 0" VerticalAlignment="Center" FontSize="16" Name="TxtPendingRiichi" Text=" 3" ToolTip="Pending Riichi" />
                         </StackPanel>
-                        <Label Grid.Row="0" Grid.RowSpan="4" Grid.Column="3" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="20" Name="LblWallTilesLeft" ToolTip="Tiles remaining in the wall." BorderBrush="DarkMagenta" BorderThickness="1" />
+                        <Label Grid.Row="3" Grid.RowSpan="2" Grid.Column="4" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="20" Name="LblWallTilesLeft" ToolTip="Tiles remaining in the wall." />
+                        <DockPanel HorizontalAlignment="Right" Name="DkpWall2" Width="200" Height="10" Grid.Row="0" Grid.Column="1" Grid.ColumnSpan="4" Background="#d8d6c8" />
+                        <DockPanel VerticalAlignment="Top" Name="DkpWall3" Height="120" Width="10" Grid.Row="0" Grid.Column="0" Grid.RowSpan="6" Background="#d8d6c8" />
+                        <DockPanel VerticalAlignment="Bottom" Name="DkpWall1" Height="120" Width="10" Grid.Row="0" Grid.Column="5" Grid.RowSpan="6" Background="#d8d6c8" />
+                        <DockPanel HorizontalAlignment="Left" Name="DkpWall0" Width="200" Height="10" Grid.Row="5" Grid.Column="1" Grid.ColumnSpan="4" Background="#d8d6c8" />
                     </Grid>
                 </DockPanel>
 

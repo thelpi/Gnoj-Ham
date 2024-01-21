@@ -667,6 +667,75 @@ namespace Gnoj_HamView
                 {
                     SetActionButtonsVisibility(preDiscard: true);
                 }
+
+                var currentTilesCount = _game.Round.WallTiles.Count;
+                var set = false;
+                foreach (var i in new[] { 0, 3, 2, 1 })
+                {
+                    switch (i)
+                    {
+                        case 0:
+                            if (!set)
+                            {
+                                var tilesForMe0 = currentTilesCount - 34 - 34 - 34;
+                                if (tilesForMe0 <= 0)
+                                {
+                                    DkpWall0.Width = 0;
+                                }
+                                else
+                                {
+                                    set = true;
+                                    DkpWall0.Width = tilesForMe0 / (double)34 * 200;
+                                }
+                            }
+                            break;
+                        case 1:
+                            if (!set)
+                            {
+                                var tilesForMe1 = currentTilesCount;
+                                if (tilesForMe1 <= 0)
+                                {
+                                    DkpWall1.Height = 0;
+                                }
+                                else
+                                {
+                                    set = true;
+                                    DkpWall1.Height = tilesForMe1 / (double)34 * 120;
+                                }
+                            }
+                            break;
+                        case 2:
+                            if (!set)
+                            {
+                                var tilesForMe2 = currentTilesCount - 34;
+                                if (tilesForMe2 <= 0)
+                                {
+                                    DkpWall2.Width = 0;
+                                }
+                                else
+                                {
+                                    set = true;
+                                    DkpWall2.Width = tilesForMe2 / (double)34 * 200;
+                                }
+                            }
+                            break;
+                        case 3:
+                            if (!set)
+                            {
+                                var tilesForMe3 = currentTilesCount - 34 -34;
+                                if (tilesForMe3 <= 0)
+                                {
+                                    DkpWall3.Height = 0;
+                                }
+                                else
+                                {
+                                    set = true;
+                                    DkpWall3.Height = tilesForMe3 / (double)34 * 120;
+                                }
+                            }
+                            break;
+                    }
+                }
             });
         }
 
@@ -966,6 +1035,11 @@ namespace Gnoj_HamView
 
             RefreshPlayerTurnStyle();
             SetActionButtonsVisibility(preDiscard: true);
+
+            DkpWall0.Width = 200;
+            DkpWall1.Height = 120;
+            DkpWall2.Width = 200;
+            DkpWall3.Height = 120;
         }
 
         // Refresh the style of players when turn changes.
