@@ -1136,11 +1136,20 @@ namespace Gnoj_HamView
                 return;
             }
 
-            var lines = new[] { (0, 3), (3, 2), (2, 1), (1, 0) };
-            foreach (var (i, count) in lines)
+            var lines = new[] { 0, 3, 2, 1 };
+            for (var i = 1; i <= _game.Round.WallOpeningIndex; i++)
+            {
+                for (var j = 0; j < lines.Length; j++)
+                {
+                    lines[j] = lines[j] == 3 ? 0 : lines[j] + 1;
+                }
+            }
+
+            var tilesExpectedCoeff = 3;
+            foreach (var i in lines)
             {
                 var line = this.FindName<DockPanel>("DkpWall", i);
-                var lineRemainingTiles = _game.Round.WallTiles.Count - (GamePivot.WallTilesCount * count);
+                var lineRemainingTiles = _game.Round.WallTiles.Count - (GamePivot.WallTilesCount * tilesExpectedCoeff);
                 if (lineRemainingTiles <= 0)
                 {
                     if (i % 2 == 1)
@@ -1164,6 +1173,7 @@ namespace Gnoj_HamView
                     }
                     break;
                 }
+                tilesExpectedCoeff--;
             }
         }
 

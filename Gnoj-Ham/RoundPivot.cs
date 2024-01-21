@@ -80,6 +80,11 @@ namespace Gnoj_Ham
         /// </summary>
         internal GamePivot Game { get; private set; }
 
+        /// <summary>
+        /// The player index where the wall is opened.
+        /// </summary>
+        public int WallOpeningIndex { get; }
+
         #endregion Embedded properties
 
         #region Inferred properties
@@ -141,6 +146,8 @@ namespace Gnoj_Ham
             }
 
             Game = game;
+
+            WallOpeningIndex = GlobalTools.Randomizer.Next(0, 4);
 
             _fullTilesList = TilePivot
                                 .GetCompleteSet(Game.Ruleset.UseRedDoras)
