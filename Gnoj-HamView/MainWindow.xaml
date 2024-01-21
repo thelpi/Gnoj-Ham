@@ -166,12 +166,22 @@
                 <!-- Discards -->
                 <!-- P1 (bottom) -->
                 <StackPanel Orientation="Vertical" Grid.Row="4" Grid.Column="3" Grid.ColumnSpan="2">
+                    <StackPanel Orientation="Horizontal" Margin="107, 0, 0, 5">
+                        <Image Name="RiichiStickP0" HorizontalAlignment="Left" Height="60" Source="Resources/stick_1000.png">
+                            <Image.LayoutTransform>
+                                <RotateTransform Angle="90" />
+                            </Image.LayoutTransform>
+                        </Image>
+                    </StackPanel>
                     <StackPanel Orientation="Horizontal" Name="StpDiscard1P0" />
                     <StackPanel Orientation="Horizontal" Name="StpDiscard2P0" />
                     <StackPanel Orientation="Horizontal" Name="StpDiscard3P0" />
                 </StackPanel>
                 <!-- P2 (right) -->
                 <StackPanel Orientation="Horizontal" Grid.Row="2" Grid.Column="4" Grid.RowSpan="2">
+                    <StackPanel Orientation="Vertical" Margin="0, 280, 5, 0">
+                        <Image Name="RiichiStickP1" HorizontalAlignment="Left" Height="60" Source="Resources/stick_1000.png" />
+                    </StackPanel>
                     <Grid>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="*" />
@@ -217,12 +227,22 @@
                         </Grid.ColumnDefinitions>
                         <StackPanel Orientation="Horizontal" Grid.Column="1" Name="StpDiscard1P2" />
                     </Grid>
+                    <StackPanel FlowDirection="RightToLeft" Orientation="Horizontal" Margin="0, 5, 107, 0">
+                        <Image Name="RiichiStickP2" HorizontalAlignment="Left" Height="60" Source="Resources/stick_1000.png">
+                            <Image.LayoutTransform>
+                                <RotateTransform Angle="270" />
+                            </Image.LayoutTransform>
+                        </Image>
+                    </StackPanel>
                 </StackPanel>
                 <!-- P4 (left) -->
                 <StackPanel Orientation="Horizontal" Grid.Row="3" Grid.Column="2" Grid.RowSpan="2">
                     <StackPanel Orientation="Vertical" Name="StpDiscard3P3" />
                     <StackPanel Orientation="Vertical" Name="StpDiscard2P3" />
                     <StackPanel Orientation="Vertical" Name="StpDiscard1P3" />
+                    <StackPanel Orientation="Vertical" Margin="5, 107, 0, 0">
+                        <Image Name="RiichiStickP3" HorizontalAlignment="Right" Height="60" Source="Resources/stick_1000.png" />
+                    </StackPanel>
                 </StackPanel>
 
                 <!-- Player infos -->

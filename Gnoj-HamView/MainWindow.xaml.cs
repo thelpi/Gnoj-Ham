@@ -686,6 +686,7 @@ namespace Gnoj_HamView
                     FillHandPanel(_game.Round.PreviousPlayerIndex);
                     FillDiscardPanel(_game.Round.PreviousPlayerIndex);
                     SetActionButtonsVisibility(cpuPlay: !_game.Round.PreviousIsHumanPlayer);
+                    this.FindName<Image>("RiichiStickP", _game.Round.PreviousPlayerIndex).Visibility = Visibility.Visible;
                 });
 
                 if (_game.Round.PreviousIsHumanPlayer)
@@ -879,11 +880,11 @@ namespace Gnoj_HamView
                     Panel panel = this.FindPanel($"StpDiscard{j}P", i);
                     if (i % 2 == 0)
                     {
-                        panel.Height = GraphicTools.TILE_HEIGHT + (0.5 * GraphicTools.DEFAULT_TILE_MARGIN);
+                        panel.Height = GraphicTools.TILE_HEIGHT;
                     }
                     else
                     {
-                        panel.Width = GraphicTools.TILE_HEIGHT + (0.5 * GraphicTools.DEFAULT_TILE_MARGIN);
+                        panel.Width = GraphicTools.TILE_HEIGHT;
                     }
                 }
             }
@@ -960,6 +961,7 @@ namespace Gnoj_HamView
                 this.FindControl("LblWindP", pIndex).Content = _game.GetPlayerCurrentWind(pIndex).ToWindDisplay();
                 this.FindControl("LblNameP", pIndex).Content = _game.Players.ElementAt(pIndex).Name;
                 this.FindControl("LblPointsP", pIndex).Content = $"{_game.Players.ElementAt(pIndex).Points / 1000}k";
+                this.FindName<Image>("RiichiStickP", pIndex).Visibility = Visibility.Hidden;
             }
 
             RefreshPlayerTurnStyle();
