@@ -24,7 +24,7 @@ namespace Gnoj_Ham
         public IReadOnlyCollection<TileComboPivot> DeclaredCombinations => _declaredCombinations;
 
         /// <summary>
-        /// The latest pick; can't be known by <see cref="_concealedTiles"/> (sorted list).
+        /// The latest pick (from wall or steal); can't be known by <see cref="_concealedTiles"/> (sorted list).
         /// </summary>
         public TilePivot LatestPick { get; private set; }
 

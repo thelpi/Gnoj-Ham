@@ -485,10 +485,10 @@ namespace Gnoj_HamView
                 Height = TILE_HEIGHT + (0.5 * DEFAULT_TILE_MARGIN),
                 HorizontalAlignment = HorizontalAlignment.Center
             };
-            foreach (Tuple<TilePivot, bool, bool> tile in p.GetFullHandForDisplay())
+            foreach (var (tile, leaned, apart) in p.GetFullHandForDisplay())
             {
-                Button b = GenerateTileButton(tile.Item1, null, (tile.Item2 ? AnglePivot.A90 : AnglePivot.A0), false);
-                if (tile.Item3)
+                Button b = GenerateTileButton(tile, null, (leaned ? AnglePivot.A90 : AnglePivot.A0), false);
+                if (apart)
                 {
                     b.Margin = new Thickness(5, 0, 0, 0);
                 }

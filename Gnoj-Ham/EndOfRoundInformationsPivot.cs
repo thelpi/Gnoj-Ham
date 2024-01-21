@@ -231,22 +231,34 @@ namespace Gnoj_Ham
             /// <summary>
             /// Gets tiles from the hand (if <see cref="_hand"/> not <c>Null</c>) ordered for display on the score screen.
             /// </summary>
-            /// <returns>The list of tiles;
-            /// the <see cref="Tuple{T1, T2, T3}.Item2"/> indicates if the tile should be displayed leaned.
-            /// the <see cref="Tuple{T1, T2, T3}.Item3"/> indicates if the tile should be displayed apart.
+            /// <returns>A list of tiles with additional information:
+            /// <c>isLeaned</c> indicates if the tile should be displayed leaned.
+            /// <c>isWinPick</c> indicates if the tile should be displayed apart.
             /// </returns>
-            public List<Tuple<TilePivot, bool, bool>> GetFullHandForDisplay()
+            public List<(TilePivot tile, bool isLeaned, bool isWinPick)> GetFullHandForDisplay()
             {
-                List<Tuple<TilePivot, bool, bool>> r = new List<Tuple<TilePivot, bool, bool>>();
-
-                if (_hand != null)
+                if (_hand == null)
                 {
-                    r.AddRange(_hand.AllTiles.Select(t => new Tuple<TilePivot, bool, bool>(t,
-                        _hand.DeclaredCombinations.Any(c => ReferenceEquals(c.OpenTile, t)),
-                        ReferenceEquals(_hand.LatestPick, t))));
+                    return new List<(TilePivot tile, bool isLeaned, bool isWinPick)>();
                 }
 
-                return r.OrderBy(tuple => tuple.Item3).ToList();
+                var results = new List<(TilePivot, bool, bool)>(14);
+                foreach (var t in _hand.AllTiles)
+                {
+                    if (!ReferenceEquals(t, _hand.LatestPick))
+                    {
+                        var leander = _hand.DeclaredCombinations.Any(c => ReferenceEquals(c.OpenTile, t));
+                        results.Add((t, leander, false));
+                    }
+                }
+
+                // Displays the latest pick in last, only if it's a winning hand
+                if (_hand.LatestPick != null && FanCount > 0)
+                {
+                    results.Add((_hand.LatestPick, false, true));
+                }
+
+                return results;
             }
 
             #endregion Public methods
