@@ -171,7 +171,9 @@ namespace Gnoj_HamView
             }
             else if (StpPickP0.Children.Count > 0)
             {
-                RaiseButtonClickEvent(new PanelButton("StpPickP", 0));
+                var isRiichiCancellation = BtnRiichi.Visibility == Visibility.Visible;
+                SetActionButtonsVisibility();
+                RaiseButtonClickEvent(isRiichiCancellation ? null : new PanelButton("StpPickP", 0));
             }
         }
 
