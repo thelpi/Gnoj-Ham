@@ -340,10 +340,18 @@
                             <TextBlock Margin="5, 0, 0, 0" VerticalAlignment="Center" FontSize="16" Name="TxtPendingRiichi" Text=" 3" ToolTip="Pending Riichi" />
                         </StackPanel>
                         <Label Grid.Row="3" Grid.RowSpan="2" Grid.Column="4" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="20" Name="LblWallTilesLeft" ToolTip="Tiles remaining in the wall." />
-                        <DockPanel HorizontalAlignment="Right" Name="DkpWall2" Width="200" Height="10" Grid.Row="0" Grid.Column="1" Grid.ColumnSpan="4" Background="#d8d6c8" />
-                        <DockPanel VerticalAlignment="Top" Name="DkpWall3" Height="120" Width="10" Grid.Row="0" Grid.Column="0" Grid.RowSpan="6" Background="#d8d6c8" />
-                        <DockPanel VerticalAlignment="Bottom" Name="DkpWall1" Height="120" Width="10" Grid.Row="0" Grid.Column="5" Grid.RowSpan="6" Background="#d8d6c8" />
-                        <DockPanel HorizontalAlignment="Left" Name="DkpWall0" Width="200" Height="10" Grid.Row="5" Grid.Column="1" Grid.ColumnSpan="4" Background="#d8d6c8" />
+                        <Border BorderBrush="Black" BorderThickness="0.5" HorizontalAlignment="Right" Name="BrdWall2" Width="200" Height="10" Grid.Row="0" Grid.Column="1" Grid.ColumnSpan="4">
+                            <Rectangle Fill="#d8d6c8" />
+                        </Border>
+                        <Border BorderBrush="Black" BorderThickness="0.5" VerticalAlignment="Top" Name="BrdWall3" Height="120" Width="10" Grid.Row="0" Grid.Column="0" Grid.RowSpan="6">
+                            <Rectangle Fill="#d8d6c8" />
+                        </Border>
+                        <Border BorderBrush="Black" BorderThickness="0.5" VerticalAlignment="Bottom" Name="BrdWall1" Height="120" Width="10" Grid.Row="0" Grid.Column="5" Grid.RowSpan="6">
+                            <Rectangle Fill="#d8d6c8" />
+                        </Border>
+                        <Border BorderBrush="Black" BorderThickness="0.5" HorizontalAlignment="Left" Name="BrdWall0" Width="200" Height="10" Grid.Row="5" Grid.Column="1" Grid.ColumnSpan="4">
+                            <Rectangle Fill="#d8d6c8" />
+                        </Border>
                     </Grid>
                 </DockPanel>
 

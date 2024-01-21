@@ -1129,10 +1129,10 @@ namespace Gnoj_HamView
         {
             if (init)
             {
-                DkpWall0.Width = GraphicTools.WallHorizontalSize;
-                DkpWall1.Height = GraphicTools.WallVerticalSize;
-                DkpWall2.Width = GraphicTools.WallHorizontalSize;
-                DkpWall3.Height = GraphicTools.WallVerticalSize;
+                BrdWall0.Width = GraphicTools.WallHorizontalSize;
+                BrdWall1.Height = GraphicTools.WallVerticalSize;
+                BrdWall2.Width = GraphicTools.WallHorizontalSize;
+                BrdWall3.Height = GraphicTools.WallVerticalSize;
                 return;
             }
 
@@ -1148,7 +1148,7 @@ namespace Gnoj_HamView
             var tilesExpectedCoeff = 3;
             foreach (var i in lines)
             {
-                var line = this.FindName<DockPanel>("DkpWall", i);
+                var line = this.FindName<Border>("BrdWall", i);
                 var lineRemainingTiles = _game.Round.WallTiles.Count - (GamePivot.WallTilesCount * tilesExpectedCoeff);
                 if (lineRemainingTiles <= 0)
                 {
