@@ -39,13 +39,9 @@ namespace Gnoj_HamView
         /// </summary>
         internal const string CONCEALED_TILE_RSC_NAME = "concealed";
         /// <summary>
-        /// Size of the wall for vertical display (aka Height), in pixels.
+        /// Size of the wall, in pixels.
         /// </summary>
-        internal const int WallVerticalSize = 120;
-        /// <summary>
-        /// Size of the wall for horizaontal display (aka Width), in pixels.
-        /// </summary>
-        internal const int WallHorizontalSize = 200;
+        internal const int WallSize = 179; // 180 - 0.5 border on each side
 
         /// <summary>
         /// Extension; generates a button which represents a tile.
@@ -54,8 +50,9 @@ namespace Gnoj_HamView
         /// <param name="handler">Optionnal; event on click on the button; default value is <c>Null</c>.</param>
         /// <param name="angle">Optionnal; rotation angle; default is <c>0°</c>.</param>
         /// <param name="concealed">Optionnal; set <c>True</c> to display a concealed tile; default is <c>False</c>.</param>
+        /// <param name="rate">Optionnal; applies a rate on the size of the tile; default is <c>1</c>.</param>
         /// <returns>A button representing the tile.</returns>
-        internal static Button GenerateTileButton(this TilePivot tile, RoutedEventHandler handler = null, AnglePivot angle = AnglePivot.A0, bool concealed = false)
+        internal static Button GenerateTileButton(this TilePivot tile, RoutedEventHandler handler = null, AnglePivot angle = AnglePivot.A0, bool concealed = false, double rate = 1)
         {
             string rscName = concealed ? CONCEALED_TILE_RSC_NAME : tile.ToResourceName();
 
@@ -63,12 +60,13 @@ namespace Gnoj_HamView
 
             var button = new Button
             {
-                Height = angle == AnglePivot.A0 || angle == AnglePivot.A180 ? TILE_HEIGHT : TILE_WIDTH,
-                Width = angle == AnglePivot.A0 || angle == AnglePivot.A180 ? TILE_WIDTH : TILE_HEIGHT,
+                Height = angle == AnglePivot.A0 || angle == AnglePivot.A180 ? (TILE_HEIGHT * rate) : (TILE_WIDTH * rate),
+                Width = angle == AnglePivot.A0 || angle == AnglePivot.A180 ? (TILE_WIDTH * rate) : (TILE_HEIGHT * rate),
                 Content = new System.Windows.Controls.Image
                 {
                     Source = tileBitmap.ToBitmapImage(),
-                    LayoutTransform = new RotateTransform(Convert.ToDouble(angle.ToString().Replace("A", string.Empty)))
+                    LayoutTransform = new RotateTransform(Convert.ToDouble(angle.ToString().Replace("A", string.Empty))),
+                    Stretch = Stretch.UniformToFill
                 },
                 Tag = tile,
                 ToolTip = concealed ? null : tile.ToString()
@@ -95,7 +93,7 @@ namespace Gnoj_HamView
             int concealedCount = 5 - visibleCount;
             for (int i = 4; i >= 0; i--)
             {
-                panel.Children.Add(tiles.ElementAt(i).GenerateTileButton(concealed: 5 - concealedCount <= i));
+                panel.Children.Add(tiles.ElementAt(i).GenerateTileButton(concealed: 5 - concealedCount <= i, rate: 0.8));
             }
         }
 

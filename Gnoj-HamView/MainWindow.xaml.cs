@@ -1129,11 +1129,10 @@ namespace Gnoj_HamView
         {
             if (init)
             {
-                BrdWall0.Width = GraphicTools.WallHorizontalSize;
-                BrdWall1.Height = GraphicTools.WallVerticalSize;
-                BrdWall2.Width = GraphicTools.WallHorizontalSize;
-                BrdWall3.Height = GraphicTools.WallVerticalSize;
-                return;
+                BrdWall0.Width = GraphicTools.WallSize;
+                BrdWall1.Height = GraphicTools.WallSize;
+                BrdWall2.Width = GraphicTools.WallSize;
+                BrdWall3.Height = GraphicTools.WallSize;
             }
 
             var lines = new[] { 0, 3, 2, 1 };
@@ -1148,7 +1147,7 @@ namespace Gnoj_HamView
             var tilesExpectedCoeff = 3;
             foreach (var i in lines)
             {
-                var line = this.FindName<Border>("BrdWall", i);
+                var line = this.FindName<Rectangle>("BrdWall", i);
                 var lineRemainingTiles = _game.Round.WallTiles.Count - (GamePivot.WallTilesCount * tilesExpectedCoeff);
                 if (lineRemainingTiles <= 0)
                 {
@@ -1165,11 +1164,11 @@ namespace Gnoj_HamView
                 {
                     if (i % 2 == 1)
                     {
-                        line.Height = lineRemainingTiles / (double)GamePivot.WallTilesCount * GraphicTools.WallVerticalSize;
+                        line.Height = lineRemainingTiles / (double)GamePivot.WallTilesCount * GraphicTools.WallSize;
                     }
                     else
                     {
-                        line.Width = lineRemainingTiles / (double)GamePivot.WallTilesCount * GraphicTools.WallHorizontalSize;
+                        line.Width = lineRemainingTiles / (double)GamePivot.WallTilesCount * GraphicTools.WallSize;
                     }
                     break;
                 }

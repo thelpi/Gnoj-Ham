@@ -304,56 +304,55 @@
                 </Grid>
 
                 <!-- General informations -->
-                <DockPanel Grid.Row="3" Grid.Column="3" HorizontalAlignment="Center" VerticalAlignment="Center">
-                    <StackPanel HorizontalAlignment="Center" DockPanel.Dock="Top" Orientation="Horizontal" Name="StpDoras" />
-                    <Grid DockPanel.Dock="Bottom" Margin="0, 5, 0, 0">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="10" />
-                            <ColumnDefinition />
-                            <ColumnDefinition />
-                            <ColumnDefinition />
-                            <ColumnDefinition />
-                            <ColumnDefinition Width="10" />
-                        </Grid.ColumnDefinitions>
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="10" />
-                            <RowDefinition />
-                            <RowDefinition />
-                            <RowDefinition />
-                            <RowDefinition />
-                            <RowDefinition Height="10" />
-                        </Grid.RowDefinitions>
-                        <Label Grid.Row="1" Grid.Column="1" Name="LblNameP0" />
-                        <Label Grid.Row="2" Grid.Column="1" Name="LblNameP1" />
-                        <Label Grid.Row="3" Grid.Column="1" Name="LblNameP2" />
-                        <Label Grid.Row="4" Grid.Column="1" Name="LblNameP3" />
-                        <Label Grid.Row="1" Grid.Column="2" Name="LblPointsP0" HorizontalAlignment="Right" />
-                        <Label Grid.Row="2" Grid.Column="2" Name="LblPointsP1" HorizontalAlignment="Right" />
-                        <Label Grid.Row="3" Grid.Column="2" Name="LblPointsP2" HorizontalAlignment="Right" />
-                        <Label Grid.Row="4" Grid.Column="2" Name="LblPointsP3" HorizontalAlignment="Right" />
-                        <Label Grid.Row="1" Grid.RowSpan="2" Grid.Column="3" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="20" Name="LblDominantWind" />
-                        <Label Grid.Row="3" Grid.RowSpan="2" Grid.Column="3" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="20" Name="LblEastTurnCount" />
-                        <StackPanel Grid.Row="1" Grid.RowSpan="2" Grid.Column="4" VerticalAlignment="Center" HorizontalAlignment="Center" Orientation="Horizontal">
-                            <Image Height="30" Stretch="UniformToFill" Source="Resources/stick_100.png" ToolTip="Honba" />
-                            <TextBlock Margin="5, 0, 0, 0" VerticalAlignment="Center" FontSize="16" Name="TxtHonba" Text=" 0" ToolTip="Honba" />
-                            <Image Height="30" Margin="5, 0, 0, 0" Stretch="UniformToFill" Source="Resources/stick_1000.png" ToolTip="Pending Riichi" />
-                            <TextBlock Margin="5, 0, 0, 0" VerticalAlignment="Center" FontSize="16" Name="TxtPendingRiichi" Text=" 3" ToolTip="Pending Riichi" />
-                        </StackPanel>
-                        <Label Grid.Row="3" Grid.RowSpan="2" Grid.Column="4" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="20" Name="LblWallTilesLeft" ToolTip="Tiles remaining in the wall." />
-                        <Border BorderBrush="Black" BorderThickness="0.5" HorizontalAlignment="Right" Name="BrdWall2" Width="200" Height="10" Grid.Row="0" Grid.Column="1" Grid.ColumnSpan="4">
-                            <Rectangle Fill="#d8d6c8" />
-                        </Border>
-                        <Border BorderBrush="Black" BorderThickness="0.5" VerticalAlignment="Top" Name="BrdWall3" Height="120" Width="10" Grid.Row="0" Grid.Column="0" Grid.RowSpan="6">
-                            <Rectangle Fill="#d8d6c8" />
-                        </Border>
-                        <Border BorderBrush="Black" BorderThickness="0.5" VerticalAlignment="Bottom" Name="BrdWall1" Height="120" Width="10" Grid.Row="0" Grid.Column="5" Grid.RowSpan="6">
-                            <Rectangle Fill="#d8d6c8" />
-                        </Border>
-                        <Border BorderBrush="Black" BorderThickness="0.5" HorizontalAlignment="Left" Name="BrdWall0" Width="200" Height="10" Grid.Row="5" Grid.Column="1" Grid.ColumnSpan="4">
-                            <Rectangle Fill="#d8d6c8" />
-                        </Border>
-                    </Grid>
-                </DockPanel>
+                <Grid Grid.Row="3" Grid.Column="3" HorizontalAlignment="Center" VerticalAlignment="Center">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="30" />
+                        <ColumnDefinition />
+                        <ColumnDefinition />
+                        <ColumnDefinition />
+                        <ColumnDefinition />
+                        <ColumnDefinition Width="30" />
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="12" />
+                        <RowDefinition Height="60" />
+                        <RowDefinition />
+                        <RowDefinition />
+                        <RowDefinition />
+                        <RowDefinition />
+                        <RowDefinition Height="12" />
+                    </Grid.RowDefinitions>
+                    <StackPanel Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="4" HorizontalAlignment="Center" Orientation="Horizontal" Name="StpDoras" />
+                    <Label Grid.Row="2" Grid.Column="1" Name="LblNameP0" />
+                    <Label Grid.Row="3" Grid.Column="1" Name="LblNameP1" />
+                    <Label Grid.Row="4" Grid.Column="1" Name="LblNameP2" />
+                    <Label Grid.Row="5" Grid.Column="1" Name="LblNameP3" />
+                    <Label Grid.Row="2" Grid.Column="2" Name="LblPointsP0" HorizontalAlignment="Right" />
+                    <Label Grid.Row="3" Grid.Column="2" Name="LblPointsP1" HorizontalAlignment="Right" />
+                    <Label Grid.Row="4" Grid.Column="2" Name="LblPointsP2" HorizontalAlignment="Right" />
+                    <Label Grid.Row="5" Grid.Column="2" Name="LblPointsP3" HorizontalAlignment="Right" />
+                    <Label Grid.Row="2" Grid.RowSpan="2" Grid.Column="3" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="20" Name="LblDominantWind" />
+                    <Label Grid.Row="4" Grid.RowSpan="2" Grid.Column="3" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="20" Name="LblEastTurnCount" />
+                    <StackPanel Grid.Row="2" Grid.RowSpan="2" Grid.Column="4" VerticalAlignment="Center" HorizontalAlignment="Center" Orientation="Horizontal">
+                        <Image Height="30" Stretch="UniformToFill" Source="Resources/stick_100.png" ToolTip="Honba" />
+                        <TextBlock Margin="5, 0, 0, 0" VerticalAlignment="Center" FontSize="16" Name="TxtHonba" Text=" 0" ToolTip="Honba" />
+                        <Image Height="30" Margin="5, 0, 0, 0" Stretch="UniformToFill" Source="Resources/stick_1000.png" ToolTip="Pending Riichi" />
+                        <TextBlock Margin="5, 0, 0, 0" VerticalAlignment="Center" FontSize="16" Name="TxtPendingRiichi" Text=" 3" ToolTip="Pending Riichi" />
+                    </StackPanel>
+                    <Label Grid.Row="4" Grid.RowSpan="2" Grid.Column="4" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="20" Name="LblWallTilesLeft" ToolTip="Tiles remaining in the wall." />
+                    <Border BorderBrush="Black" BorderThickness="0.5" Width="180" Height="10" Grid.Row="0" Grid.Column="1" Grid.ColumnSpan="4">
+                        <Rectangle HorizontalAlignment="Right" Name="BrdWall2" Fill="#d8d6c8" />
+                    </Border>
+                    <Border BorderBrush="Black" BorderThickness="0.5" Height="180" Width="10" Grid.Row="1" Grid.Column="0" Grid.RowSpan="5">
+                        <Rectangle VerticalAlignment="Top" Name="BrdWall3" Fill="#d8d6c8" />
+                    </Border>
+                    <Border BorderBrush="Black" BorderThickness="0.5" Height="180" Width="10" Grid.Row="1" Grid.Column="5" Grid.RowSpan="5">
+                        <Rectangle VerticalAlignment="Bottom" Name="BrdWall1" Fill="#d8d6c8" />
+                    </Border>
+                    <Border BorderBrush="Black" BorderThickness="0.5" Width="180" Height="10" Grid.Row="6" Grid.Column="1" Grid.ColumnSpan="4">
+                        <Rectangle HorizontalAlignment="Left" Name="BrdWall0" Fill="#d8d6c8" />
+                    </Border>
+                </Grid>
 
                 <!-- Call overlay for opponents -->
                 <Grid Name="GrdOverlayCall" Background="Black" Panel.ZIndex="2" Grid.Row="2" Grid.Column="2" Grid.ColumnSpan="3" Grid.RowSpan="3" Visibility="Collapsed">
