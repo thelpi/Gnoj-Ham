@@ -9,6 +9,7 @@ using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
+using System.Windows.Shapes;
 using Gnoj_Ham;
 
 namespace Gnoj_HamView
@@ -667,75 +668,7 @@ namespace Gnoj_HamView
                 {
                     SetActionButtonsVisibility(preDiscard: true);
                 }
-
-                var currentTilesCount = _game.Round.WallTiles.Count;
-                var set = false;
-                foreach (var i in new[] { 0, 3, 2, 1 })
-                {
-                    switch (i)
-                    {
-                        case 0:
-                            if (!set)
-                            {
-                                var tilesForMe0 = currentTilesCount - 34 - 34 - 34;
-                                if (tilesForMe0 <= 0)
-                                {
-                                    DkpWall0.Width = 0;
-                                }
-                                else
-                                {
-                                    set = true;
-                                    DkpWall0.Width = tilesForMe0 / (double)34 * 200;
-                                }
-                            }
-                            break;
-                        case 1:
-                            if (!set)
-                            {
-                                var tilesForMe1 = currentTilesCount;
-                                if (tilesForMe1 <= 0)
-                                {
-                                    DkpWall1.Height = 0;
-                                }
-                                else
-                                {
-                                    set = true;
-                                    DkpWall1.Height = tilesForMe1 / (double)34 * 120;
-                                }
-                            }
-                            break;
-                        case 2:
-                            if (!set)
-                            {
-                                var tilesForMe2 = currentTilesCount - 34;
-                                if (tilesForMe2 <= 0)
-                                {
-                                    DkpWall2.Width = 0;
-                                }
-                                else
-                                {
-                                    set = true;
-                                    DkpWall2.Width = tilesForMe2 / (double)34 * 200;
-                                }
-                            }
-                            break;
-                        case 3:
-                            if (!set)
-                            {
-                                var tilesForMe3 = currentTilesCount - 34 -34;
-                                if (tilesForMe3 <= 0)
-                                {
-                                    DkpWall3.Height = 0;
-                                }
-                                else
-                                {
-                                    set = true;
-                                    DkpWall3.Height = tilesForMe3 / (double)34 * 120;
-                                }
-                            }
-                            break;
-                    }
-                }
+                SetWallsLength();
             });
         }
 
@@ -1036,10 +969,7 @@ namespace Gnoj_HamView
             RefreshPlayerTurnStyle();
             SetActionButtonsVisibility(preDiscard: true);
 
-            DkpWall0.Width = 200;
-            DkpWall1.Height = 120;
-            DkpWall2.Width = 200;
-            DkpWall3.Height = 120;
+            SetWallsLength(init: true);
         }
 
         // Refresh the style of players when turn changes.
@@ -1192,6 +1122,49 @@ namespace Gnoj_HamView
         {
             buttonClickable.Style = FindResource("StyleHighlightTile") as Style;
             (buttonClickable.Content as Image).Opacity = 0.8;
+        }
+
+        // Comptes the length of walls
+        private void SetWallsLength(bool init = false)
+        {
+            if (init)
+            {
+                DkpWall0.Width = GraphicTools.WallHorizontalSize;
+                DkpWall1.Height = GraphicTools.WallVerticalSize;
+                DkpWall2.Width = GraphicTools.WallHorizontalSize;
+                DkpWall3.Height = GraphicTools.WallVerticalSize;
+                return;
+            }
+
+            var lines = new[] { (0, 3), (3, 2), (2, 1), (1, 0) };
+            foreach (var (i, count) in lines)
+            {
+                var line = this.FindName<DockPanel>("DkpWall", i);
+                var lineRemainingTiles = _game.Round.WallTiles.Count - (GamePivot.WallTilesCount * count);
+                if (lineRemainingTiles <= 0)
+                {
+                    if (i % 2 == 1)
+                    {
+                        line.Height = 0;
+                    }
+                    else
+                    {
+                        line.Width = 0;
+                    }
+                }
+                else
+                {
+                    if (i % 2 == 1)
+                    {
+                        line.Height = lineRemainingTiles / (double)GamePivot.WallTilesCount * GraphicTools.WallVerticalSize;
+                    }
+                    else
+                    {
+                        line.Width = lineRemainingTiles / (double)GamePivot.WallTilesCount * GraphicTools.WallHorizontalSize;
+                    }
+                    break;
+                }
+            }
         }
 
         #endregion Graphic tools

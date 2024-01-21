@@ -16,6 +16,11 @@ namespace Gnoj_Ham
         /// </summary>
         public const int HUMAN_INDEX = 0;
 
+        /// <summary>
+        /// Number of tiles in a wall.
+        /// </summary>
+        public const int WallTilesCount = 34;
+
         #endregion Constants
 
         #region Embedded properties
