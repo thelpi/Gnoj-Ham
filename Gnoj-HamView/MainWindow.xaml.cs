@@ -815,7 +815,7 @@ namespace Gnoj_HamView
                 LblWallTilesLeft.Content = _game.Round.WallTiles.Count;
                 if (_game.Round.WallTiles.Count <= 4)
                 {
-                    LblWallTilesLeft.Foreground = System.Windows.Media.Brushes.Red;
+                    LblWallTilesLeft.Foreground = Brushes.Red;
                 }
             });
         }
@@ -945,7 +945,12 @@ namespace Gnoj_HamView
 
             StpDoras.SetDorasPanel(_game.Round.DoraIndicatorTiles, _game.Round.VisibleDorasCount);
             LblDominantWind.Content = _game.DominantWind.ToWindDisplay();
-            LblEastTurnCount.Content = $"{_game.EastRank}/{_game.HonbaCount}";
+            LblDominantWind.ToolTip = $"Dominant wind: {_game.DominantWind}";
+            LblEastTurnCount.Content = $"{_game.EastRank}";
+            LblEastTurnCount.ToolTip = $"Current turn in {_game.DominantWind}";
+            TxtHonba.Text = _game.HonbaCount.ToString();
+            TxtPendingRiichi.Text = _game.PendingRiichiCount.ToString();
+
             for (int pIndex = 0; pIndex < _game.Players.Count; pIndex++)
             {
                 this.FindPanel("StpCombosP", pIndex).Children.Clear();

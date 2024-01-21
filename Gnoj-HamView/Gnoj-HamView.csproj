@@ -372,6 +372,12 @@
     <Resource Include="Resources\dragon_background.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Resource>
+    <Resource Include="Resources\stick_1000.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Resources\stick_100.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
     <Content Include="Resources\tick.wav">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>

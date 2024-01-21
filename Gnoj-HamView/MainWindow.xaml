@@ -307,9 +307,17 @@
                         <Label Grid.Row="1" Grid.Column="1" Name="LblPointsP1" />
                         <Label Grid.Row="2" Grid.Column="1" Name="LblPointsP2" />
                         <Label Grid.Row="3" Grid.Column="1" Name="LblPointsP3" />
-                        <Label Grid.Row="0" Grid.RowSpan="2" Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="20" Name="LblDominantWind" ToolTip="Dominant wind" />
-                        <Label Grid.Row="2" Grid.RowSpan="2" Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="20" Name="LblEastTurnCount" ToolTip="Index of current east player / Honba count" />
-                        <Label Grid.Row="0" Grid.RowSpan="5" Grid.Column="3" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="20" Name="LblWallTilesLeft" ToolTip="Tiles remaining in the wall." BorderBrush="DarkMagenta" BorderThickness="1" />
+                        <StackPanel Grid.Column="2" Grid.Row="0" Grid.RowSpan="4" Orientation="Vertical">
+                            <Label Height="40" VerticalContentAlignment="Center" HorizontalAlignment="Center" FontSize="20" Name="LblDominantWind" />
+                            <Label Height="40" VerticalContentAlignment="Center" HorizontalAlignment="Center" FontSize="20" Name="LblEastTurnCount" />
+                            <StackPanel Orientation="Horizontal" Height="40">
+                                <Image Stretch="UniformToFill" Source="Resources/stick_100.png" ToolTip="Honba" />
+                                <TextBlock Margin="5, 0, 0, 0" VerticalAlignment="Center" FontSize="16" Name="TxtHonba" Text=" 0" ToolTip="Honba" />
+                                <Image Margin="5, 0, 0, 0" Stretch="UniformToFill" Source="Resources/stick_1000.png" ToolTip="Pending Riichi" />
+                                <TextBlock Margin="5, 0, 0, 0" VerticalAlignment="Center" FontSize="16" Name="TxtPendingRiichi" Text=" 3" ToolTip="Pending Riichi" />
+                            </StackPanel>
+                        </StackPanel>
+                        <Label Grid.Row="0" Grid.RowSpan="4" Grid.Column="3" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="20" Name="LblWallTilesLeft" ToolTip="Tiles remaining in the wall." BorderBrush="DarkMagenta" BorderThickness="1" />
                     </Grid>
                 </DockPanel>
 
