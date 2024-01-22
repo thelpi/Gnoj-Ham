@@ -41,7 +41,7 @@ namespace Gnoj_HamView
         /// <summary>
         /// Size of the wall, in pixels.
         /// </summary>
-        internal const int WallSize = 179; // 180 - 0.5 border on each side
+        internal const int WallSize = 153; // 17 * 9px
 
         /// <summary>
         /// Extension; generates a button which represents a tile.

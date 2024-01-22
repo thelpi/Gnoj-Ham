@@ -19,7 +19,7 @@ namespace Gnoj_Ham
         /// <summary>
         /// Number of tiles in a wall.
         /// </summary>
-        public const int WallTilesCount = 34;
+        public const int WallTilesCount = 17;
 
         #endregion Constants
 

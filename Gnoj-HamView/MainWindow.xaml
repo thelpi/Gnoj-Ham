@@ -306,21 +306,21 @@
                 <!-- General informations -->
                 <Grid Grid.Row="3" Grid.Column="3" HorizontalAlignment="Center" VerticalAlignment="Center">
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="30" />
+                        <ColumnDefinition Width="25" />
                         <ColumnDefinition />
                         <ColumnDefinition />
                         <ColumnDefinition />
                         <ColumnDefinition />
-                        <ColumnDefinition Width="30" />
+                        <ColumnDefinition Width="25" />
                     </Grid.ColumnDefinitions>
                     <Grid.RowDefinitions>
-                        <RowDefinition Height="12" />
+                        <RowDefinition Height="25" />
                         <RowDefinition Height="60" />
                         <RowDefinition />
                         <RowDefinition />
                         <RowDefinition />
                         <RowDefinition />
-                        <RowDefinition Height="12" />
+                        <RowDefinition Height="25" />
                     </Grid.RowDefinitions>
                     <StackPanel Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="4" HorizontalAlignment="Center" Orientation="Horizontal" Name="StpDoras" />
                     <Label Grid.Row="2" Grid.Column="1" Name="LblNameP0" />
@@ -340,16 +340,16 @@
                         <TextBlock Margin="5, 0, 0, 0" VerticalAlignment="Center" FontSize="16" Name="TxtPendingRiichi" Text=" 3" ToolTip="Pending Riichi" />
                     </StackPanel>
                     <Label Grid.Row="4" Grid.RowSpan="2" Grid.Column="4" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="20" Name="LblWallTilesLeft" ToolTip="Tiles remaining in the wall." />
-                    <Border BorderBrush="Black" BorderThickness="0.5" Width="180" Height="10" Grid.Row="0" Grid.Column="1" Grid.ColumnSpan="4">
+                    <Border BorderBrush="Black" BorderThickness="0.5" Width="154" Height="13" Grid.Row="0" Grid.Column="1" Grid.ColumnSpan="4">
                         <Rectangle HorizontalAlignment="Right" Name="BrdWall2" Fill="#d8d6c8" />
                     </Border>
-                    <Border BorderBrush="Black" BorderThickness="0.5" Height="180" Width="10" Grid.Row="1" Grid.Column="0" Grid.RowSpan="5">
+                    <Border BorderBrush="Black" BorderThickness="0.5" Height="154" Width="13" Grid.Row="1" Grid.Column="0" Grid.RowSpan="5">
                         <Rectangle VerticalAlignment="Top" Name="BrdWall3" Fill="#d8d6c8" />
                     </Border>
-                    <Border BorderBrush="Black" BorderThickness="0.5" Height="180" Width="10" Grid.Row="1" Grid.Column="5" Grid.RowSpan="5">
+                    <Border BorderBrush="Black" BorderThickness="0.5" Height="154" Width="13" Grid.Row="1" Grid.Column="5" Grid.RowSpan="5">
                         <Rectangle VerticalAlignment="Bottom" Name="BrdWall1" Fill="#d8d6c8" />
                     </Border>
-                    <Border BorderBrush="Black" BorderThickness="0.5" Width="180" Height="10" Grid.Row="6" Grid.Column="1" Grid.ColumnSpan="4">
+                    <Border BorderBrush="Black" BorderThickness="0.5" Width="154" Height="13" Grid.Row="6" Grid.Column="1" Grid.ColumnSpan="4">
                         <Rectangle HorizontalAlignment="Left" Name="BrdWall0" Fill="#d8d6c8" />
                     </Border>
                 </Grid>

@@ -1144,11 +1144,13 @@ namespace Gnoj_HamView
                 }
             }
 
+            var wallTiles = _game.Round.WallTiles.Count / 2;
+
             var tilesExpectedCoeff = 3;
             foreach (var i in lines)
             {
                 var line = this.FindName<Rectangle>("BrdWall", i);
-                var lineRemainingTiles = _game.Round.WallTiles.Count - (GamePivot.WallTilesCount * tilesExpectedCoeff);
+                var lineRemainingTiles = wallTiles - (GamePivot.WallTilesCount * tilesExpectedCoeff);
                 if (lineRemainingTiles <= 0)
                 {
                     if (i % 2 == 1)
