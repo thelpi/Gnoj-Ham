@@ -114,6 +114,11 @@ namespace Gnoj_Ham
         /// </summary>
         public int VisibleDorasCount => 1 + (4 - _compensationTiles.Count);
 
+        /// <summary>
+        /// All tiles from the treasure (concealed or not).
+        /// </summary>
+        public IReadOnlyCollection<TilePivot> AllTreasureTiles => DoraIndicatorTiles.Concat(UraDoraIndicatorTiles).Concat(CompensationTiles).Concat(DeadTreasureTiles).ToList();
+
         #endregion Inferred properties
 
         #region Events

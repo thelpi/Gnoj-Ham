@@ -340,17 +340,19 @@
                         <TextBlock Margin="5, 0, 0, 0" VerticalAlignment="Center" FontSize="16" Name="TxtPendingRiichi" Text=" 3" ToolTip="Pending Riichi" />
                     </StackPanel>
                     <Label Grid.Row="4" Grid.RowSpan="2" Grid.Column="4" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="20" Name="LblWallTilesLeft" ToolTip="Tiles remaining in the wall." />
-                    <Border BorderBrush="Black" BorderThickness="0.5" Width="154" Height="13" Grid.Row="0" Grid.Column="1" Grid.ColumnSpan="4">
-                        <Rectangle HorizontalAlignment="Right" Name="BrdWall2" Fill="#d8d6c8" />
+                    <!-- Four walls -->
+                    <!-- Any change on dimensions here should impact the "WallTileSizeRate" value on the code behind -->
+                    <Border BorderBrush="#d8d6c8" BorderThickness="0.5" Width="154" Height="13" Grid.Row="0" Grid.Column="1" Grid.ColumnSpan="4">
+                        <StackPanel HorizontalAlignment="Right" Name="PnlWall2" Orientation="Horizontal" />
                     </Border>
-                    <Border BorderBrush="Black" BorderThickness="0.5" Height="154" Width="13" Grid.Row="1" Grid.Column="0" Grid.RowSpan="5">
-                        <Rectangle VerticalAlignment="Top" Name="BrdWall3" Fill="#d8d6c8" />
+                    <Border BorderBrush="#d8d6c8" BorderThickness="0.5" Height="154" Width="13" Grid.Row="1" Grid.Column="0" Grid.RowSpan="5">
+                        <StackPanel VerticalAlignment="Top" Name="PnlWall3" Orientation="Vertical" />
                     </Border>
-                    <Border BorderBrush="Black" BorderThickness="0.5" Height="154" Width="13" Grid.Row="1" Grid.Column="5" Grid.RowSpan="5">
-                        <Rectangle VerticalAlignment="Bottom" Name="BrdWall1" Fill="#d8d6c8" />
+                    <Border BorderBrush="#d8d6c8" BorderThickness="0.5" Height="154" Width="13" Grid.Row="1" Grid.Column="5" Grid.RowSpan="5">
+                        <StackPanel VerticalAlignment="Bottom" Name="PnlWall1" Orientation="Vertical" />
                     </Border>
-                    <Border BorderBrush="Black" BorderThickness="0.5" Width="154" Height="13" Grid.Row="6" Grid.Column="1" Grid.ColumnSpan="4">
-                        <Rectangle HorizontalAlignment="Left" Name="BrdWall0" Fill="#d8d6c8" />
+                    <Border BorderBrush="#d8d6c8" BorderThickness="0.5" Width="154" Height="13" Grid.Row="6" Grid.Column="1" Grid.ColumnSpan="4">
+                        <StackPanel HorizontalAlignment="Left" Name="PnlWall0" Orientation="Horizontal" />
                     </Border>
                 </Grid>
 

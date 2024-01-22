@@ -969,7 +969,7 @@ namespace Gnoj_HamView
             RefreshPlayerTurnStyle();
             SetActionButtonsVisibility(preDiscard: true);
 
-            SetWallsLength(init: true);
+            SetWallsLength();
         }
 
         // Refresh the style of players when turn changes.
@@ -1125,55 +1125,40 @@ namespace Gnoj_HamView
         }
 
         // Comptes the length of walls
-        private void SetWallsLength(bool init = false)
+        private void SetWallsLength()
         {
-            if (init)
-            {
-                BrdWall0.Width = GraphicTools.WallSize;
-                BrdWall1.Height = GraphicTools.WallSize;
-                BrdWall2.Width = GraphicTools.WallSize;
-                BrdWall3.Height = GraphicTools.WallSize;
-            }
-
-            var lines = new[] { 0, 3, 2, 1 };
+            // the order of consumption of walls; the index follow the player index
+            var wallIndexes = new[] { 0, 3, 2, 1 };
             for (var i = 1; i <= _game.Round.WallOpeningIndex; i++)
             {
-                for (var j = 0; j < lines.Length; j++)
+                for (var j = 0; j < wallIndexes.Length; j++)
                 {
-                    lines[j] = lines[j] == 3 ? 0 : lines[j] + 1;
+                    wallIndexes[j] = wallIndexes[j] == 3 ? 0 : wallIndexes[j] + 1;
                 }
             }
 
-            var wallTiles = _game.Round.WallTiles.Count / 2;
+            // TODO: this is highly dependent on the size of container, defined directly in the view
+            const double WallTileSizeRate = 0.2;
+
+            // every tile to display in 4 walls
+            // two tile stacked so we need half the count
+            var wallTiles = (_game.Round.WallTiles.Count + _game.Round.AllTreasureTiles.Count) / 2;
 
             var tilesExpectedCoeff = 3;
-            foreach (var i in lines)
+            foreach (var iWall in wallIndexes)
             {
-                var line = this.FindName<Rectangle>("BrdWall", i);
-                var lineRemainingTiles = wallTiles - (GamePivot.WallTilesCount * tilesExpectedCoeff);
-                if (lineRemainingTiles <= 0)
+                var tilesCountForThisWall = Math.Max(0, Math.Min(GamePivot.WallTilesCount, wallTiles - (GamePivot.WallTilesCount * tilesExpectedCoeff)));
+
+                var wallPanel = this.FindName<StackPanel>("PnlWall", iWall);
+
+                // TODO: lazy, walls are always rebuilt
+                wallPanel.Children.Clear();
+
+                for (var oneTile = 1; oneTile <= tilesCountForThisWall; oneTile++)
                 {
-                    if (i % 2 == 1)
-                    {
-                        line.Height = 0;
-                    }
-                    else
-                    {
-                        line.Width = 0;
-                    }
+                    wallPanel.Children.Add(GraphicTools.GenerateTileButton(null, null, iWall % 2 == 0 ? AnglePivot.A0 : AnglePivot.A90, true, WallTileSizeRate));
                 }
-                else
-                {
-                    if (i % 2 == 1)
-                    {
-                        line.Height = lineRemainingTiles / (double)GamePivot.WallTilesCount * GraphicTools.WallSize;
-                    }
-                    else
-                    {
-                        line.Width = lineRemainingTiles / (double)GamePivot.WallTilesCount * GraphicTools.WallSize;
-                    }
-                    break;
-                }
+
                 tilesExpectedCoeff--;
             }
         }

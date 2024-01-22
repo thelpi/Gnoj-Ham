@@ -38,10 +38,6 @@ namespace Gnoj_HamView
         /// Tile concealed resource name.
         /// </summary>
         internal const string CONCEALED_TILE_RSC_NAME = "concealed";
-        /// <summary>
-        /// Size of the wall, in pixels.
-        /// </summary>
-        internal const int WallSize = 153; // 17 * 9px
 
         /// <summary>
         /// Extension; generates a button which represents a tile.
