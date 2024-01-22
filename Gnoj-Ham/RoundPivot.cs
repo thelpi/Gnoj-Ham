@@ -687,28 +687,6 @@ namespace Gnoj_Ham
         }
 
         /// <summary>
-        /// Checks if a kan call can be made by any opponent of the human player.
-        /// </summary>
-        /// <param name="concealed"><c>True</c> to check only concealed kan (or from a previous pon); <c>False</c> to check the opposite; <c>Null</c> for both.</param>
-        /// <returns>The player index who can make the kan call, and the possible tiles; <c>Null</c> is none.</returns>
-        public Tuple<int, List<TilePivot>> OpponentsCanCallKan(bool? concealed)
-        {
-            for (int i = 0; i < 4; i++)
-            {
-                if (i != GamePivot.HUMAN_INDEX || Game.CpuVs)
-                {
-                    List<TilePivot> kanTiles = CanCallKanWithChoices(i, concealed);
-                    if (kanTiles.Count > 0)
-                    {
-                        return new Tuple<int, List<TilePivot>>(i, kanTiles);
-                    }
-                }
-            }
-
-            return null;
-        }
-
-        /// <summary>
         /// Similar to <see cref="CanCallKan(int)"/> but with the list of possible tiles depending on <paramref name="concealed"/>.
         /// </summary>
         /// <param name="playerId">The player index.</param>
@@ -728,38 +706,6 @@ namespace Gnoj_Ham
             }
 
             return tiles;
-        }
-
-        /// <summary>
-        /// Checks if a pon call can be made by any opponent of the human player.
-        /// </summary>
-        /// <returns>The player index who can make the pon call; <c>-1</c> is none.</returns>
-        public int OpponentsCanCallPon()
-        {
-            List<int> opponentsIndex = Enumerable.Range(0, 4).Where(i =>
-            {
-                return (i != GamePivot.HUMAN_INDEX || Game.CpuVs) && CanCallPon(i);
-            }).ToList();
-
-            return opponentsIndex.Count > 0 ? opponentsIndex[0] : -1;
-        }
-
-        /// <summary>
-        /// Checks if a chii call can be made by any opponent of the human player.
-        /// </summary>
-        /// <returns>Same type of return than the method <see cref="CanCallChii()"/>, for the opponent who can call chii.</returns>
-        public Dictionary<TilePivot, bool> OpponentsCanCallChii()
-        {
-            if (!IsHumanPlayer)
-            {
-                Dictionary<TilePivot, bool> chiiTiles = CanCallChii();
-                if (chiiTiles.Count > 0)
-                {
-                    return chiiTiles;
-                }
-            }
-
-            return new Dictionary<TilePivot, bool>();
         }
 
         /// <summary>

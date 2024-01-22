@@ -9,7 +9,6 @@ using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
-using System.Windows.Shapes;
 using Gnoj_Ham;
 
 namespace Gnoj_HamView
@@ -492,11 +491,21 @@ namespace Gnoj_HamView
             _riichiTiles = _game.Round.CanCallRiichi();
             if (_riichiTiles.Count > 0)
             {
+                var riichiDecision = _game.Ruleset.DiscardTip ? _game.Round.IaManager.RiichiDecision() : null;
                 Dispatcher.Invoke(() =>
                 {
                     GrdOverlayCanCall.Visibility = Visibility.Visible;
                     BtnRiichi.Visibility = Visibility.Visible;
                     BtnSkipCall.Visibility = Visibility.Visible;
+
+                    if (riichiDecision != null)
+                    {
+                        BtnRiichi.Foreground = Brushes.DarkMagenta;
+                    }
+                    else
+                    {
+                        BtnSkipCall.Foreground = Brushes.DarkMagenta;
+                    }
                 });
                 ActivateTimer(null);
                 return null;
@@ -776,9 +785,21 @@ namespace Gnoj_HamView
                     _riichiTiles = _game.Round.CanCallRiichi();
                     if (_riichiTiles.Count > 0)
                     {
+                        var riichiDecision = _game.Ruleset.DiscardTip ? _game.Round.IaManager.RiichiDecision() : null;
+
                         BtnRiichi.Visibility = Visibility.Visible;
                         BtnSkipCall.Visibility = Visibility.Visible;
                         GrdOverlayCanCall.Visibility = Visibility.Visible;
+
+                        if (riichiDecision != null)
+                        {
+                            BtnRiichi.Foreground = Brushes.DarkMagenta;
+                        }
+                        else
+                        {
+                            BtnSkipCall.Foreground = Brushes.DarkMagenta;
+                        }
+
                         ActivateTimer(null);
                     }
                     else if (Properties.Settings.Default.AutoDiscardAfterRiichi && _game.Round.HumanCanAutoDiscard())
@@ -1092,19 +1113,85 @@ namespace Gnoj_HamView
             BtnSkipCall.Visibility = Visibility.Collapsed;
             GrdOverlayCanCall.Visibility = Visibility.Collapsed;
 
+            BtnChii.Foreground = Brushes.Black;
+            BtnPon.Foreground = Brushes.Black;
+            BtnKan.Foreground = Brushes.Black;
+            BtnRiichi.Foreground = Brushes.Black;
+            BtnSkipCall.Foreground = Brushes.Black;
+
+            var needAdvice = false;
+            var advised = false;
+
             if (preDiscard)
             {
                 // When the player has 14 tiles and need to discard
                 // A kan call might be possible
-                BtnKan.Visibility = !_game.CpuVs && _game.Round.CanCallKan(GamePivot.HUMAN_INDEX).Count > 0 ? Visibility.Visible : Visibility.Collapsed;
+
+                if (!_game.CpuVs && _game.Round.CanCallKan(GamePivot.HUMAN_INDEX).Count > 0)
+                {
+                    BtnKan.Visibility = Visibility.Visible;
+                    if (_game.Ruleset.DiscardTip)
+                    {
+                        needAdvice = true;
+                        if (_game.Round.IaManager.KanDecision(true) != null)
+                        {
+                            BtnKan.Foreground = Brushes.DarkMagenta;
+                            advised = true;
+                        }
+                    }
+                }
             }
             else if (cpuPlay)
             {
                 // When the CPU is playing
                 // Or it's player's turn but he has not pick yet
-                BtnChii.Visibility = _game.Round.IsHumanPlayer && _game.Round.CanCallChii().Keys.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
-                BtnPon.Visibility = !_game.CpuVs && _game.Round.CanCallPon(GamePivot.HUMAN_INDEX) ? Visibility.Visible : Visibility.Collapsed;
-                BtnKan.Visibility = !_game.CpuVs && _game.Round.CanCallKan(GamePivot.HUMAN_INDEX).Count > 0 ? Visibility.Visible : Visibility.Collapsed;
+
+                if (_game.Round.IsHumanPlayer && _game.Round.CanCallChii().Keys.Count > 0)
+                {
+                    BtnChii.Visibility = Visibility.Visible;
+                    if (_game.Ruleset.DiscardTip)
+                    {
+                        needAdvice = true;
+                        if (_game.Round.IaManager.ChiiDecision() != null)
+                        {
+                            BtnChii.Foreground = Brushes.DarkMagenta;
+                            advised = true;
+                        }
+                    }
+                }
+
+                if (!_game.CpuVs && _game.Round.CanCallPon(GamePivot.HUMAN_INDEX))
+                {
+                    BtnPon.Visibility = Visibility.Visible;
+                    if (_game.Ruleset.DiscardTip)
+                    {
+                        needAdvice = true;
+                        if (_game.Round.IaManager.PonDecision() > -1)
+                        {
+                            BtnPon.Foreground = Brushes.DarkMagenta;
+                            advised = true;
+                        }
+                    }
+                }
+
+                if (!_game.CpuVs && _game.Round.CanCallKan(GamePivot.HUMAN_INDEX).Count > 0)
+                {
+                    BtnKan.Visibility = Visibility.Visible;
+                    if (_game.Ruleset.DiscardTip)
+                    {
+                        needAdvice = true;
+                        if (_game.Round.IaManager.KanDecision(false) != null)
+                        {
+                            BtnKan.Foreground = Brushes.DarkMagenta;
+                            advised = true;
+                        }
+                    }
+                }
+            }
+
+            if (needAdvice && !advised)
+            {
+                BtnSkipCall.Foreground = Brushes.DarkMagenta;
             }
 
             if (BtnChii.Visibility == Visibility.Visible
