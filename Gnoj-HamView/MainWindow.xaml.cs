@@ -9,7 +9,6 @@ using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
-using System.Windows.Shapes;
 using Gnoj_Ham;
 
 namespace Gnoj_HamView
@@ -300,8 +299,13 @@ namespace Gnoj_HamView
                     PanelButton = null,
                     RonPlayerId = null
                 };
-                while (true && !_hardStopAutoplay)
+                var isFirstTurn = true;
+                while (!_hardStopAutoplay)
                 {
+                    if (!isFirstTurn)
+                        skipCurrentAction = false;
+                    isFirstTurn = false;
+
                     if (!skipCurrentAction && !humanRonPending && !_game.CpuVs && _game.Round.CanCallRon(GamePivot.HUMAN_INDEX))
                     {
                         Dispatcher.Invoke(() =>
