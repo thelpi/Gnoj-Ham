@@ -148,16 +148,7 @@ namespace Gnoj_Ham
         /// <returns>The player index who makes the call; <c>-1</c> is none.</returns>
         public int PonDecision()
         {
-            int opponentPlayerId = -1;
-            for (var i = 0; i < _round.Game.Players.Count; i++)
-            {
-                if (_round.CanCallPon(i))
-                {
-                    opponentPlayerId = i;
-                    break;
-                }
-            }
-
+            int opponentPlayerId = _round.OpponentsCanCallPon();
             if (opponentPlayerId > -1)
             {
                 TilePivot tile = _round.GetDiscard(_round.PreviousPlayerIndex).Last();
@@ -200,17 +191,7 @@ namespace Gnoj_Ham
         /// </returns>
         public Tuple<int, TilePivot> KanDecision(bool checkConcealedOnly)
         {
-            Tuple<int, List<TilePivot>> opponentPlayerIdWithTiles = null;
-            for (var i = 0; i < _round.Game.Players.Count; i++)
-            {
-                var kanTiles = _round.CanCallKanWithChoices(i, checkConcealedOnly);
-                if (kanTiles.Count > 0)
-                {
-                    opponentPlayerIdWithTiles = new Tuple<int, List<TilePivot>>(i, kanTiles);
-                    break;
-                }
-            }
-
+            Tuple<int, List<TilePivot>> opponentPlayerIdWithTiles = _round.OpponentsCanCallKan(checkConcealedOnly);
             if (opponentPlayerIdWithTiles != null)
             {
                 // Rinshan kaihou possibility: call
@@ -294,7 +275,7 @@ namespace Gnoj_Ham
         /// </returns>
         public Tuple<TilePivot, bool> ChiiDecision()
         {
-            Dictionary<TilePivot, bool> chiiTiles = _round.CanCallChii();
+            Dictionary<TilePivot, bool> chiiTiles = _round.OpponentsCanCallChii();
             if (chiiTiles.Count > 0)
             {
                 // Proceeds to chii if :
