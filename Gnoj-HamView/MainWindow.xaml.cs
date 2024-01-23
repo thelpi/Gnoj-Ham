@@ -299,16 +299,8 @@ namespace Gnoj_HamView
                     PanelButton = null,
                     RonPlayerId = null
                 };
-
-                var firstTurn = true;
                 while (true && !_hardStopAutoplay)
                 {
-                    if (!firstTurn)
-                    {
-                        skipCurrentAction = false;
-                    }
-                    firstTurn = false;
-
                     if (!skipCurrentAction && !humanRonPending && !_game.CpuVs && _game.Round.CanCallRon(GamePivot.HUMAN_INDEX))
                     {
                         Dispatcher.Invoke(() =>
