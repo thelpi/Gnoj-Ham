@@ -100,6 +100,7 @@
       <DependentUpon>EndOfGameWindow.xaml</DependentUpon>
     </Compile>
     <Compile Include="GraphicTools.cs" />
+    <Compile Include="Languages.cs" />
     <Compile Include="PanelButton.cs" />
     <Compile Include="PlayerSaveStatsWindow.xaml.cs">
       <DependentUpon>PlayerSaveStatsWindow.xaml</DependentUpon>
@@ -140,6 +141,14 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Resource Include="Resources\StringResources_en.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Resources\StringResources_fr.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
     <Page Include="ScoreWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -376,6 +385,12 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Resource>
     <Resource Include="Resources\stick_100.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Resources\english.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Resources\french.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Resource>
     <Content Include="Resources\tick.wav">

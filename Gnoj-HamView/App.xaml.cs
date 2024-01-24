@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Windows;
+using Gnoj_HamView.Properties;
 
 namespace Gnoj_HamView
 {
@@ -12,6 +13,8 @@ namespace Gnoj_HamView
 
         private void Application_Startup(object sender, StartupEventArgs e)
         {
+            SetLanguageDictionary(Resources);
+
             var screenHeight = SystemParameters.PrimaryScreenHeight;
             if (screenHeight < MinimalHeightResolution)
             {
@@ -23,6 +26,21 @@ namespace Gnoj_HamView
             }
 
             new IntroWindow().ShowDialog();
+        }
+
+        internal static void SetLanguageDictionary(ResourceDictionary resources)
+        {
+            var dict = new ResourceDictionary();
+            switch ((Languages)Settings.Default.Language)
+            {
+                case Languages.fr:
+                    dict.Source = new Uri("..\\Resources\\StringResources_fr.xaml", UriKind.Relative);
+                    break;
+                default:
+                    dict.Source = new Uri("..\\Resources\\StringResources_en.xaml", UriKind.Relative);
+                    break;
+            }
+            resources.MergedDictionaries.Add(dict);
         }
     }
 }

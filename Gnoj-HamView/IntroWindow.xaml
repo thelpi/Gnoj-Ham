@@ -7,8 +7,8 @@
         WindowStartupLocation="CenterScreen"
         Background="Gainsboro"
         Width="345"
-        Height="322"
-        Title="New game">
+        Height="362"
+        Title="{DynamicResource titleIntroWindow}">
     <!-- Fixed Width and Height:
     Width should adjust the left of button Start with checkbox above.
     Height should display the bottom line of first TabItem
@@ -33,6 +33,7 @@
                             <ColumnDefinition Width="150" />
                         </Grid.ColumnDefinitions>
                         <Grid.RowDefinitions>
+                            <RowDefinition Height="40" />
                             <RowDefinition Height="30" />
                             <RowDefinition Height="30" />
                             <RowDefinition Height="30" />
@@ -41,20 +42,35 @@
                             <RowDefinition Height="30" />
                             <RowDefinition Height="30" />
                         </Grid.RowDefinitions>
-                        <Label Grid.Column="0" Grid.Row="0" HorizontalContentAlignment="Right" VerticalContentAlignment="Center" Content="Player name" />
-                        <Label Grid.Column="0" Grid.Row="1" HorizontalContentAlignment="Right" VerticalContentAlignment="Center" Content="Chrono" />
-                        <Label Grid.Column="0" Grid.Row="2" HorizontalContentAlignment="Right" VerticalContentAlignment="Center" Content="CPU speed" />
-                        <Label Grid.Column="0" Grid.Row="3" HorizontalContentAlignment="Right" VerticalContentAlignment="Center" Content="Sounds" />
-                        <Label Grid.Column="0" Grid.Row="4" HorizontalContentAlignment="Right" VerticalContentAlignment="Center" Content="Auto-ron/tsumo" />
-                        <Label Grid.Column="0" Grid.Row="5" HorizontalContentAlignment="Right" VerticalContentAlignment="Center" Content="Auto riichi discard" />
-                        <Label Grid.Column="0" Grid.Row="6" HorizontalContentAlignment="Right" VerticalContentAlignment="Center" Content="Discard tip" />
-                        <TextBox Margin="5, 0, 0, 0" Grid.Column="1" Grid.Row="0" Name="TxtPlayerName" Height="25" VerticalContentAlignment="Center" />
-                        <ComboBox Margin="5, 0, 0, 0" Grid.Column="1" Grid.Row="1" Name="CbbChronoSpeed" Height="25" VerticalContentAlignment="Center" />
-                        <ComboBox Margin="5, 0, 0, 0" Grid.Column="1" Grid.Row="2" Name="CbbCpuSpeed" Height="25" VerticalContentAlignment="Center" />
-                        <CheckBox Margin="5, 0, 0, 0" Grid.Column="1" Grid.Row="3" Name="ChkSounds" VerticalAlignment="Center" />
-                        <CheckBox Margin="5, 0, 0, 0" Grid.Column="1" Grid.Row="4" Name="ChkAutoTsumoRon" VerticalAlignment="Center" />
-                        <CheckBox Margin="5, 0, 0, 0" Grid.Column="1" Grid.Row="5" Name="ChkAutoRiichiDiscard" VerticalAlignment="Center" />
-                        <CheckBox Margin="5, 0, 0, 0" Grid.Column="1" Grid.Row="6" Name="ChkDiscardTip" VerticalAlignment="Center" />
+                        <ComboBox Margin="5, 0, 0, 0" Height="30" VerticalContentAlignment="Center"  Grid.Row="0" Grid.Column="1" Name="CbbLanguage">
+                            <ComboBoxItem>
+                                <StackPanel Orientation="Horizontal">
+                                    <Image Source="Resources/english.png" Stretch="UniformToFill" Height="16" />
+                                    <Label Content="English" />
+                                </StackPanel>
+                            </ComboBoxItem>
+                            <ComboBoxItem>
+                                <StackPanel Orientation="Horizontal">
+                                    <Image Source="Resources/french.png" Stretch="UniformToFill" Height="16" />
+                                    <Label Content="Français" />
+                                </StackPanel>
+                            </ComboBoxItem>
+                        </ComboBox>
+                        <Label Grid.Column="0" Grid.Row="0" HorizontalContentAlignment="Right" VerticalContentAlignment="Center" Content="{DynamicResource language}" />
+                        <Label Grid.Column="0" Grid.Row="1" HorizontalContentAlignment="Right" VerticalContentAlignment="Center" Content="{DynamicResource playerName}" />
+                        <Label Grid.Column="0" Grid.Row="2" HorizontalContentAlignment="Right" VerticalContentAlignment="Center" Content="{DynamicResource chrono}" />
+                        <Label Grid.Column="0" Grid.Row="3" HorizontalContentAlignment="Right" VerticalContentAlignment="Center" Content="{DynamicResource cpuSpeed}" />
+                        <Label Grid.Column="0" Grid.Row="4" HorizontalContentAlignment="Right" VerticalContentAlignment="Center" Content="{DynamicResource sounds}" />
+                        <Label Grid.Column="0" Grid.Row="5" HorizontalContentAlignment="Right" VerticalContentAlignment="Center" Content="{DynamicResource autoRonTsumo}" />
+                        <Label Grid.Column="0" Grid.Row="6" HorizontalContentAlignment="Right" VerticalContentAlignment="Center" Content="{DynamicResource autoRiichiDiscard}" />
+                        <Label Grid.Column="0" Grid.Row="7" HorizontalContentAlignment="Right" VerticalContentAlignment="Center" Content="{DynamicResource discardTip}" />
+                        <TextBox Margin="5, 0, 0, 0" Grid.Column="1" Grid.Row="1" Name="TxtPlayerName" Height="25" VerticalContentAlignment="Center" />
+                        <ComboBox Margin="5, 0, 0, 0" Grid.Column="1" Grid.Row="2" Name="CbbChronoSpeed" Height="25" VerticalContentAlignment="Center" />
+                        <ComboBox Margin="5, 0, 0, 0" Grid.Column="1" Grid.Row="3" Name="CbbCpuSpeed" Height="25" VerticalContentAlignment="Center" />
+                        <CheckBox Margin="5, 0, 0, 0" Grid.Column="1" Grid.Row="4" Name="ChkSounds" VerticalAlignment="Center" />
+                        <CheckBox Margin="5, 0, 0, 0" Grid.Column="1" Grid.Row="5" Name="ChkAutoTsumoRon" VerticalAlignment="Center" />
+                        <CheckBox Margin="5, 0, 0, 0" Grid.Column="1" Grid.Row="6" Name="ChkAutoRiichiDiscard" VerticalAlignment="Center" />
+                        <CheckBox Margin="5, 0, 0, 0" Grid.Column="1" Grid.Row="7" Name="ChkDiscardTip" VerticalAlignment="Center" />
                     </Grid>
                 </TabItem>
                 <TabItem Header="Rules">

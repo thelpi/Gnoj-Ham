@@ -23,6 +23,17 @@ namespace Gnoj_HamView
             CbbCpuSpeed.ItemsSource = GraphicTools.GetCpuSpeedDisplayValues();
 
             LoadConfiguration();
+
+            CbbLanguage.SelectedIndex = Settings.Default.Language;
+            CbbLanguage.SelectionChanged += (o, _) =>
+            {
+                if (CbbLanguage.SelectedIndex >= 0 && CbbLanguage.SelectedIndex != Settings.Default.Language)
+                {
+                    Settings.Default.Language = CbbLanguage.SelectedIndex < 0 ? 0 : CbbLanguage.SelectedIndex;
+                    Settings.Default.Save();
+                    App.SetLanguageDictionary(Resources);
+                }
+            };
         }
 
         private void BtnStart_Click(object sender, RoutedEventArgs e)
