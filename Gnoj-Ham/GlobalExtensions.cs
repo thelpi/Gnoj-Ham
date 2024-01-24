@@ -36,14 +36,11 @@ namespace Gnoj_Ham
         /// <returns>The cartesian product; empty list if at least one argument is <c>Null</c>.</returns>
         public static List<List<T>> CartesianProduct<T>(this List<List<T>> firstList, List<List<T>> secondList)
         {
-            if (firstList == null || secondList == null)
-            {
-                return new List<List<T>>();
-            }
-
-            return firstList.SelectMany(elem1 => secondList, (elem1, elem2) =>
+            return firstList == null || secondList == null
+                ? new List<List<T>>()
+                : firstList.SelectMany(elem1 => secondList, (elem1, elem2) =>
                                         {
-                                            List<T> elemsJoin = new List<T>(elem1);
+                                            var elemsJoin = new List<T>(elem1);
                                             elemsJoin.AddRange(elem2);
                                             return elemsJoin;
                                         }).ToList();
@@ -146,8 +143,8 @@ namespace Gnoj_Ham
                 return playerIndex;
             }
 
-            int nIndexMod = nIndex % 4;
-            int newIndex = playerIndex + nIndexMod;
+            var nIndexMod = nIndex % 4;
+            var newIndex = playerIndex + nIndexMod;
 
             if (nIndex > 0 && newIndex > 3)
             {

@@ -28,7 +28,7 @@ namespace Gnoj_HamView
             StpDoraTiles.SetDorasPanel(endOfRoundInformations.DoraTiles, endOfRoundInformations.DoraVisibleCount);
             StpUraDoraTiles.SetDorasPanel(endOfRoundInformations.UraDoraTiles, endOfRoundInformations.UraDoraVisibleCount);
 
-            foreach (EndOfRoundInformationsPivot.PlayerInformationsPivot p in endOfRoundInformations.PlayersInfo)
+            foreach (var p in endOfRoundInformations.PlayersInfo)
             {
                 if (p.HandPointsGain > 0)
                 {
@@ -40,7 +40,7 @@ namespace Gnoj_HamView
                 }
             }
 
-            for (int i = 0; i < 4; i++)
+            for (var i = 0; i < 4; i++)
             {
                 this.FindControl("LblPlayer", i).Content = players[i].Name;
                 this.FindControl("LblScore", i).Content = players[i].Points;

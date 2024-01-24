@@ -125,61 +125,21 @@ namespace Gnoj_Ham
             switch (Family)
             {
                 case FamilyPivot.Dragon:
-                    if (other.Family == FamilyPivot.Dragon)
-                    {
-                        return Dragon.Value < other.Dragon.Value ? -1 : (Dragon.Value == other.Dragon.Value ? 0 : 1);
-                    }
-                    else
-                    {
-                        return 1;
-                    }
+                    return other.Family == FamilyPivot.Dragon ? Dragon.Value < other.Dragon.Value ? -1 : (Dragon.Value == other.Dragon.Value ? 0 : 1) : 1;
                 case FamilyPivot.Wind:
-                    if (other.Family == FamilyPivot.Wind)
-                    {
-                        return Wind.Value < other.Wind.Value ? -1 : (Wind.Value == other.Wind.Value ? 0 : 1);
-                    }
-                    else if (other.Family == FamilyPivot.Dragon)
-                    {
-                        return -1;
-                    }
-                    else
-                    {
-                        return 1;
-                    }
+                    return other.Family == FamilyPivot.Wind
+                        ? Wind.Value < other.Wind.Value ? -1 : (Wind.Value == other.Wind.Value ? 0 : 1)
+                        : other.Family == FamilyPivot.Dragon ? -1 : 1;
                 default:
                     if (other.Family == Family)
                     {
-                        if (Number < other.Number)
-                        {
-                            return -1;
-                        }
-                        else if (Number > other.Number)
-                        {
-                            return 1;
-                        }
-                        else
-                        {
-                            if (IsRedDora && !other.IsRedDora)
-                            {
-                                return -1;
-                            }
-                            else if (!IsRedDora && other.IsRedDora)
-                            {
-                                return 1;
-                            }
-                            else
-                            {
-                                return 0;
-                            }
-                        }
-                    }
-                    else if (other.Family < Family)
-                    {
-                        return 1;
+                        return Number < other.Number
+                            ? -1
+                            : Number > other.Number ? 1 : IsRedDora && !other.IsRedDora ? -1 : !IsRedDora && other.IsRedDora ? 1 : 0;
                     }
                     else
                     {
-                        return -1;
+                        return other.Family < Family ? 1 : -1;
                     }
             }
         }
@@ -269,13 +229,13 @@ namespace Gnoj_Ham
         {
             var tiles = new List<TilePivot>();
 
-            foreach (FamilyPivot family in Enum.GetValues(typeof(FamilyPivot)).Cast<FamilyPivot>())
+            foreach (var family in Enum.GetValues(typeof(FamilyPivot)).Cast<FamilyPivot>())
             {
                 if (family == FamilyPivot.Dragon)
                 {
-                    foreach (DragonPivot dragon in Enum.GetValues(typeof(DragonPivot)).Cast<DragonPivot>())
+                    foreach (var dragon in Enum.GetValues(typeof(DragonPivot)).Cast<DragonPivot>())
                     {
-                        for (int i = 0; i < 4; i++)
+                        for (var i = 0; i < 4; i++)
                         {
                             tiles.Add(new TilePivot(dragon));
                         }
@@ -283,9 +243,9 @@ namespace Gnoj_Ham
                 }
                 else if (family == FamilyPivot.Wind)
                 {
-                    foreach (WindPivot wind in Enum.GetValues(typeof(WindPivot)).Cast<WindPivot>())
+                    foreach (var wind in Enum.GetValues(typeof(WindPivot)).Cast<WindPivot>())
                     {
-                        for (int i = 0; i < 4; i++)
+                        for (var i = 0; i < 4; i++)
                         {
                             tiles.Add(new TilePivot(wind));
                         }
@@ -295,7 +255,7 @@ namespace Gnoj_Ham
                 {
                     for (byte j = 1; j <= 9; j++)
                     {
-                        for (int i = 0; i < 4; i++)
+                        for (var i = 0; i < 4; i++)
                         {
                             tiles.Add(new TilePivot(family, j, withRedDoras && j == 5 && i == 3));
                         }
@@ -370,35 +330,15 @@ namespace Gnoj_Ham
             switch (Family)
             {
                 case FamilyPivot.Dragon:
-                    if (other.Dragon.Value == DragonPivot.Red)
-                    {
-                        return Dragon.Value == DragonPivot.White;
-                    }
-                    else if (other.Dragon.Value == DragonPivot.White)
-                    {
-                        return Dragon.Value == DragonPivot.Green;
-                    }
-                    else
-                    {
-                        return Dragon.Value == DragonPivot.Red;
-                    }
+                    return other.Dragon.Value == DragonPivot.Red
+                        ? Dragon.Value == DragonPivot.White
+                        : other.Dragon.Value == DragonPivot.White ? Dragon.Value == DragonPivot.Green : Dragon.Value == DragonPivot.Red;
                 case FamilyPivot.Wind:
-                    if (other.Wind.Value == WindPivot.East)
-                    {
-                        return Wind.Value == WindPivot.South;
-                    }
-                    else if (other.Wind.Value == WindPivot.South)
-                    {
-                        return Wind.Value == WindPivot.West;
-                    }
-                    else if (other.Wind.Value == WindPivot.West)
-                    {
-                        return Wind.Value == WindPivot.North;
-                    }
-                    else
-                    {
-                        return Wind.Value == WindPivot.East;
-                    }
+                    return other.Wind.Value == WindPivot.East
+                        ? Wind.Value == WindPivot.South
+                        : other.Wind.Value == WindPivot.South
+                            ? Wind.Value == WindPivot.West
+                            : other.Wind.Value == WindPivot.West ? Wind.Value == WindPivot.North : Wind.Value == WindPivot.East;
                 default:
                     return Number == (other.Number == 9 ? 1 : other.Number + 1);
             }

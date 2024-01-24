@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Windows;
+﻿using System.Windows;
 using Gnoj_Ham;
 
 namespace Gnoj_HamView
@@ -17,8 +16,8 @@ namespace Gnoj_HamView
         {
             InitializeComponent();
 
-            List<PlayerScorePivot> playerScores = ScoreTools.ComputeCurrentRanking(game);
-            for (int i = 0; i < playerScores.Count; i++)
+            var playerScores = ScoreTools.ComputeCurrentRanking(game);
+            for (var i = 0; i < playerScores.Count; i++)
             {
                 this.FindControl("LblRank", i).Content = playerScores[i].Rank;
                 this.FindControl("LblPlayer", i).Content = playerScores[i].Player.Name;

@@ -123,22 +123,11 @@ namespace Gnoj_Ham
         /// <returns>Points for tenpai players; Points for non-tenpai players.</returns>
         public static Tuple<int, int> GetRyuukyokuPoints(int countTenpai)
         {
-            if (countTenpai == 1)
-            {
-                return new Tuple<int, int>(TENPAI_BASE_POINTS * (4 - countTenpai), -TENPAI_BASE_POINTS);
-            }
-            else if (countTenpai == 2)
-            {
-                return new Tuple<int, int>(TENPAI_BASE_POINTS + TENPAI_BASE_POINTS / countTenpai, -(TENPAI_BASE_POINTS + TENPAI_BASE_POINTS / countTenpai));
-            }
-            else if (countTenpai == 3)
-            {
-                return new Tuple<int, int>(TENPAI_BASE_POINTS, countTenpai * -TENPAI_BASE_POINTS);
-            }
-            else
-            {
-                return new Tuple<int, int>(0, 0);
-            }
+            return countTenpai == 1
+                ? new Tuple<int, int>(TENPAI_BASE_POINTS * (4 - countTenpai), -TENPAI_BASE_POINTS)
+                : countTenpai == 2
+                    ? new Tuple<int, int>(TENPAI_BASE_POINTS + TENPAI_BASE_POINTS / countTenpai, -(TENPAI_BASE_POINTS + TENPAI_BASE_POINTS / countTenpai))
+                    : countTenpai == 3 ? new Tuple<int, int>(TENPAI_BASE_POINTS, countTenpai * -TENPAI_BASE_POINTS) : new Tuple<int, int>(0, 0);
         }
 
         /// <summary>
@@ -158,14 +147,14 @@ namespace Gnoj_Ham
                 throw new ArgumentNullException(nameof(yakus));
             }
 
-            int yakumansCount = yakus.Count(y => (concealed ? y.ConcealedFanCount : y.FanCount) == 13);
+            var yakumansCount = yakus.Count(y => (concealed ? y.ConcealedFanCount : y.FanCount) == 13);
 
             if (yakumansCount > 0)
             {
                 return (MULTIPLE_YAKUMANS ? yakumansCount : 1) * 13;
             }
 
-            int initialFanCount = yakus.Sum(y => concealed ? y.ConcealedFanCount : y.FanCount) + dorasCount + uraDorasCount + redDorasCount;
+            var initialFanCount = yakus.Sum(y => concealed ? y.ConcealedFanCount : y.FanCount) + dorasCount + uraDorasCount + redDorasCount;
 
             return initialFanCount >= 13 ? (ALLOW_KAZOE_YAKUMAN ? 13 : 12) : initialFanCount;
         }
@@ -190,7 +179,7 @@ namespace Gnoj_Ham
                 return CHIITOI_FU;
             }
 
-            int fuCount =
+            var fuCount =
                 hand.YakusCombinations.Count(c => c.IsSquare && c.HasTerminalOrHonor) * HONOR_KAN_FU
                 + hand.YakusCombinations.Count(c => c.IsSquare && !c.HasTerminalOrHonor) * REGULAR_KAN_FU
                 + hand.YakusCombinations.Count(c => c.IsBrelan && c.HasTerminalOrHonor) * HONOR_PON_FU
@@ -216,7 +205,7 @@ namespace Gnoj_Ham
                 fuCount += OPEN_PINFU_FU;
             }
 
-            int baseFu = (hand.IsConcealed && !isTsumo ? BASE_CONCEALED_RON_FU : BASE_FU) + fuCount;
+            var baseFu = (hand.IsConcealed && !isTsumo ? BASE_CONCEALED_RON_FU : BASE_FU) + fuCount;
 
             return Convert.ToInt32(Math.Ceiling(baseFu / (decimal)10) * 10);
         }
@@ -234,10 +223,10 @@ namespace Gnoj_Ham
         /// </returns>
         public static Tuple<int, int> GetPoints(int fanCount, int fuCount, bool isTsumo, WindPivot playerWind)
         {
-            int v1 = 0;
-            int v2 = 0;
+            var v1 = 0;
+            var v2 = 0;
 
-            bool east = playerWind == WindPivot.East;
+            var east = playerWind == WindPivot.East;
 
             if ((fanCount == 4 && fuCount >= 40) || (fanCount == 3 && fuCount >= 70))
             {
@@ -246,7 +235,7 @@ namespace Gnoj_Ham
 
             if (fanCount > 4)
             {
-                int basePoints = OVER_FOUR_FAN.Last(k => k.Key <= fanCount).Value * (east ? 2 : 1);
+                var basePoints = OVER_FOUR_FAN.Last(k => k.Key <= fanCount).Value * (east ? 2 : 1);
                 // in case of several yakumans.
                 if (fanCount > 13)
                 {
@@ -305,17 +294,9 @@ namespace Gnoj_Ham
         /// <exception cref="ArgumentOutOfRangeException"><paramref name="winnerPlayersCount"/> should be greater than <c>0</c> if <paramref name="isTsumo"/> is <c>False</c>.</exception>
         public static int GetHonbaPoints(int honbaCount, int winnerPlayersCount, bool isTsumo)
         {
-            if (winnerPlayersCount < 1 && !isTsumo)
-            {
-                throw new ArgumentOutOfRangeException(nameof(winnerPlayersCount));
-            }
-
-            if (honbaCount > 0)
-            {
-                return (honbaCount * HONBA_VALUE) / (isTsumo ? 3 : winnerPlayersCount);
-            }
-
-            return 0;
+            return winnerPlayersCount < 1 && !isTsumo
+                ? throw new ArgumentOutOfRangeException(nameof(winnerPlayersCount))
+                : honbaCount > 0 ? (honbaCount * HONBA_VALUE) / (isTsumo ? 3 : winnerPlayersCount) : 0;
         }
 
         /// <summary>
@@ -332,8 +313,8 @@ namespace Gnoj_Ham
 
             var playersOrdered = new List<PlayerScorePivot>();
 
-            int i = 1;
-            foreach (PlayerPivot player in game.Players.OrderByDescending(p => p.Points))
+            var i = 1;
+            foreach (var player in game.Players.OrderByDescending(p => p.Points))
             {
                 playersOrdered.Add(new PlayerScorePivot(player, i, ComputeUma(i), game.Ruleset.InitialPointsRule.GetInitialPointsFromRule()));
                 i++;

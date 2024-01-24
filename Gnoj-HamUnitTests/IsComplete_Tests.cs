@@ -17,7 +17,7 @@ namespace Gnoj_HamUnitTests
         [TestMethod]
         public void IsComplete_FullyConcealed_AverageSinglePattern()
         {
-            List<TilePivot> tilesSet = TilePivot.GetCompleteSet(false);
+            var tilesSet = TilePivot.GetCompleteSet(false);
 
             var concealedTiles = new List<TilePivot>
             {
@@ -39,7 +39,7 @@ namespace Gnoj_HamUnitTests
 
             concealedTiles = concealedTiles.OrderBy(t => GlobalTools.Randomizer.NextDouble()).ToList();
 
-            List<List<TileComboPivot>> result = HandPivot.IsCompleteBasic(concealedTiles, new List<TileComboPivot>());
+            var result = HandPivot.IsCompleteBasic(concealedTiles, new List<TileComboPivot>());
 
             Assert.IsNotNull(result);
             Assert.AreEqual(1, result.Count);
@@ -52,7 +52,7 @@ namespace Gnoj_HamUnitTests
         [TestMethod]
         public void IsComplete_WithDeclaredKan_ComplexMultiplePatterns()
         {
-            List<TilePivot> tilesSet = TilePivot.GetCompleteSet(false);
+            var tilesSet = TilePivot.GetCompleteSet(false);
 
             var concealedTiles = new List<TilePivot>
             {
@@ -71,7 +71,7 @@ namespace Gnoj_HamUnitTests
 
             concealedTiles = concealedTiles.OrderBy(t => GlobalTools.Randomizer.NextDouble()).ToList();
 
-            List<List<TileComboPivot>> result = HandPivot.IsCompleteBasic(concealedTiles, new List<TileComboPivot>
+            var result = HandPivot.IsCompleteBasic(concealedTiles, new List<TileComboPivot>
             {
                 TileComboPivot.BuildSquare(TilePivot.GetTile(tilesSet, FamilyPivot.Dragon, dragon: DragonPivot.White))
             });

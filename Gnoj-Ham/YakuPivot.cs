@@ -371,12 +371,9 @@ namespace Gnoj_Ham
         /// <exception cref="ArgumentNullException"><paramref name="yakus"/> is <c>Null</c>.</exception>
         public static List<YakuPivot> GetBestYakusFromList(IEnumerable<List<YakuPivot>> yakus, bool concealedHand)
         {
-            if (yakus == null)
-            {
-                throw new ArgumentNullException(nameof(yakus));
-            }
-
-            return yakus.OrderByDescending(ys => ys.Sum(y => concealedHand ? y.ConcealedFanCount : y.FanCount)).FirstOrDefault() ?? new List<YakuPivot>();
+            return yakus == null
+                ? throw new ArgumentNullException(nameof(yakus))
+                : yakus.OrderByDescending(ys => ys.Sum(y => concealedHand ? y.ConcealedFanCount : y.FanCount)).FirstOrDefault() ?? new List<YakuPivot>();
         }
 
         /// <summary>
@@ -408,9 +405,9 @@ namespace Gnoj_Ham
 
             var yakus = new List<YakuPivot>();
 
-            foreach (YakuPivot yaku in Yakus.Where(y => y.IsYakuman))
+            foreach (var yaku in Yakus.Where(y => y.IsYakuman))
             {
-                bool addYaku = false;
+                var addYaku = false;
                 if (yaku == Daisangen)
                 {
                     addYaku = combinationsSequence.Count(c => c.IsBrelanOrSquare && c.Family == FamilyPivot.Dragon) == 3;
@@ -448,7 +445,7 @@ namespace Gnoj_Ham
                     if (combinationsSequence.All(c => c.IsConcealed)
                         && combinationsSequence.Select(c => c.Family).Distinct().Count() == 1)
                     {
-                        string numberPattern = string.Join(string.Empty, combinationsSequence.SelectMany(c => c.Tiles).Select(t => t.Number).OrderBy(i => i));
+                        var numberPattern = string.Join(string.Empty, combinationsSequence.SelectMany(c => c.Tiles).Select(t => t.Number).OrderBy(i => i));
                         addYaku = new[]
                         {
                             "11112345678999", "11122345678999", "11123345678999",
@@ -493,10 +490,10 @@ namespace Gnoj_Ham
                 return yakus;
             }
 
-            foreach (YakuPivot yaku in Yakus.Where(y => !y.IsYakuman))
+            foreach (var yaku in Yakus.Where(y => !y.IsYakuman))
             {
-                bool addYaku = false;
-                int occurences = 1;
+                var addYaku = false;
+                var occurences = 1;
                 if (yaku == Chiniisou)
                 {
                     addYaku = combinationsSequence.Select(c => c.Family).Distinct().Count() == 1
@@ -556,7 +553,7 @@ namespace Gnoj_Ham
                 }
                 else if (yaku == Iipeikou)
                 {
-                    int sequencesCount = combinationsSequence.Count(c => c.IsSequence);
+                    var sequencesCount = combinationsSequence.Count(c => c.IsSequence);
                     addYaku = combinationsSequence.All(c => c.IsConcealed) && sequencesCount >= 2
                         && combinationsSequence.Where(c => c.IsSequence).Distinct().Count() < sequencesCount;
                 }
@@ -597,7 +594,7 @@ namespace Gnoj_Ham
                 }
                 else if (yaku == Ittsu)
                 {
-                    List<TileComboPivot> ittsuFamilyCombos =
+                    var ittsuFamilyCombos =
                         combinationsSequence
                             .Where(c => c.IsSequence)
                             .GroupBy(c => c.Family)
@@ -652,7 +649,7 @@ namespace Gnoj_Ham
 
                 if (addYaku)
                 {
-                    for (int i = 0; i < occurences; i++)
+                    for (var i = 0; i < occurences; i++)
                     {
                         yakus.Add(yaku);
                     }

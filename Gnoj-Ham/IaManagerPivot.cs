@@ -45,9 +45,9 @@ namespace Gnoj_Ham
         /// <returns>The tile to discard.</returns>
         public TilePivot DiscardDecision()
         {
-            List<TilePivot> concealedTiles = _round.GetHand(_round.CurrentPlayerIndex).ConcealedTiles.ToList();
+            var concealedTiles = _round.GetHand(_round.CurrentPlayerIndex).ConcealedTiles.ToList();
 
-            List<TilePivot> discardableTiles = concealedTiles
+            var discardableTiles = concealedTiles
                                                 .Where(t => _round.CanDiscard(t))
                                                 .Distinct()
                                                 .ToList();
@@ -57,21 +57,21 @@ namespace Gnoj_Ham
                 return discardableTiles.First();
             }
 
-            List<TilePivot> discards = _round.ExtractDiscardChoicesFromTenpai(_round.CurrentPlayerIndex);
+            var discards = _round.ExtractDiscardChoicesFromTenpai(_round.CurrentPlayerIndex);
             if (discards.Count > 0)
             {
                 return discards.First();
             }
 
-            List<TilePivot> deadTiles = _round.DeadTilesFromIndexPointOfView(_round.CurrentPlayerIndex).ToList();
+            var deadTiles = _round.DeadTilesFromIndexPointOfView(_round.CurrentPlayerIndex).ToList();
 
             var tilesSafety = new Dictionary<TilePivot, List<TileSafety>>();
 
-            bool oneRiichi = false;
-            foreach (TilePivot tile in discardableTiles)
+            var oneRiichi = false;
+            foreach (var tile in discardableTiles)
             {
                 tilesSafety.Add(tile, new List<TileSafety>());
-                foreach (int i in Enumerable.Range(0, 4).Where(i => i != _round.CurrentPlayerIndex))
+                foreach (var i in Enumerable.Range(0, 4).Where(i => i != _round.CurrentPlayerIndex))
                 {
                     if (_round.IsRiichi(i))
                     {
@@ -115,10 +115,10 @@ namespace Gnoj_Ham
                     .OrderByDescending(t => t.Count())
                     .ThenByDescending(t =>
                     {
-                        bool m2 = concealedTiles.Any(tb => tb.Family == t.Key.Family && tb.Number == t.Key.Number - 2);
-                        bool m1 = concealedTiles.Any(tb => tb.Family == t.Key.Family && tb.Number == t.Key.Number - 1);
-                        bool p1 = concealedTiles.Any(tb => tb.Family == t.Key.Family && tb.Number == t.Key.Number + 1);
-                        bool p2 = concealedTiles.Any(tb => tb.Family == t.Key.Family && tb.Number == t.Key.Number + 2);
+                        var m2 = concealedTiles.Any(tb => tb.Family == t.Key.Family && tb.Number == t.Key.Number - 2);
+                        var m1 = concealedTiles.Any(tb => tb.Family == t.Key.Family && tb.Number == t.Key.Number - 1);
+                        var p1 = concealedTiles.Any(tb => tb.Family == t.Key.Family && tb.Number == t.Key.Number + 1);
+                        var p2 = concealedTiles.Any(tb => tb.Family == t.Key.Family && tb.Number == t.Key.Number + 2);
 
                         return ((m1 ? 1 : 0) * 2 + (p1 ? 1 : 0) * 2 + (p2 ? 1 : 0) + (m2 ? 1 : 0));
                     })
@@ -133,13 +133,8 @@ namespace Gnoj_Ham
         /// <returns>The tile to discard; <c>Null</c> if no decision made.</returns>
         public TilePivot RiichiDecision()
         {
-            List<TilePivot> riichiTiles = _round.CanCallRiichi();
-            if (riichiTiles.Count > 0)
-            {
-                return riichiTiles.First();
-            }
-
-            return null;
+            var riichiTiles = _round.CanCallRiichi();
+            return riichiTiles.Count > 0 ? riichiTiles.First() : null;
         }
 
         /// <summary>
@@ -148,7 +143,7 @@ namespace Gnoj_Ham
         /// <returns>The player index who makes the call; <c>-1</c> is none.</returns>
         public int PonDecision()
         {
-            int opponentPlayerId = _round.OpponentsCanCallPon();
+            var opponentPlayerId = _round.OpponentsCanCallPon();
             if (opponentPlayerId > -1)
             {
                 opponentPlayerId = PonDecisionInternal(opponentPlayerId);
@@ -182,13 +177,10 @@ namespace Gnoj_Ham
         /// </returns>
         public Tuple<int, TilePivot> KanDecision(bool checkConcealedOnly)
         {
-            Tuple<int, List<TilePivot>> opponentPlayerIdWithTiles = _round.OpponentsCanCallKan(checkConcealedOnly);
-            if (opponentPlayerIdWithTiles != null)
-            {
-                return KanDecisionInternal(opponentPlayerIdWithTiles.Item1, opponentPlayerIdWithTiles.Item2, checkConcealedOnly);
-            }
-
-            return null;
+            var opponentPlayerIdWithTiles = _round.OpponentsCanCallKan(checkConcealedOnly);
+            return opponentPlayerIdWithTiles != null
+                ? KanDecisionInternal(opponentPlayerIdWithTiles.Item1, opponentPlayerIdWithTiles.Item2, checkConcealedOnly)
+                : null;
         }
 
         /// <summary>
@@ -201,7 +193,7 @@ namespace Gnoj_Ham
         {
             var callers = new List<int>();
 
-            for (int i = 0; i < 4; i++)
+            for (var i = 0; i < 4; i++)
             {
                 if ((i != GamePivot.HUMAN_INDEX || _round.Game.CpuVs) && _round.CanCallRon(i))
                 {
@@ -231,7 +223,7 @@ namespace Gnoj_Ham
         /// </returns>
         public Tuple<TilePivot, bool> ChiiDecision()
         {
-            Dictionary<TilePivot, bool> chiiTiles = _round.OpponentsCanCallChii();
+            var chiiTiles = _round.OpponentsCanCallChii();
             if (chiiTiles.Count > 0)
             {
                 // Proceeds to chii if :
@@ -276,17 +268,12 @@ namespace Gnoj_Ham
 
         private int PonDecisionInternal(int playerIndex)
         {
-            TilePivot tile = _round.GetDiscard(_round.PreviousPlayerIndex).Last();
+            var tile = _round.GetDiscard(_round.PreviousPlayerIndex).Last();
             // Call the pon if :
             // - the hand is already open
             // - it's valuable (see "HandCanBeOpened")
             var opponentHand = _round.GetHand(playerIndex);
-            if (!opponentHand.IsConcealed || HandCanBeOpened(playerIndex, tile, opponentHand))
-            {
-                return playerIndex;
-            }
-
-            return -1;
+            return !opponentHand.IsConcealed || HandCanBeOpened(playerIndex, tile, opponentHand) ? playerIndex : -1;
         }
 
         private Tuple<int, TilePivot> KanDecisionInternal(int playerId, List<TilePivot> kanPossibilities, bool concealed)
@@ -311,7 +298,7 @@ namespace Gnoj_Ham
                 }
             }
 
-            foreach (TilePivot tile in kanPossibilities)
+            foreach (var tile in kanPossibilities)
             {
                 // Call the kan if :
                 // - it's a concealed one
@@ -334,13 +321,13 @@ namespace Gnoj_Ham
         private Tuple<TilePivot, bool> ChiiDecisionInternal(Dictionary<TilePivot, bool> chiiTiles)
         {
             Tuple<TilePivot, bool> tileChoice = null;
-            foreach (TilePivot tileKey in chiiTiles.Keys)
+            foreach (var tileKey in chiiTiles.Keys)
             {
-                bool m2 = _round.GetHand(_round.CurrentPlayerIndex).ConcealedTiles.Any(t => t.Family == tileKey.Family && t.Number == tileKey.Number - 2);
-                bool m1 = _round.GetHand(_round.CurrentPlayerIndex).ConcealedTiles.Any(t => t.Family == tileKey.Family && t.Number == tileKey.Number - 1);
-                bool m0 = _round.GetHand(_round.CurrentPlayerIndex).ConcealedTiles.Any(t => t == tileKey);
-                bool p1 = _round.GetHand(_round.CurrentPlayerIndex).ConcealedTiles.Any(t => t.Family == tileKey.Family && t.Number == tileKey.Number + 1);
-                bool p2 = _round.GetHand(_round.CurrentPlayerIndex).ConcealedTiles.Any(t => t.Family == tileKey.Family && t.Number == tileKey.Number + 2);
+                var m2 = _round.GetHand(_round.CurrentPlayerIndex).ConcealedTiles.Any(t => t.Family == tileKey.Family && t.Number == tileKey.Number - 2);
+                var m1 = _round.GetHand(_round.CurrentPlayerIndex).ConcealedTiles.Any(t => t.Family == tileKey.Family && t.Number == tileKey.Number - 1);
+                var m0 = _round.GetHand(_round.CurrentPlayerIndex).ConcealedTiles.Any(t => t == tileKey);
+                var p1 = _round.GetHand(_round.CurrentPlayerIndex).ConcealedTiles.Any(t => t.Family == tileKey.Family && t.Number == tileKey.Number + 1);
+                var p2 = _round.GetHand(_round.CurrentPlayerIndex).ConcealedTiles.Any(t => t.Family == tileKey.Family && t.Number == tileKey.Number + 2);
 
                 if (!((m2 && m1 && m0) || (m1 && m0 && p1) || (m0 && p1 && p2)))
                 {
@@ -382,12 +369,9 @@ namespace Gnoj_Ham
 
         private IEnumerable<TilePivot> GetSujisFromDiscard(TilePivot tile, int opponentPlayerIndex)
         {
-            if (tile.IsHonor)
-            {
-                return Enumerable.Empty<TilePivot>();
-            }
-
-            return _round
+            return tile.IsHonor
+                ? Enumerable.Empty<TilePivot>()
+                : _round
                 .GetDiscard(opponentPlayerIndex)
                 .Where(_ => _.Family == tile.Family && (_.Number == tile.Number + 3 || _.Number == tile.Number - 3));
         }
@@ -417,11 +401,11 @@ namespace Gnoj_Ham
                 return false;
             }
 
-            int dorasCount = hand.ConcealedTiles
+            var dorasCount = hand.ConcealedTiles
                 .Sum(t => _round.DoraIndicatorTiles
                     .Take(_round.VisibleDorasCount)
                     .Count(d => t.IsDoraNext(d)));
-            int redDorasCount = hand.ConcealedTiles.Count(t => t.IsRedDora);
+            var redDorasCount = hand.ConcealedTiles.Count(t => t.IsRedDora);
 
             var hasValuablePair = hand.ConcealedTiles.GroupBy(_ => _)
                 .Any(_ => _.Count() >= 2 && _.Key != tile && IsDragonOrValuableWind(_.Key, valuableWinds));

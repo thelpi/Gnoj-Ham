@@ -291,14 +291,14 @@ namespace Gnoj_Ham
         {
             if (PendingRiichiCount > 0)
             {
-                PlayerPivot winner = _players.OrderByDescending(p => p.Points).First();
-                List<PlayerPivot> everyWinner = _players.Where(p => p.Points == winner.Points).ToList();
+                var winner = _players.OrderByDescending(p => p.Points).First();
+                var everyWinner = _players.Where(p => p.Points == winner.Points).ToList();
                 if ((PendingRiichiCount * ScoreTools.RIICHI_COST) % everyWinner.Count != 0)
                 {
                     // This is ugly...
                     everyWinner.Remove(everyWinner.Last());
                 }
-                foreach (PlayerPivot w in everyWinner)
+                foreach (var w in everyWinner)
                 {
                     w.AddPoints((PendingRiichiCount * ScoreTools.RIICHI_COST) / everyWinner.Count);
                 }

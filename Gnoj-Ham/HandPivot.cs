@@ -60,7 +60,7 @@ namespace Gnoj_Ham
         {
             get
             {
-                List<TilePivot> allTiles = _declaredCombinations.SelectMany(t => t.Tiles).Concat(_concealedTiles).ToList();
+                var allTiles = _declaredCombinations.SelectMany(t => t.Tiles).Concat(_concealedTiles).ToList();
                 if (LatestPick != null && !allTiles.Any(t => ReferenceEquals(t, LatestPick)))
                 {
                     allTiles.Add(LatestPick);
@@ -172,7 +172,7 @@ namespace Gnoj_Ham
             }
 
             // Creates a group for each family
-            IEnumerable<IGrouping<FamilyPivot, TilePivot>> familyGroups = concealedTiles.GroupBy(t => t.Family);
+            var familyGroups = concealedTiles.GroupBy(t => t.Family);
 
             // The first case is not possible because its implies a single tile or several pairs.
             // The second case is not possible more than once because its implies a pair.
@@ -183,7 +183,7 @@ namespace Gnoj_Ham
                 return combinationsSequences;
             }
 
-            foreach (IGrouping<FamilyPivot, TilePivot> familyGroup in familyGroups)
+            foreach (var familyGroup in familyGroups)
             {
                 switch (familyGroup.Key)
                 {
@@ -194,7 +194,7 @@ namespace Gnoj_Ham
                         CheckHonorsForCombinations(familyGroup, t => t.Wind.Value, combinationsSequences);
                         break;
                     default:
-                        List<List<TileComboPivot>> temporaryCombinationsSequences = GetCombinationSequencesRecursive(familyGroup);
+                        var temporaryCombinationsSequences = GetCombinationSequencesRecursive(familyGroup);
                         // Cartesian product of existant sequences and temporary list.
                         combinationsSequences = combinationsSequences.Count > 0 ?
                             combinationsSequences.CartesianProduct(temporaryCombinationsSequences) : temporaryCombinationsSequences;
@@ -203,7 +203,7 @@ namespace Gnoj_Ham
             }
 
             // Adds the declared combinations to each sequence of combinations.
-            foreach (List<TileComboPivot> combinationsSequence in combinationsSequences)
+            foreach (var combinationsSequence in combinationsSequences)
             {
                 combinationsSequence.AddRange(declaredCombinations);
             }
@@ -227,7 +227,7 @@ namespace Gnoj_Ham
         private static void CheckHonorsForCombinations<T>(IEnumerable<TilePivot> familyGroup,
             Func<TilePivot, T> groupKeyFunc, List<List<TileComboPivot>> combinationsSequences)
         {
-            List<TileComboPivot> combinations =
+            var combinations =
                 familyGroup
                     .GroupBy(groupKeyFunc)
                     .Where(sg => sg.Count() == 2 || sg.Count() == 3)
@@ -255,7 +255,7 @@ namespace Gnoj_Ham
         {
             var combinations = new List<TileComboPivot>();
 
-            List<TilePivot> sameNumber = tiles.Where(t => t.Number == tile.Number).ToList();
+            var sameNumber = tiles.Where(t => t.Number == tile.Number).ToList();
 
             if (sameNumber.Count > 1)
             {
@@ -277,10 +277,10 @@ namespace Gnoj_Ham
                 }
             }
 
-            TilePivot secondLow = tiles.FirstOrDefault(t => t.Number == tile.Number - 2);
-            TilePivot firstLow = tiles.FirstOrDefault(t => t.Number == tile.Number - 1);
-            TilePivot firstHigh = tiles.FirstOrDefault(t => t.Number == tile.Number + 1);
-            TilePivot secondHigh = tiles.FirstOrDefault(t => t.Number == tile.Number + 2);
+            var secondLow = tiles.FirstOrDefault(t => t.Number == tile.Number - 2);
+            var firstLow = tiles.FirstOrDefault(t => t.Number == tile.Number - 1);
+            var firstHigh = tiles.FirstOrDefault(t => t.Number == tile.Number + 1);
+            var secondHigh = tiles.FirstOrDefault(t => t.Number == tile.Number + 2);
 
             if (secondLow != null && firstLow != null)
             {
@@ -321,21 +321,21 @@ namespace Gnoj_Ham
         {
             var combinationsSequences = new List<List<TileComboPivot>>();
 
-            List<byte> distinctNumbers = tiles.Select(tg => tg.Number).Distinct().OrderBy(v => v).ToList();
-            foreach (byte number in distinctNumbers)
+            var distinctNumbers = tiles.Select(tg => tg.Number).Distinct().OrderBy(v => v).ToList();
+            foreach (var number in distinctNumbers)
             {
-                List<TileComboPivot> combinations = GetCombinationsForTile(tiles.First(fg => fg.Number == number), tiles);
-                foreach (TileComboPivot combination in combinations)
+                var combinations = GetCombinationsForTile(tiles.First(fg => fg.Number == number), tiles);
+                foreach (var combination in combinations)
                 {
                     var subTiles = new List<TilePivot>(tiles);
-                    foreach (TilePivot tile in combination.Tiles)
+                    foreach (var tile in combination.Tiles)
                     {
                         subTiles.Remove(tile);
                     }
                     if (subTiles.Count > 0)
                     {
-                        List<List<TileComboPivot>> subCombinationsSequences = GetCombinationSequencesRecursive(subTiles);
-                        foreach (List<TileComboPivot> combinationsSequence in subCombinationsSequences)
+                        var subCombinationsSequences = GetCombinationSequencesRecursive(subTiles);
+                        foreach (var combinationsSequence in subCombinationsSequences)
                         {
                             combinationsSequence.Add(combination);
                             combinationsSequences.Add(combinationsSequence);
@@ -363,22 +363,13 @@ namespace Gnoj_Ham
         /// <exception cref="ArgumentNullException"><paramref name="notInHandTiles"/> is <c>Null</c>.</exception>
         public static bool IsTenpai(IEnumerable<TilePivot> concealedTiles, IEnumerable<TileComboPivot> combinations, List<TilePivot> notInHandTiles)
         {
-            if (concealedTiles == null)
-            {
-                throw new ArgumentNullException(nameof(concealedTiles));
-            }
-
-            if (notInHandTiles == null)
-            {
-                throw new ArgumentNullException(nameof(notInHandTiles));
-            }
-
-            if (combinations == null)
-            {
-                throw new ArgumentNullException(nameof(combinations));
-            }
-
-            return notInHandTiles.Any(sub =>
+            return concealedTiles == null
+                ? throw new ArgumentNullException(nameof(concealedTiles))
+                : notInHandTiles == null
+                ? throw new ArgumentNullException(nameof(notInHandTiles))
+                : combinations == null
+                ? throw new ArgumentNullException(nameof(combinations))
+                : notInHandTiles.Any(sub =>
                 IsCompleteFull(new List<TilePivot>(concealedTiles) { sub },
                 combinations.ToList()));
         }
@@ -442,7 +433,7 @@ namespace Gnoj_Ham
                 return false;
             }
 
-            int i = 0;
+            var i = 0;
             while (currentRound.PlayerIndexHistory.Count < i
                 && currentRound.PlayerIndexHistory.ElementAt(i) == playerIndex.RelativePlayerIndex(-(i + 1))
                 && playerIndex.RelativePlayerIndex(-(i + 1)) != playerIndex)
@@ -450,7 +441,7 @@ namespace Gnoj_Ham
                 // The tile discarded by the latest player is the tile we ron !
                 if (i > 0)
                 {
-                    TilePivot lastFromDiscard = currentRound.GetDiscard(currentRound.PlayerIndexHistory.ElementAt(i)).LastOrDefault();
+                    var lastFromDiscard = currentRound.GetDiscard(currentRound.PlayerIndexHistory.ElementAt(i)).LastOrDefault();
                     if (lastFromDiscard != null && IsCompleteFull(new List<TilePivot>(ConcealedTiles) { lastFromDiscard }, DeclaredCombinations.ToList()))
                     {
                         Yakus = null;
@@ -486,7 +477,7 @@ namespace Gnoj_Ham
                 throw new InvalidOperationException(Messages.InvalidLatestTileContext);
             }
 
-            int tilesCount = concealedTiles.Count + _declaredCombinations.Count * 3;
+            var tilesCount = concealedTiles.Count + _declaredCombinations.Count * 3;
             if (tilesCount != 14 && !context.IsNagashiMangan)
             {
                 throw new InvalidOperationException(Messages.InvalidHandTilesCount);
@@ -495,7 +486,7 @@ namespace Gnoj_Ham
             Yakus = null;
             YakusCombinations = null;
 
-            List<List<TileComboPivot>> regularCombinationsSequences = IsCompleteBasic(concealedTiles, new List<TileComboPivot>(_declaredCombinations));
+            var regularCombinationsSequences = IsCompleteBasic(concealedTiles, new List<TileComboPivot>(_declaredCombinations));
             if (IsSevenPairs(concealedTiles))
             {
                 regularCombinationsSequences.Add(new List<TileComboPivot>(concealedTiles.GroupBy(t => t).Select(c => new TileComboPivot(c))));
@@ -526,14 +517,14 @@ namespace Gnoj_Ham
             }
             else
             {
-                foreach (List<TileComboPivot> combinationsSequence in regularCombinationsSequences)
+                foreach (var combinationsSequence in regularCombinationsSequences)
                 {
-                    List<YakuPivot> yakus = YakuPivot.GetYakus(combinationsSequence, context);
+                    var yakus = YakuPivot.GetYakus(combinationsSequence, context);
                     yakusSequences.Add(yakus, combinationsSequence);
                 }
             }
 
-            List<YakuPivot> bestYakusSequence = YakuPivot.GetBestYakusFromList(yakusSequences.Keys, IsConcealed);
+            var bestYakusSequence = YakuPivot.GetBestYakusFromList(yakusSequences.Keys, IsConcealed);
 
             if (bestYakusSequence.Count > 0)
             {
@@ -617,7 +608,7 @@ namespace Gnoj_Ham
             }
             else
             {
-                int indexOfPon = _declaredCombinations.IndexOf(fromOpenPon);
+                var indexOfPon = _declaredCombinations.IndexOf(fromOpenPon);
                 if (indexOfPon < 0 || stolenFrom.HasValue)
                 {
                     throw new InvalidOperationException(Messages.InvalidCall);
@@ -673,12 +664,12 @@ namespace Gnoj_Ham
 
             if (afterStealing)
             {
-                TileComboPivot lastCombination = _declaredCombinations.LastOrDefault();
+                var lastCombination = _declaredCombinations.LastOrDefault();
                 if (lastCombination == null || lastCombination.IsConcealed)
                 {
                     throw new ArgumentException(Messages.ImpossibleStealingArgument, nameof(afterStealing));
                 }
-                TilePivot stolenTile = lastCombination.OpenTile;
+                var stolenTile = lastCombination.OpenTile;
                 if (stolenTile == tile)
                 {
                     return false;
@@ -786,7 +777,7 @@ namespace Gnoj_Ham
                 throw new InvalidOperationException(Messages.InvalidCall);
             }
 
-            List<TilePivot> tilesPick = tiles.Take(expectedCount).ToList();
+            var tilesPick = tiles.Take(expectedCount).ToList();
 
             _declaredCombinations.Add(new TileComboPivot(tilesPick, tile, stolenFrom));
             tilesPick.ForEach(t => _concealedTiles.Remove(t));
@@ -808,7 +799,7 @@ namespace Gnoj_Ham
             }
 
             // The combination with the last pick.
-            TileComboPivot combo = YakusCombinations.FirstOrDefault(c => c.Tiles.Any(t => ReferenceEquals(t, LatestPick)));
+            var combo = YakusCombinations.FirstOrDefault(c => c.Tiles.Any(t => ReferenceEquals(t, LatestPick)));
 
             if (combo == null || combo.IsBrelanOrSquare)
             {
@@ -816,17 +807,17 @@ namespace Gnoj_Ham
             }
 
             // Other concealed (and not declared) combinations with the same tile.
-            List<TileComboPivot> otherCombos =
+            var otherCombos =
                 YakusCombinations
                     .Where(c => c != combo && !DeclaredCombinations.Contains(c) && c.Tiles.Contains(LatestPick))
                     .ToList();
 
             // The real "LatestPick" is closed...
-            bool isClosed = combo.IsPair || LatestPick.TileIsMiddleWait(combo) || LatestPick.TileIsEdgeWait(combo);
+            var isClosed = combo.IsPair || LatestPick.TileIsMiddleWait(combo) || LatestPick.TileIsEdgeWait(combo);
 
             // .. but there might be not-closed alternatives with the same tile as "LatestPick" in other combination.
-            bool alternative1 = otherCombos.Any(c => c.IsBrelanOrSquare);
-            bool alternative2 = otherCombos.Any(c => c.IsSequence && !LatestPick.TileIsMiddleWait(c) && !LatestPick.TileIsEdgeWait(c));
+            var alternative1 = otherCombos.Any(c => c.IsBrelanOrSquare);
+            var alternative2 = otherCombos.Any(c => c.IsSequence && !LatestPick.TileIsMiddleWait(c) && !LatestPick.TileIsEdgeWait(c));
 
             return isClosed && !(alternative1 || alternative2);
         }

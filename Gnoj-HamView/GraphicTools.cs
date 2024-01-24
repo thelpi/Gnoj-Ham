@@ -50,9 +50,9 @@ namespace Gnoj_HamView
         /// <returns>A button representing the tile.</returns>
         internal static Button GenerateTileButton(this TilePivot tile, RoutedEventHandler handler = null, AnglePivot angle = AnglePivot.A0, bool concealed = false, double rate = 1)
         {
-            string rscName = concealed ? CONCEALED_TILE_RSC_NAME : tile.ToResourceName();
+            var rscName = concealed ? CONCEALED_TILE_RSC_NAME : tile.ToResourceName();
 
-            Bitmap tileBitmap = Properties.Resources.ResourceManager.GetObject(rscName) as Bitmap;
+            var tileBitmap = Properties.Resources.ResourceManager.GetObject(rscName) as Bitmap;
 
             var button = new Button
             {
@@ -86,8 +86,8 @@ namespace Gnoj_HamView
         {
             panel.Children.Clear();
 
-            int concealedCount = 5 - visibleCount;
-            for (int i = 4; i >= 0; i--)
+            var concealedCount = 5 - visibleCount;
+            for (var i = 4; i >= 0; i--)
             {
                 panel.Children.Add(tiles.ElementAt(i).GenerateTileButton(concealed: 5 - concealedCount <= i, rate: 0.8));
             }
@@ -102,7 +102,7 @@ namespace Gnoj_HamView
         {
             var boxPanel = new DockPanel();
 
-            Line separator = SeparatorForScoreDisplay(p);
+            var separator = SeparatorForScoreDisplay(p);
             if (separator != null)
             {
                 boxPanel.Children.Add(separator);
@@ -111,7 +111,7 @@ namespace Gnoj_HamView
             boxPanel.Children.Add(PointsGridForScoreDisplay(p));
             boxPanel.Children.Add(HandPanelForScoreDisplay(p));
 
-            Grid gridYakus = YakusGridForScoreDisplay(p);
+            var gridYakus = YakusGridForScoreDisplay(p);
             if (gridYakus != null)
             {
                 boxPanel.Children.Add(gridYakus);
@@ -266,16 +266,9 @@ namespace Gnoj_HamView
         {
             return Enum.GetValues(typeof(CpuSpeedPivot)).OfType<CpuSpeedPivot>().Select(v =>
             {
-                int intParsedValue = v.ParseSpeed();
+                var intParsedValue = v.ParseSpeed();
 
-                if (intParsedValue >= 1000)
-                {
-                    return $"{intParsedValue / 1000} sec";
-                }
-                else
-                {
-                    return $"{intParsedValue} ms";
-                }
+                return intParsedValue >= 1000 ? $"{intParsedValue / 1000} sec" : $"{intParsedValue} ms";
             }).ToList();
         }
 
@@ -287,7 +280,7 @@ namespace Gnoj_HamView
         {
             var results = new List<string>();
 
-            foreach (ChronoPivot ch in Enum.GetValues(typeof(ChronoPivot)).OfType<ChronoPivot>())
+            foreach (var ch in Enum.GetValues(typeof(ChronoPivot)).OfType<ChronoPivot>())
             {
                 switch (ch)
                 {
@@ -312,7 +305,7 @@ namespace Gnoj_HamView
         {
             var results = new List<string>();
 
-            foreach (EndOfGameRulePivot rule in Enum.GetValues(typeof(EndOfGameRulePivot)).OfType<EndOfGameRulePivot>())
+            foreach (var rule in Enum.GetValues(typeof(EndOfGameRulePivot)).OfType<EndOfGameRulePivot>())
             {
                 switch (rule)
                 {
@@ -361,13 +354,13 @@ namespace Gnoj_HamView
             gridPoints.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(100) });
             gridPoints.RowDefinitions.Add(new RowDefinition { Height = new GridLength(30) });
 
-            Label fanLbl = FanlabelForScoreDisplay(p);
+            var fanLbl = FanlabelForScoreDisplay(p);
             if (fanLbl != null)
             {
                 gridPoints.Children.Add(fanLbl);
             }
 
-            Label fuLbl = FuLabelForScopreDisplay(p);
+            var fuLbl = FuLabelForScopreDisplay(p);
             if (fuLbl != null)
             {
                 gridPoints.Children.Add(fuLbl);
@@ -398,7 +391,7 @@ namespace Gnoj_HamView
                 return null;
             }
 
-            Line separator = new Line
+            var separator = new Line
             {
                 Fill = System.Windows.Media.Brushes.Black,
                 Height = 2,
@@ -416,7 +409,7 @@ namespace Gnoj_HamView
                 return null;
             }
 
-            Label fuLbl = new Label
+            var fuLbl = new Label
             {
                 VerticalAlignment = VerticalAlignment.Center,
                 Content = p.FuCount
@@ -433,7 +426,7 @@ namespace Gnoj_HamView
                 return null;
             }
 
-            Label fanLbl = new Label
+            var fanLbl = new Label
             {
                 VerticalAlignment = VerticalAlignment.Center,
                 Content = p.FanCount
@@ -450,10 +443,10 @@ namespace Gnoj_HamView
                 return null;
             }
 
-            Grid gridYakus = new Grid();
+            var gridYakus = new Grid();
             gridYakus.ColumnDefinitions.Add(new ColumnDefinition());
             gridYakus.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(50) });
-            int i = 0;
+            var i = 0;
             foreach (var yaku in p.Yakus.GroupBy(y => y))
             {
                 gridYakus.AddGridRowYaku(i, yaku.Key.Name, (p.Concealed ? yaku.Key.ConcealedFanCount : yaku.Key.FanCount) * yaku.Count());
@@ -489,7 +482,7 @@ namespace Gnoj_HamView
             };
             foreach (var (tile, leaned, apart) in p.GetFullHandForDisplay())
             {
-                Button b = GenerateTileButton(tile, null, (leaned ? AnglePivot.A90 : AnglePivot.A0), false);
+                var b = GenerateTileButton(tile, null, (leaned ? AnglePivot.A90 : AnglePivot.A0), false);
                 if (apart)
                 {
                     b.Margin = new Thickness(5, 0, 0, 0);

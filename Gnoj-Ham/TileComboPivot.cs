@@ -181,18 +181,11 @@ namespace Gnoj_Ham
         /// <returns>Hashcode of this instance.</returns>
         public override int GetHashCode()
         {
-            if (_tiles.Count == 2)
-            {
-                return Tuple.Create(_tiles[0], _tiles[1]).GetHashCode();
-            }
-            else if (_tiles.Count == 4)
-            {
-                return Tuple.Create(_tiles[0], _tiles[1], _tiles[2], _tiles[3]).GetHashCode();
-            }
-            else
-            {
-                return Tuple.Create(_tiles[0], _tiles[1], _tiles[2]).GetHashCode();
-            }
+            return _tiles.Count == 2
+                ? Tuple.Create(_tiles[0], _tiles[1]).GetHashCode()
+                : _tiles.Count == 4
+                    ? Tuple.Create(_tiles[0], _tiles[1], _tiles[2], _tiles[3]).GetHashCode()
+                    : Tuple.Create(_tiles[0], _tiles[1], _tiles[2]).GetHashCode();
         }
 
         /// <summary>
@@ -214,52 +207,21 @@ namespace Gnoj_Ham
         {
             if (IsPair)
             {
-                if (Family == FamilyPivot.Dragon)
-                {
-                    return $"Pair {Family} {_tiles[0].Dragon.Value.ToString()}";
-                }
-                else if (Family == FamilyPivot.Wind)
-                {
-                    return $"Pair {Family} {_tiles[0].Wind.Value.ToString()}";
-                }
-                else
-                {
-                    return $"Pair {Family} {_tiles[0].Number}";
-                }
-            }
-            else if (IsBrelan)
-            {
-                if (Family == FamilyPivot.Dragon)
-                {
-                    return $"Brelan {Family} {_tiles[0].Dragon.Value.ToString()}";
-                }
-                else if (Family == FamilyPivot.Wind)
-                {
-                    return $"Brelan {Family} {_tiles[0].Wind.Value.ToString()}";
-                }
-                else
-                {
-                    return $"Brelan {Family} {_tiles[0].Number}";
-                }
-            }
-            else if (IsSquare)
-            {
-                if (Family == FamilyPivot.Dragon)
-                {
-                    return $"Square {Family} {_tiles[0].Dragon.Value.ToString()}";
-                }
-                else if (Family == FamilyPivot.Wind)
-                {
-                    return $"Square {Family} {_tiles[0].Wind.Value.ToString()}";
-                }
-                else
-                {
-                    return $"Square {Family} {_tiles[0].Number}";
-                }
+                return Family == FamilyPivot.Dragon
+                    ? $"Pair {Family} {_tiles[0].Dragon.Value.ToString()}"
+                    : Family == FamilyPivot.Wind ? $"Pair {Family} {_tiles[0].Wind.Value.ToString()}" : $"Pair {Family} {_tiles[0].Number}";
             }
             else
             {
-                return $"Sequence {Family} [{_tiles[0].Number}, {_tiles[1].Number}, {_tiles[2].Number}]";
+                return IsBrelan
+                    ? Family == FamilyPivot.Dragon
+                                    ? $"Brelan {Family} {_tiles[0].Dragon.Value.ToString()}"
+                                    : Family == FamilyPivot.Wind ? $"Brelan {Family} {_tiles[0].Wind.Value.ToString()}" : $"Brelan {Family} {_tiles[0].Number}"
+                    : IsSquare
+                                    ? Family == FamilyPivot.Dragon
+                                                    ? $"Square {Family} {_tiles[0].Dragon.Value.ToString()}"
+                                                    : Family == FamilyPivot.Wind ? $"Square {Family} {_tiles[0].Wind.Value.ToString()}" : $"Square {Family} {_tiles[0].Number}"
+                                    : $"Sequence {Family} [{_tiles[0].Number}, {_tiles[1].Number}, {_tiles[2].Number}]";
             }
         }
 
@@ -270,14 +232,14 @@ namespace Gnoj_Ham
         // Checks if the list of tiles forms a valid combination.
         private bool IsValidCombination()
         {
-            IEnumerable<FamilyPivot> families = _tiles.Select(t => t.Family).Distinct();
+            var families = _tiles.Select(t => t.Family).Distinct();
             if (families.Count() > 1)
             {
                 // KO : more than one family.
                 return false;
             }
 
-            FamilyPivot family = families.First();
+            var family = families.First();
             if (family == FamilyPivot.Dragon)
             {
                 // Expected : only one type of dragon.
@@ -393,7 +355,7 @@ namespace Gnoj_Ham
             var concealedOnly = new List<TilePivot>(_tiles);
             concealedOnly.Remove(OpenTile);
 
-            int i = 0;
+            var i = 0;
 
             var tiles = new List<Tuple<TilePivot, bool>>
             {

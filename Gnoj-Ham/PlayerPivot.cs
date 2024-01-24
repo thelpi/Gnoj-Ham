@@ -78,10 +78,10 @@ namespace Gnoj_Ham
                 humanPlayerName = CheckName(humanPlayerName);
             }
 
-            int eastIndex = GlobalTools.Randomizer.Next(0, 4);
+            var eastIndex = GlobalTools.Randomizer.Next(0, 4);
 
             var players = new List<PlayerPivot>();
-            for (int i = 0; i < 4; i++)
+            for (var i = 0; i < 4; i++)
             {
                 players.Add(new PlayerPivot(
                     i == GamePivot.HUMAN_INDEX && !fourCpus ? humanPlayerName : $"{CPU_NAME_PREFIX}{i}",
@@ -98,12 +98,9 @@ namespace Gnoj_Ham
         {
             humanPlayerName = (humanPlayerName ?? string.Empty).Trim();
 
-            if (humanPlayerName == string.Empty || humanPlayerName.ToUpperInvariant().StartsWith(CPU_NAME_PREFIX.ToUpperInvariant()))
-            {
-                return null;
-            }
-
-            return humanPlayerName;
+            return humanPlayerName == string.Empty || humanPlayerName.ToUpperInvariant().StartsWith(CPU_NAME_PREFIX.ToUpperInvariant())
+                ? null
+                : humanPlayerName;
         }
 
         #endregion Static methods

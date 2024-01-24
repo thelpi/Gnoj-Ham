@@ -86,7 +86,7 @@ namespace Gnoj_HamView
             if (IsCurrentlyClickable())
             {
                 _waitForDecision = false;
-                Tuple<TilePivot, bool> tag = (Tuple<TilePivot, bool>)((sender as Button).Tag);
+                var tag = (Tuple<TilePivot, bool>)((sender as Button).Tag);
                 ChiiCall(tag);
             }
         }
@@ -113,7 +113,7 @@ namespace Gnoj_HamView
         {
             if (IsCurrentlyClickable())
             {
-                Dictionary<TilePivot, bool> tileChoices = _game.Round.CanCallChii();
+                var tileChoices = _game.Round.CanCallChii();
 
                 if (tileChoices.Keys.Count > 0)
                 {
@@ -127,7 +127,7 @@ namespace Gnoj_HamView
         {
             if (IsCurrentlyClickable())
             {
-                List<TilePivot> kanTiles = _game.Round.CanCallKan(GamePivot.HUMAN_INDEX);
+                var kanTiles = _game.Round.CanCallKan(GamePivot.HUMAN_INDEX);
                 if (kanTiles.Count > 0)
                 {
                     if (_game.Round.IsHumanPlayer)
@@ -289,11 +289,11 @@ namespace Gnoj_HamView
             };
             _autoPlay.DoWork += delegate (object sender, DoWorkEventArgs evt)
             {
-                object[] argumentsList = evt.Argument as object[];
-                bool skipCurrentAction = (bool)argumentsList[0];
-                bool humanRonPending = (bool)argumentsList[1];
+                var argumentsList = evt.Argument as object[];
+                var skipCurrentAction = (bool)argumentsList[0];
+                var humanRonPending = (bool)argumentsList[1];
                 Tuple<int, TilePivot, int?> kanInProgress = null;
-                AutoPlayResult result = new AutoPlayResult
+                var result = new AutoPlayResult
                 {
                     EndOfRound = false,
                     PanelButton = null,
@@ -351,16 +351,16 @@ namespace Gnoj_HamView
                         break;
                     }
 
-                    Tuple<int, TilePivot> opponentWithKanTilePick = _game.Round.IaManager.KanDecision(false);
+                    var opponentWithKanTilePick = _game.Round.IaManager.KanDecision(false);
                     if (opponentWithKanTilePick != null)
                     {
-                        int previousPlayerIndex = _game.Round.PreviousPlayerIndex;
-                        TilePivot compensationTile = OpponentBeginCallKan(opponentWithKanTilePick.Item1, opponentWithKanTilePick.Item2, false);
+                        var previousPlayerIndex = _game.Round.PreviousPlayerIndex;
+                        var compensationTile = OpponentBeginCallKan(opponentWithKanTilePick.Item1, opponentWithKanTilePick.Item2, false);
                         kanInProgress = new Tuple<int, TilePivot, int?>(opponentWithKanTilePick.Item1, compensationTile, previousPlayerIndex);
                         continue;
                     }
 
-                    int opponentPlayerId = _game.Round.IaManager.PonDecision();
+                    var opponentPlayerId = _game.Round.IaManager.PonDecision();
                     if (opponentPlayerId > -1)
                     {
                         PonCall(opponentPlayerId);
@@ -373,7 +373,7 @@ namespace Gnoj_HamView
                         break;
                     }
 
-                    Tuple<TilePivot, bool> chiiTilePick = _game.Round.IaManager.ChiiDecision();
+                    var chiiTilePick = _game.Round.IaManager.ChiiDecision();
                     if (chiiTilePick != null)
                     {
                         ChiiCall(chiiTilePick);
@@ -418,7 +418,7 @@ namespace Gnoj_HamView
             {
                 if (!_hardStopAutoplay)
                 {
-                    AutoPlayResult autoPlayResult = evt.Result as AutoPlayResult;
+                    var autoPlayResult = evt.Result as AutoPlayResult;
                     if (autoPlayResult.EndOfRound)
                     {
                         NewRound(autoPlayResult.RonPlayerId);
@@ -467,8 +467,8 @@ namespace Gnoj_HamView
         // Checks ron call for every players.
         private bool CheckOpponensRonCall(bool humanRonPending)
         {
-            List<int> opponentsCallRon = _game.Round.IaManager.RonDecision(humanRonPending);
-            foreach (int opponentPlayerIndex in opponentsCallRon)
+            var opponentsCallRon = _game.Round.IaManager.RonDecision(humanRonPending);
+            foreach (var opponentPlayerIndex in opponentsCallRon)
             {
                 InvokeOverlay("Ron", opponentPlayerIndex);
             }
@@ -535,17 +535,17 @@ namespace Gnoj_HamView
 
             SetActionButtonsVisibility();
 
-            List<Button> buttons = StpHandP0.Children.OfType<Button>().ToList();
+            var buttons = StpHandP0.Children.OfType<Button>().ToList();
             if (StpPickP0.Children.Count > 0)
             {
                 buttons.Add(StpPickP0.Children[0] as Button);
             }
 
             var clickableButtons = new List<Button>();
-            foreach (TilePivot tileKey in tileChoices.Keys)
+            foreach (var tileKey in tileChoices.Keys)
             {
                 // Changes the event of every buttons concerned by the call...
-                Button buttonClickable = buttons
+                var buttonClickable = buttons
                     .Where(b => b.Tag as TilePivot == tileKey)
                     .OrderBy(b => (b.Tag as TilePivot).IsRedDora) // in case of autoplay, we don't want the red dora discarded where there's a not-red tile
                     .First();
@@ -565,15 +565,8 @@ namespace Gnoj_HamView
             if (clickableButtons.Count == 1)
             {
                 // Only one possibility : initiates the auto-discard.
-                int buttonIndexInHandPanel = StpHandP0.Children.IndexOf(clickableButtons[0]);
-                if (buttonIndexInHandPanel >= 0)
-                {
-                    result = new PanelButton("StpHandP", buttonIndexInHandPanel);
-                }
-                else
-                {
-                    result = new PanelButton("StpPickP", 0);
-                }
+                var buttonIndexInHandPanel = StpHandP0.Children.IndexOf(clickableButtons[0]);
+                result = buttonIndexInHandPanel >= 0 ? new PanelButton("StpHandP", buttonIndexInHandPanel) : new PanelButton("StpPickP", 0);
             }
             else
             {
@@ -641,8 +634,8 @@ namespace Gnoj_HamView
             RefreshPlayerTurnStyle();
 
             // Note : this value is stored here because the call to "CallPon" makes it change.
-            int previousPlayerIndex = _game.Round.PreviousPlayerIndex;
-            bool isCpu = _game.CpuVs || playerIndex != GamePivot.HUMAN_INDEX;
+            var previousPlayerIndex = _game.Round.PreviousPlayerIndex;
+            var isCpu = _game.CpuVs || playerIndex != GamePivot.HUMAN_INDEX;
 
             if (_game.Round.CallPon(playerIndex))
             {
@@ -671,7 +664,7 @@ namespace Gnoj_HamView
         private void Pick()
         {
             RefreshPlayerTurnStyle();
-            TilePivot pick = _game.Round.Pick();
+            var pick = _game.Round.Pick();
             Dispatcher.Invoke(() =>
             {
                 if (_game.Round.IsHumanPlayer)
@@ -713,7 +706,7 @@ namespace Gnoj_HamView
         {
             RefreshPlayerTurnStyle();
 
-            TilePivot compensationTile = _game.Round.CallKan(playerId, concealedKan ? kanTilePick : null);
+            var compensationTile = _game.Round.CallKan(playerId, concealedKan ? kanTilePick : null);
             if (compensationTile != null)
             {
                 InvokeOverlay("Kan", playerId);
@@ -730,17 +723,17 @@ namespace Gnoj_HamView
                 return true;
             }
 
-            Tuple<int, TilePivot> opponentWithKanTilePick = _game.Round.IaManager.KanDecision(true);
+            var opponentWithKanTilePick = _game.Round.IaManager.KanDecision(true);
             if (opponentWithKanTilePick != null)
             {
-                TilePivot compensationTile = OpponentBeginCallKan(_game.Round.CurrentPlayerIndex, opponentWithKanTilePick.Item2, true);
+                var compensationTile = OpponentBeginCallKan(_game.Round.CurrentPlayerIndex, opponentWithKanTilePick.Item2, true);
                 kanInProgress = new Tuple<int, TilePivot, int?>(_game.Round.CurrentPlayerIndex, compensationTile, null);
                 return false;
             }
 
             kanInProgress = null;
 
-            TilePivot riichiTile = _game.Round.IaManager.RiichiDecision();
+            var riichiTile = _game.Round.IaManager.RiichiDecision();
             if (riichiTile != null)
             {
                 CallRiichi(riichiTile);
@@ -875,7 +868,7 @@ namespace Gnoj_HamView
 
             double dim1 = GraphicTools.TILE_HEIGHT + GraphicTools.DEFAULT_TILE_MARGIN;
             double dim2 = (GraphicTools.TILE_HEIGHT * 3) + (GraphicTools.DEFAULT_TILE_MARGIN * 2);
-            double dim3 = GraphicTools.EXPECTED_TABLE_SIZE - ((dim1 * 4) + (dim2 * 2));
+            var dim3 = GraphicTools.EXPECTED_TABLE_SIZE - ((dim1 * 4) + (dim2 * 2));
 
             Cod0.Width = new GridLength(dim1);
             Cod1.Width = new GridLength(dim1);
@@ -893,11 +886,11 @@ namespace Gnoj_HamView
             Rod5.Height = new GridLength(dim1);
             Rod6.Height = new GridLength(dim1);
 
-            for (int i = 0; i < _game.Players.Count; i++)
+            for (var i = 0; i < _game.Players.Count; i++)
             {
-                for (int j = 1; j <= 3; j++)
+                for (var j = 1; j <= 3; j++)
                 {
-                    Panel panel = this.FindPanel($"StpDiscard{j}P", i);
+                    var panel = this.FindPanel($"StpDiscard{j}P", i);
                     if (i % 2 == 0)
                     {
                         panel.Height = GraphicTools.TILE_HEIGHT;
@@ -913,14 +906,14 @@ namespace Gnoj_HamView
         // Clears and refills the hand panel of the specified player index.
         private void FillHandPanel(int pIndex, TilePivot pickTile = null)
         {
-            bool isHuman = pIndex == GamePivot.HUMAN_INDEX && !_game.CpuVs;
+            var isHuman = pIndex == GamePivot.HUMAN_INDEX && !_game.CpuVs;
 
-            Panel panel = this.FindPanel("StpHandP", pIndex);
+            var panel = this.FindPanel("StpHandP", pIndex);
 
             this.FindPanel("StpPickP", pIndex).Children.Clear();
 
             panel.Children.Clear();
-            foreach (TilePivot tile in _game.Round.GetHand(pIndex).ConcealedTiles)
+            foreach (var tile in _game.Round.GetHand(pIndex).ConcealedTiles)
             {
                 if (pickTile == null || !ReferenceEquals(pickTile, tile))
                 {
@@ -972,7 +965,7 @@ namespace Gnoj_HamView
             TxtHonba.Text = _game.HonbaCount.ToString();
             TxtPendingRiichi.Text = _game.PendingRiichiCount.ToString();
 
-            for (int pIndex = 0; pIndex < _game.Players.Count; pIndex++)
+            for (var pIndex = 0; pIndex < _game.Players.Count; pIndex++)
             {
                 this.FindPanel("StpCombosP", pIndex).Children.Clear();
                 FillHandPanel(pIndex);
@@ -995,7 +988,7 @@ namespace Gnoj_HamView
         {
             Dispatcher.Invoke(() =>
             {
-                for (int pIndex = 0; pIndex < _game.Players.Count; pIndex++)
+                for (var pIndex = 0; pIndex < _game.Players.Count; pIndex++)
                 {
                     this.FindName<Label>("LblPlayerP", pIndex).Foreground = pIndex == _game.Round.CurrentPlayerIndex ? Brushes.OrangeRed : Brushes.White;
                     this.FindName<Label>("LblWindP", pIndex).Foreground = pIndex == _game.Round.CurrentPlayerIndex ? Brushes.OrangeRed : Brushes.White;
@@ -1006,20 +999,20 @@ namespace Gnoj_HamView
         // Rebuilds the discard panel of the specified player.
         private Button FillDiscardPanel(int pIndex)
         {
-            for (int r = 1; r <= 3; r++)
+            for (var r = 1; r <= 3; r++)
             {
                 this.FindPanel($"StpDiscard{r}P", pIndex).Children.Clear();
             }
 
-            bool reversed = pIndex == 1 || pIndex == 2;
+            var reversed = pIndex == 1 || pIndex == 2;
 
             Button lastButton = null;
-            int i = 0;
-            foreach (TilePivot tile in _game.Round.GetDiscard(pIndex))
+            var i = 0;
+            foreach (var tile in _game.Round.GetDiscard(pIndex))
             {
-                int r = i < 6 ? 1 : (i < 12 ? 2 : 3);
-                Panel panel = this.FindPanel($"StpDiscard{r}P", pIndex);
-                AnglePivot angle = (AnglePivot)pIndex;
+                var r = i < 6 ? 1 : (i < 12 ? 2 : 3);
+                var panel = this.FindPanel($"StpDiscard{r}P", pIndex);
+                var angle = (AnglePivot)pIndex;
                 if (_game.Round.IsRiichiRank(pIndex, i))
                 {
                     angle = (AnglePivot)pIndex.RelativePlayerIndex(1);
@@ -1060,10 +1053,10 @@ namespace Gnoj_HamView
         // Adds to the player stack its last combination.
         private void FillCombinationStack(int pIndex)
         {
-            Panel panel = this.FindPanel("StpCombosP", pIndex);
+            var panel = this.FindPanel("StpCombosP", pIndex);
 
             panel.Children.Clear();
-            foreach (TileComboPivot combo in _game.Round.GetHand(pIndex).DeclaredCombinations)
+            foreach (var combo in _game.Round.GetHand(pIndex).DeclaredCombinations)
             {
                 panel.Children.Add(CreateCombinationPanel(pIndex, combo));
             }
@@ -1072,21 +1065,21 @@ namespace Gnoj_HamView
         // Creates a panel for the specified combination.
         private StackPanel CreateCombinationPanel(int pIndex, TileComboPivot combo)
         {
-            StackPanel panel = new StackPanel
+            var panel = new StackPanel
             {
                 Orientation = (pIndex == 0 || pIndex == 2 ? Orientation.Horizontal : Orientation.Vertical)
             };
 
-            WindPivot pWind = _game.GetPlayerCurrentWind(pIndex);
+            var pWind = _game.GetPlayerCurrentWind(pIndex);
 
-            int i = 0;
-            List<Tuple<TilePivot, bool>> tileTuples = combo.GetSortedTilesForDisplay(pWind);
+            var i = 0;
+            var tileTuples = combo.GetSortedTilesForDisplay(pWind);
             if (pIndex > 0 && pIndex < 3)
             {
                 tileTuples.Reverse();
             }
 
-            foreach (Tuple<TilePivot, bool> tileTuple in tileTuples)
+            foreach (var tileTuple in tileTuples)
             {
                 panel.Children.Add(tileTuple.Item1.GenerateTileButton(null,
                     (AnglePivot)(tileTuple.Item2 ? pIndex.RelativePlayerIndex(1) : pIndex),
@@ -1268,7 +1261,7 @@ namespace Gnoj_HamView
         {
             if (pButton != null)
             {
-                Button btn = (pButton.ChildrenButtonIndex < 0 ? FindName(pButton.PanelBaseName) :
+                var btn = (pButton.ChildrenButtonIndex < 0 ? FindName(pButton.PanelBaseName) :
                     this.FindPanel(pButton.PanelBaseName, GamePivot.HUMAN_INDEX).Children[pButton.ChildrenButtonIndex]) as Button;
                 btn.RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent));
             }
@@ -1281,7 +1274,7 @@ namespace Gnoj_HamView
         // Checks if the button clicked was ready.
         private bool IsCurrentlyClickable()
         {
-            bool isCurrentlyClickable = !_autoPlay.IsBusy;
+            var isCurrentlyClickable = !_autoPlay.IsBusy;
 
             if (isCurrentlyClickable)
             {
@@ -1322,7 +1315,7 @@ namespace Gnoj_HamView
         // Affects a value to the human decision timer.
         private void SetChronoTime()
         {
-            ChronoPivot chronoValue = (ChronoPivot)Properties.Settings.Default.ChronoSpeed;
+            var chronoValue = (ChronoPivot)Properties.Settings.Default.ChronoSpeed;
             if (chronoValue == ChronoPivot.None)
             {
                 _timer = null;
