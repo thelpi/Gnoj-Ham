@@ -151,16 +151,7 @@ namespace Gnoj_Ham
             int opponentPlayerId = _round.OpponentsCanCallPon();
             if (opponentPlayerId > -1)
             {
-                TilePivot tile = _round.GetDiscard(_round.PreviousPlayerIndex).Last();
-                // Call the pon if :
-                // - the hand is already open
-                // - it's valuable (see "HandCanBeOpened")
-                var opponentHand = _round.GetHand(opponentPlayerId);
-                if (!opponentHand.IsConcealed || HandCanBeOpened(opponentPlayerId, tile, opponentHand))
-                {
-                    return opponentPlayerId;
-                }
-                opponentPlayerId = -1;
+                opponentPlayerId = PonDecisionInternal(opponentPlayerId);
             }
 
             return opponentPlayerId;
@@ -194,42 +185,7 @@ namespace Gnoj_Ham
             Tuple<int, List<TilePivot>> opponentPlayerIdWithTiles = _round.OpponentsCanCallKan(checkConcealedOnly);
             if (opponentPlayerIdWithTiles != null)
             {
-                // Rinshan kaihou possibility: call
-                // TODO: not perfect because the kan can break the tenpai
-                TilePivot tileToRemove = null;
-                if (_round.GetHand(opponentPlayerIdWithTiles.Item1).IsFullHand)
-                {
-                    tileToRemove = opponentPlayerIdWithTiles.Item2.First();
-                }
-
-                var meIsTenpai = _round.IsTenpai(opponentPlayerIdWithTiles.Item1, tileToRemove);
-                if (!meIsTenpai)
-                {
-                    // riichi from opponents: no call
-                    // TODO: we could also check open hands obviously tenpai
-                    var otherIsRiichi = Enumerable.Range(0, 4).Where(i => i != opponentPlayerIdWithTiles.Item1).Any(i => _round.IsRiichi(i));
-                    if (otherIsRiichi)
-                    {
-                        return null;
-                    }
-                }
-
-                foreach (TilePivot tile in opponentPlayerIdWithTiles.Item2)
-                {
-                    // Call the kan if :
-                    // - it's a concealed one
-                    // - the hand is already open
-                    // - it's valuable for "Yakuhai"
-                    if (checkConcealedOnly
-                        || !_round.GetHand(opponentPlayerIdWithTiles.Item1).IsConcealed
-                        || tile.Family == FamilyPivot.Dragon
-                        || (tile.Family == FamilyPivot.Wind
-                            && (tile.Wind == _round.Game.GetPlayerCurrentWind(opponentPlayerIdWithTiles.Item1)
-                                || tile.Wind == _round.Game.DominantWind)))
-                    {
-                        return new Tuple<int, TilePivot>(opponentPlayerIdWithTiles.Item1, tile);
-                    }
-                }
+                return KanDecisionInternal(opponentPlayerIdWithTiles.Item1, opponentPlayerIdWithTiles.Item2, checkConcealedOnly);
             }
 
             return null;
@@ -283,31 +239,117 @@ namespace Gnoj_Ham
                 // - The sequence does not already exist in the end
                 if (!_round.GetHand(_round.CurrentPlayerIndex).IsConcealed)
                 {
-                    Tuple<TilePivot, bool> tileChoice = null;
-                    foreach (TilePivot tileKey in chiiTiles.Keys)
-                    {
-                        bool m2 = _round.GetHand(_round.CurrentPlayerIndex).ConcealedTiles.Any(t => t.Family == tileKey.Family && t.Number == tileKey.Number - 2);
-                        bool m1 = _round.GetHand(_round.CurrentPlayerIndex).ConcealedTiles.Any(t => t.Family == tileKey.Family && t.Number == tileKey.Number - 1);
-                        bool m0 = _round.GetHand(_round.CurrentPlayerIndex).ConcealedTiles.Any(t => t == tileKey);
-                        bool p1 = _round.GetHand(_round.CurrentPlayerIndex).ConcealedTiles.Any(t => t.Family == tileKey.Family && t.Number == tileKey.Number + 1);
-                        bool p2 = _round.GetHand(_round.CurrentPlayerIndex).ConcealedTiles.Any(t => t.Family == tileKey.Family && t.Number == tileKey.Number + 2);
-
-                        if (!((m2 && m1 && m0) || (m1 && m0 && p1) || (m0 && p1 && p2)))
-                        {
-                            tileChoice = new Tuple<TilePivot, bool>(tileKey, chiiTiles[tileKey]);
-                        }
-                    }
-
-                    return tileChoice;
+                    return ChiiDecisionInternal(chiiTiles);
                 }
             }
 
             return null;
         }
 
+        /// <summary>
+        /// Computes an advice for the human player to call a Kan or not; assumes the Kan is possible.
+        /// </summary>
+        /// <param name="kanPossibilities">The first tile of every possible Kan at the moment.</param>
+        /// <param name="concealedKan"><c>True</c> if the context is a concealed Kan.</param>
+        /// <returns><c>True</c> if Kan is advised.</returns>
+        public bool KanDecisionAdvice(List<TilePivot> kanPossibilities, bool concealedKan)
+            => KanDecisionInternal(GamePivot.HUMAN_INDEX, kanPossibilities, concealedKan) != null;
+
+        /// <summary>
+        /// Computes an advice for the human player to call a Pon or not; assumes the Pon is possible.
+        /// </summary>
+        /// <returns><c>True</c> if Pon is advised.</returns>
+        public bool PonDecisionAdvice()
+            => PonDecisionInternal(GamePivot.HUMAN_INDEX) > -1;
+
+        /// <summary>
+        /// Computes an advice for the human player to call a Chii or not; assumes the Chii is possible.
+        /// </summary>
+        /// <param name="chiiPossibilities">See the result of the method <see cref="RoundPivot.CanCallChii"/>.</param>
+        /// <returns><c>True</c> if Chii is advised.</returns>
+        public bool ChiiDecisionAdvice(Dictionary<TilePivot, bool> chiiPossibilities)
+            => ChiiDecisionInternal(chiiPossibilities) != null;
+
         #endregion Public methods
 
         #region Private methods
+
+        private int PonDecisionInternal(int playerIndex)
+        {
+            TilePivot tile = _round.GetDiscard(_round.PreviousPlayerIndex).Last();
+            // Call the pon if :
+            // - the hand is already open
+            // - it's valuable (see "HandCanBeOpened")
+            var opponentHand = _round.GetHand(playerIndex);
+            if (!opponentHand.IsConcealed || HandCanBeOpened(playerIndex, tile, opponentHand))
+            {
+                return playerIndex;
+            }
+
+            return -1;
+        }
+
+        private Tuple<int, TilePivot> KanDecisionInternal(int playerId, List<TilePivot> kanPossibilities, bool concealed)
+        {
+            // Rinshan kaihou possibility: call
+            // TODO: not perfect because the kan can break the tenpai
+            TilePivot tileToRemove = null;
+            if (_round.GetHand(playerId).IsFullHand)
+            {
+                tileToRemove = kanPossibilities.First();
+            }
+
+            var meIsTenpai = _round.IsTenpai(playerId, tileToRemove);
+            if (!meIsTenpai)
+            {
+                // riichi from opponents: no call
+                // TODO: we could also check open hands obviously tenpai
+                var otherIsRiichi = Enumerable.Range(0, 4).Where(i => i != playerId).Any(i => _round.IsRiichi(i));
+                if (otherIsRiichi)
+                {
+                    return null;
+                }
+            }
+
+            foreach (TilePivot tile in kanPossibilities)
+            {
+                // Call the kan if :
+                // - it's a concealed one
+                // - the hand is already open
+                // - it's valuable for "Yakuhai"
+                if (concealed
+                    || !_round.GetHand(playerId).IsConcealed
+                    || tile.Family == FamilyPivot.Dragon
+                    || (tile.Family == FamilyPivot.Wind
+                        && (tile.Wind == _round.Game.GetPlayerCurrentWind(playerId)
+                            || tile.Wind == _round.Game.DominantWind)))
+                {
+                    return new Tuple<int, TilePivot>(playerId, tile);
+                }
+            }
+
+            return null;
+        }
+
+        private Tuple<TilePivot, bool> ChiiDecisionInternal(Dictionary<TilePivot, bool> chiiTiles)
+        {
+            Tuple<TilePivot, bool> tileChoice = null;
+            foreach (TilePivot tileKey in chiiTiles.Keys)
+            {
+                bool m2 = _round.GetHand(_round.CurrentPlayerIndex).ConcealedTiles.Any(t => t.Family == tileKey.Family && t.Number == tileKey.Number - 2);
+                bool m1 = _round.GetHand(_round.CurrentPlayerIndex).ConcealedTiles.Any(t => t.Family == tileKey.Family && t.Number == tileKey.Number - 1);
+                bool m0 = _round.GetHand(_round.CurrentPlayerIndex).ConcealedTiles.Any(t => t == tileKey);
+                bool p1 = _round.GetHand(_round.CurrentPlayerIndex).ConcealedTiles.Any(t => t.Family == tileKey.Family && t.Number == tileKey.Number + 1);
+                bool p2 = _round.GetHand(_round.CurrentPlayerIndex).ConcealedTiles.Any(t => t.Family == tileKey.Family && t.Number == tileKey.Number + 2);
+
+                if (!((m2 && m1 && m0) || (m1 && m0 && p1) || (m0 && p1 && p2)))
+                {
+                    tileChoice = new Tuple<TilePivot, bool>(tileKey, chiiTiles[tileKey]);
+                }
+            }
+
+            return tileChoice;
+        }
 
         private bool IsDiscardedOrUnusable(TilePivot tile, int opponentPlayerIndex, List<TilePivot> deadtiles)
         {
