@@ -12,6 +12,8 @@
         <cvt:YakuToolTipConverter x:Key="YakuToolTipConverter" />
         <cvt:FansToTextConverter x:Key="FansToTextConverter" />
         <cvt:FansToFontStyleConverter x:Key="FansToFontStyleConverter" />
+        <cvt:TileToBitmapConverter x:Key="TileToBitmapConverter" />
+        <cvt:TileToToolTipConverter x:Key="TileToToolTipConverter" />
     </Window.Resources>
     <TabControl Margin="5">
         <TabItem Header="Yakus">
@@ -19,7 +21,7 @@
                 <ListView Name="LstYakus" AlternationCount="2">
                     <ListView.Resources>
                         <Style TargetType="ListViewItem">
-                            <Setter Property="ItemsControl.Height" Value="30" />
+                            <Setter Property="ItemsControl.Height" Value="40" />
                             <Setter Property="ItemsControl.ToolTip" Value="{Binding Converter={StaticResource YakuToolTipConverter}}" />
                             <Setter Property="ItemsControl.FontStyle" Value="{Binding Converter={StaticResource FansToFontStyleConverter}}" />
                             <Style.Triggers>
@@ -55,6 +57,29 @@
                                 <GridViewColumn.CellTemplate>
                                     <DataTemplate>
                                         <TextBlock Text="{Binding Description}" />
+                                    </DataTemplate>
+                                </GridViewColumn.CellTemplate>
+                            </GridViewColumn>
+                            <GridViewColumn>
+                                <GridViewColumn.Header>Example</GridViewColumn.Header>
+                                <GridViewColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <ItemsControl ItemsSource="{Binding Example}">
+                                            <ItemsControl.ItemsPanel>
+                                                <ItemsPanelTemplate>
+                                                    <StackPanel Orientation="Horizontal"/>
+                                                </ItemsPanelTemplate>
+                                            </ItemsControl.ItemsPanel>
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate>
+                                                    <Button VerticalAlignment="Center" Height="36" Width="27" ToolTip="{Binding Converter={StaticResource TileToToolTipConverter}}">
+                                                        <Button.Content>
+                                                            <Image Stretch="UniformToFill" Source="{Binding Converter={StaticResource TileToBitmapConverter}}" />
+                                                        </Button.Content>
+                                                    </Button>
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
                                     </DataTemplate>
                                 </GridViewColumn.CellTemplate>
                             </GridViewColumn>

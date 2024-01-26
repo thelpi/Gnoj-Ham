@@ -41,6 +41,10 @@ namespace Gnoj_Ham
         /// </summary>
         /// <remarks>Empty for yakumans.</remarks>
         public IReadOnlyCollection<YakuPivot> Upgrades => _upgrades;
+        /// <summary>
+        /// An example of valid hand; <c>null</c> if none.
+        /// </summary>
+        public IReadOnlyCollection<TilePivot> Example { get; private set; }
 
         #endregion Embedded properties
 
@@ -63,7 +67,7 @@ namespace Gnoj_Ham
 
         #region Constructors
 
-        private YakuPivot(string name, string nameEn, int fanCount, string description = null, int concealedBonusFanCount = 0, params YakuPivot[] upgrades)
+        private YakuPivot(string name, string nameEn, int fanCount, string description = null, int concealedBonusFanCount = 0, IReadOnlyCollection<TilePivot> example = null, params YakuPivot[] upgrades)
         {
             Name = name;
             NameEn = nameEn;
@@ -75,6 +79,7 @@ namespace Gnoj_Ham
             {
                 _upgrades.AddRange(upgrades);
             }
+            Example = example;
         }
 
         #endregion Constructors
@@ -92,53 +97,455 @@ namespace Gnoj_Ham
             {
                 if (_yakus == null)
                 {
+                    var tiles = TilePivot.GetCompleteSet(false);
+
                     _yakus = new List<YakuPivot>
                     {
-                        new YakuPivot(KOKUSHI_MUSOU, "Thirteen orphans", 0, "One tile of each dragon, wind and terminal, plus a duplicate.", 13),
-                        new YakuPivot(DAISANGEN, "Big three dragons", 13, "Brelan of each dragon type."),
-                        new YakuPivot(SUUANKOU, "Four concealed triplets", 13, "Four concealed brelans."),
+                        new YakuPivot(KOKUSHI_MUSOU, "Thirteen orphans", 0, "One tile of each dragon, wind and terminal, plus a duplicate.", 13, new List<TilePivot>
+                        {
+                            tiles.First(x => x.Family == FamilyPivot.Caracter && x.Number == 1),
+                            tiles.First(x => x.Family == FamilyPivot.Caracter && x.Number == 9),
+                            tiles.First(x => x.Family == FamilyPivot.Circle && x.Number == 1),
+                            tiles.First(x => x.Family == FamilyPivot.Circle && x.Number == 9),
+                            tiles.First(x => x.Family == FamilyPivot.Bamboo && x.Number == 1),
+                            tiles.First(x => x.Family == FamilyPivot.Bamboo && x.Number == 9),
+                            tiles.First(x => x.Wind == WindPivot.East),
+                            tiles.First(x => x.Wind == WindPivot.South),
+                            tiles.First(x => x.Wind == WindPivot.West),
+                            tiles.First(x => x.Wind == WindPivot.North),
+                            tiles.First(x => x.Dragon == DragonPivot.Red),
+                            tiles.First(x => x.Dragon == DragonPivot.White),
+                            tiles.First(x => x.Dragon == DragonPivot.Green),
+                            tiles.First(x => x.Family == FamilyPivot.Bamboo && x.Number == 9)
+                        }),
+                        new YakuPivot(DAISANGEN, "Big three dragons", 13, "Brelan of each dragon type.", 0, new List<TilePivot>
+                        {
+                            tiles.First(x => x.Family == FamilyPivot.Caracter && x.Number == 7),
+                            tiles.First(x => x.Family == FamilyPivot.Caracter && x.Number == 8),
+                            tiles.First(x => x.Family == FamilyPivot.Caracter && x.Number == 9),
+                            tiles.First(x => x.Dragon == DragonPivot.Red),
+                            tiles.First(x => x.Dragon == DragonPivot.Red),
+                            tiles.First(x => x.Dragon == DragonPivot.Red),
+                            tiles.First(x => x.Dragon == DragonPivot.White),
+                            tiles.First(x => x.Dragon == DragonPivot.White),
+                            tiles.First(x => x.Dragon == DragonPivot.White),
+                            tiles.First(x => x.Dragon == DragonPivot.Green),
+                            tiles.First(x => x.Dragon == DragonPivot.Green),
+                            tiles.First(x => x.Dragon == DragonPivot.Green),
+                            tiles.First(x => x.Family == FamilyPivot.Circle && x.Number == 4),
+                            tiles.First(x => x.Family == FamilyPivot.Circle && x.Number == 4)
+                        }),
+                        new YakuPivot(SUUANKOU, "Four concealed triplets", 13, "Four concealed brelans.", 0, new List<TilePivot>
+                        {
+                            tiles.First(x => x.Family == FamilyPivot.Circle && x.Number == 6),
+                            tiles.First(x => x.Family == FamilyPivot.Circle && x.Number == 6),
+                            tiles.First(x => x.Family == FamilyPivot.Circle && x.Number == 6),
+                            tiles.First(x => x.Family == FamilyPivot.Caracter && x.Number == 2),
+                            tiles.First(x => x.Family == FamilyPivot.Caracter && x.Number == 2),
+                            tiles.First(x => x.Family == FamilyPivot.Caracter && x.Number == 2),
+                            tiles.First(x => x.Family == FamilyPivot.Wind && x.Wind == WindPivot.East),
+                            tiles.First(x => x.Family == FamilyPivot.Wind && x.Wind == WindPivot.East),
+                            tiles.First(x => x.Family == FamilyPivot.Wind && x.Wind == WindPivot.East),
+                            tiles.First(x => x.Family == FamilyPivot.Bamboo && x.Number == 1),
+                            tiles.First(x => x.Family == FamilyPivot.Bamboo && x.Number == 1),
+                            tiles.First(x => x.Family == FamilyPivot.Bamboo && x.Number == 1),
+                            tiles.First(x => x.Family == FamilyPivot.Bamboo && x.Number == 7),
+                            tiles.First(x => x.Family == FamilyPivot.Bamboo && x.Number == 7)
+                        }),
                         // Depending on rules, might count as double yakuman.
-                        new YakuPivot(DAISUUSHII, "Big four winds", 13, "Brelan of each wind type."),
-                        new YakuPivot(TSUUIISOU, "All honors", 13, "Every combinations contain honors."),
-                        new YakuPivot(RYUUIISOU, "All green", 13, "Only green tiles (2, 3, 4, 6, 8 of bamboo and green dragon) in every combinations."),
-                        new YakuPivot(CHINROUTOU, "All terminals", 13, "Every combinations contain only terminals."),
-                        new YakuPivot(CHUUREN_POUTOU, "Nine gates", 0, "Sequence 1112345678999 in a single family, plus a duplicate. Must be concealed.", 13),
+                        new YakuPivot(DAISUUSHII, "Big four winds", 13, "Brelan of each wind type.", 0, new List<TilePivot>
+                        {
+                            tiles.First(x => x.Family == FamilyPivot.Wind && x.Wind == WindPivot.East),
+                            tiles.First(x => x.Family == FamilyPivot.Wind && x.Wind == WindPivot.East),
+                            tiles.First(x => x.Family == FamilyPivot.Wind && x.Wind == WindPivot.East),
+                            tiles.First(x => x.Family == FamilyPivot.Wind && x.Wind == WindPivot.South),
+                            tiles.First(x => x.Family == FamilyPivot.Wind && x.Wind == WindPivot.South),
+                            tiles.First(x => x.Family == FamilyPivot.Wind && x.Wind == WindPivot.South),
+                            tiles.First(x => x.Family == FamilyPivot.Wind && x.Wind == WindPivot.West),
+                            tiles.First(x => x.Family == FamilyPivot.Wind && x.Wind == WindPivot.West),
+                            tiles.First(x => x.Family == FamilyPivot.Wind && x.Wind == WindPivot.West),
+                            tiles.First(x => x.Family == FamilyPivot.Wind && x.Wind == WindPivot.North),
+                            tiles.First(x => x.Family == FamilyPivot.Wind && x.Wind == WindPivot.North),
+                            tiles.First(x => x.Family == FamilyPivot.Wind && x.Wind == WindPivot.North),
+                            tiles.First(x => x.Family == FamilyPivot.Caracter && x.Number == 2),
+                            tiles.First(x => x.Family == FamilyPivot.Caracter && x.Number == 2)
+                        }),
+                        new YakuPivot(TSUUIISOU, "All honors", 13, "Every combinations contain honors.", 0, new List<TilePivot>
+                        {
+                            tiles.First(x => x.Family == FamilyPivot.Wind && x.Wind == WindPivot.East),
+                            tiles.First(x => x.Family == FamilyPivot.Wind && x.Wind == WindPivot.East),
+                            tiles.First(x => x.Family == FamilyPivot.Wind && x.Wind == WindPivot.East),
+                            tiles.First(x => x.Family == FamilyPivot.Dragon && x.Dragon == DragonPivot.Red),
+                            tiles.First(x => x.Family == FamilyPivot.Dragon && x.Dragon == DragonPivot.Red),
+                            tiles.First(x => x.Family == FamilyPivot.Dragon && x.Dragon == DragonPivot.Red),
+                            tiles.First(x => x.Family == FamilyPivot.Wind && x.Wind == WindPivot.West),
+                            tiles.First(x => x.Family == FamilyPivot.Wind && x.Wind == WindPivot.West),
+                            tiles.First(x => x.Family == FamilyPivot.Wind && x.Wind == WindPivot.West),
+                            tiles.First(x => x.Family == FamilyPivot.Dragon && x.Dragon == DragonPivot.White),
+                            tiles.First(x => x.Family == FamilyPivot.Dragon && x.Dragon == DragonPivot.White),
+                            tiles.First(x => x.Family == FamilyPivot.Dragon && x.Dragon == DragonPivot.White),
+                            tiles.First(x => x.Family == FamilyPivot.Wind && x.Wind == WindPivot.North),
+                            tiles.First(x => x.Family == FamilyPivot.Wind && x.Wind == WindPivot.North)
+                        }),
+                        new YakuPivot(RYUUIISOU, "All green", 13, "Only green tiles (2, 3, 4, 6, 8 of bamboo and green dragon) in every combinations.", 0, new List<TilePivot>
+                        {
+                            tiles.First(x => x.Family == FamilyPivot.Bamboo && x.Number == 2),
+                            tiles.First(x => x.Family == FamilyPivot.Bamboo && x.Number == 3),
+                            tiles.First(x => x.Family == FamilyPivot.Bamboo && x.Number == 4),
+                            tiles.First(x => x.Family == FamilyPivot.Dragon && x.Dragon == DragonPivot.Green),
+                            tiles.First(x => x.Family == FamilyPivot.Dragon && x.Dragon == DragonPivot.Green),
+                            tiles.First(x => x.Family == FamilyPivot.Dragon && x.Dragon == DragonPivot.Green),
+                            tiles.First(x => x.Family == FamilyPivot.Bamboo && x.Number == 6),
+                            tiles.First(x => x.Family == FamilyPivot.Bamboo && x.Number == 6),
+                            tiles.First(x => x.Family == FamilyPivot.Bamboo && x.Number == 6),
+                            tiles.First(x => x.Family == FamilyPivot.Bamboo && x.Number == 8),
+                            tiles.First(x => x.Family == FamilyPivot.Bamboo && x.Number == 8),
+                            tiles.First(x => x.Family == FamilyPivot.Bamboo && x.Number == 8),
+                            tiles.First(x => x.Family == FamilyPivot.Bamboo && x.Number == 3),
+                            tiles.First(x => x.Family == FamilyPivot.Bamboo && x.Number == 3)
+                        }),
+                        new YakuPivot(CHINROUTOU, "All terminals", 13, "Every combinations contain only terminals.", 0, new List<TilePivot>
+                        {
+                            tiles.First(x => x.Family == FamilyPivot.Caracter && x.Number == 1),
+                            tiles.First(x => x.Family == FamilyPivot.Caracter && x.Number == 1),
+                            tiles.First(x => x.Family == FamilyPivot.Caracter && x.Number == 1),
+                            tiles.First(x => x.Family == FamilyPivot.Circle && x.Number == 9),
+                            tiles.First(x => x.Family == FamilyPivot.Circle && x.Number == 9),
+                            tiles.First(x => x.Family == FamilyPivot.Circle && x.Number == 9),
+                            tiles.First(x => x.Family == FamilyPivot.Bamboo && x.Number == 1),
+                            tiles.First(x => x.Family == FamilyPivot.Bamboo && x.Number == 1),
+                            tiles.First(x => x.Family == FamilyPivot.Bamboo && x.Number == 1),
+                            tiles.First(x => x.Family == FamilyPivot.Circle && x.Number == 1),
+                            tiles.First(x => x.Family == FamilyPivot.Circle && x.Number == 1),
+                            tiles.First(x => x.Family == FamilyPivot.Circle && x.Number == 1),
+                            tiles.First(x => x.Family == FamilyPivot.Bamboo && x.Number == 9),
+                            tiles.First(x => x.Family == FamilyPivot.Bamboo && x.Number == 9)
+                        }),
+                        new YakuPivot(CHUUREN_POUTOU, "Nine gates", 0, "Sequence 1112345678999 in a single family, plus a duplicate. Must be concealed.", 13, new List<TilePivot>
+                        {
+                            tiles.First(x => x.Family == FamilyPivot.Caracter && x.Number == 1),
+                            tiles.First(x => x.Family == FamilyPivot.Caracter && x.Number == 1),
+                            tiles.First(x => x.Family == FamilyPivot.Caracter && x.Number == 1),
+                            tiles.First(x => x.Family == FamilyPivot.Caracter && x.Number == 2),
+                            tiles.First(x => x.Family == FamilyPivot.Caracter && x.Number == 3),
+                            tiles.First(x => x.Family == FamilyPivot.Caracter && x.Number == 4),
+                            tiles.First(x => x.Family == FamilyPivot.Caracter && x.Number == 5),
+                            tiles.First(x => x.Family == FamilyPivot.Caracter && x.Number == 5),
+                            tiles.First(x => x.Family == FamilyPivot.Caracter && x.Number == 6),
+                            tiles.First(x => x.Family == FamilyPivot.Caracter && x.Number == 7),
+                            tiles.First(x => x.Family == FamilyPivot.Caracter && x.Number == 8),
+                            tiles.First(x => x.Family == FamilyPivot.Caracter && x.Number == 9),
+                            tiles.First(x => x.Family == FamilyPivot.Caracter && x.Number == 9),
+                            tiles.First(x => x.Family == FamilyPivot.Caracter && x.Number == 9)
+                        }),
                         new YakuPivot(SUUKANTSU, "Four kans", 13, "Four declared squares (concealed or not)."),
                         new YakuPivot(TENHOU, "Heavenly hand", 0, "14th first tiles form a valid hand for east player.", 13),
                         new YakuPivot(CHIIHOU, "Earthly hand", 0, "14th first tiles form a valid hand for south/west/north player.", 13),
                         new YakuPivot(RENHOU, "Hand of man", 5, "Ron on first turn, no other call made."),
                         // Depending on rules, might be ignored.
                         new YakuPivot(NAGASHI_MANGAN, "Discard mangan", 0, $"Round ending in Ryuukyoku: the discard of the player contains only terminals and honors.{Environment.NewLine}No call has been made by the player, nor by opponents on player's discards.", 5),
-                        new YakuPivot(CHINIISOU, "Flush", 5, "One family only.", 1),
-                        new YakuPivot(JUNCHAN, "Terminal in each meld", 2, "Terminal in every combinations.", 1),
-                        new YakuPivot(RYANPEIKOU, "Two sets of identical sequences", 0, "Double iipeikou. Must be concealed.", 3),
+                        new YakuPivot(CHINIISOU, "Flush", 5, "One family only.", 1, new List<TilePivot>
+                        {
+                            tiles.First(x => x.Family == FamilyPivot.Circle && x.Number == 1),
+                            tiles.First(x => x.Family == FamilyPivot.Circle && x.Number == 2),
+                            tiles.First(x => x.Family == FamilyPivot.Circle && x.Number == 3),
+                            tiles.First(x => x.Family == FamilyPivot.Circle && x.Number == 7),
+                            tiles.First(x => x.Family == FamilyPivot.Circle && x.Number == 7),
+                            tiles.First(x => x.Family == FamilyPivot.Circle && x.Number == 7),
+                            tiles.First(x => x.Family == FamilyPivot.Circle && x.Number == 6),
+                            tiles.First(x => x.Family == FamilyPivot.Circle && x.Number == 7),
+                            tiles.First(x => x.Family == FamilyPivot.Circle && x.Number == 8),
+                            tiles.First(x => x.Family == FamilyPivot.Circle && x.Number == 9),
+                            tiles.First(x => x.Family == FamilyPivot.Circle && x.Number == 9),
+                            tiles.First(x => x.Family == FamilyPivot.Circle && x.Number == 9),
+                            tiles.First(x => x.Family == FamilyPivot.Circle && x.Number == 2),
+                            tiles.First(x => x.Family == FamilyPivot.Circle && x.Number == 2)
+                        }),
+                        new YakuPivot(JUNCHAN, "Terminal in each meld", 2, "Terminal in every combinations.", 1, new List<TilePivot>
+                        {
+                            tiles.First(x => x.Family == FamilyPivot.Bamboo && x.Number == 1),
+                            tiles.First(x => x.Family == FamilyPivot.Bamboo && x.Number == 1),
+                            tiles.First(x => x.Family == FamilyPivot.Bamboo && x.Number == 1),
+                            tiles.First(x => x.Family == FamilyPivot.Circle && x.Number == 1),
+                            tiles.First(x => x.Family == FamilyPivot.Circle && x.Number == 2),
+                            tiles.First(x => x.Family == FamilyPivot.Circle && x.Number == 3),
+                            tiles.First(x => x.Family == FamilyPivot.Caracter && x.Number == 7),
+                            tiles.First(x => x.Family == FamilyPivot.Caracter && x.Number == 8),
+                            tiles.First(x => x.Family == FamilyPivot.Caracter && x.Number == 9),
+                            tiles.First(x => x.Family == FamilyPivot.Circle && x.Number == 9),
+                            tiles.First(x => x.Family == FamilyPivot.Circle && x.Number == 9),
+                            tiles.First(x => x.Family == FamilyPivot.Circle && x.Number == 9),
+                            tiles.First(x => x.Family == FamilyPivot.Caracter && x.Number == 1),
+                            tiles.First(x => x.Family == FamilyPivot.Caracter && x.Number == 1)
+                        }),
+                        new YakuPivot(RYANPEIKOU, "Two sets of identical sequences", 0, "Double iipeikou. Must be concealed.", 3, new List<TilePivot>
+                        {
+                            tiles.First(x => x.Family == FamilyPivot.Caracter && x.Number == 2),
+                            tiles.First(x => x.Family == FamilyPivot.Caracter && x.Number == 3),
+                            tiles.First(x => x.Family == FamilyPivot.Caracter && x.Number == 4),
+                            tiles.First(x => x.Family == FamilyPivot.Caracter && x.Number == 2),
+                            tiles.First(x => x.Family == FamilyPivot.Caracter && x.Number == 3),
+                            tiles.First(x => x.Family == FamilyPivot.Caracter && x.Number == 4),
+                            tiles.First(x => x.Family == FamilyPivot.Circle && x.Number == 7),
+                            tiles.First(x => x.Family == FamilyPivot.Circle && x.Number == 8),
+                            tiles.First(x => x.Family == FamilyPivot.Circle && x.Number == 9),
+                            tiles.First(x => x.Family == FamilyPivot.Circle && x.Number == 7),
+                            tiles.First(x => x.Family == FamilyPivot.Circle && x.Number == 8),
+                            tiles.First(x => x.Family == FamilyPivot.Circle && x.Number == 9),
+                            tiles.First(x => x.Family == FamilyPivot.Dragon && x.Dragon == DragonPivot.Red),
+                            tiles.First(x => x.Family == FamilyPivot.Dragon && x.Dragon == DragonPivot.Red)
+                        }),
                         // Note : concealed kans are allowed for dealer.
                         new YakuPivot(DABURU_RIICHI, "Double ready", 0, "Riichi at first turn. No call made. Must be concealed.", 2),
-                        new YakuPivot(SANSHOKU_DOUJUN, "Three colored straight", 1, "The same sequence in each family.", 1),
-                        new YakuPivot(ITTSU, "Straight", 1, "Three sequences 123, 456 and 789 in the same family.", 1),
-                        new YakuPivot(TOITOI, "All triplets", 2, "Each combination except the pair is a brelan (or a square)."),
+                        new YakuPivot(SANSHOKU_DOUJUN, "Three colored straight", 1, "The same sequence in each family.", 1, new List<TilePivot>
+                        {
+                            tiles.First(x => x.Family == FamilyPivot.Bamboo && x.Number == 5),
+                            tiles.First(x => x.Family == FamilyPivot.Bamboo && x.Number == 6),
+                            tiles.First(x => x.Family == FamilyPivot.Bamboo && x.Number == 7),
+                            tiles.First(x => x.Family == FamilyPivot.Caracter && x.Number == 5),
+                            tiles.First(x => x.Family == FamilyPivot.Caracter && x.Number == 6),
+                            tiles.First(x => x.Family == FamilyPivot.Caracter && x.Number == 7),
+                            tiles.First(x => x.Family == FamilyPivot.Circle && x.Number == 5),
+                            tiles.First(x => x.Family == FamilyPivot.Circle && x.Number == 6),
+                            tiles.First(x => x.Family == FamilyPivot.Circle && x.Number == 7),
+                            tiles.First(x => x.Family == FamilyPivot.Wind && x.Wind == WindPivot.South),
+                            tiles.First(x => x.Family == FamilyPivot.Wind && x.Wind == WindPivot.South),
+                            tiles.First(x => x.Family == FamilyPivot.Wind && x.Wind == WindPivot.South),
+                            tiles.First(x => x.Family == FamilyPivot.Circle && x.Number == 1),
+                            tiles.First(x => x.Family == FamilyPivot.Circle && x.Number == 1)
+                        }),
+                        new YakuPivot(ITTSU, "Straight", 1, "Three sequences 123, 456 and 789 in the same family.", 1, new List<TilePivot>
+                        {
+                            tiles.First(x => x.Family == FamilyPivot.Caracter && x.Number == 1),
+                            tiles.First(x => x.Family == FamilyPivot.Caracter && x.Number == 2),
+                            tiles.First(x => x.Family == FamilyPivot.Caracter && x.Number == 3),
+                            tiles.First(x => x.Family == FamilyPivot.Caracter && x.Number == 4),
+                            tiles.First(x => x.Family == FamilyPivot.Caracter && x.Number == 5),
+                            tiles.First(x => x.Family == FamilyPivot.Caracter && x.Number == 6),
+                            tiles.First(x => x.Family == FamilyPivot.Caracter && x.Number == 7),
+                            tiles.First(x => x.Family == FamilyPivot.Caracter && x.Number == 8),
+                            tiles.First(x => x.Family == FamilyPivot.Caracter && x.Number == 9),
+                            tiles.First(x => x.Family == FamilyPivot.Bamboo && x.Number == 3),
+                            tiles.First(x => x.Family == FamilyPivot.Bamboo && x.Number == 3),
+                            tiles.First(x => x.Family == FamilyPivot.Bamboo && x.Number == 3),
+                            tiles.First(x => x.Family == FamilyPivot.Wind && x.Wind == WindPivot.East),
+                            tiles.First(x => x.Family == FamilyPivot.Wind && x.Wind == WindPivot.East)
+                        }),
+                        new YakuPivot(TOITOI, "All triplets", 2, "Each combination except the pair is a brelan (or a square).", 0, new List<TilePivot>
+                        {
+                            tiles.First(x => x.Family == FamilyPivot.Bamboo && x.Number == 7),
+                            tiles.First(x => x.Family == FamilyPivot.Bamboo && x.Number == 7),
+                            tiles.First(x => x.Family == FamilyPivot.Bamboo && x.Number == 7),
+                            tiles.First(x => x.Family == FamilyPivot.Caracter && x.Number == 3),
+                            tiles.First(x => x.Family == FamilyPivot.Caracter && x.Number == 3),
+                            tiles.First(x => x.Family == FamilyPivot.Caracter && x.Number == 3),
+                            tiles.First(x => x.Family == FamilyPivot.Wind && x.Wind == WindPivot.North),
+                            tiles.First(x => x.Family == FamilyPivot.Wind && x.Wind == WindPivot.North),
+                            tiles.First(x => x.Family == FamilyPivot.Wind && x.Wind == WindPivot.North),
+                            tiles.First(x => x.Family == FamilyPivot.Dragon && x.Dragon == DragonPivot.White),
+                            tiles.First(x => x.Family == FamilyPivot.Dragon && x.Dragon == DragonPivot.White),
+                            tiles.First(x => x.Family == FamilyPivot.Dragon && x.Dragon == DragonPivot.White),
+                            tiles.First(x => x.Family == FamilyPivot.Dragon && x.Dragon == DragonPivot.Red),
+                            tiles.First(x => x.Family == FamilyPivot.Dragon && x.Dragon == DragonPivot.Red)
+                        }),
                         new YakuPivot(SANANKOU, "Three concealed triplets", 2, "Three concealed brelans (or squares)."),
-                        new YakuPivot(SANSHOKU_DOUKOU, "Three colored triplets", 2, "The same brelan (or squares) in each family."),
+                        new YakuPivot(SANSHOKU_DOUKOU, "Three colored triplets", 2, "The same brelan (or squares) in each family.", 0, new List<TilePivot>
+                        {
+                            tiles.First(x => x.Family == FamilyPivot.Bamboo && x.Number == 6),
+                            tiles.First(x => x.Family == FamilyPivot.Bamboo && x.Number == 6),
+                            tiles.First(x => x.Family == FamilyPivot.Bamboo && x.Number == 6),
+                            tiles.First(x => x.Family == FamilyPivot.Caracter && x.Number == 6),
+                            tiles.First(x => x.Family == FamilyPivot.Caracter && x.Number == 6),
+                            tiles.First(x => x.Family == FamilyPivot.Caracter && x.Number == 6),
+                            tiles.First(x => x.Family == FamilyPivot.Circle && x.Number == 6),
+                            tiles.First(x => x.Family == FamilyPivot.Circle && x.Number == 6),
+                            tiles.First(x => x.Family == FamilyPivot.Circle && x.Number == 6),
+                            tiles.First(x => x.Family == FamilyPivot.Caracter && x.Number == 1),
+                            tiles.First(x => x.Family == FamilyPivot.Caracter && x.Number == 2),
+                            tiles.First(x => x.Family == FamilyPivot.Caracter && x.Number == 3),
+                            tiles.First(x => x.Family == FamilyPivot.Dragon && x.Dragon == DragonPivot.Green),
+                            tiles.First(x => x.Family == FamilyPivot.Dragon && x.Dragon == DragonPivot.Green)
+                        }),
                         new YakuPivot(SANKANTSU, "Three kans", 2, "Three declared squares (concealed or not)."),
-                        new YakuPivot(CHIITOITSU, "Seven pairs", 0, "Seven pairs.", 2),
-                        new YakuPivot(HONROUTOU, "Terminals and honors", 2, "Only terminals and honors in every combinations."),
-                        new YakuPivot(SHOUSANGEN, "Small three dragons", 2, "Two brelans and one pair of dragons."),
+                        new YakuPivot(CHIITOITSU, "Seven pairs", 0, "Seven pairs.", 2, new List<TilePivot>
+                        {
+                            tiles.First(x => x.Family == FamilyPivot.Caracter && x.Number == 2),
+                            tiles.First(x => x.Family == FamilyPivot.Caracter && x.Number == 2),
+                            tiles.First(x => x.Family == FamilyPivot.Caracter && x.Number == 8),
+                            tiles.First(x => x.Family == FamilyPivot.Caracter && x.Number == 8),
+                            tiles.First(x => x.Family == FamilyPivot.Bamboo && x.Number == 7),
+                            tiles.First(x => x.Family == FamilyPivot.Bamboo && x.Number == 7),
+                            tiles.First(x => x.Family == FamilyPivot.Circle && x.Number == 3),
+                            tiles.First(x => x.Family == FamilyPivot.Circle && x.Number == 3),
+                            tiles.First(x => x.Family == FamilyPivot.Circle && x.Number == 9),
+                            tiles.First(x => x.Family == FamilyPivot.Circle && x.Number == 9),
+                            tiles.First(x => x.Family == FamilyPivot.Dragon && x.Dragon == DragonPivot.Red),
+                            tiles.First(x => x.Family == FamilyPivot.Dragon && x.Dragon == DragonPivot.Red),
+                            tiles.First(x => x.Family == FamilyPivot.Wind && x.Wind == WindPivot.East),
+                            tiles.First(x => x.Family == FamilyPivot.Wind && x.Wind == WindPivot.East),
+                        }),
+                        new YakuPivot(HONROUTOU, "Terminals and honors", 2, "Only terminals and honors in every combinations.", 0, new List<TilePivot>
+                        {
+                            tiles.First(x => x.Family == FamilyPivot.Caracter && x.Number == 9),
+                            tiles.First(x => x.Family == FamilyPivot.Caracter && x.Number == 9),
+                            tiles.First(x => x.Family == FamilyPivot.Caracter && x.Number == 9),
+                            tiles.First(x => x.Family == FamilyPivot.Bamboo && x.Number == 1),
+                            tiles.First(x => x.Family == FamilyPivot.Bamboo && x.Number == 1),
+                            tiles.First(x => x.Family == FamilyPivot.Bamboo && x.Number == 1),
+                            tiles.First(x => x.Family == FamilyPivot.Dragon && x.Dragon == DragonPivot.White),
+                            tiles.First(x => x.Family == FamilyPivot.Dragon && x.Dragon == DragonPivot.White),
+                            tiles.First(x => x.Family == FamilyPivot.Dragon && x.Dragon == DragonPivot.White),
+                            tiles.First(x => x.Family == FamilyPivot.Circle && x.Number == 1),
+                            tiles.First(x => x.Family == FamilyPivot.Circle && x.Number == 1),
+                            tiles.First(x => x.Family == FamilyPivot.Circle && x.Number == 1),
+                            tiles.First(x => x.Family == FamilyPivot.Dragon && x.Dragon == DragonPivot.Green),
+                            tiles.First(x => x.Family == FamilyPivot.Dragon && x.Dragon == DragonPivot.Green)
+                        }),
+                        new YakuPivot(SHOUSANGEN, "Small three dragons", 2, "Two brelans and one pair of dragons.", 0, new List<TilePivot>
+                        {
+                            tiles.First(x => x.Family == FamilyPivot.Caracter && x.Number == 7),
+                            tiles.First(x => x.Family == FamilyPivot.Caracter && x.Number == 8),
+                            tiles.First(x => x.Family == FamilyPivot.Caracter && x.Number == 9),
+                            tiles.First(x => x.Dragon == DragonPivot.Red),
+                            tiles.First(x => x.Dragon == DragonPivot.Red),
+                            tiles.First(x => x.Dragon == DragonPivot.Red),
+                            tiles.First(x => x.Dragon == DragonPivot.White),
+                            tiles.First(x => x.Dragon == DragonPivot.White),
+                            tiles.First(x => x.Dragon == DragonPivot.White),
+                            tiles.First(x => x.Family == FamilyPivot.Circle && x.Number == 4),
+                            tiles.First(x => x.Family == FamilyPivot.Circle && x.Number == 4),
+                            tiles.First(x => x.Family == FamilyPivot.Circle && x.Number == 4),
+                            tiles.First(x => x.Dragon == DragonPivot.Green),
+                            tiles.First(x => x.Dragon == DragonPivot.Green)
+                        }),
                         new YakuPivot(HAITEI, "Win by last draw / discard", 1, "Win at the last draw or discard."),
                         new YakuPivot(RINSHAN_KAIHOU, "Dead wall draw", 1, "Win with the compensation tile after declaring kan."),
                         new YakuPivot(CHANKAN, "Robbing a kan", 1, "Win with the fourth tile of an opponent declaring a non-concealed kan."),
                         // Depending on rules, need to be closed.
-                        new YakuPivot(TANYAO, "All simples", 1, "No terminal, nor honor, in every combinations."),
+                        new YakuPivot(TANYAO, "All simples", 1, "No terminal, nor honor, in every combinations.", 0, new List<TilePivot>
+                        {
+                            tiles.First(x => x.Family == FamilyPivot.Bamboo && x.Number == 6),
+                            tiles.First(x => x.Family == FamilyPivot.Bamboo && x.Number == 7),
+                            tiles.First(x => x.Family == FamilyPivot.Bamboo && x.Number == 8),
+                            tiles.First(x => x.Family == FamilyPivot.Caracter && x.Number == 5),
+                            tiles.First(x => x.Family == FamilyPivot.Caracter && x.Number == 5),
+                            tiles.First(x => x.Family == FamilyPivot.Caracter && x.Number == 5),
+                            tiles.First(x => x.Family == FamilyPivot.Circle && x.Number == 2),
+                            tiles.First(x => x.Family == FamilyPivot.Circle && x.Number == 3),
+                            tiles.First(x => x.Family == FamilyPivot.Circle && x.Number == 4),
+                            tiles.First(x => x.Family == FamilyPivot.Bamboo && x.Number == 4),
+                            tiles.First(x => x.Family == FamilyPivot.Bamboo && x.Number == 4),
+                            tiles.First(x => x.Family == FamilyPivot.Bamboo && x.Number == 4),
+                            tiles.First(x => x.Family == FamilyPivot.Caracter && x.Number == 2),
+                            tiles.First(x => x.Family == FamilyPivot.Caracter && x.Number == 2)
+                        }),
                         // Note : cumulative.
-                        new YakuPivot(YAKUHAI, "Value tiles", 1, "One brelan of dragon, or dominant wind, or player's turn wind."),
+                        new YakuPivot(YAKUHAI, "Value tiles", 1, "One brelan of dragon, or dominant wind, or player's turn wind.", 0, new List<TilePivot>
+                        {
+                            tiles.First(x => x.Family == FamilyPivot.Dragon && x.Dragon == DragonPivot.Green),
+                            tiles.First(x => x.Family == FamilyPivot.Dragon && x.Dragon == DragonPivot.Green),
+                            tiles.First(x => x.Family == FamilyPivot.Dragon && x.Dragon == DragonPivot.Green),
+                            tiles.First(x => x.Family == FamilyPivot.Caracter && x.Number == 2),
+                            tiles.First(x => x.Family == FamilyPivot.Caracter && x.Number == 2),
+                            tiles.First(x => x.Family == FamilyPivot.Caracter && x.Number == 2),
+                            tiles.First(x => x.Family == FamilyPivot.Bamboo && x.Number == 1),
+                            tiles.First(x => x.Family == FamilyPivot.Bamboo && x.Number == 2),
+                            tiles.First(x => x.Family == FamilyPivot.Bamboo && x.Number == 3),
+                            tiles.First(x => x.Family == FamilyPivot.Caracter && x.Number == 7),
+                            tiles.First(x => x.Family == FamilyPivot.Caracter && x.Number == 7),
+                            tiles.First(x => x.Family == FamilyPivot.Caracter && x.Number == 7),
+                            tiles.First(x => x.Family == FamilyPivot.Circle && x.Number == 3),
+                            tiles.First(x => x.Family == FamilyPivot.Circle && x.Number == 3)
+                        }),
                         new YakuPivot(IPPATSU, "One shot", 0, "Win on the first turn (no call made) after declaring riichi.", 1),
                         new YakuPivot(MENZEN_TSUMO, "Self draw", 0, "Win by tsumo. Must be concealed.", 1),
-                        new YakuPivot(PINFU, "All sequences", 0, "Fourth sequences. Last tile is winning on both side of a sequence. Must be concealed.", 1)
+                        new YakuPivot(PINFU, "All sequences", 0, $"Fourth sequences. Pair is not dragon, dominant wind or current wind.{Environment.NewLine}Last tile is winning on both side of a sequence. Must be concealed.", 1, new List<TilePivot>
+                        {
+                            tiles.First(x => x.Family == FamilyPivot.Circle && x.Number == 3),
+                            tiles.First(x => x.Family == FamilyPivot.Circle && x.Number == 4),
+                            tiles.First(x => x.Family == FamilyPivot.Circle && x.Number == 5),
+                            tiles.First(x => x.Family == FamilyPivot.Caracter && x.Number == 7),
+                            tiles.First(x => x.Family == FamilyPivot.Caracter && x.Number == 8),
+                            tiles.First(x => x.Family == FamilyPivot.Caracter && x.Number == 9),
+                            tiles.First(x => x.Family == FamilyPivot.Caracter && x.Number == 1),
+                            tiles.First(x => x.Family == FamilyPivot.Caracter && x.Number == 2),
+                            tiles.First(x => x.Family == FamilyPivot.Caracter && x.Number == 3),
+                            tiles.First(x => x.Family == FamilyPivot.Bamboo && x.Number == 4),
+                            tiles.First(x => x.Family == FamilyPivot.Bamboo && x.Number == 5),
+                            tiles.First(x => x.Family == FamilyPivot.Bamboo && x.Number == 6),
+                            tiles.First(x => x.Family == FamilyPivot.Caracter && x.Number == 5),
+                            tiles.First(x => x.Family == FamilyPivot.Caracter && x.Number == 5)
+                        })
                     };
-                    _yakus.Add(new YakuPivot(HONIISOU, "Half flush", 2, "Only one family and honors.", 1, _yakus.Find(y => y.Name == CHINIISOU)));
-                    _yakus.Add(new YakuPivot(CHANTA, "Terminal or honor in each group", 1, "At least one terminal or honor in every combinations.", 1, _yakus.Find(y => y.Name == JUNCHAN), _yakus.Find(y => y.Name == HONROUTOU)));
-                    _yakus.Add(new YakuPivot(RIICHI, "Ready hand", 0, "Win after declaring a tenpai hand. Must be concealed.", 1, _yakus.Find(y => y.Name == DABURU_RIICHI)));
-                    _yakus.Add(new YakuPivot(IIPEIKOU, "Identical sequences", 0, "Twice the same sequence in one family. Must be concealed.", 1, _yakus.Find(y => y.Name == RYANPEIKOU)));
-                    _yakus.Add(new YakuPivot(SHOUSUUSHII, "Little four winds", 13, "Brelan of three wind type, and a pair of the fourth wind.", 0, _yakus.Find(y => y.Name == DAISUUSHII)));
+                    _yakus.Add(new YakuPivot(HONIISOU, "Half flush", 2, "Only one family and honors.", 1, new List<TilePivot>
+                    {
+                        tiles.First(x => x.Family == FamilyPivot.Circle && x.Number == 1),
+                        tiles.First(x => x.Family == FamilyPivot.Circle && x.Number == 1),
+                        tiles.First(x => x.Family == FamilyPivot.Circle && x.Number == 1),
+                        tiles.First(x => x.Family == FamilyPivot.Circle && x.Number == 4),
+                        tiles.First(x => x.Family == FamilyPivot.Circle && x.Number == 5),
+                        tiles.First(x => x.Family == FamilyPivot.Circle && x.Number == 6),
+                        tiles.First(x => x.Family == FamilyPivot.Wind && x.Wind == WindPivot.West),
+                        tiles.First(x => x.Family == FamilyPivot.Wind && x.Wind == WindPivot.West),
+                        tiles.First(x => x.Family == FamilyPivot.Wind && x.Wind == WindPivot.West),
+                        tiles.First(x => x.Family == FamilyPivot.Circle && x.Number == 7),
+                        tiles.First(x => x.Family == FamilyPivot.Circle && x.Number == 8),
+                        tiles.First(x => x.Family == FamilyPivot.Circle && x.Number == 9),
+                        tiles.First(x => x.Family == FamilyPivot.Dragon && x.Dragon == DragonPivot.Red),
+                        tiles.First(x => x.Family == FamilyPivot.Dragon && x.Dragon == DragonPivot.Red)
+                    }, _yakus.Find(y => y.Name == CHINIISOU)));
+                    _yakus.Add(new YakuPivot(CHANTA, "Terminal or honor in each group", 1, "At least one terminal or honor in every combinations.", 1, new List<TilePivot>
+                    {
+                        tiles.First(x => x.Family == FamilyPivot.Caracter && x.Number == 1),
+                        tiles.First(x => x.Family == FamilyPivot.Caracter && x.Number == 2),
+                        tiles.First(x => x.Family == FamilyPivot.Caracter && x.Number == 3),
+                        tiles.First(x => x.Family == FamilyPivot.Circle && x.Number == 7),
+                        tiles.First(x => x.Family == FamilyPivot.Circle && x.Number == 8),
+                        tiles.First(x => x.Family == FamilyPivot.Circle && x.Number == 9),
+                        tiles.First(x => x.Family == FamilyPivot.Wind && x.Wind == WindPivot.North),
+                        tiles.First(x => x.Family == FamilyPivot.Wind && x.Wind == WindPivot.North),
+                        tiles.First(x => x.Family == FamilyPivot.Wind && x.Wind == WindPivot.North),
+                        tiles.First(x => x.Family == FamilyPivot.Bamboo && x.Number == 1),
+                        tiles.First(x => x.Family == FamilyPivot.Bamboo && x.Number == 1),
+                        tiles.First(x => x.Family == FamilyPivot.Bamboo && x.Number == 1),
+                        tiles.First(x => x.Family == FamilyPivot.Caracter && x.Number == 9),
+                        tiles.First(x => x.Family == FamilyPivot.Caracter && x.Number == 9)
+                    }, _yakus.Find(y => y.Name == JUNCHAN), _yakus.Find(y => y.Name == HONROUTOU)));
+                    _yakus.Add(new YakuPivot(RIICHI, "Ready hand", 0, "Win after declaring a tenpai hand. Must be concealed.", 1, null, _yakus.Find(y => y.Name == DABURU_RIICHI)));
+                    _yakus.Add(new YakuPivot(IIPEIKOU, "Identical sequences", 0, "Twice the same sequence in one family. Must be concealed.", 1, new List<TilePivot>
+                    {
+                        tiles.First(x => x.Family == FamilyPivot.Bamboo && x.Number == 2),
+                        tiles.First(x => x.Family == FamilyPivot.Bamboo && x.Number == 3),
+                        tiles.First(x => x.Family == FamilyPivot.Bamboo && x.Number == 4),
+                        tiles.First(x => x.Family == FamilyPivot.Bamboo && x.Number == 2),
+                        tiles.First(x => x.Family == FamilyPivot.Bamboo && x.Number == 3),
+                        tiles.First(x => x.Family == FamilyPivot.Bamboo && x.Number == 4),
+                        tiles.First(x => x.Family == FamilyPivot.Circle && x.Number == 5),
+                        tiles.First(x => x.Family == FamilyPivot.Circle && x.Number == 5),
+                        tiles.First(x => x.Family == FamilyPivot.Circle && x.Number == 5),
+                        tiles.First(x => x.Family == FamilyPivot.Dragon && x.Dragon == DragonPivot.Red),
+                        tiles.First(x => x.Family == FamilyPivot.Dragon && x.Dragon == DragonPivot.Red),
+                        tiles.First(x => x.Family == FamilyPivot.Dragon && x.Dragon == DragonPivot.Red),
+                        tiles.First(x => x.Family == FamilyPivot.Wind && x.Wind == WindPivot.East),
+                        tiles.First(x => x.Family == FamilyPivot.Wind && x.Wind == WindPivot.East)
+                    }, _yakus.Find(y => y.Name == RYANPEIKOU)));
+                    _yakus.Add(new YakuPivot(SHOUSUUSHII, "Little four winds", 13, "Brelan of three wind type, and a pair of the fourth wind.", 0, new List<TilePivot>
+                    {
+                        tiles.First(x => x.Family == FamilyPivot.Wind && x.Wind == WindPivot.East),
+                        tiles.First(x => x.Family == FamilyPivot.Wind && x.Wind == WindPivot.East),
+                        tiles.First(x => x.Family == FamilyPivot.Wind && x.Wind == WindPivot.East),
+                        tiles.First(x => x.Family == FamilyPivot.Wind && x.Wind == WindPivot.North),
+                        tiles.First(x => x.Family == FamilyPivot.Wind && x.Wind == WindPivot.North),
+                        tiles.First(x => x.Family == FamilyPivot.Wind && x.Wind == WindPivot.North),
+                        tiles.First(x => x.Family == FamilyPivot.Wind && x.Wind == WindPivot.West),
+                        tiles.First(x => x.Family == FamilyPivot.Wind && x.Wind == WindPivot.West),
+                        tiles.First(x => x.Family == FamilyPivot.Wind && x.Wind == WindPivot.West),
+                        tiles.First(x => x.Family == FamilyPivot.Bamboo && x.Number == 2),
+                        tiles.First(x => x.Family == FamilyPivot.Bamboo && x.Number == 2),
+                        tiles.First(x => x.Family == FamilyPivot.Bamboo && x.Number == 2),
+                        tiles.First(x => x.Family == FamilyPivot.Wind && x.Wind == WindPivot.South),
+                        tiles.First(x => x.Family == FamilyPivot.Wind && x.Wind == WindPivot.South)
+                    }, _yakus.Find(y => y.Name == DAISUUSHII)));
                 }
                 return _yakus;
             }
