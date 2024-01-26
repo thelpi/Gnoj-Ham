@@ -4,22 +4,67 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Gnoj_HamView"
+        xmlns:cvt="clr-namespace:Gnoj_HamView.Converters"
         mc:Ignorable="d"
         WindowStartupLocation="CenterScreen"
         Title="Yakus description" SizeToContent="Width" Height="600">
-    <ScrollViewer VerticalScrollBarVisibility="Auto" CanContentScroll="True" Margin="5">
-        <Grid Name="GrdYakus">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="150" />
-                <ColumnDefinition Width="100" />
-                <ColumnDefinition Width="*" />
-            </Grid.ColumnDefinitions>
-            <Grid.RowDefinitions>
-                <RowDefinition />
-            </Grid.RowDefinitions>
-            <Label Grid.Row="0" Grid.Column="0" Content="Name" Background="Gainsboro" />
-            <Label Grid.Row="0" Grid.Column="1" Content="Fans" Background="Gainsboro" />
-            <Label Grid.Row="0" Grid.Column="2" Content="Description" Background="Gainsboro" />
-        </Grid>
-    </ScrollViewer>
+    <Window.Resources>
+        <cvt:YakuToolTipConverter x:Key="YakuToolTipConverter" />
+        <cvt:FansToTextConverter x:Key="FansToTextConverter" />
+        <cvt:FansToFontStyleConverter x:Key="FansToFontStyleConverter" />
+    </Window.Resources>
+    <TabControl Margin="5">
+        <TabItem Header="Yakus">
+            <ScrollViewer PreviewMouseWheel="ScrollViewer_PreviewMouseWheel"  VerticalScrollBarVisibility="Auto" CanContentScroll="True">
+                <ListView Name="LstYakus" AlternationCount="2">
+                    <ListView.Resources>
+                        <Style TargetType="ListViewItem">
+                            <Setter Property="ItemsControl.Height" Value="30" />
+                            <Setter Property="ItemsControl.ToolTip" Value="{Binding Converter={StaticResource YakuToolTipConverter}}" />
+                            <Setter Property="ItemsControl.FontStyle" Value="{Binding Converter={StaticResource FansToFontStyleConverter}}" />
+                            <Style.Triggers>
+                                <Trigger Property="ItemsControl.AlternationIndex"  Value="0">
+                                    <Setter Property="Background" Value="White" />
+                                </Trigger>
+                                <Trigger Property="ItemsControl.AlternationIndex"  Value="1">
+                                    <Setter Property="Background" Value="Azure" />
+                                </Trigger>
+                            </Style.Triggers>
+                        </Style>
+                    </ListView.Resources>
+                    <ListView.View>
+                        <GridView AllowsColumnReorder="False">
+                            <GridViewColumn Width="150">
+                                <GridViewColumn.Header>Name</GridViewColumn.Header>
+                                <GridViewColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding Name}" FontWeight="Bold" />
+                                    </DataTemplate>
+                                </GridViewColumn.CellTemplate>
+                            </GridViewColumn>
+                            <GridViewColumn Width="100">
+                                <GridViewColumn.Header>Fans</GridViewColumn.Header>
+                                <GridViewColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding Converter={StaticResource FansToTextConverter}}" FontWeight="Bold" />
+                                    </DataTemplate>
+                                </GridViewColumn.CellTemplate>
+                            </GridViewColumn>
+                            <GridViewColumn>
+                                <GridViewColumn.Header>Description</GridViewColumn.Header>
+                                <GridViewColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding Description}" />
+                                    </DataTemplate>
+                                </GridViewColumn.CellTemplate>
+                            </GridViewColumn>
+                        </GridView>
+                    </ListView.View>
+                </ListView>
+            </ScrollViewer>
+        </TabItem>
+        <TabItem Header="Rules / Tutorial">
+            <TextBlock>TBD</TextBlock>
+        </TabItem>
+    </TabControl>
 </Window>

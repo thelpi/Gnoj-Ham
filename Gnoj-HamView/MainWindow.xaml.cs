@@ -86,7 +86,7 @@ namespace Gnoj_HamView
             if (IsCurrentlyClickable())
             {
                 _waitForDecision = false;
-                var tag = (Tuple<TilePivot, bool>)((sender as Button).Tag);
+                var tag = (Tuple<TilePivot, bool>)(sender as Button).Tag;
                 ChiiCall(tag);
             }
         }
@@ -556,7 +556,7 @@ namespace Gnoj_HamView
             {
                 // Changes the event of every buttons concerned by the call...
                 var buttonClickable = buttons
-                    .Where(b => b.Tag as TilePivot == tileKey)
+                    .Where(b => (b.Tag as TilePivot) == tileKey)
                     .OrderBy(b => (b.Tag as TilePivot).IsRedDora) // in case of autoplay, we don't want the red dora discarded where there's a not-red tile
                     .First();
                 buttonClickable.Click += handler;
@@ -1077,7 +1077,7 @@ namespace Gnoj_HamView
         {
             var panel = new StackPanel
             {
-                Orientation = (pIndex == 0 || pIndex == 2 ? Orientation.Horizontal : Orientation.Vertical)
+                Orientation = pIndex == 0 || pIndex == 2 ? Orientation.Horizontal : Orientation.Vertical
             };
 
             var pWind = _game.GetPlayerCurrentWind(pIndex);
