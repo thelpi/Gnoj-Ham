@@ -108,9 +108,9 @@ namespace Gnoj_Ham
                         new YakuPivot(CHIIHOU, "Earthly hand", 0, "14th first tiles form a valid hand for south/west/north player.", 13),
                         new YakuPivot(RENHOU, "Hand of man", 5, "Ron on first turn, no other call made."),
                         // Depending on rules, might be ignored.
-                        new YakuPivot(NAGASHI_MANGAN, "Discard mangan", 0, "Round ending in Ryuukyoku: the discard of the player contains only terminals and honors. No call has been made by the player, nor by opponents on player's discards.", 5),
+                        new YakuPivot(NAGASHI_MANGAN, "Discard mangan", 0, $"Round ending in Ryuukyoku: the discard of the player contains only terminals and honors.{Environment.NewLine}No call has been made by the player, nor by opponents on player's discards.", 5),
                         new YakuPivot(CHINIISOU, "Flush", 5, "One family only.", 1),
-                        new YakuPivot(JUNCHAN, "Terminal in each meld", 2, "Terminal in every combinations.", 3),
+                        new YakuPivot(JUNCHAN, "Terminal in each meld", 2, "Terminal in every combinations.", 1),
                         new YakuPivot(RYANPEIKOU, "Two sets of identical sequences", 0, "Double iipeikou. Must be concealed.", 3),
                         // Note : concealed kans are allowed for dealer.
                         new YakuPivot(DABURU_RIICHI, "Double ready", 0, "Riichi at first turn. No call made. Must be concealed.", 2),

@@ -221,6 +221,16 @@ namespace Gnoj_HamView
             Close();
         }
 
+        private void HlkYakus_Click(object sender, RoutedEventArgs e)
+        {
+            new YakusWindow().ShowDialog();
+        }
+
+        private void HlkAbout_Click(object sender, RoutedEventArgs e)
+        {
+            MessageBox.Show("Coming soon!", "Gnoj-Ham - information");
+        }
+
         #region Configuration
 
         private void CbbCpuSpeed_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -261,7 +271,7 @@ namespace Gnoj_HamView
             Properties.Settings.Default.Save();
         }
 
-        private void PlayerStatsHlk_Click(object sender, RoutedEventArgs e)
+        private void HlkPlayerStats_Click(object sender, RoutedEventArgs e)
         {
             var (save, error) = PlayerSavePivot.GetOrCreateSave();
 

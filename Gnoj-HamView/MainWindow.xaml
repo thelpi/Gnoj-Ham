@@ -59,8 +59,15 @@
                     <Label Width="110"  HorizontalContentAlignment="Right" Content="Sounds" />
                     <CheckBox VerticalContentAlignment="Center" Name="ChkSounds" Click="ChkSounds_Click" />
                 </StackPanel>
+                <Separator Foreground="Black" />
+                <TextBlock HorizontalAlignment="Center" Margin="0, 5, 0, 0">
+                    <Hyperlink Name="HlkPlayerStats" Click="HlkPlayerStats_Click">Player stats</Hyperlink>
+                </TextBlock>
                 <TextBlock HorizontalAlignment="Center" Margin="0, 10, 0, 0">
-                    <Hyperlink Name="PlayerStatsHlk" Click="PlayerStatsHlk_Click">Player stats</Hyperlink>
+                    <Hyperlink Name="HlkYakus" Click="HlkYakus_Click">Rules and yakus</Hyperlink>
+                </TextBlock>
+                <TextBlock HorizontalAlignment="Center" Margin="0, 10, 0, 0">
+                    <Hyperlink Name="HlkAbout" Click="HlkAbout_Click">About Gnoj-Ham</Hyperlink>
                 </TextBlock>
             </StackPanel>
         </Expander>
