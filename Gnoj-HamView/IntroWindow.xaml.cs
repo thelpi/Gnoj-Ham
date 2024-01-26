@@ -95,7 +95,22 @@ namespace Gnoj_HamView
             Settings.Default.Save();
         }
 
-        private void PlayerStatsHlk_Click(object sender, RoutedEventArgs e)
+        private void BtnReset_Click(object sender, RoutedEventArgs e)
+        {
+            LoadConfiguration();
+        }
+
+        private void HlkAbout_Click(object sender, RoutedEventArgs e)
+        {
+            MessageBox.Show("Coming soon!", "Gnoj-Ham - information");
+        }
+
+        private void HlkYakus_Click(object sender, RoutedEventArgs e)
+        {
+            new RulesWindow().ShowDialog();
+        }
+
+        private void HlkPlayerStats_Click(object sender, RoutedEventArgs e)
         {
             var (save, error) = PlayerSavePivot.GetOrCreateSave();
 
@@ -105,11 +120,6 @@ namespace Gnoj_HamView
             }
 
             new PlayerSaveStatsWindow(save).ShowDialog();
-        }
-
-        private void BtnReset_Click(object sender, RoutedEventArgs e)
-        {
-            LoadConfiguration();
         }
     }
 }

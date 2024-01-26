@@ -11,12 +11,12 @@ namespace Gnoj_HamView
     /// <summary>
     /// Logique d'interaction pour YakusWindow.xaml
     /// </summary>
-    public partial class YakusWindow : Window
+    public partial class RulesWindow : Window
     {
         /// <summary>
         /// Ctor
         /// </summary>
-        public YakusWindow()
+        public RulesWindow()
         {
             InitializeComponent();
 

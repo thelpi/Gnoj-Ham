@@ -17,9 +17,6 @@
         <DockPanel DockPanel.Dock="Bottom" Margin="0, 10, 0, 0">
             <Button DockPanel.Dock="Left" Width="75" Height="25" Content="Reset" Name="BtnReset" Click="BtnReset_Click" ToolTip="Reset every option to default value." />
             <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" HorizontalAlignment="Right">
-                <TextBlock VerticalAlignment="Center" Margin="0, 0, 10, 0">
-                    <Hyperlink Name="PlayerStatsHlk" Click="PlayerStatsHlk_Click">Player stats</Hyperlink>
-                </TextBlock>
                 <Button Width="75" Height="25" Content="Start" Name="BtnStart" Click="BtnStart_Click" />
                 <Button Width="75" Height="25" Content="Quit" Name="BtnQuit" Click="BtnQuit_Click" Margin="10, 0, 0, 0" />
             </StackPanel>
@@ -60,8 +57,10 @@
                 <TabItem Header="Rules">
                     <Grid>
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="150"/>
-                            <ColumnDefinition Width="150" />
+                            <ColumnDefinition Width="27.198"/>
+                            <ColumnDefinition Width="122.802"/>
+                            <ColumnDefinition Width="49.279" />
+                            <ColumnDefinition Width="100.721"/>
                         </Grid.ColumnDefinitions>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="30" />
@@ -69,14 +68,14 @@
                             <RowDefinition Height="30" />
                             <RowDefinition Height="30" />
                         </Grid.RowDefinitions>
-                        <Label Grid.Column="0" Grid.Row="0" HorizontalContentAlignment="Right" VerticalContentAlignment="Center" Content="Use red doras" />
-                        <Label Grid.Column="0" Grid.Row="1" HorizontalContentAlignment="Right" VerticalContentAlignment="Center" Content="Initial points count" />
-                        <Label Grid.Column="0" Grid.Row="2" HorizontalContentAlignment="Right" VerticalContentAlignment="Center" Content="Use nagashi mangan" />
-                        <Label Grid.Column="0" Grid.Row="3" HorizontalContentAlignment="Right" VerticalContentAlignment="Center" Content="End of game rule" />
-                        <CheckBox Margin="5, 0, 0, 0" Grid.Column="1" Name="ChkUseRedDoras" VerticalAlignment="Center" />
-                        <ComboBox Margin="5, 0, 0, 0" Grid.Column="1" Grid.Row="1" Name="CbbPointsRule" Height="25" VerticalContentAlignment="Center" />
-                        <CheckBox Margin="5, 0, 0, 0" Grid.Column="1" Grid.Row="2" Name="ChkUseNagashiMangan" VerticalAlignment="Center" />
-                        <ComboBox Margin="5, 0, 0, 0" Grid.Column="1" Grid.Row="3" Name="CbbEndOfGameRule" Height="25" VerticalContentAlignment="Center">
+                        <Label Grid.Column="0" Grid.Row="0" HorizontalContentAlignment="Right" VerticalContentAlignment="Center" Content="Use red doras" Grid.ColumnSpan="2" />
+                        <Label Grid.Column="0" Grid.Row="1" HorizontalContentAlignment="Right" VerticalContentAlignment="Center" Content="Initial points count" Grid.ColumnSpan="2" />
+                        <Label Grid.Column="0" Grid.Row="2" HorizontalContentAlignment="Right" VerticalContentAlignment="Center" Content="Use nagashi mangan" Grid.ColumnSpan="2" />
+                        <Label Grid.Column="0" Grid.Row="3" HorizontalContentAlignment="Right" VerticalContentAlignment="Center" Content="End of game rule" Grid.ColumnSpan="2" />
+                        <CheckBox Margin="5,0,0,0" Grid.Column="2" Name="ChkUseRedDoras" VerticalAlignment="Center" Grid.ColumnSpan="2" />
+                        <ComboBox Margin="5,2,0,2" Grid.Column="2" Grid.Row="1" Name="CbbPointsRule" Height="25" VerticalContentAlignment="Center" Grid.ColumnSpan="2" />
+                        <CheckBox Margin="5,0,0,0" Grid.Column="2" Grid.Row="2" Name="ChkUseNagashiMangan" VerticalAlignment="Center" Grid.ColumnSpan="2" />
+                        <ComboBox Margin="5,2,0,2" Grid.Column="2" Grid.Row="3" Name="CbbEndOfGameRule" Height="25" VerticalContentAlignment="Center" Grid.ColumnSpan="2">
                             <ComboBox.ToolTip>
                                 <TextBlock>
                 - Oorasu: the game ends after south 4; no bankruptcy.<LineBreak/>
@@ -102,6 +101,19 @@
                         <Label Grid.Column="0" Grid.Row="1" HorizontalContentAlignment="Right" VerticalContentAlignment="Center" Content="4 CPUs" />
                         <CheckBox Margin="5, 0, 0, 0" Grid.Column="1" Grid.Row="1" Name="ChkFourCpus" VerticalAlignment="Center" />
                     </Grid>
+                </TabItem>
+                <TabItem Header="More...">
+                    <StackPanel Orientation="Vertical">
+                        <TextBlock HorizontalAlignment="Center" Margin="0, 10, 0, 0">
+                            <Hyperlink Name="HlkPlayerStats" Click="HlkPlayerStats_Click">Player stats</Hyperlink>
+                        </TextBlock>
+                        <TextBlock HorizontalAlignment="Center" Margin="0, 10, 0, 0">
+                            <Hyperlink Name="HlkYakus" Click="HlkYakus_Click">Rules and yakus</Hyperlink>
+                        </TextBlock>
+                        <TextBlock HorizontalAlignment="Center" Margin="0, 10, 0, 10">
+                            <Hyperlink Name="HlkAbout" Click="HlkAbout_Click">About Gnoj-Ham</Hyperlink>
+                        </TextBlock>
+                    </StackPanel>
                 </TabItem>
             </TabControl>
         </StackPanel>

@@ -223,7 +223,7 @@ namespace Gnoj_HamView
 
         private void HlkYakus_Click(object sender, RoutedEventArgs e)
         {
-            new YakusWindow().ShowDialog();
+            new RulesWindow().ShowDialog();
         }
 
         private void HlkAbout_Click(object sender, RoutedEventArgs e)
