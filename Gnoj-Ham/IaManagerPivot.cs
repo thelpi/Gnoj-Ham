@@ -79,14 +79,14 @@ namespace Gnoj_Ham
                 return tilesSafety.First().tile;
             }
 
-            // it's a bit flawed because it allows to discard a dora
-            // in at least two cases we should not :
-            // - when we have a choice between similar probabilities
-            // - when dora was the precondition to open the hand in the first place
             var tilesGroup =
                 concealedTiles
                     .GroupBy(t => t)
-                    .OrderByDescending(t => t.Count())
+                    .OrderByDescending(t =>
+                    {
+                        var count = t.Count();
+                        return count > 2 ? count : 0;
+                    })
                     .ThenByDescending(t =>
                     {
                         var m2 = concealedTiles.Any(tb => tb.Family == t.Key.Family && tb.Number == t.Key.Number - 2);
@@ -94,8 +94,16 @@ namespace Gnoj_Ham
                         var p1 = concealedTiles.Any(tb => tb.Family == t.Key.Family && tb.Number == t.Key.Number + 1);
                         var p2 = concealedTiles.Any(tb => tb.Family == t.Key.Family && tb.Number == t.Key.Number + 2);
 
-                        return ((m1 ? 1 : 0) * 2 + (p1 ? 1 : 0) * 2 + (p2 ? 1 : 0) + (m2 ? 1 : 0));
+                        return ((m1 ? 1 : 0) * 2) + ((p1 ? 1 : 0) * 2) + (p2 ? 1 : 0) + (m2 ? 1 : 0);
                     })
+                    // doras are beter than "not dora"
+                    .ThenByDescending(t => _round.GetDoraCount(t.Key) + (t.Key.IsRedDora ? 1 : 0))
+                    // keps pair
+                    .ThenByDescending(t => t.Count())
+                    // all things being equal, wind are the best to discard
+                    .ThenBy(t => t.Key.Family == FamilyPivot.Wind)
+                    // all things being equal, the closer to side the better
+                    .ThenBy(t => t.Key.DistanceToMiddle())
                     .Reverse();
 
             return tilesGroup.First(tg => discardableTiles.Contains(tg.Key)).Key;

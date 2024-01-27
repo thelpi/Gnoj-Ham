@@ -370,6 +370,12 @@ namespace Gnoj_Ham
                 && combo.SequenceLastNumber != Number;
         }
 
+        /// <summary>
+        /// Computes the distance with the middle (<see cref="Number"/> 5). <c>0</c> if 5, <c>4</c> if 1 or 9. Honor are 0.
+        /// </summary>
+        /// <returns>The distance.</returns>
+        internal int DistanceToMiddle() => Number == 0 ? 0 : Math.Abs(Number - 5);
+
         #endregion Public methods
     }
 }
