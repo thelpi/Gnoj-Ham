@@ -933,6 +933,12 @@ namespace Gnoj_Ham
             }
         }
 
+        // Gets the count of dora for specified tile
+        private int GetDoraCountInternal(TilePivot t, IEnumerable<TilePivot> doraIndicators)
+        {
+            return doraIndicators.Take(VisibleDorasCount).Count(d => t.IsDoraNext(d));
+        }
+
         #endregion Private methods
 
         #region Internal methods
@@ -1056,8 +1062,8 @@ namespace Gnoj_Ham
 
                     var isRiichi = phand.Yakus.Contains(YakuPivot.Riichi) || phand.Yakus.Contains(YakuPivot.DaburuRiichi);
 
-                    var dorasCount = phand.AllTiles.Sum(t => DoraIndicatorTiles.Take(VisibleDorasCount).Count(d => t.IsDoraNext(d)));
-                    var uraDorasCount = isRiichi ? phand.AllTiles.Sum(t => UraDoraIndicatorTiles.Take(VisibleDorasCount).Count(d => t.IsDoraNext(d))) : 0;
+                    var dorasCount = phand.AllTiles.Sum(t => GetDoraCount(t));
+                    var uraDorasCount = isRiichi ? phand.AllTiles.Sum(t => GetUraDoraCount(t)) : 0;
                     var redDorasCount = phand.AllTiles.Count(t => t.IsRedDora);
 
                     if (isRiichi)
@@ -1187,10 +1193,16 @@ namespace Gnoj_Ham
         /// </summary>
         /// <param name="playerIndex">The player index.</param>
         /// <returns>Tiles enumeration.</returns>
-        public IEnumerable<TilePivot> DeadTilesFromIndexPointOfView(int playerIndex)
+        internal IEnumerable<TilePivot> DeadTilesFromIndexPointOfView(int playerIndex)
         {
             return _fullTilesList.Except(GetConcealedTilesFromPlayerPointOfView(playerIndex));
         }
+
+        // Gets dora count if the specvified tile is a dora
+        internal int GetDoraCount(TilePivot t) => GetDoraCountInternal(t, DoraIndicatorTiles);
+
+        // Gets dora count if the specvified tile is an uradora
+        internal int GetUraDoraCount(TilePivot t) => GetDoraCountInternal(t, UraDoraIndicatorTiles);
 
         #endregion Internal methods
     }

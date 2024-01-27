@@ -48,61 +48,35 @@ namespace Gnoj_Ham
             var concealedTiles = _round.GetHand(_round.CurrentPlayerIndex).ConcealedTiles.ToList();
 
             var discardableTiles = concealedTiles
-                                                .Where(t => _round.CanDiscard(t))
-                                                .Distinct()
-                                                .ToList();
+                .Where(t => _round.CanDiscard(t))
+                .Distinct()
+                .ToList();
 
+            // there's no choice
             if (discardableTiles.Count == 1)
             {
                 return discardableTiles.First();
             }
 
+            var deadTiles = _round.DeadTilesFromIndexPointOfView(_round.CurrentPlayerIndex).ToList();
+
+            var (tilesSafety, stopCurrentHand) = ComputeTilesSafety(discardableTiles, deadTiles);
+
+            // tenpai: let's go anyway...
             var discards = _round.ExtractDiscardChoicesFromTenpai(_round.CurrentPlayerIndex);
             if (discards.Count > 0)
             {
-                return discards.First();
+                // but select the best of possible discards
+                if (stopCurrentHand)
+                    return discards.OrderBy(t => tilesSafety.First(_ => _.tile == t).unsafePoints).First();
+
+                // otherwise (no visible risk), avoid discard dora
+                return discards.OrderBy(t => _round.GetDoraCount(t) + (t.IsRedDora ? 1 : 0)).First();
             }
 
-            var deadTiles = _round.DeadTilesFromIndexPointOfView(_round.CurrentPlayerIndex).ToList();
-
-            var tilesSafety = new Dictionary<TilePivot, List<TileSafety>>();
-
-            var oneRiichi = false;
-            foreach (var tile in discardableTiles)
+            if (stopCurrentHand)
             {
-                tilesSafety.Add(tile, new List<TileSafety>());
-                foreach (var i in Enumerable.Range(0, 4).Where(i => i != _round.CurrentPlayerIndex))
-                {
-                    if (_round.IsRiichi(i))
-                    {
-                        oneRiichi = true;
-                        if (IsDiscardedOrUnusable(tile, i, deadTiles))
-                        {
-                            tilesSafety[tile].Add(TileSafety.Safe);
-                        }
-                        else if (IsOutsiderSuji(tile, i) || IsDoubleInsiderSuji(tile, i) || IsMaxedFamilyInDiscard(tile, i))
-                        {
-                            tilesSafety[tile].Add(TileSafety.QuiteSafe);
-                        }
-                        else if (IsInsiderSuji(tile, i) || tile.IsHonorOrTerminal)
-                        {
-                            tilesSafety[tile].Add(TileSafety.QuiteUnsafe);
-                        }
-                        else
-                        {
-                            tilesSafety[tile].Add(TileSafety.Unsafe);
-                        }
-                    }
-                    else
-                    {
-                        tilesSafety[tile].Add(TileSafety.AverageOrUnknown);
-                    }
-                }
-            }
-
-            if (oneRiichi)
-            {
-                return tilesSafety.OrderBy(t => t.Value.Sum(s => (int)s)).First().Key;
+                return tilesSafety.First().tile;
             }
 
             // it's a bit flawed because it allows to discard a dora
@@ -224,18 +198,7 @@ namespace Gnoj_Ham
         public Tuple<TilePivot, bool> ChiiDecision()
         {
             var chiiTiles = _round.OpponentsCanCallChii();
-            if (chiiTiles.Count > 0)
-            {
-                // Proceeds to chii if :
-                // - The hand is already open (we assume it's open for a good reason)
-                // - The sequence does not already exist in the end
-                if (!_round.GetHand(_round.CurrentPlayerIndex).IsConcealed)
-                {
-                    return ChiiDecisionInternal(chiiTiles);
-                }
-            }
-
-            return null;
+            return chiiTiles.Count > 0 ? ChiiDecisionInternal(chiiTiles) : null;
         }
 
         /// <summary>
@@ -320,6 +283,14 @@ namespace Gnoj_Ham
 
         private Tuple<TilePivot, bool> ChiiDecisionInternal(Dictionary<TilePivot, bool> chiiTiles)
         {
+            // Proceeds to chii if :
+            // - The hand is already open (we assume it's open for a good reason)
+            // - The sequence does not already exist in the end
+            if (_round.GetHand(_round.CurrentPlayerIndex).IsConcealed)
+            {
+                return null;
+            }
+
             Tuple<TilePivot, bool> tileChoice = null;
             foreach (var tileKey in chiiTiles.Keys)
             {
@@ -402,9 +373,7 @@ namespace Gnoj_Ham
             }
 
             var dorasCount = hand.ConcealedTiles
-                .Sum(t => _round.DoraIndicatorTiles
-                    .Take(_round.VisibleDorasCount)
-                    .Count(d => t.IsDoraNext(d)));
+                .Sum(t => _round.GetDoraCount(t));
             var redDorasCount = hand.ConcealedTiles.Count(t => t.IsRedDora);
 
             var hasValuablePair = hand.ConcealedTiles.GroupBy(_ => _)
@@ -424,6 +393,52 @@ namespace Gnoj_Ham
         {
             return tile.Family == FamilyPivot.Dragon
                 || (tile.Family == FamilyPivot.Wind && winds.Contains(tile.Wind.Value));
+        }
+
+        private (List<(TilePivot tile, int unsafePoints)> bestToWorstChoices, bool shouldGiveUp) ComputeTilesSafety(IEnumerable<TilePivot> discardableTiles, List<TilePivot> deadTiles)
+        {
+            var tilesSafety = new Dictionary<TilePivot, List<TileSafety>>();
+
+            var stopCurrentHand = false;
+            foreach (var tile in discardableTiles)
+            {
+                tilesSafety.Add(tile, new List<TileSafety>());
+                foreach (var i in Enumerable.Range(0, 4).Where(i => i != _round.CurrentPlayerIndex))
+                {
+                    // stop the building of the hand is opponent is riichi or has 3 or more combinations visible
+                    if (_round.IsRiichi(i) || _round.GetHand(i).DeclaredCombinations.Count > 2)
+                    {
+                        stopCurrentHand = true;
+                        if (IsDiscardedOrUnusable(tile, i, deadTiles))
+                        {
+                            tilesSafety[tile].Add(TileSafety.Safe);
+                        }
+                        else if (IsOutsiderSuji(tile, i) || IsDoubleInsiderSuji(tile, i) || IsMaxedFamilyInDiscard(tile, i))
+                        {
+                            tilesSafety[tile].Add(TileSafety.QuiteSafe);
+                        }
+                        else if (IsInsiderSuji(tile, i) || tile.IsHonorOrTerminal)
+                        {
+                            tilesSafety[tile].Add(TileSafety.QuiteUnsafe);
+                        }
+                        else
+                        {
+                            tilesSafety[tile].Add(TileSafety.Unsafe);
+                        }
+                    }
+                    else if (_round.GetDoraCount(tile) > 0)
+                    {
+                        // dora are bit unsafe at first, then unsafe at middle game
+                        tilesSafety[tile].Add(_round.WallTiles.Count > 42 ? TileSafety.QuiteUnsafe : TileSafety.Unsafe);
+                    }
+                    else
+                    {
+                        tilesSafety[tile].Add(TileSafety.AverageOrUnknown);
+                    }
+                }
+            }
+
+            return (tilesSafety.OrderBy(t => t.Value.Sum(s => (int)s)).Select(t => (t.Key, t.Value.Sum(s => (int)s))).ToList(), stopCurrentHand);
         }
 
         #endregion Private methods
