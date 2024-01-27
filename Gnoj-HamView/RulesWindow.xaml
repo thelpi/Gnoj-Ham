@@ -3,7 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:Gnoj_HamView"
+        xmlns:sys="clr-namespace:System;assembly=mscorlib"
         xmlns:cvt="clr-namespace:Gnoj_HamView.Converters"
         mc:Ignorable="d"
         WindowStartupLocation="CenterScreen"
@@ -12,8 +12,8 @@
         <cvt:YakuToolTipConverter x:Key="YakuToolTipConverter" />
         <cvt:FansToTextConverter x:Key="FansToTextConverter" />
         <cvt:FansToFontStyleConverter x:Key="FansToFontStyleConverter" />
-        <cvt:TileToBitmapConverter x:Key="TileToBitmapConverter" />
-        <cvt:TileToToolTipConverter x:Key="TileToToolTipConverter" />
+        <cvt:TilesToButtonsConverter x:Key="TilesToButtonsConverter" />
+        <sys:Double x:Key="TileSizeRate">0.6</sys:Double>
     </Window.Resources>
     <TabControl Margin="5">
         <TabItem Header="Yakus">
@@ -64,21 +64,12 @@
                                 <GridViewColumn.Header>Example</GridViewColumn.Header>
                                 <GridViewColumn.CellTemplate>
                                     <DataTemplate>
-                                        <ItemsControl ItemsSource="{Binding Example}">
+                                        <ItemsControl ItemsSource="{Binding Example, Converter={StaticResource TilesToButtonsConverter}, ConverterParameter={StaticResource TileSizeRate}}">
                                             <ItemsControl.ItemsPanel>
                                                 <ItemsPanelTemplate>
                                                     <StackPanel Orientation="Horizontal"/>
                                                 </ItemsPanelTemplate>
                                             </ItemsControl.ItemsPanel>
-                                            <ItemsControl.ItemTemplate>
-                                                <DataTemplate>
-                                                    <Button VerticalAlignment="Center" Height="36" Width="27" ToolTip="{Binding Converter={StaticResource TileToToolTipConverter}}">
-                                                        <Button.Content>
-                                                            <Image Stretch="UniformToFill" Source="{Binding Converter={StaticResource TileToBitmapConverter}}" />
-                                                        </Button.Content>
-                                                    </Button>
-                                                </DataTemplate>
-                                            </ItemsControl.ItemTemplate>
                                         </ItemsControl>
                                     </DataTemplate>
                                 </GridViewColumn.CellTemplate>

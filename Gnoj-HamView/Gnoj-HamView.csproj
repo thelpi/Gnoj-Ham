@@ -98,8 +98,7 @@
     <Compile Include="ChronoPivot.cs" />
     <Compile Include="Converters\FansToFontStyleConverter.cs" />
     <Compile Include="Converters\FansToTextConverter.cs" />
-    <Compile Include="Converters\TileToBitmapConverter.cs" />
-    <Compile Include="Converters\TileToToolTipConverter.cs" />
+    <Compile Include="Converters\TilesToButtonsConverter.cs" />
     <Compile Include="Converters\YakuToolTipConverter.cs" />
     <Compile Include="EndOfGameWindow.xaml.cs">
       <DependentUpon>EndOfGameWindow.xaml</DependentUpon>
