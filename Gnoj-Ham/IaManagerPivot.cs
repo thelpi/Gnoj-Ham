@@ -12,7 +12,6 @@ namespace Gnoj_Ham
     /// <list type="bullet">
     /// <item>Kokushi musou</item>
     /// <item>Open on chii in very specific cases</item>
-    /// <item>To not discard doras</item>
     /// <item>Defense on opponents when opened hand.</item>
     /// <item>Rinshan kaihou even if an opponent is riichi</item>
     /// <item>Change playstyle depending on ranking</item>
@@ -250,19 +249,15 @@ namespace Gnoj_Ham
         private Tuple<int, TilePivot> KanDecisionInternal(int playerId, List<TilePivot> kanPossibilities, bool concealed)
         {
             // Rinshan kaihou possibility: call
-            // TODO: not perfect because the kan can break the tenpai
-            TilePivot tileToRemove = null;
-            if (_round.GetHand(playerId).IsFullHand)
-            {
-                tileToRemove = kanPossibilities.First();
-            }
+            var tileToRemove = _round.GetHand(playerId).IsFullHand
+                ? kanPossibilities.First()
+                : null;
 
             var meIsTenpai = _round.IsTenpai(playerId, tileToRemove);
             if (!meIsTenpai)
             {
-                // riichi from opponents: no call
-                // TODO: we could also check open hands obviously tenpai
-                var otherIsRiichi = Enumerable.Range(0, 4).Where(i => i != playerId).Any(i => _round.IsRiichi(i));
+                // riichi or opponents close to win: no call
+                var otherIsRiichi = Enumerable.Range(0, 4).Where(i => i != playerId).Any(PlayerIsCloseToWin);
                 if (otherIsRiichi)
                 {
                     return null;
@@ -407,6 +402,9 @@ namespace Gnoj_Ham
         {
             var tilesSafety = new Dictionary<TilePivot, List<TileSafety>>();
 
+            // computes once
+            var tenpaiOpponentIndexes = Enumerable.Range(0, 4).Where(i => i != _round.CurrentPlayerIndex && PlayerIsCloseToWin(i)).ToList();
+
             var stopCurrentHand = false;
             foreach (var tile in discardableTiles)
             {
@@ -414,7 +412,7 @@ namespace Gnoj_Ham
                 foreach (var i in Enumerable.Range(0, 4).Where(i => i != _round.CurrentPlayerIndex))
                 {
                     // stop the building of the hand is opponent is riichi or has 3 or more combinations visible
-                    if (_round.IsRiichi(i) || _round.GetHand(i).DeclaredCombinations.Count > 2)
+                    if (tenpaiOpponentIndexes.Contains(i))
                     {
                         stopCurrentHand = true;
                         if (IsDiscardedOrUnusable(tile, i, deadTiles))
@@ -448,6 +446,8 @@ namespace Gnoj_Ham
 
             return (tilesSafety.OrderBy(t => t.Value.Sum(s => (int)s)).Select(t => (t.Key, t.Value.Sum(s => (int)s))).ToList(), stopCurrentHand);
         }
+
+        private bool PlayerIsCloseToWin(int i) => _round.IsRiichi(i) || _round.GetHand(i).DeclaredCombinations.Count > 2;
 
         #endregion Private methods
 
