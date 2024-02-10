@@ -12,23 +12,23 @@
         <Label Grid.Row="0" FontSize="16" HorizontalAlignment="Center" Foreground="Red" />
         <Grid Name="GrdDorasAndInfos">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="100" />
+                <ColumnDefinition Width="150" />
                 <ColumnDefinition />
-                <ColumnDefinition Width="100" />
+                <ColumnDefinition Width="50" />
                 <ColumnDefinition Width="50" />
             </Grid.ColumnDefinitions>
             <Grid.RowDefinitions>
                 <RowDefinition />
                 <RowDefinition />
             </Grid.RowDefinitions>
-            <Label VerticalAlignment="Center" Grid.Row="0" Grid.Column="0" HorizontalAlignment="Right" Content="Dora" />
-            <Label VerticalAlignment="Center" Grid.Row="1" Grid.Column="0" HorizontalAlignment="Right" Content="Ura-dora" />
-            <Label VerticalAlignment="Center" Grid.Row="0" Grid.Column="2" HorizontalAlignment="Right" Content="Pending riichi" />
+            <Label VerticalAlignment="Center" Grid.Row="0" Grid.Column="0" HorizontalAlignment="Right" Content="Dora (indicateur)" />
+            <Label VerticalAlignment="Center" Grid.Row="1" Grid.Column="0" HorizontalAlignment="Right" Content="Uradora (indicateur)" />
+            <Label VerticalAlignment="Center" Grid.Row="0" Grid.Column="2" HorizontalAlignment="Right" Content="Riichi" />
             <Label VerticalAlignment="Center" Grid.Row="1" Grid.Column="2" HorizontalAlignment="Right" Content="Honba" />
             <StackPanel VerticalAlignment="Center" Grid.Row="0" Grid.Column="1" Name="StpDoraTiles" Orientation="Horizontal" />
             <StackPanel VerticalAlignment="Center" Grid.Row="1" Grid.Column="1" Name="StpUraDoraTiles" Orientation="Horizontal" />
-            <Label VerticalAlignment="Center" Grid.Row="0" Grid.Column="3" Name="LblPendingRiichi" />
-            <Label VerticalAlignment="Center" Grid.Row="1" Grid.Column="3" Name="LblHonba" />
+            <Label VerticalAlignment="Center" Grid.Row="0" Grid.Column="3" Name="LblPendingRiichi" ToolTip="Nombre de Riichis en jeu." />
+            <Label VerticalAlignment="Center" Grid.Row="1" Grid.Column="3" Name="LblHonba" ToolTip="Honbas accumulés." />
         </Grid>
         <StackPanel Orientation="Vertical" Name="StpYakus" HorizontalAlignment="Center" />
         <GroupBox Header="Scores" Padding="5" HorizontalAlignment="Center">

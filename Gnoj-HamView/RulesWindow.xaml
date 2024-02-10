@@ -248,6 +248,13 @@
                             <LineBreak />
                             La main a une valeur forfaitaire de 5 "Fans".
                         </Paragraph>
+                        <Paragraph>
+                            <Bold>Honba</Bold>
+                            <LineBreak />
+                            L'indicateur "Homba" indique le nombre de manches successives ayant terminé en "Ryuukyoku".
+                            <LineBreak />
+                            Le compteur est remis à zéro quand un joueur gagne une manche ; 300 points supplémentaires par "Honba" sont alors donnés par les autres joueurs au joueur vainqueur.
+                        </Paragraph>
                     </FlowDocument>
                 </RichTextBox>
             </ScrollViewer>
