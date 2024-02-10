@@ -10,7 +10,7 @@ namespace Gnoj_HamView
     public partial class PlayerSaveStatsWindow : Window
     {
         private const string NoValue = "N/A";
-        private const string DateFormat = "yyyy-MM-dd";
+        private const string DateFormat = "dd/MM/yyyy";
 
         /// <summary>
         /// Ctor.
@@ -35,10 +35,10 @@ namespace Gnoj_HamView
             LblYakumanCount.Content = playerSavePivot.YakumanCount;
 
             // Percentage stats
-            LblGamesPercent.Content = $"1th: {ToPercent(playerSavePivot.ByPositionCount[0], playerSavePivot.GameCount)}\n" +
-                $"2nd: {ToPercent(playerSavePivot.ByPositionCount[1], playerSavePivot.GameCount)}\n" +
-                $"3th: {ToPercent(playerSavePivot.ByPositionCount[2], playerSavePivot.GameCount)}\n" +
-                $"4th: {ToPercent(playerSavePivot.ByPositionCount[3], playerSavePivot.GameCount)}";
+            LblGamesPercent.Content = $"1er : {ToPercent(playerSavePivot.ByPositionCount[0], playerSavePivot.GameCount)}\n" +
+                $"2ème : {ToPercent(playerSavePivot.ByPositionCount[1], playerSavePivot.GameCount)}\n" +
+                $"3ème : {ToPercent(playerSavePivot.ByPositionCount[2], playerSavePivot.GameCount)}\n" +
+                $"4ème : {ToPercent(playerSavePivot.ByPositionCount[3], playerSavePivot.GameCount)}";
             LblBankruptPercent.Content = ToPercent(playerSavePivot.BankruptCount, playerSavePivot.GameCount);
             LblOpenedHandsPercent.Content = ToPercent(playerSavePivot.OpenedHandCount, playerSavePivot.RoundCount);
             LblRiichiPercent.Content = ToPercent(playerSavePivot.RiichiCount, playerSavePivot.RoundCount);

@@ -15,7 +15,7 @@ namespace Gnoj_HamView
             var screenHeight = SystemParameters.PrimaryScreenHeight;
             if (screenHeight < MinimalHeightResolution)
             {
-                var response = MessageBox.Show($"Your screen resolution is too low; an height of {MinimalHeightResolution}px or more is highly recommanded. Continue?", "Gnoj-Ham - Warning", MessageBoxButton.YesNo);
+                var response = MessageBox.Show($"Votre résolution d'écran est trop basse ; une hauteur de {MinimalHeightResolution}px ou plus est fortement recommandée. Continuer ?", "Gnoj-Ham - Avertissement", MessageBoxButton.YesNo);
                 if (response == MessageBoxResult.No)
                 {
                     Environment.Exit(0);

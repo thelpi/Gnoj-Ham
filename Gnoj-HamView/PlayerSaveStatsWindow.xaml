@@ -8,7 +8,7 @@
         WindowStartupLocation="CenterScreen"
         SizeToContent="WidthAndHeight"
         Background="Gainsboro"
-        Title="Player statistics">
+        Title="Statistiques du joueur">
     <Grid Margin="10">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="150" />
@@ -31,16 +31,16 @@
             <RowDefinition />
             <RowDefinition />
         </Grid.RowDefinitions>
-        <Label Grid.Row="0" Grid.Column="0" Content="First game" HorizontalContentAlignment="Right" />
-        <Label Grid.Row="1" Grid.Column="0" Content="Latest completed game" HorizontalContentAlignment="Right" Background="LightGray" />
-        <Label Grid.Row="2" Grid.Column="0" Content="Games count" HorizontalContentAlignment="Right" />
-        <Label Grid.Row="3" Grid.Column="0" Content="Rounds count" HorizontalContentAlignment="Right" Background="LightGray" />
-        <Label Grid.Row="4" Grid.Column="0" Content="Riichi count" HorizontalContentAlignment="Right" />
-        <Label Grid.Row="5" Grid.Column="0" Content="Bankrupt count" HorizontalContentAlignment="Right" Background="LightGray" />
-        <Label Grid.Row="6" Grid.Column="0" Content="Tsumo count" HorizontalContentAlignment="Right" />
-        <Label Grid.Row="7" Grid.Column="0" Content="Ron count" HorizontalContentAlignment="Right" Background="LightGray" />
-        <Label Grid.Row="8" Grid.Column="0" Content="Yakuman count" HorizontalContentAlignment="Right" />
-        <Label Grid.Row="9" Grid.Column="0" Content="Opened hands" HorizontalContentAlignment="Right" Background="LightGray" />
+        <Label Grid.Row="0" Grid.Column="0" Content="Première partie" HorizontalContentAlignment="Right" />
+        <Label Grid.Row="1" Grid.Column="0" Content="Dernière partie complète" HorizontalContentAlignment="Right" Background="LightGray" />
+        <Label Grid.Row="2" Grid.Column="0" Content="Nombre de parties" HorizontalContentAlignment="Right" />
+        <Label Grid.Row="3" Grid.Column="0" Content="Nombre de manches" HorizontalContentAlignment="Right" Background="LightGray" />
+        <Label Grid.Row="4" Grid.Column="0" Content="Nombre de Riichi" HorizontalContentAlignment="Right" />
+        <Label Grid.Row="5" Grid.Column="0" Content="Nombre de banqueroutes" HorizontalContentAlignment="Right" Background="LightGray" />
+        <Label Grid.Row="6" Grid.Column="0" Content="Nombre de Tsumo" HorizontalContentAlignment="Right" />
+        <Label Grid.Row="7" Grid.Column="0" Content="Nombre de Ron" HorizontalContentAlignment="Right" Background="LightGray" />
+        <Label Grid.Row="8" Grid.Column="0" Content="Nombre de yakuman" HorizontalContentAlignment="Right" />
+        <Label Grid.Row="9" Grid.Column="0" Content="Mains ouvertes" HorizontalContentAlignment="Right" Background="LightGray" />
         <Label Grid.Row="0" Grid.Column="1" Name="LblFirstGame" Grid.ColumnSpan="2" />
         <Label Grid.Row="1" Grid.Column="1" Name="LblLatestGame" Grid.ColumnSpan="2" Background="LightGray" />
         <Label Grid.Row="2" Grid.Column="1" Name="LblGamesCount" />
@@ -58,6 +58,6 @@
         <Label Grid.Row="7" Grid.Column="2" Name="LblRonPercent" Background="LightGray" />
         <Label Grid.Row="8" Grid.Column="2" Name="LblYakumanPercent" />
         <Label Grid.Row="9" Grid.Column="2" Name="LblOpenedHandsPercent" Background="LightGray" />
-        <TextBlock Margin="0, 5, 0, 0" Grid.Row="10" Grid.ColumnSpan="3" TextWrapping="WrapWithOverflow">Statistics are saved when rules are by default.<LineBreak />Statistics are saved at each round even if the game is later aborted.</TextBlock>
+        <TextBlock Margin="0, 5, 0, 0" Grid.Row="10" Grid.ColumnSpan="3" TextWrapping="WrapWithOverflow">Les statistiques sont sauvegardées quand les règles sont celles par défaut.<LineBreak />Les statistiques sont sauvegardées après chaque manche même si la partie est plus tard abandonnée.</TextBlock>
     </Grid>
 </Window>

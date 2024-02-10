@@ -48,10 +48,6 @@
                     <ComboBox Width="100" VerticalContentAlignment="Center" Height="23" Name="CbbChrono" SelectionChanged="CbbChrono_SelectionChanged" />
                 </StackPanel>
                 <StackPanel Orientation="Horizontal">
-                    <Label Width="110"  HorizontalContentAlignment="Right" Content="Riichi auto-discard" />
-                    <CheckBox VerticalContentAlignment="Center" Name="ChkRiichiAutoDiscard" Click="ChkRiichiAutoDiscard_Click" />
-                </StackPanel>
-                <StackPanel Orientation="Horizontal">
                     <Label Width="110"  HorizontalContentAlignment="Right" Content="Auto tsumo/ron" />
                     <CheckBox VerticalContentAlignment="Center" Name="ChkAutoTsumoRon" Click="ChkAutoTsumoRon_Click" />
                 </StackPanel>

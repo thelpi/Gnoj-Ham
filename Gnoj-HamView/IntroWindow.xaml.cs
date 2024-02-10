@@ -17,6 +17,12 @@ namespace Gnoj_HamView
         {
             InitializeComponent();
 
+#if DEBUG
+            DevelopmentTab.Visibility = Visibility.Visible;
+#else
+            DevelopmentTab.Visibility = Visibility.Collapsed;
+#endif
+
             CbbEndOfGameRule.ItemsSource = GraphicTools.GetEndOfGameRuleDisplayValue();
             CbbPointsRule.ItemsSource = GraphicTools.GetInitialPointsRuleDisplayValue();
             CbbChronoSpeed.ItemsSource = GraphicTools.GetChronoDisplayValues();
@@ -35,7 +41,7 @@ namespace Gnoj_HamView
 
             if (!string.IsNullOrWhiteSpace(error))
             {
-                MessageBox.Show($"Something went wrong during the loading of player's stat file; statistics will not be saved.\n\nError details:\n{error}", "Gnoj-Ham - warning");
+                MessageBox.Show($"Une erreur est survenue pendant le chargement du fichier de statistiques du joueur ; les statistiques ne seront pas sauvegardées.\n\nDétails de l'erreur :\n{error}", "Gnoj-Ham - Avertissement");
             }
 
             var ruleset = new RulePivot((InitialPointsRulePivot)CbbPointsRule.SelectedIndex,
@@ -76,7 +82,6 @@ namespace Gnoj_HamView
             CbbCpuSpeed.SelectedIndex = Settings.Default.CpuSpeed;
             ChkSounds.IsChecked = Settings.Default.PlaySounds;
             ChkAutoTsumoRon.IsChecked = Settings.Default.AutoCallMahjong;
-            ChkAutoRiichiDiscard.IsChecked = Settings.Default.AutoDiscardAfterRiichi;
 
             // Dvelopment tools
             ChkDebugMode.IsChecked = false;
@@ -90,7 +95,6 @@ namespace Gnoj_HamView
             Settings.Default.CpuSpeed = CbbCpuSpeed.SelectedIndex;
             Settings.Default.PlaySounds = ChkSounds.IsChecked == true;
             Settings.Default.AutoCallMahjong = ChkAutoTsumoRon.IsChecked == true;
-            Settings.Default.AutoDiscardAfterRiichi = ChkAutoRiichiDiscard.IsChecked == true;
 
             Settings.Default.Save();
         }
@@ -102,7 +106,7 @@ namespace Gnoj_HamView
 
         private void HlkAbout_Click(object sender, RoutedEventArgs e)
         {
-            MessageBox.Show("Coming soon!", "Gnoj-Ham - information");
+            MessageBox.Show("Bientôt !", "Gnoj-Ham - Information");
         }
 
         private void HlkYakus_Click(object sender, RoutedEventArgs e)
@@ -116,7 +120,7 @@ namespace Gnoj_HamView
 
             if (!string.IsNullOrWhiteSpace(error))
             {
-                MessageBox.Show($"Something went wrong during the loading of player's stat file; statistics will be empty.\n\nError details:\n{error}", "Gnoj-Ham - warning");
+                MessageBox.Show($"Une erreur est survenue pendant le chargement du fichier de statistiques du joueur ; les statistiques seront vides.\n\nDétails de l'erreur :\n{error}", "Gnoj-Ham - Avertissement");
             }
 
             new PlayerSaveStatsWindow(save).ShowDialog();

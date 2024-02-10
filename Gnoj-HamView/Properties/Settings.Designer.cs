@@ -50,18 +50,6 @@ namespace Gnoj_HamView.Properties {
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("True")]
-        public bool AutoDiscardAfterRiichi {
-            get {
-                return ((bool)(this["AutoDiscardAfterRiichi"]));
-            }
-            set {
-                this["AutoDiscardAfterRiichi"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("True")]
         public bool AutoCallMahjong {
             get {
                 return ((bool)(this["AutoCallMahjong"]));

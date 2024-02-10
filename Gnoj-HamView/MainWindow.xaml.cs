@@ -259,12 +259,6 @@ namespace Gnoj_HamView
             Properties.Settings.Default.Save();
         }
 
-        private void ChkRiichiAutoDiscard_Click(object sender, RoutedEventArgs e)
-        {
-            Properties.Settings.Default.AutoDiscardAfterRiichi = ChkRiichiAutoDiscard.IsChecked == true;
-            Properties.Settings.Default.Save();
-        }
-
         private void ChkAutoTsumoRon_Click(object sender, RoutedEventArgs e)
         {
             Properties.Settings.Default.AutoCallMahjong = ChkAutoTsumoRon.IsChecked == true;
@@ -521,7 +515,7 @@ namespace Gnoj_HamView
                 ActivateTimer(null);
                 return null;
             }
-            else if (Properties.Settings.Default.AutoDiscardAfterRiichi && _game.Round.HumanCanAutoDiscard())
+            else if (_game.Round.HumanCanAutoDiscard())
             {
                 // Not a real CPU sleep: the auto-discard by human player is considered as such
                 Thread.Sleep(((CpuSpeedPivot)Properties.Settings.Default.CpuSpeed).ParseSpeed());
@@ -802,7 +796,7 @@ namespace Gnoj_HamView
 
                         ActivateTimer(null);
                     }
-                    else if (Properties.Settings.Default.AutoDiscardAfterRiichi && _game.Round.HumanCanAutoDiscard())
+                    else if (_game.Round.HumanCanAutoDiscard())
                     {
                         // Auto discard if riichi and the compensation tile is not interesting
                         // Never tested!
@@ -1378,7 +1372,6 @@ namespace Gnoj_HamView
             CbbCpuSpeed.SelectedIndex = Properties.Settings.Default.CpuSpeed;
 
             ChkSounds.IsChecked = Properties.Settings.Default.PlaySounds;
-            ChkRiichiAutoDiscard.IsChecked = Properties.Settings.Default.AutoDiscardAfterRiichi;
             ChkAutoTsumoRon.IsChecked = Properties.Settings.Default.AutoCallMahjong;
         }
 

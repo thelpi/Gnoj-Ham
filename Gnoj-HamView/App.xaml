@@ -15,5 +15,11 @@
         <Style TargetType="Image">
             <Setter Property="ToolTipService.InitialShowDelay" Value="50"/>
         </Style>
+        <Style TargetType="CheckBox">
+            <Setter Property="ToolTipService.InitialShowDelay" Value="50"/>
+        </Style>
+        <Style TargetType="ComboBox">
+            <Setter Property="ToolTipService.InitialShowDelay" Value="50"/>
+        </Style>
     </Application.Resources>
 </Application>
