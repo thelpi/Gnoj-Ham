@@ -80,11 +80,19 @@ namespace Gnoj_Ham
             var tilesGroup =
                 concealedTiles
                     .GroupBy(t => t)
+                    // keeps brelan/square
                     .OrderByDescending(t =>
                     {
                         var count = t.Count();
                         return count > 2 ? count : 0;
                     })
+                    // keeps pair of valuable honor
+                    .ThenByDescending(t => t.Count() > 1
+                        && (t.Key.Family == FamilyPivot.Dragon
+                            || t.Key.Wind == _round.Game.DominantWind
+                            || t.Key.Wind == _round.Game.GetPlayerCurrentWind(_round.CurrentPlayerIndex))
+                        && deadTiles.Count(_ => _ == t.Key) < 2)
+                    // keeps group of following numbers
                     .ThenByDescending(t =>
                     {
                         var m2 = concealedTiles.Any(tb => tb.Family == t.Key.Family && tb.Number == t.Key.Number - 2);
@@ -94,9 +102,9 @@ namespace Gnoj_Ham
 
                         return ((m1 ? 1 : 0) * 2) + ((p1 ? 1 : 0) * 2) + (p2 ? 1 : 0) + (m2 ? 1 : 0);
                     })
-                    // doras are beter than "not dora"
+                    // doras are better than "not dora"
                     .ThenByDescending(t => _round.GetDoraCount(t.Key) + (t.Key.IsRedDora ? 1 : 0))
-                    // keps pair
+                    // keeps pair
                     .ThenByDescending(t => t.Count())
                     // all things being equal, wind are the best to discard
                     .ThenBy(t => t.Key.Family == FamilyPivot.Wind)
@@ -353,7 +361,8 @@ namespace Gnoj_Ham
         {
             return _round.GetDiscard(opponentPlayerIndex).Contains(tile) || (
                 tile.IsHonor
-                && deadtiles.Count(t => t == tile) == 4
+                && deadtiles.Count(t => t == tile) == 3
+                // this last line is to avoid giving Kokushi musou tile; probably overkill, at least need to be temperate...
                 && deadtiles.GroupBy(t => t).Any(t => t.Key != tile && t.Key.IsHonor && t.Count() == 4)
             );
         }
