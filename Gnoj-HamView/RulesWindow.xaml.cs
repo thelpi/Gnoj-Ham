@@ -1,9 +1,8 @@
-﻿using System;
+﻿using System.Diagnostics;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Media;
-using System.Xml;
+using System.Windows.Documents;
 using Gnoj_Ham;
 
 namespace Gnoj_HamView
@@ -32,6 +31,13 @@ namespace Gnoj_HamView
             var scv = (ScrollViewer)sender;
             scv.ScrollToVerticalOffset(scv.VerticalOffset - (e.Delta / 7));
             e.Handled = true;
+        }
+
+        private void Hyperlink_Click(object sender, RoutedEventArgs e)
+        {
+            // never called, the related WPF content is disabled...
+            var hlk = sender as Hyperlink;
+            Process.Start("explorer", hlk.NavigateUri.ToString());
         }
     }
 }

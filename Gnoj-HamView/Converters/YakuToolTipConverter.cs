@@ -11,11 +11,11 @@ namespace Gnoj_HamView.Converters
         {
             var y = (YakuPivot)value;
             if (y.ConcealedFanCount == 13 && y.FanCount == 0)
-                return "Yakuman. Must be concealed.";
+                return "Yakuman. Main fermée uniquement.";
             else if (y.FanCount == 0)
-                return "Must be concealed.";
+                return "Main fermée uniquement.";
             else if (y.ConcealedBonusFanCount > 0)
-                return "Bonus if concealed.";
+                return "Bonus si main fermée.";
 
             return null;
         }
