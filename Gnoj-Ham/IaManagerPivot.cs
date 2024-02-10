@@ -21,6 +21,9 @@ namespace Gnoj_Ham
     {
         private readonly RoundPivot _round;
 
+        // indicates an honiisou (or chiniisou) in progress
+        private FamilyPivot? _itsuFamily;
+
         #region Constructors
 
         /// <summary>
@@ -252,7 +255,7 @@ namespace Gnoj_Ham
             var tenpaiOpponentIndexes = GetTenpaiOpponentIndexes(playerIndex);
 
             // if the hand is already opened and no opponent tenpai: takes it
-            if (!hand.IsConcealed && tenpaiOpponentIndexes.Count == 0)
+            if (!hand.IsConcealed && tenpaiOpponentIndexes.Count == 0 && (!_itsuFamily.HasValue || _itsuFamily == tile.Family))
             {
                 return playerIndex;
             }
@@ -281,12 +284,14 @@ namespace Gnoj_Ham
                 .Any(_ => _.Count() >= 2 && _.Key != tile && IsDragonOrValuableWind(_.Key, valuableWinds));
 
             // >= 66% of one family or honor
-            var closeToHonitsu = new[] { FamilyPivot.Bamboo, FamilyPivot.Caracter, FamilyPivot.Circle }
-                .Any(f => hand.ConcealedTiles.Count(t => t.Family == f || t.IsHonor) > 9);
+            var closeToHonitsuFamily = new FamilyPivot?[] { FamilyPivot.Bamboo, FamilyPivot.Caracter, FamilyPivot.Circle }
+                .FirstOrDefault(f => hand.ConcealedTiles.Count(t => t.Family == f || t.IsHonor) > 9);
+
+            _itsuFamily = _itsuFamily ?? closeToHonitsuFamily;
 
             return hasValuablePair
                 || (dorasCount + redDorasCount) > 0
-                || closeToHonitsu
+                || closeToHonitsuFamily.HasValue
                 || valuableWinds[0] == WindPivot.East
                 ? playerIndex
                 : -1;
@@ -313,7 +318,7 @@ namespace Gnoj_Ham
                 // - the hand is already open
                 // - it's valuable for "Yakuhai"
                 if (concealed
-                    || !_round.GetHand(playerId).IsConcealed
+                    || (!_round.GetHand(playerId).IsConcealed && (!_itsuFamily.HasValue || _itsuFamily == tile.Family))
                     || tile.Family == FamilyPivot.Dragon
                     || (tile.Family == FamilyPivot.Wind
                         && (tile.Wind == _round.Game.GetPlayerCurrentWind(playerId)
@@ -331,10 +336,13 @@ namespace Gnoj_Ham
             // Proceeds to chii if :
             // - The hand is already open (we assume it's open for a good reason)
             // - The sequence does not already exist in the end
-            // - Nobody is tenapi
+            // - Nobody is tenpai
+            // - if a honiisou or better is in progress, tile to chii should be of this family
             var tenpaiOppenentIndexes = GetTenpaiOpponentIndexes(_round.CurrentPlayerIndex);
 
-            if (_round.GetHand(_round.CurrentPlayerIndex).IsConcealed || tenpaiOppenentIndexes.Count > 0)
+            if (_round.GetHand(_round.CurrentPlayerIndex).IsConcealed
+                || tenpaiOppenentIndexes.Count > 0
+                || (_itsuFamily.HasValue && _itsuFamily != chiiTiles.Keys.First().Family))
             {
                 return null;
             }
@@ -362,8 +370,8 @@ namespace Gnoj_Ham
             return _round.GetDiscard(opponentPlayerIndex).Contains(tile) || (
                 tile.IsHonor
                 && deadtiles.Count(t => t == tile) == 3
-                // this last line is to avoid giving Kokushi musou tile; probably overkill, at least need to be temperate...
-                && deadtiles.GroupBy(t => t).Any(t => t.Key != tile && t.Key.IsHonor && t.Count() == 4)
+                // this last line is to avoid giving Kokushi musou tile
+                && deadtiles.GroupBy(t => t).Any(t => t.Key != tile && t.Key.IsHonor && t.Count() > 2)
             );
         }
 
