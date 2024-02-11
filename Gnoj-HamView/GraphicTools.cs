@@ -352,7 +352,7 @@ namespace Gnoj_HamView
         {
             return Enum.GetValues(typeof(InitialPointsRulePivot))
                     .OfType<InitialPointsRulePivot>()
-                    .Select(v => $"{Convert.ToInt32(v.ToString().Replace("K", string.Empty))},000")
+                    .Select(v => $"{Convert.ToInt32(v.ToString().Replace("K", string.Empty))} 000")
                     .ToList();
         }
 
@@ -377,7 +377,7 @@ namespace Gnoj_HamView
                 gridPoints.Children.Add(fanLbl);
             }
 
-            var fuLbl = FuLabelForScopreDisplay(p);
+            var fuLbl = FuLabelForScoreDisplay(p);
             if (fuLbl != null)
             {
                 gridPoints.Children.Add(fuLbl);
@@ -419,7 +419,7 @@ namespace Gnoj_HamView
             return separator;
         }
 
-        private static Label FuLabelForScopreDisplay(EndOfRoundInformationsPivot.PlayerInformationsPivot p)
+        private static Label FuLabelForScoreDisplay(EndOfRoundInformationsPivot.PlayerInformationsPivot p)
         {
             if (p.Yakus == null || p.Yakus.Count == 0)
             {
@@ -429,7 +429,7 @@ namespace Gnoj_HamView
             var fuLbl = new Label
             {
                 VerticalAlignment = VerticalAlignment.Center,
-                Content = p.FuCount
+                Content = $"{p.FuCount} fu"
             };
             fuLbl.SetValue(Grid.RowProperty, 0);
             fuLbl.SetValue(Grid.ColumnProperty, 1);
@@ -446,7 +446,7 @@ namespace Gnoj_HamView
             var fanLbl = new Label
             {
                 VerticalAlignment = VerticalAlignment.Center,
-                Content = p.FanCount
+                Content = $"{p.FanCount} fan"
             };
             fanLbl.SetValue(Grid.RowProperty, 0);
             fanLbl.SetValue(Grid.ColumnProperty, 0);
@@ -499,7 +499,7 @@ namespace Gnoj_HamView
             };
             foreach (var (tile, leaned, apart) in p.GetFullHandForDisplay())
             {
-                var b = GenerateTileButton(tile, null, (leaned ? AnglePivot.A90 : AnglePivot.A0), false);
+                var b = GenerateTileButton(tile, null, leaned ? AnglePivot.A90 : AnglePivot.A0, false);
                 if (apart)
                 {
                     b.Margin = new Thickness(5, 0, 0, 0);
