@@ -22,7 +22,16 @@ namespace Gnoj_HamView
                 }
             }
 
-            new IntroWindow().ShowDialog();
+            try
+            {
+                new IntroWindow().ShowDialog();
+            }
+            catch (Exception ex)
+            {
+                Clipboard.SetText($"{ex.Message}\r\n\r\n{ex.StackTrace}");
+                MessageBox.Show("Une erreur technique est survenue, entrainant l'arrêt de l'application.\r\nLes détails de l'erreur ont été copiées dans le presse-papier.\r\nMerci d'avance des les transmettre à l'équipe technique.", "Gnoj-Ham - Erreur");
+                Environment.Exit(0);
+            }
         }
     }
 }

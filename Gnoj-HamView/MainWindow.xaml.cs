@@ -228,7 +228,7 @@ namespace Gnoj_HamView
 
         private void HlkAbout_Click(object sender, RoutedEventArgs e)
         {
-            MessageBox.Show("Coming soon!", "Gnoj-Ham - information");
+            MessageBox.Show("Bientôt !", "Gnoj-Ham - Information");
         }
 
         #region Configuration
@@ -271,7 +271,7 @@ namespace Gnoj_HamView
 
             if (!string.IsNullOrWhiteSpace(error))
             {
-                MessageBox.Show($"Something went wrong during the loading of player's stat file; statistics will be empty.\n\nError details:\n{error}", "Gnoj-Ham - warning");
+                MessageBox.Show($"Une erreur est survenue pendant le chargement du fichier de statistiques du joueur ; les statistiques seront vides.\n\nDétails de l'erreur :\n{error}", "Gnoj-Ham - Avertissement");
             }
 
             new PlayerSaveStatsWindow(save).ShowDialog();
@@ -442,7 +442,7 @@ namespace Gnoj_HamView
 
             if (!string.IsNullOrWhiteSpace(error))
             {
-                MessageBox.Show($"Something went wrong during the save of player's stat file.\n\nError details:\n{error}", "Gnoj-Ham - warning");
+                MessageBox.Show($"Une erreur est survenue pendant la sauvegarde du fichier de statistiques du joueur.\n\nDétails de l'erreur :\n{error}", "Gnoj-Ham - Avertissement");
             }
 
             new ScoreWindow(_game.Players.ToList(), endOfRoundInfo).ShowDialog();
@@ -963,9 +963,9 @@ namespace Gnoj_HamView
 
             StpDoras.SetDorasPanel(_game.Round.DoraIndicatorTiles, _game.Round.VisibleDorasCount);
             LblDominantWind.Content = _game.DominantWind.ToWindDisplay();
-            LblDominantWind.ToolTip = $"Dominant wind: {_game.DominantWind}";
+            LblDominantWind.ToolTip = $"Vent dominant : {_game.DominantWind.DisplayName()}";
             LblEastTurnCount.Content = $"{_game.EastRank}";
-            LblEastTurnCount.ToolTip = $"Current turn in {_game.DominantWind}";
+            LblEastTurnCount.ToolTip = $"N° de tour en {_game.DominantWind.DisplayName()}";
             TxtHonba.Text = _game.HonbaCount.ToString();
             TxtPendingRiichi.Text = _game.PendingRiichiCount.ToString();
 
@@ -1385,20 +1385,13 @@ namespace Gnoj_HamView
 
             if (_game.Round.IsHumanPlayer && _game.Round.GetHand(GamePivot.HUMAN_INDEX).IsFullHand)
             {
-                try
+                var discardChoice = _game.Round.IaManager.DiscardDecision();
+                var button = StpHandP0.Children.OfType<Button>()
+                    .Concat(StpPickP0.Children.OfType<Button>())
+                    .FirstOrDefault(x => x.Tag == discardChoice);
+                if (button != null)
                 {
-                    var discardChoice = _game.Round.IaManager.DiscardDecision();
-                    var button = StpHandP0.Children.OfType<Button>()
-                        .Concat(StpPickP0.Children.OfType<Button>())
-                        .FirstOrDefault(x => x.Tag == discardChoice);
-                    if (button != null)
-                    {
-                        SetHighlight(button);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show($"The discard suggestion has crashed with the following error: {ex.Message}\r\nPlease provide a maximum of details about the context of the crash.", "Gnoj-Ham - Error");
+                    SetHighlight(button);
                 }
             }
         }

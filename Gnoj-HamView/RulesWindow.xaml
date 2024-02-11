@@ -7,7 +7,7 @@
         xmlns:cvt="clr-namespace:Gnoj_HamView.Converters"
         mc:Ignorable="d"
         WindowStartupLocation="CenterScreen"
-        Title="Règles et lexique" Width="800" Height="600">
+        Title="Règles et lexique" Width="1024" Height="600">
     <Window.Resources>
         <cvt:YakuToolTipConverter x:Key="YakuToolTipConverter" />
         <cvt:FansToTextConverter x:Key="FansToTextConverter" />
