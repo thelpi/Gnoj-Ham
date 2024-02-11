@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using Gnoj_Ham;
@@ -40,11 +41,13 @@ namespace Gnoj_HamView
                 }
             }
 
-            for (var i = 0; i < 4; i++)
+            var x = 0;
+            foreach (var p in players.OrderByDescending(p => p.Points))
             {
-                this.FindControl("LblPlayer", i).Content = players[i].Name;
-                this.FindControl("LblScore", i).Content = players[i].Points;
-                this.FindControl("LblGain", i).ApplyGainAndLostStyle(endOfRoundInformations.GetPlayerPointsGain(i));
+                this.FindControl("LblPlayer", x).Content = p.Name;
+                this.FindControl("LblScore", x).Content = p.Points;
+                this.FindControl("LblGain", x).ApplyGainAndLostStyle(endOfRoundInformations.GetPlayerPointsGain(players.IndexOf(p)));
+                x++;
             }
         }
 
