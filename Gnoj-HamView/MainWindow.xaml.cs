@@ -974,7 +974,7 @@ namespace Gnoj_HamView
                 this.FindPanel("StpCombosP", pIndex).Children.Clear();
                 FillHandPanel(pIndex);
                 FillDiscardPanel(pIndex);
-                this.FindName<Panel>("StpPlayerP", pIndex).ToolTip = _game.GetPlayerCurrentWind(pIndex).ToString();
+                this.FindName<Panel>("StpPlayerP", pIndex).ToolTip = _game.GetPlayerCurrentWind(pIndex).DisplayName();
                 this.FindControl("LblWindP", pIndex).Content = _game.GetPlayerCurrentWind(pIndex).ToWindDisplay();
                 this.FindControl("LblNameP", pIndex).Content = _game.Players.ElementAt(pIndex).Name;
                 this.FindControl("LblPointsP", pIndex).Content = $"{_game.Players.ElementAt(pIndex).Points / 1000}k";

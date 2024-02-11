@@ -180,23 +180,6 @@ namespace Gnoj_Ham
         }
 
         /// <summary>
-        /// Overriden; provides a textual representation of the instance.
-        /// </summary>
-        /// <returns>Textual representation of the instance.</returns>
-        public override string ToString()
-        {
-            switch (Family)
-            {
-                case FamilyPivot.Dragon:
-                    return $"{Family}\r\n{Dragon.Value}";
-                case FamilyPivot.Wind:
-                    return $"{Family}\r\n{Wind.Value}";
-                default:
-                    return $"{Family}\r\n{Number}" + (IsRedDora ? "\r\nRed" : string.Empty);
-            }
-        }
-
-        /// <summary>
         /// Provides the resource name ( a file) associated to the tile.
         /// </summary>
         /// <returns>The resource name.</returns>

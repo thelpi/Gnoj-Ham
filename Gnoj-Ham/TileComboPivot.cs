@@ -199,32 +199,6 @@ namespace Gnoj_Ham
             return Equals(obj as TileComboPivot);
         }
 
-        /// <summary>
-        /// Overriden; provides a textual representation of the instance.
-        /// </summary>
-        /// <returns>Textual representation of the instance.</returns>
-        public override string ToString()
-        {
-            if (IsPair)
-            {
-                return Family == FamilyPivot.Dragon
-                    ? $"Pair {Family} {_tiles[0].Dragon.Value.ToString()}"
-                    : Family == FamilyPivot.Wind ? $"Pair {Family} {_tiles[0].Wind.Value.ToString()}" : $"Pair {Family} {_tiles[0].Number}";
-            }
-            else
-            {
-                return IsBrelan
-                    ? Family == FamilyPivot.Dragon
-                                    ? $"Brelan {Family} {_tiles[0].Dragon.Value.ToString()}"
-                                    : Family == FamilyPivot.Wind ? $"Brelan {Family} {_tiles[0].Wind.Value.ToString()}" : $"Brelan {Family} {_tiles[0].Number}"
-                    : IsSquare
-                                    ? Family == FamilyPivot.Dragon
-                                                    ? $"Square {Family} {_tiles[0].Dragon.Value.ToString()}"
-                                                    : Family == FamilyPivot.Wind ? $"Square {Family} {_tiles[0].Wind.Value.ToString()}" : $"Square {Family} {_tiles[0].Number}"
-                                    : $"Sequence {Family} [{_tiles[0].Number}, {_tiles[1].Number}, {_tiles[2].Number}]";
-            }
-        }
-
         #endregion Interfaces implementation and overrides from base
 
         #region Private methods

@@ -64,7 +64,7 @@ namespace Gnoj_HamView
                     LayoutTransform = new RotateTransform(Convert.ToDouble(angle.ToString().Replace("A", string.Empty)))
                 },
                 Tag = tile,
-                ToolTip = concealed ? null : tile.ToString()
+                ToolTip = concealed ? null : tile.TileDisplay()
             };
 
             if (handler != null)
@@ -273,6 +273,23 @@ namespace Gnoj_HamView
             return window.FindName<Panel>(nameWithoutIndex, playerIndex);
         }
 
+        /// <summary>
+        /// Overriden; provides a textual representation of the instance.
+        /// </summary>
+        /// <returns>Textual representation of the instance.</returns>
+        internal static string TileDisplay(this TilePivot tile)
+        {
+            switch (tile.Family)
+            {
+                case FamilyPivot.Dragon:
+                    return $"{tile.Family.DisplayName()}\r\n{tile.Dragon.Value.DisplayName()}";
+                case FamilyPivot.Wind:
+                    return $"{tile.Family.DisplayName()}\r\n{tile.Wind.Value.DisplayName()}";
+                default:
+                    return $"{tile.Family.DisplayName()}\r\n{tile.Number}" + (tile.IsRedDora ? "\r\nRouge" : string.Empty);
+            }
+        }
+
         #region Enum converters
 
         /// <summary>
@@ -354,6 +371,66 @@ namespace Gnoj_HamView
                     .OfType<InitialPointsRulePivot>()
                     .Select(v => $"{Convert.ToInt32(v.ToString().Replace("K", string.Empty))} 000")
                     .ToList();
+        }
+
+        /// <summary>
+        /// Computes the (french) name to display for the family.
+        /// </summary>
+        /// <param name="family">Family.</param>
+        /// <returns>French display name.</returns>
+        internal static string DisplayName(this FamilyPivot family)
+        {
+            switch (family)
+            {
+                case FamilyPivot.Bamboo:
+                    return "Bambou";
+                case FamilyPivot.Dragon:
+                    return "Dragon";
+                case FamilyPivot.Circle:
+                    return "Cercle";
+                case FamilyPivot.Caracter:
+                    return "Caractère";
+                default:
+                    return "Vent";
+            }
+        }
+
+        /// <summary>
+        /// Computes the (french) name to display for the dragon.
+        /// </summary>
+        /// <param name="dragon">Dragon.</param>
+        /// <returns>French display name.</returns>
+        internal static string DisplayName(this DragonPivot dragon)
+        {
+            switch (dragon)
+            {
+                case DragonPivot.Red:
+                    return "Rouge";
+                case DragonPivot.White:
+                    return "Blanc";
+                default:
+                    return "Vert";
+            }
+        }
+
+        /// <summary>
+        /// Computes the (french) name to display for the wind.
+        /// </summary>
+        /// <param name="wind">Wind.</param>
+        /// <returns>French display name.</returns>
+        internal static string DisplayName(this WindPivot wind)
+        {
+            switch (wind)
+            {
+                case WindPivot.East:
+                    return "Est";
+                case WindPivot.South:
+                    return "Sud";
+                case WindPivot.West:
+                    return "Ouest";
+                default:
+                    return "Nord";
+            }
         }
 
         #endregion Enum converters
