@@ -61,8 +61,7 @@ namespace Gnoj_HamView
                 Content = new System.Windows.Controls.Image
                 {
                     Source = tileBitmap.ToBitmapImage(),
-                    LayoutTransform = new RotateTransform(Convert.ToDouble(angle.ToString().Replace("A", string.Empty))),
-                    Stretch = Stretch.UniformToFill
+                    LayoutTransform = new RotateTransform(Convert.ToDouble(angle.ToString().Replace("A", string.Empty)))
                 },
                 Tag = tile,
                 ToolTip = concealed ? null : tile.ToString()
