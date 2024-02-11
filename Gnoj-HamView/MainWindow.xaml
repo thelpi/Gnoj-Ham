@@ -32,38 +32,38 @@
             </Expander.Header>
             <StackPanel Orientation="Vertical">
                 <StackPanel Margin="0, 5, 0, 5" Orientation="Horizontal">
-                    <Label Width="110" />
-                    <Button Height="32" Width="32" Name="BtnNewGame" Click="BtnNewGame_Click" ToolTip="Back to home / configure a new game">
+                    <Label Width="160" />
+                    <Button Height="32" Width="32" Name="BtnNewGame" Click="BtnNewGame_Click" ToolTip="Retour à l'accueil / débuter une nouvelle partie.">
                         <Button.Content>
                             <Image Source="Resources/gohome.png" />
                         </Button.Content>
                     </Button>
                 </StackPanel>
                 <StackPanel Orientation="Horizontal">
-                    <Label Width="110" HorizontalContentAlignment="Right" Content="CPU speed" />
+                    <Label Width="160" HorizontalContentAlignment="Right" Content="Vitesse des adversaires" />
                     <ComboBox Width="100" VerticalContentAlignment="Center" Height="23" Name="CbbCpuSpeed" SelectionChanged="CbbCpuSpeed_SelectionChanged" />
                 </StackPanel>
                 <StackPanel Orientation="Horizontal">
-                    <Label Width="110"  HorizontalContentAlignment="Right" Content="Decision chrono" />
-                    <ComboBox Width="100" VerticalContentAlignment="Center" Height="23" Name="CbbChrono" SelectionChanged="CbbChrono_SelectionChanged" />
+                    <Label Width="160"  HorizontalContentAlignment="Right" Content="Chrono" />
+                    <ComboBox Width="100" VerticalContentAlignment="Center" Height="23" Name="CbbChrono" SelectionChanged="CbbChrono_SelectionChanged" ToolTip="Temps maximal pour prendre une décision." />
                 </StackPanel>
                 <StackPanel Orientation="Horizontal">
-                    <Label Width="110"  HorizontalContentAlignment="Right" Content="Auto tsumo/ron" />
-                    <CheckBox VerticalContentAlignment="Center" Name="ChkAutoTsumoRon" Click="ChkAutoTsumoRon_Click" />
+                    <Label Width="160"  HorizontalContentAlignment="Right" Content="Victoire automatique" />
+                    <CheckBox VerticalContentAlignment="Center" Name="ChkAutoTsumoRon" Click="ChkAutoTsumoRon_Click" ToolTip="Les appels 'Ron' et 'Tsumo' sont réalisés automatiquement dés que possible." />
                 </StackPanel>
                 <StackPanel Orientation="Horizontal">
-                    <Label Width="110"  HorizontalContentAlignment="Right" Content="Sounds" />
+                    <Label Width="160"  HorizontalContentAlignment="Right" Content="Sons" />
                     <CheckBox VerticalContentAlignment="Center" Name="ChkSounds" Click="ChkSounds_Click" />
                 </StackPanel>
                 <Separator Foreground="Black" />
                 <TextBlock HorizontalAlignment="Center" Margin="0, 5, 0, 0">
-                    <Hyperlink Name="HlkPlayerStats" Click="HlkPlayerStats_Click">Player stats</Hyperlink>
+                    <Hyperlink Name="HlkPlayerStats" Click="HlkPlayerStats_Click">Statistiques du joueur</Hyperlink>
                 </TextBlock>
                 <TextBlock HorizontalAlignment="Center" Margin="0, 10, 0, 0">
-                    <Hyperlink Name="HlkYakus" Click="HlkYakus_Click">Rules and yakus</Hyperlink>
+                    <Hyperlink Name="HlkYakus" Click="HlkYakus_Click">Règles et lexique</Hyperlink>
                 </TextBlock>
                 <TextBlock HorizontalAlignment="Center" Margin="0, 10, 0, 0">
-                    <Hyperlink Name="HlkAbout" Click="HlkAbout_Click">About Gnoj-Ham</Hyperlink>
+                    <Hyperlink Name="HlkAbout" Click="HlkAbout_Click">A propos de Gnoj-Ham</Hyperlink>
                 </TextBlock>
             </StackPanel>
         </Expander>
@@ -339,10 +339,10 @@
                     <StackPanel Grid.Row="2" Grid.RowSpan="2" Grid.Column="4" VerticalAlignment="Center" HorizontalAlignment="Center" Orientation="Horizontal">
                         <Image Height="30" Stretch="UniformToFill" Source="Resources/stick_100.png" ToolTip="Honba" />
                         <TextBlock Margin="5, 0, 0, 0" VerticalAlignment="Center" FontSize="16" Name="TxtHonba" Text=" 0" ToolTip="Honba" />
-                        <Image Height="30" Margin="5, 0, 0, 0" Stretch="UniformToFill" Source="Resources/stick_1000.png" ToolTip="Pending Riichi" />
-                        <TextBlock Margin="5, 0, 0, 0" VerticalAlignment="Center" FontSize="16" Name="TxtPendingRiichi" Text=" 3" ToolTip="Pending Riichi" />
+                        <Image Height="30" Margin="5, 0, 0, 0" Stretch="UniformToFill" Source="Resources/stick_1000.png" ToolTip="Nombre de Riichis en jeu" />
+                        <TextBlock Margin="5, 0, 0, 0" VerticalAlignment="Center" FontSize="16" Name="TxtPendingRiichi" Text=" 3" ToolTip="Nombre de Riichis en jeu" />
                     </StackPanel>
-                    <Label Grid.Row="4" Grid.RowSpan="2" Grid.Column="4" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="20" Name="LblWallTilesLeft" ToolTip="Tiles remaining in the wall." />
+                    <Label Grid.Row="4" Grid.RowSpan="2" Grid.Column="4" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="20" Name="LblWallTilesLeft" ToolTip="Tuiles restantes dans le mur." />
                     <!-- Four walls -->
                     <!-- Any change on dimensions here should impact the "WallTileSizeRate" value on the code behind -->
                     <Border BorderBrush="#d8d6c8" BorderThickness="0.5" Width="154" Height="13" Grid.Row="0" Grid.Column="1" Grid.ColumnSpan="4">
