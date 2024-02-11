@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Gnoj_HamView"
         mc:Ignorable="d"
-        Title="End of game"
+        Title="Fin de partie"
         WindowStartupLocation="CenterScreen"
         SizeToContent="WidthAndHeight"
         Background="Gainsboro">
@@ -27,8 +27,8 @@
                     <RowDefinition Height="30" />
                 </Grid.RowDefinitions>
                 <!-- Headers -->
-                <Label Grid.Row="0" Grid.Column="0" VerticalAlignment="Center" Background="LightGray" Content="Rank" />
-                <Label Grid.Row="0" Grid.Column="1" VerticalAlignment="Center" Background="LightGray" Content="Name" />
+                <Label Grid.Row="0" Grid.Column="0" VerticalAlignment="Center" Background="LightGray" Content="Rang" />
+                <Label Grid.Row="0" Grid.Column="1" VerticalAlignment="Center" Background="LightGray" Content="Nom" />
                 <Label Grid.Row="0" Grid.Column="2" VerticalAlignment="Center" Background="LightGray" Content="Points" />
                 <Label Grid.Row="0" Grid.Column="3" VerticalAlignment="Center" Background="LightGray" Content="Uma" />
                 <Label Grid.Row="0" Grid.Column="4" VerticalAlignment="Center" Background="LightGray" Content="Score" />
