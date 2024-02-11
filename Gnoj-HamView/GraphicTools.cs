@@ -200,6 +200,24 @@ namespace Gnoj_HamView
         }
 
         /// <summary>
+        /// Transforms a <see cref="ChronoPivot"/> value into its french representation.
+        /// </summary>
+        /// <param name="chrono">The chrono value.</param>
+        /// <returns>French representation.</returns>
+        internal static string DisplayName(this ChronoPivot chrono)
+        {
+            switch (chrono)
+            {
+                case ChronoPivot.Long:
+                    return "Long";
+                case ChronoPivot.Short:
+                    return "Court";
+                default:
+                    return "Aucun";
+            }
+        }
+
+        /// <summary>
         /// Applies a style to a label to show a gain or lost.
         /// </summary>
         /// <param name="control">The control.</param>
@@ -284,11 +302,11 @@ namespace Gnoj_HamView
                 switch (ch)
                 {
                     case ChronoPivot.None:
-                        results.Add("None");
+                        results.Add("Aucun");
                         break;
                     case ChronoPivot.Short:
                     case ChronoPivot.Long:
-                        results.Add($"{ch} ({ch.GetDelay()} sec)");
+                        results.Add($"{ch.DisplayName()} ({ch.GetDelay()} sec)");
                         break;
                 }
             }
