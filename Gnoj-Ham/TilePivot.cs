@@ -131,16 +131,11 @@ namespace Gnoj_Ham
                         ? Wind.Value < other.Wind.Value ? -1 : (Wind.Value == other.Wind.Value ? 0 : 1)
                         : other.Family == FamilyPivot.Dragon ? -1 : 1;
                 default:
-                    if (other.Family == Family)
-                    {
-                        return Number < other.Number
+                    return other.Family == Family
+                        ? Number < other.Number
                             ? -1
-                            : Number > other.Number ? 1 : IsRedDora && !other.IsRedDora ? -1 : !IsRedDora && other.IsRedDora ? 1 : 0;
-                    }
-                    else
-                    {
-                        return other.Family < Family ? 1 : -1;
-                    }
+                            : Number > other.Number ? 1 : IsRedDora && !other.IsRedDora ? -1 : !IsRedDora && other.IsRedDora ? 1 : 0
+                        : other.Family < Family ? 1 : -1;
             }
         }
 
