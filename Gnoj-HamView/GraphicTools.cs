@@ -330,7 +330,7 @@ namespace Gnoj_HamView
                         results.Add("Enchousen");
                         break;
                     case EndOfGameRulePivot.EnchousenAndTobi:
-                        results.Add("Enchousen & Tobi");
+                        results.Add("Enchousen + Tobi");
                         break;
                     case EndOfGameRulePivot.Oorasu:
                         results.Add("Oorasu");
