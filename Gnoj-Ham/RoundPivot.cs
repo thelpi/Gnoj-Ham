@@ -273,7 +273,7 @@ namespace Gnoj_Ham
         /// <returns>A tile from every possible kans.</returns>
         public List<TilePivot> CanCallKan(int playerIndex)
         {
-            if (_compensationTiles.Count == 0)
+            if (_compensationTiles.Count == 0 || _wallTiles.Count == 0)
             {
                 return new List<TilePivot>();
             }
