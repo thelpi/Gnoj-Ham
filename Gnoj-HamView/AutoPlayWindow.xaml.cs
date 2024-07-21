@@ -1,6 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
-using System.Linq;
 using System.Windows;
 using Gnoj_Ham;
 
@@ -11,9 +11,11 @@ namespace Gnoj_HamView
     /// </summary>
     public partial class AutoPlayWindow : Window
     {
-        private readonly GamePivot _game;
+        private GamePivot _game;
         private BackgroundWorker _autoPlay;
         private bool _hardStopAutoplay = false;
+        private DateTime _timestamp;
+        private readonly Dictionary<string, (int count, double sum)> _times = new Dictionary<string, (int, double)>(50);
 
         /// <summary>
         /// Constructor.
@@ -39,6 +41,16 @@ namespace Gnoj_HamView
             };
         }
 
+        private void AddTimeEntry(string name)
+        {
+            var elapsed = (DateTime.Now - _timestamp).TotalMilliseconds;
+            var currentEntry = _times.ContainsKey(name)
+                ? _times[name]
+                : (0, 0);
+            _times[name] = (currentEntry.count + 1, currentEntry.sum + elapsed);
+            _timestamp = DateTime.Now;
+        }
+
         private void Window_Closing(object sender, CancelEventArgs e)
         {
             _hardStopAutoplay = true;
@@ -49,6 +61,7 @@ namespace Gnoj_HamView
         {
             if (!_autoPlay.IsBusy)
             {
+                _timestamp = DateTime.Now;
                 _autoPlay.RunWorkerAsync();
             }
         }
@@ -56,18 +69,23 @@ namespace Gnoj_HamView
         // Proceeds to call a kan for an opponent.
         private TilePivot OpponentBeginCallKan(int playerId, TilePivot kanTilePick, bool concealedKan)
         {
-            return _game.Round.CallKan(playerId, concealedKan ? kanTilePick : null);
+            var kanResult = _game.Round.CallKan(playerId, concealedKan ? kanTilePick : null);
+            AddTimeEntry(nameof(RoundPivot.CallKan));
+            return kanResult;
         }
 
         // Manages every possible moves for the current opponent after his pick.
         private bool OpponentAfterPick(ref Tuple<int, TilePivot, int?> kanInProgress)
         {
-            if (_game.Round.IaManager.TsumoDecision(kanInProgress != null))
+            var tsumoDecision = _game.Round.IaManager.TsumoDecision(kanInProgress != null);
+            AddTimeEntry(nameof(IaManagerPivot.TsumoDecision));
+            if (tsumoDecision)
             {
                 return true;
             }
 
             var opponentWithKanTilePick = _game.Round.IaManager.KanDecision(true);
+            AddTimeEntry(nameof(IaManagerPivot.KanDecision));
             if (opponentWithKanTilePick != null)
             {
                 var compensationTile = OpponentBeginCallKan(_game.Round.CurrentPlayerIndex, opponentWithKanTilePick.Item2, true);
@@ -78,13 +96,18 @@ namespace Gnoj_HamView
             kanInProgress = null;
 
             var riichiTile = _game.Round.IaManager.RiichiDecision();
+            AddTimeEntry(nameof(IaManagerPivot.RiichiDecision));
             if (riichiTile != null)
             {
                 _game.Round.CallRiichi(riichiTile);
+                AddTimeEntry(nameof(RoundPivot.CallRiichi));
                 return false;
             }
 
-            _game.Round.Discard(_game.Round.IaManager.DiscardDecision());
+            var discardDecision = _game.Round.IaManager.DiscardDecision();
+            AddTimeEntry(nameof(IaManagerPivot.DiscardDecision));
+            _game.Round.Discard(discardDecision);
+            AddTimeEntry(nameof(RoundPivot.Discard));
             return false;
         }
 
@@ -103,17 +126,21 @@ namespace Gnoj_HamView
                 int? ronPlayerId = null;
                 while (!_hardStopAutoplay)
                 {
-                    if (_game.Round.IaManager.RonDecision(false).Count > 0)
+                    var ronDecision = _game.Round.IaManager.RonDecision(false);
+                    AddTimeEntry(nameof(IaManagerPivot.RonDecision));
+                    if (ronDecision.Count > 0)
                     {
                         ronPlayerId = kanInProgress != null ? kanInProgress.Item1 : _game.Round.PreviousPlayerIndex;
                         if (kanInProgress != null)
                         {
                             _game.Round.UndoPickCompensationTile();
+                            AddTimeEntry(nameof(RoundPivot.UndoPickCompensationTile));
                         }
                         break;
                     }
 
                     var opponentWithKanTilePick = _game.Round.IaManager.KanDecision(false);
+                    AddTimeEntry(nameof(IaManagerPivot.KanDecision));
                     if (opponentWithKanTilePick != null)
                     {
                         var previousPlayerIndex = _game.Round.PreviousPlayerIndex;
@@ -123,21 +150,33 @@ namespace Gnoj_HamView
                     }
 
                     var opponentPlayerId = _game.Round.IaManager.PonDecision();
+                    AddTimeEntry(nameof(IaManagerPivot.PonDecision));
                     if (opponentPlayerId > -1)
                     {
-                        if (_game.Round.CallPon(opponentPlayerId))
+                        var canCallPon = _game.Round.CallPon(opponentPlayerId);
+                        AddTimeEntry(nameof(RoundPivot.CallPon));
+                        if (canCallPon)
                         {
-                            _game.Round.Discard(_game.Round.IaManager.DiscardDecision());
+                            var discardDecision = _game.Round.IaManager.DiscardDecision();
+                            AddTimeEntry(nameof(IaManagerPivot.DiscardDecision));
+                            _game.Round.Discard(discardDecision);
+                            AddTimeEntry(nameof(RoundPivot.Discard));
                         }
                         continue;
                     }
 
                     var chiiTilePick = _game.Round.IaManager.ChiiDecision();
+                    AddTimeEntry(nameof(IaManagerPivot.ChiiDecision));
                     if (chiiTilePick != null)
                     {
-                        if (_game.Round.CallChii(chiiTilePick.Item2 ? chiiTilePick.Item1.Number - 1 : chiiTilePick.Item1.Number))
+                        var callChii = _game.Round.CallChii(chiiTilePick.Item2 ? chiiTilePick.Item1.Number - 1 : chiiTilePick.Item1.Number);
+                        AddTimeEntry(nameof(RoundPivot.CallChii));
+                        if (callChii)
                         {
-                            _game.Round.Discard(_game.Round.IaManager.DiscardDecision());
+                            var discardDecision = _game.Round.IaManager.DiscardDecision();
+                            AddTimeEntry(nameof(IaManagerPivot.DiscardDecision));
+                            _game.Round.Discard(discardDecision);
+                            AddTimeEntry(nameof(RoundPivot.Discard));
                         }
                         continue;
                     }
@@ -157,6 +196,7 @@ namespace Gnoj_HamView
                     }
 
                     _game.Round.Pick();
+                    AddTimeEntry(nameof(RoundPivot.Pick));
                     if (OpponentAfterPick(ref kanInProgress))
                     {
                         break;
@@ -171,12 +211,21 @@ namespace Gnoj_HamView
                 {
                     var (endOfRoundInfo, _) = _game.NextRound((int?)evt.Result);
 
-                    new ScoreWindow(_game.Players.ToList(), endOfRoundInfo).ShowDialog();
+                    //new ScoreWindow(_game.Players.ToList(), endOfRoundInfo).ShowDialog();
 
                     if (endOfRoundInfo.EndOfGame)
                     {
-                        new EndOfGameWindow(_game).ShowDialog();
-                        Close();
+                        foreach (var k in _times.Keys)
+                        {
+                            var avg = Math.Round(_times[k].sum / _times[k].count);
+                            var sum = Math.Ceiling(_times[k].sum / 1000);
+                            System.Diagnostics.Debug.WriteLine($"{k} - avg {avg} ms ; total {sum} sec ; count {_times[k].count}");
+                        }
+
+                        _game = new GamePivot(null, _game.Ruleset, null);
+                        //new EndOfGameWindow(_game).ShowDialog();
+                        //Close();
+                        RunAutoPlay();
                     }
                     else
                     {
