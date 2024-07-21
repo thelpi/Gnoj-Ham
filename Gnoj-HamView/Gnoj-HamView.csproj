@@ -95,6 +95,9 @@
     </ApplicationDefinition>
     <Compile Include="AnglePivot.cs" />
     <Compile Include="AutoPlayResult.cs" />
+    <Compile Include="AutoPlayWindow.xaml.cs">
+      <DependentUpon>AutoPlayWindow.xaml</DependentUpon>
+    </Compile>
     <Compile Include="ChronoPivot.cs" />
     <Compile Include="Converters\FansToFontStyleConverter.cs" />
     <Compile Include="Converters\FansToTextConverter.cs" />
@@ -119,6 +122,10 @@
     <Compile Include="RulesWindow.xaml.cs">
       <DependentUpon>RulesWindow.xaml</DependentUpon>
     </Compile>
+    <Page Include="AutoPlayWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="EndOfGameWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>

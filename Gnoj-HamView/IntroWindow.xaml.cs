@@ -52,7 +52,14 @@ namespace Gnoj_HamView
                 ChkDebugMode.IsChecked == true,
                 ChkDiscardTip.IsChecked == true);
 
-            new MainWindow(TxtPlayerName.Text, ruleset, save).ShowDialog();
+            if (ruleset.FourCpus)
+            {
+                new AutoPlayWindow(ruleset).ShowDialog();
+            }
+            else
+            {
+                new MainWindow(TxtPlayerName.Text, ruleset, save).ShowDialog();
+            }
 
             // The configuration might be updated in-game.
             LoadConfiguration();
