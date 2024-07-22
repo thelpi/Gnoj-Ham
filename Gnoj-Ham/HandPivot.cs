@@ -363,15 +363,11 @@ namespace Gnoj_Ham
         /// <exception cref="ArgumentNullException"><paramref name="notInHandTiles"/> is <c>Null</c>.</exception>
         public static bool IsTenpai(IEnumerable<TilePivot> concealedTiles, IEnumerable<TileComboPivot> combinations, List<TilePivot> notInHandTiles)
         {
-            return concealedTiles == null
-                ? throw new ArgumentNullException(nameof(concealedTiles))
-                : notInHandTiles == null
-                ? throw new ArgumentNullException(nameof(notInHandTiles))
-                : combinations == null
-                ? throw new ArgumentNullException(nameof(combinations))
-                : notInHandTiles.Any(sub =>
-                IsCompleteFull(new List<TilePivot>(concealedTiles) { sub },
-                combinations.ToList()));
+            _ = concealedTiles ?? throw new ArgumentNullException(nameof(concealedTiles));
+            _ = combinations ?? throw new ArgumentNullException(nameof(combinations));
+            _ = notInHandTiles ?? throw new ArgumentNullException(nameof(notInHandTiles));
+
+            return notInHandTiles.Any(sub => IsCompleteFull(new List<TilePivot>(concealedTiles) { sub }, combinations.ToList()));
         }
 
         /// <summary>
