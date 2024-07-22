@@ -444,11 +444,6 @@ namespace Gnoj_Ham
         /// <exception cref="InvalidOperationException"><see cref="Messages.UnexpectedDiscardFail"/></exception>
         public bool CallRiichi(TilePivot tile)
         {
-            if (!CanCallRiichi().Contains(tile))
-            {
-                return false;
-            }
-
             // Computes before discard, but proceeds after.
             // Otherwise, the discard will fail.
             var riichiTurnsCount = _discards[CurrentPlayerIndex].Count;
