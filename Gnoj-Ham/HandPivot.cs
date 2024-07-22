@@ -127,6 +127,9 @@ namespace Gnoj_Ham
             return tiles != null && tiles.Count == 14 && tiles.Distinct().Count() == 7 && tiles.GroupBy(t => t).All(t => t.Count() == 2);
         }
 
+        private static readonly int[] ImpliesSingles = new[] { 1, 4, 7, 10 };
+        private static readonly int[] ImpliesPairs = new[] { 2, 5, 8, 11 };
+
         /// <summary>
         /// Checks if the specified tiles form a complete hand (four combinations of three tiles and a pair).
         /// "Kokushi musou" and "Chiitoitsu" must be checked separately.
@@ -176,8 +179,8 @@ namespace Gnoj_Ham
 
             // The first case is not possible because its implies a single tile or several pairs.
             // The second case is not possible more than once because its implies a pair.
-            if (familyGroups.Any(fg => new[] { 1, 4, 7, 10 }.Contains(fg.Count()))
-                || familyGroups.Count(fg => new[] { 2, 5, 8, 11 }.Contains(fg.Count())) > 1)
+            if (familyGroups.Any(fg => ImpliesSingles.Contains(fg.Count()))
+                || familyGroups.Count(fg => ImpliesPairs.Contains(fg.Count())) > 1)
             {
                 // Empty list.
                 return combinationsSequences;
