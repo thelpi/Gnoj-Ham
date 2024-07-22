@@ -7,8 +7,8 @@
         mc:Ignorable="d"
         WindowStartupLocation="CenterScreen"
         Background="Gainsboro"
-        Title="AutoPlayWindow" Height="200" Width="400">
-    <StackPanel Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Center">
+        Title="AutoPlayWindow" SizeToContent="WidthAndHeight">
+    <StackPanel Margin="10" Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Center">
         <StackPanel Name="ActionPanel" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
             <Label Content="Games count:" />
             <TextBox Text="10" Name="TxtGamesCount" VerticalContentAlignment="Center" Margin="0, 0, 5, 0" Width="25" HorizontalContentAlignment="Center" />
@@ -18,5 +18,6 @@
             <Label Content="Games in progress..." HorizontalAlignment="Center" />
             <ProgressBar Height="25" Width="250" Name="PgbGames" Maximum="1" />
         </StackPanel>
+        <RichTextBox Visibility="Collapsed" Name="TxtResultsRaw" />
     </StackPanel>
 </Window>
