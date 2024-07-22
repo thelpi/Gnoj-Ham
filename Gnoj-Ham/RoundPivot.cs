@@ -2,7 +2,6 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 
 namespace Gnoj_Ham
 {
@@ -11,8 +10,6 @@ namespace Gnoj_Ham
     /// </summary>
     public class RoundPivot
     {
-        private const int RIICHI_CHECK_PARALLELISM = 4;
-
         #region Embedded properties
 
         private bool _stealingInProgress;
@@ -955,13 +952,10 @@ namespace Gnoj_Ham
             var distinctTilesFromOverallConcealed = GetConcealedTilesFromPlayerPointOfView(playerIndex).Distinct().ToList();
 
             var subPossibilities = new ConcurrentBag<TilePivot>();
-            var distinctTiles = _hands[playerIndex].ConcealedTiles.Distinct().ToList();
-            var tilesPerGroup = distinctTiles.Count / RIICHI_CHECK_PARALLELISM;
-            var remainingTiles = distinctTiles.Count % RIICHI_CHECK_PARALLELISM;
-            Parallel.For(0, RIICHI_CHECK_PARALLELISM, i =>
-            {
-                var iTiles = tilesPerGroup + (i == RIICHI_CHECK_PARALLELISM - 1 ? remainingTiles : 0);
-                foreach (var tileToSub in distinctTiles.Skip(i * tilesPerGroup).Take(iTiles))
+            _hands[playerIndex].ConcealedTiles
+                .Distinct()
+                .ToList()
+                .ExecuteInParallel(tileToSub =>
                 {
                     var tempListConcealed = new List<TilePivot>(_hands[playerIndex].ConcealedTiles);
                     tempListConcealed.Remove(tileToSub);
@@ -969,8 +963,7 @@ namespace Gnoj_Ham
                     {
                         subPossibilities.Add(tileToSub);
                     }
-                }
-            });
+                });
 
             // Avoids red doras in the list returned (if possible).
             var realSubPossibilities = new List<TilePivot>();
