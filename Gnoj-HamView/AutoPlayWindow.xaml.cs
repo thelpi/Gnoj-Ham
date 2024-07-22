@@ -16,6 +16,9 @@ namespace Gnoj_HamView
         private bool _hardStopAutoplay = false;
         private DateTime _timestamp;
         private readonly Dictionary<string, (int count, double sum)> _times = new Dictionary<string, (int, double)>(50);
+        private int _currentGameIndex;
+        private RulePivot _ruleset;
+        private int _totalGamesCount;
 
         /// <summary>
         /// Constructor.
@@ -31,14 +34,9 @@ namespace Gnoj_HamView
                 throw new ArgumentException($"{nameof(ruleset.FourCpus)} should be enabled.");
             }
 
-            _game = new GamePivot(null, ruleset, null);
-
             InitializeAutoPlayWorker();
 
-            ContentRendered += delegate (object sender, EventArgs evt)
-            {
-                RunAutoPlay();
-            };
+            _ruleset = ruleset;
         }
 
         private void AddTimeEntry(string name)
@@ -57,13 +55,14 @@ namespace Gnoj_HamView
         }
 
         // Starts the background worker.
-        private void RunAutoPlay()
+        private void RunAutoPlay(bool newGame)
         {
-            if (!_autoPlay.IsBusy)
+            _timestamp = DateTime.Now;
+            if (newGame)
             {
-                _timestamp = DateTime.Now;
-                _autoPlay.RunWorkerAsync();
+                _game = new GamePivot(null, _ruleset, null);
             }
+            _autoPlay.RunWorkerAsync();
         }
 
         // Proceeds to call a kan for an opponent.
@@ -116,7 +115,7 @@ namespace Gnoj_HamView
         {
             _autoPlay = new BackgroundWorker
             {
-                WorkerReportsProgress = false,
+                WorkerReportsProgress = true,
                 WorkerSupportsCancellation = false
             };
             _autoPlay.DoWork += delegate (object sender, DoWorkEventArgs evt)
@@ -211,28 +210,51 @@ namespace Gnoj_HamView
                 {
                     var (endOfRoundInfo, _) = _game.NextRound((int?)evt.Result);
 
-                    //new ScoreWindow(_game.Players.ToList(), endOfRoundInfo).ShowDialog();
-
                     if (endOfRoundInfo.EndOfGame)
                     {
-                        foreach (var k in _times.Keys)
+                        _currentGameIndex++;
+                        PgbGames.Value = _currentGameIndex / (double)_totalGamesCount;
+                        if (_currentGameIndex < _totalGamesCount)
                         {
-                            var avg = Math.Round(_times[k].sum / _times[k].count);
-                            var sum = Math.Ceiling(_times[k].sum / 1000);
-                            System.Diagnostics.Debug.WriteLine($"{k} - avg {avg} ms ; total {sum} sec ; count {_times[k].count}");
+                            RunAutoPlay(true);
                         }
-
-                        _game = new GamePivot(null, _game.Ruleset, null);
-                        //new EndOfGameWindow(_game).ShowDialog();
-                        //Close();
-                        RunAutoPlay();
+                        else
+                        {
+                            WaitingPanel.Visibility = Visibility.Collapsed;
+                            ActionPanel.Visibility = Visibility.Visible;
+                        }
                     }
                     else
                     {
-                        RunAutoPlay();
+                        // if we are in south (or post-south) : +50%
+                        var currentGameProgression = _game.DominantWind == WindPivot.East ? 0 : 0.5;
+
+                        // +12.5% for each "East" turn (it's not really accurate as a player can keep "East" several turns)
+                        currentGameProgression += (_game.EastRank - 1) * 0.125;
+
+                        // adds to th current value (based on number of games)
+                        PgbGames.Value = (_currentGameIndex / (double)_totalGamesCount) + (currentGameProgression * (1 / (double)_totalGamesCount));
+
+                        RunAutoPlay(false);
                     }
                 }
             };
+        }
+
+        private void BtnStart_Click(object sender, RoutedEventArgs e)
+        {
+            if (!int.TryParse(TxtGamesCount.Text, out _totalGamesCount))
+            {
+                MessageBox.Show("Invalid number of games!", "Gnoj-Ham - Error");
+                return;
+            }
+
+            _currentGameIndex = 0;
+            _times.Clear();
+
+            WaitingPanel.Visibility = Visibility.Visible;
+            ActionPanel.Visibility = Visibility.Collapsed;
+            RunAutoPlay(true);
         }
     }
 }

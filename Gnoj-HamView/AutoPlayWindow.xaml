@@ -7,9 +7,16 @@
         mc:Ignorable="d"
         WindowStartupLocation="CenterScreen"
         Background="Gainsboro"
-        Title="AutoPlayWindow" Height="100" Width="350">
+        Title="AutoPlayWindow" Height="200" Width="400">
     <StackPanel Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Center">
-        <Label Content="Game in progress..." HorizontalAlignment="Center" />
-        <ProgressBar Height="25" Width="250" IsIndeterminate="True" />
+        <StackPanel Name="ActionPanel" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+            <Label Content="Games count:" />
+            <TextBox Text="10" Name="TxtGamesCount" VerticalContentAlignment="Center" Margin="0, 0, 5, 0" Width="25" HorizontalContentAlignment="Center" />
+            <Button Width="75" Height="25" Content="Start" Name="BtnStart" Click="BtnStart_Click" />
+        </StackPanel>
+        <StackPanel Name="WaitingPanel" Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Center">
+            <Label Content="Games in progress..." HorizontalAlignment="Center" />
+            <ProgressBar Height="25" Width="250" Name="PgbGames" Maximum="1" />
+        </StackPanel>
     </StackPanel>
 </Window>
