@@ -1240,7 +1240,7 @@ namespace Gnoj_HamView
             var tilesExpectedCoeff = 3;
             foreach (var iWall in wallIndexes)
             {
-                var tilesCountForThisWall = Math.Max(0, Math.Min(GamePivot.WallTilesCount, wallTiles - (GamePivot.WallTilesCount * tilesExpectedCoeff)));
+                var tilesCountForThisWall = Math.Max(0, Math.Min(GamePivot.WALL_TILES_COUNT, wallTiles - (GamePivot.WALL_TILES_COUNT * tilesExpectedCoeff)));
 
                 var wallPanel = this.FindName<StackPanel>("PnlWall", iWall);
 

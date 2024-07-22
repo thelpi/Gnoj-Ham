@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace Gnoj_Ham
 {
@@ -9,6 +11,8 @@ namespace Gnoj_Ham
     /// </summary>
     public class RoundPivot
     {
+        private const int RIICHI_CHECK_PARALLELISM = 4;
+
         #region Embedded properties
 
         private bool _stealingInProgress;
@@ -262,8 +266,11 @@ namespace Gnoj_Ham
         /// <returns><c>True</c> if calling pon is allowed in this context; <c>False otherwise.</c></returns>
         public bool CanCallPon(int playerIndex)
         {
-            return _wallTiles.Count != 0 && PreviousPlayerIndex != playerIndex && _discards[PreviousPlayerIndex].Count != 0 && !_waitForDiscard && !IsRiichi(playerIndex)
-&& _hands[playerIndex].ConcealedTiles.Where(t => t == _discards[PreviousPlayerIndex].Last()).Count() >= 2;
+            return _wallTiles.Count != 0
+                && PreviousPlayerIndex != playerIndex
+                && _discards[PreviousPlayerIndex].Count != 0
+                && !_waitForDiscard && !IsRiichi(playerIndex)
+                && _hands[playerIndex].ConcealedTiles.Where(t => t == _discards[PreviousPlayerIndex].Last()).Count() >= 2;
         }
 
         /// <summary>
@@ -947,16 +954,23 @@ namespace Gnoj_Ham
         {
             var distinctTilesFromOverallConcealed = GetConcealedTilesFromPlayerPointOfView(playerIndex).Distinct().ToList();
 
-            var subPossibilities = new List<TilePivot>();
-            foreach (var tileToSub in _hands[playerIndex].ConcealedTiles.Distinct())
+            var subPossibilities = new ConcurrentBag<TilePivot>();
+            var distinctTiles = _hands[playerIndex].ConcealedTiles.Distinct().ToList();
+            var tilesPerGroup = distinctTiles.Count / RIICHI_CHECK_PARALLELISM;
+            var remainingTiles = distinctTiles.Count % RIICHI_CHECK_PARALLELISM;
+            Parallel.For(0, RIICHI_CHECK_PARALLELISM, i =>
             {
-                var tempListConcealed = new List<TilePivot>(_hands[playerIndex].ConcealedTiles);
-                tempListConcealed.Remove(tileToSub);
-                if (HandPivot.IsTenpai(tempListConcealed, _hands[playerIndex].DeclaredCombinations, distinctTilesFromOverallConcealed))
+                var iTiles = tilesPerGroup + (i == RIICHI_CHECK_PARALLELISM - 1 ? remainingTiles : 0);
+                foreach (var tileToSub in distinctTiles.Skip(i * tilesPerGroup).Take(iTiles))
                 {
-                    subPossibilities.Add(tileToSub);
+                    var tempListConcealed = new List<TilePivot>(_hands[playerIndex].ConcealedTiles);
+                    tempListConcealed.Remove(tileToSub);
+                    if (HandPivot.IsTenpai(tempListConcealed, _hands[playerIndex].DeclaredCombinations, distinctTilesFromOverallConcealed))
+                    {
+                        subPossibilities.Add(tileToSub);
+                    }
                 }
-            }
+            });
 
             // Avoids red doras in the list returned (if possible).
             var realSubPossibilities = new List<TilePivot>();
