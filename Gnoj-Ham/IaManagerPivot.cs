@@ -43,8 +43,9 @@ namespace Gnoj_Ham
         /// <summary>
         /// Computes the discard decision of the current CPU player.
         /// </summary>
+        /// <param name="tenpaiPotentialDiscards">Results of the call to <see cref="RoundPivot.CanCallRiichi"/> that has been made before; set <c>null</c> to force a recompute.</param>
         /// <returns>The tile to discard.</returns>
-        public TilePivot DiscardDecision()
+        public TilePivot DiscardDecision(List<TilePivot> tenpaiPotentialDiscards)
         {
             var concealedTiles = _round.GetHand(_round.CurrentPlayerIndex).ConcealedTiles.ToList();
 
@@ -64,15 +65,15 @@ namespace Gnoj_Ham
             var (tilesSafety, stopCurrentHand) = ComputeTilesSafety(discardableTiles, deadTiles);
 
             // tenpai: let's go anyway...
-            var discards = _round.ExtractDiscardChoicesFromTenpai(_round.CurrentPlayerIndex);
-            if (discards.Count > 0)
+            tenpaiPotentialDiscards = tenpaiPotentialDiscards ?? _round.ExtractDiscardChoicesFromTenpai(_round.CurrentPlayerIndex);
+            if (tenpaiPotentialDiscards.Count > 0)
             {
                 // but select the best of possible discards
                 if (stopCurrentHand)
-                    return discards.OrderBy(t => tilesSafety.First(_ => _.tile == t).unsafePoints).First();
+                    return tenpaiPotentialDiscards.OrderBy(t => tilesSafety.First(_ => _.tile == t).unsafePoints).First();
 
                 // otherwise (no visible risk), avoid discard dora
-                return discards.OrderBy(t => _round.GetDoraCount(t) + (t.IsRedDora ? 1 : 0)).First();
+                return tenpaiPotentialDiscards.OrderBy(t => _round.GetDoraCount(t) + (t.IsRedDora ? 1 : 0)).First();
             }
 
             if (stopCurrentHand)
@@ -121,11 +122,11 @@ namespace Gnoj_Ham
         /// <summary>
         /// Checks if the current CPU player can make a riichi call, and computes the decision to do so.
         /// </summary>
-        /// <returns>The tile to discard; <c>Null</c> if no decision made.</returns>
-        public TilePivot RiichiDecision()
+        /// <returns>A tuple with the tile to discard (<c>Null</c> if no decision made) and all the tiles 'discardable'.</returns>
+        public (TilePivot choice, List<TilePivot> potentials) RiichiDecision()
         {
             var riichiTiles = _round.CanCallRiichi();
-            return riichiTiles.Count > 0 ? riichiTiles.First() : null;
+            return (riichiTiles.Count > 0 ? riichiTiles.First() : null, riichiTiles);
         }
 
         /// <summary>

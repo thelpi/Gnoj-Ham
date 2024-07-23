@@ -500,7 +500,7 @@ namespace Gnoj_HamView
             _riichiTiles = _game.Round.CanCallRiichi();
             if (_riichiTiles.Count > 0)
             {
-                var riichiDecision = _game.Ruleset.DiscardTip && _game.Round.IaManager.RiichiDecision() != null;
+                var riichiDecision = _game.Ruleset.DiscardTip && _game.Round.IaManager.RiichiDecision().choice != null;
                 Dispatcher.Invoke(() =>
                 {
                     GrdOverlayCanCall.Visibility = Visibility.Visible;
@@ -627,7 +627,7 @@ namespace Gnoj_HamView
 
                 if (!_game.Round.IsHumanPlayer)
                 {
-                    Discard(_game.Round.IaManager.DiscardDecision());
+                    Discard(_game.Round.IaManager.DiscardDecision(new List<TilePivot>()));
                 }
             }
         }
@@ -659,7 +659,7 @@ namespace Gnoj_HamView
 
                 if (isCpu)
                 {
-                    Discard(_game.Round.IaManager.DiscardDecision());
+                    Discard(_game.Round.IaManager.DiscardDecision(new List<TilePivot>()));
                 }
             }
         }
@@ -737,14 +737,14 @@ namespace Gnoj_HamView
 
             kanInProgress = null;
 
-            var riichiTile = _game.Round.IaManager.RiichiDecision();
+            var (riichiTile, riichiTiles) = _game.Round.IaManager.RiichiDecision();
             if (riichiTile != null)
             {
                 CallRiichi(riichiTile);
                 return false;
             }
 
-            Discard(_game.Round.IaManager.DiscardDecision());
+            Discard(_game.Round.IaManager.DiscardDecision(riichiTiles));
             return false;
         }
 
@@ -783,7 +783,7 @@ namespace Gnoj_HamView
                     _riichiTiles = _game.Round.CanCallRiichi();
                     if (_riichiTiles.Count > 0)
                     {
-                        var riichiDecision = _game.Ruleset.DiscardTip && _game.Round.IaManager.RiichiDecision() != null;
+                        var riichiDecision = _game.Ruleset.DiscardTip && _game.Round.IaManager.RiichiDecision().choice != null;
 
                         BtnRiichi.Visibility = Visibility.Visible;
                         BtnSkipCall.Visibility = Visibility.Visible;
@@ -1385,7 +1385,7 @@ namespace Gnoj_HamView
 
             if (_game.Round.IsHumanPlayer && _game.Round.GetHand(GamePivot.HUMAN_INDEX).IsFullHand)
             {
-                var discardChoice = _game.Round.IaManager.DiscardDecision();
+                var discardChoice = _game.Round.IaManager.DiscardDecision(null);
                 var button = StpHandP0.Children.OfType<Button>()
                     .Concat(StpPickP0.Children.OfType<Button>())
                     .FirstOrDefault(x => x.Tag == discardChoice);

@@ -96,7 +96,7 @@ namespace Gnoj_HamView
 
             kanInProgress = null;
 
-            var riichiTile = _game.Round.IaManager.RiichiDecision();
+            var (riichiTile, riichiTiles) = _game.Round.IaManager.RiichiDecision();
             AddTimeEntry(nameof(IaManagerPivot.RiichiDecision));
             if (riichiTile != null)
             {
@@ -105,7 +105,7 @@ namespace Gnoj_HamView
                 return false;
             }
 
-            var discardDecision = _game.Round.IaManager.DiscardDecision();
+            var discardDecision = _game.Round.IaManager.DiscardDecision(riichiTiles);
             AddTimeEntry(nameof(IaManagerPivot.DiscardDecision));
             _game.Round.Discard(discardDecision);
             AddTimeEntry(nameof(RoundPivot.Discard));
@@ -158,7 +158,7 @@ namespace Gnoj_HamView
                         AddTimeEntry(nameof(RoundPivot.CallPon));
                         if (canCallPon)
                         {
-                            var discardDecision = _game.Round.IaManager.DiscardDecision();
+                            var discardDecision = _game.Round.IaManager.DiscardDecision(new List<TilePivot>());
                             AddTimeEntry(nameof(IaManagerPivot.DiscardDecision));
                             _game.Round.Discard(discardDecision);
                             AddTimeEntry(nameof(RoundPivot.Discard));
@@ -174,7 +174,7 @@ namespace Gnoj_HamView
                         AddTimeEntry(nameof(RoundPivot.CallChii));
                         if (callChii)
                         {
-                            var discardDecision = _game.Round.IaManager.DiscardDecision();
+                            var discardDecision = _game.Round.IaManager.DiscardDecision(new List<TilePivot>());
                             AddTimeEntry(nameof(IaManagerPivot.DiscardDecision));
                             _game.Round.Discard(discardDecision);
                             AddTimeEntry(nameof(RoundPivot.Discard));
