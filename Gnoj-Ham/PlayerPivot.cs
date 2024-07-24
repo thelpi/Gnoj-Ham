@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Gnoj_Ham
 {
@@ -32,18 +33,22 @@ namespace Gnoj_Ham
         /// Indicates if the player is managed by the CPU.
         /// </summary>
         public bool IsCpu { get; private set; }
+        /// <summary>
+        /// Permanent player the current instance is based upon.
+        /// </summary>
+        public PermanentPlayerPivot PermanentPlayer { get; }
 
         #endregion Embedded properties
 
         #region Constructors
 
-        // Constructor.
-        private PlayerPivot(string name, WindPivot initialWind, InitialPointsRulePivot initialPointsRulePivot, bool isCpu)
+        private PlayerPivot(string name, WindPivot initialWind, InitialPointsRulePivot initialPointsRulePivot, bool isCpu, PermanentPlayerPivot permanentPlayer)
         {
             Name = name;
             InitialWind = initialWind;
             Points = initialPointsRulePivot.GetInitialPointsFromRule();
             IsCpu = isCpu;
+            PermanentPlayer = permanentPlayer;
         }
 
         #endregion Constructors
@@ -80,19 +85,45 @@ namespace Gnoj_Ham
 
             var eastIndex = GlobalTools.Randomizer.Next(0, 4);
 
-            var players = new List<PlayerPivot>();
+            var players = new List<PlayerPivot>(4);
             for (var i = 0; i < 4; i++)
             {
                 players.Add(new PlayerPivot(
                     i == GamePivot.HUMAN_INDEX && !fourCpus ? humanPlayerName : $"{CPU_NAME_PREFIX}{i}",
-                    i == eastIndex ? WindPivot.East : (i > eastIndex ? (WindPivot)(i - eastIndex) : (WindPivot)(4 - eastIndex + i)),
+                    GetWindFromIndex(eastIndex, i),
                     initialPointsRulePivot,
-                    fourCpus || i != GamePivot.HUMAN_INDEX
+                    fourCpus || i != GamePivot.HUMAN_INDEX,
+                    null
                 ));
             }
 
             return players;
         }
+
+        /// <summary>
+        /// Generates a list of four <see cref="PlayerPivot"/> from permanent players.
+        /// </summary>
+        /// <param name="permanentPlayers">Four permanent players.</param>
+        /// <param name="initialPointsRulePivot">Rule for initial points count.</param>
+        /// <returns>Four players generated.</returns>
+        /// <exception cref="ArgumentNullException"><paramref name="permanentPlayers"/> is <c>Null</c>.</exception>
+        /// <exception cref="ArgumentException">Four players are required.</exception>
+        public static List<PlayerPivot> GetFourPlayersFromPermanent(IReadOnlyList<PermanentPlayerPivot> permanentPlayers, InitialPointsRulePivot initialPointsRulePivot)
+        {
+            _ = permanentPlayers ?? throw new ArgumentNullException(nameof(permanentPlayers));
+
+            if (permanentPlayers.Count != 4)
+                throw new ArgumentException("Four players are required.", nameof(permanentPlayers));
+
+            var eastIndex = GlobalTools.Randomizer.Next(0, 4);
+
+            return permanentPlayers
+                .Select((p, i) => new PlayerPivot($"{CPU_NAME_PREFIX}{i}", GetWindFromIndex(eastIndex, i), initialPointsRulePivot, true, p))
+                .ToList();
+        }
+
+        private static WindPivot GetWindFromIndex(int eastIndex, int i)
+            => i == eastIndex ? WindPivot.East : (i > eastIndex ? (WindPivot)(i - eastIndex) : (WindPivot)(4 - eastIndex + i));
 
         private static string CheckName(string humanPlayerName)
         {

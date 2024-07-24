@@ -103,12 +103,44 @@ namespace Gnoj_Ham
         /// <param name="humanPlayerName">The name of the human player; other players will be <see cref="PlayerPivot.IsCpu"/>.</param>
         /// <param name="ruleset">Ruleset for the game.</param>
         /// <param name="save">Player save stats.</param>
+        /// <exception cref="ArgumentNullException"><paramref name="save"/> is <c>Null</c> while ruleset is default.</exception>
+        /// <exception cref="ArgumentNullException"><paramref name="ruleset"/> is <c>Null</c>.</exception>
+        /// <exception cref="ArgumentException"><paramref name="humanPlayerName"/> is invalid.</exception>
         public GamePivot(string humanPlayerName, RulePivot ruleset, PlayerSavePivot save)
         {
+            _ = ruleset ?? throw new ArgumentNullException(nameof(ruleset));
+
+            if (ruleset.AreDefaultRules() && save == null)
+            {
+                throw new ArgumentNullException(nameof(save));
+            }
+            
             _save = save;
 
             Ruleset = ruleset;
             _players = PlayerPivot.GetFourPlayers(humanPlayerName, Ruleset.InitialPointsRule, Ruleset.FourCpus);
+            DominantWind = WindPivot.East;
+            EastIndexTurnCount = 1;
+            EastIndex = FirstEastIndex;
+            EastRank = 1;
+
+            Round = new RoundPivot(this, EastIndex);
+        }
+
+        /// <summary>
+        /// Constructor for CPU game with permanent players.
+        /// </summary>
+        /// <param name="ruleset">Ruleset for the game.</param>
+        /// <param name="permanentPlayers">Four permanent players.</param>
+        /// <exception cref="ArgumentNullException"><paramref name="ruleset"/> is <c>Null</c>.</exception>
+        /// <exception cref="ArgumentNullException"><paramref name="permanentPlayers"/> is <c>Null</c>.</exception>
+        /// <exception cref="ArgumentException">Four players are required.</exception>
+        public GamePivot(RulePivot ruleset, IReadOnlyList<PermanentPlayerPivot> permanentPlayers)
+        {
+            _ = ruleset ?? throw new ArgumentNullException(nameof(ruleset));
+
+            Ruleset = ruleset;
+            _players = PlayerPivot.GetFourPlayersFromPermanent(permanentPlayers, Ruleset.InitialPointsRule);
             DominantWind = WindPivot.East;
             EastIndexTurnCount = 1;
             EastIndex = FirstEastIndex;
