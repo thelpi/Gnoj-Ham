@@ -21,6 +21,7 @@ namespace Gnoj_HamView
         private int _currentGameIndex;
         private RulePivot _ruleset;
         private int _totalGamesCount;
+        private List<PermanentPlayerPivot> _permanentPlayers;
 
         /// <summary>
         /// Constructor.
@@ -62,7 +63,7 @@ namespace Gnoj_HamView
             _timestamp = DateTime.Now;
             if (newGame)
             {
-                _game = new GamePivot(null, _ruleset, null);
+                _game = new GamePivot(_ruleset, _permanentPlayers);
             }
             _autoPlay.RunWorkerAsync();
         }
@@ -214,6 +215,8 @@ namespace Gnoj_HamView
 
                     if (endOfRoundInfo.EndOfGame)
                     {
+                        ScoreTools.ComputeCurrentRanking(_game);
+
                         _currentGameIndex++;
                         PgbGames.Value = _currentGameIndex / (double)_totalGamesCount;
                         if (_currentGameIndex < _totalGamesCount)
@@ -262,6 +265,13 @@ namespace Gnoj_HamView
 
             _currentGameIndex = 0;
             _times.Clear();
+            _permanentPlayers = new List<PermanentPlayerPivot>
+            {
+                new PermanentPlayerPivot(),
+                new PermanentPlayerPivot(),
+                new PermanentPlayerPivot(),
+                new PermanentPlayerPivot()
+            };
 
             WaitingPanel.Visibility = Visibility.Visible;
             ActionPanel.Visibility = Visibility.Collapsed;

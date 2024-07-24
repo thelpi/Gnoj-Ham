@@ -44,6 +44,8 @@
             Rank = rank;
             Uma = uma;
             Score = ((player.Points - initialPoints) / 1000) + uma;
+
+            Player.PermanentPlayer.AddGameScore(this);
         }
 
         #endregion Constructors
