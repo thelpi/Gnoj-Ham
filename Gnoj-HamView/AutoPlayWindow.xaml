@@ -18,6 +18,6 @@
             <Label Content="Games in progress..." HorizontalAlignment="Center" />
             <ProgressBar Height="25" Width="250" Name="PgbGames" Maximum="1" />
         </StackPanel>
-        <RichTextBox Visibility="Collapsed" Name="TxtResultsRaw" />
+        <!--<RichTextBox Visibility="Collapsed" Name="TxtResultsRaw" />-->
     </StackPanel>
 </Window>

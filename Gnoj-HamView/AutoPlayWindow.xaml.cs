@@ -43,12 +43,12 @@ namespace Gnoj_HamView
 
         private void AddTimeEntry(string name)
         {
-            var elapsed = (DateTime.Now - _timestamp).TotalMilliseconds;
+            /*var elapsed = (DateTime.Now - _timestamp).TotalMilliseconds;
             var currentEntry = _times.ContainsKey(name)
                 ? _times[name]
                 : (0, 0);
             _times[name] = (currentEntry.count + 1, currentEntry.sum + elapsed);
-            _timestamp = DateTime.Now;
+            _timestamp = DateTime.Now;*/
         }
 
         private void Window_Closing(object sender, CancelEventArgs e)
@@ -224,7 +224,7 @@ namespace Gnoj_HamView
                         {
                             WaitingPanel.Visibility = Visibility.Collapsed;
                             ActionPanel.Visibility = Visibility.Visible;
-                            TxtResultsRaw.Visibility = Visibility.Visible;
+                            /*TxtResultsRaw.Visibility = Visibility.Visible;
 
                             var sb = new StringBuilder();
                             sb.AppendLine("Action\tCount\tSum (s)\tAverage (ms)");
@@ -232,7 +232,7 @@ namespace Gnoj_HamView
                             {
                                 sb.AppendLine($"{r}\t{_times[r].count}\t{Math.Floor(_times[r].sum / 1000)}\t{Math.Floor(_times[r].sum / _times[r].count)}");
                             }
-                            TxtResultsRaw.AppendText(sb.ToString());
+                            TxtResultsRaw.AppendText(sb.ToString());*/
                         }
                     }
                     else
