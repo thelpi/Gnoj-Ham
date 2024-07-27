@@ -225,17 +225,11 @@ namespace Gnoj_HamView
                         }
                         else
                         {
+                            ScoresList.ItemsSource = _permanentPlayers;
+
                             WaitingPanel.Visibility = Visibility.Collapsed;
                             ActionPanel.Visibility = Visibility.Visible;
-                            /*TxtResultsRaw.Visibility = Visibility.Visible;
-
-                            var sb = new StringBuilder();
-                            sb.AppendLine("Action\tCount\tSum (s)\tAverage (ms)");
-                            foreach (var r in _times.OrderByDescending(t => t.Value.sum).Select(t => t.Key))
-                            {
-                                sb.AppendLine($"{r}\t{_times[r].count}\t{Math.Floor(_times[r].sum / 1000)}\t{Math.Floor(_times[r].sum / _times[r].count)}");
-                            }
-                            TxtResultsRaw.AppendText(sb.ToString());*/
+                            ScoresList.Visibility = Visibility.Visible;
                         }
                     }
                     else
@@ -275,6 +269,7 @@ namespace Gnoj_HamView
 
             WaitingPanel.Visibility = Visibility.Visible;
             ActionPanel.Visibility = Visibility.Collapsed;
+            ScoresList.Visibility = Visibility.Collapsed;
             RunAutoPlay(true);
         }
     }
