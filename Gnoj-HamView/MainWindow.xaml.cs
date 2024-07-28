@@ -27,7 +27,7 @@ namespace Gnoj_HamView
         private BackgroundWorker _autoPlay;
         private readonly Storyboard _overlayStoryboard;
         private bool _waitForDecision;
-        private List<TilePivot> _riichiTiles;
+        private IReadOnlyList<TilePivot> _riichiTiles;
         private bool _hardStopAutoplay = false;
 
         /// <summary>

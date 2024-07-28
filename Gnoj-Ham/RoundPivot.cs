@@ -164,20 +164,20 @@ namespace Gnoj_Ham
             // DrivenDrawPivot.HumanTenpai(_fullTilesList);
 
             _hands = Enumerable.Range(0, 4).Select(i => new HandPivot(_fullTilesList.GetRange(i * 13, 13))).ToList();
-            _discards = Enumerable.Range(0, 4).Select(i => new List<TilePivot>()).ToList();
-            _virtualDiscards = Enumerable.Range(0, 4).Select(i => new List<TilePivot>()).ToList();
+            _discards = Enumerable.Range(0, 4).Select(i => new List<TilePivot>(20)).ToList();
+            _virtualDiscards = Enumerable.Range(0, 4).Select(i => new List<TilePivot>(20)).ToList();
             _riichis = Enumerable.Range(0, 4).Select(i => (RiichiPivot)null).ToList();
             _wallTiles = _fullTilesList.GetRange(52, 70);
             _compensationTiles = _fullTilesList.GetRange(122, 4);
             _doraIndicatorTiles = _fullTilesList.GetRange(126, 5);
             _uraDoraIndicatorTiles = _fullTilesList.GetRange(131, 5);
-            _deadTreasureTiles = new List<TilePivot>();
+            _deadTreasureTiles = new List<TilePivot>(14);
             CurrentPlayerIndex = firstPlayerIndex;
             _stealingInProgress = false;
             _closedKanInProgress = null;
             _openedKanInProgress = null;
             _waitForDiscard = false;
-            _playerIndexHistory = new List<int>();
+            _playerIndexHistory = new List<int>(10);
             IaManager = new IaManagerPivot(this);
         }
 
@@ -275,7 +275,7 @@ namespace Gnoj_Ham
         /// </summary>
         /// <param name="playerIndex">The player index.</param>
         /// <returns>A tile from every possible kans.</returns>
-        public List<TilePivot> CanCallKan(int playerIndex)
+        public IReadOnlyList<TilePivot> CanCallKan(int playerIndex)
         {
             if (_compensationTiles.Count == 0 || _wallTiles.Count == 0)
             {
@@ -502,7 +502,7 @@ namespace Gnoj_Ham
         /// Checks if the current player can call riichi.
         /// </summary>
         /// <returns>Tiles the player can discard; empty list if riichi is impossible.</returns>
-        public List<TilePivot> CanCallRiichi()
+        public IReadOnlyList<TilePivot> CanCallRiichi()
         {
             if (!_waitForDiscard
                 || IsRiichi(CurrentPlayerIndex)
@@ -672,7 +672,7 @@ namespace Gnoj_Ham
         /// </summary>
         /// <param name="concealed"><c>True</c> to check only concealed kan (or from a previous pon); <c>False</c> to check the opposite; <c>Null</c> for both.</param>
         /// <returns>The player index who can make the kan call, and the possible tiles; <c>Null</c> is none.</returns>
-        public Tuple<int, List<TilePivot>> OpponentsCanCallKan(bool? concealed)
+        public Tuple<int, IReadOnlyList<TilePivot>> OpponentsCanCallKan(bool? concealed)
         {
             for (var i = 0; i < 4; i++)
             {
@@ -681,7 +681,7 @@ namespace Gnoj_Ham
                     var kanTiles = CanCallKanWithChoices(i, concealed);
                     if (kanTiles.Count > 0)
                     {
-                        return new Tuple<int, List<TilePivot>>(i, kanTiles);
+                        return new Tuple<int, IReadOnlyList<TilePivot>>(i, kanTiles);
                     }
                 }
             }
@@ -695,7 +695,7 @@ namespace Gnoj_Ham
         /// <param name="playerId">The player index.</param>
         /// <param name="concealed"><c>True</c> to check only concealed kan (or from a previous pon); <c>False</c> to check the opposite; <c>Null</c> for both.</param>
         /// <returns>List of possible tiles.</returns>
-        public List<TilePivot> CanCallKanWithChoices(int playerId, bool? concealed)
+        public IReadOnlyList<TilePivot> CanCallKanWithChoices(int playerId, bool? concealed)
         {
             var tiles = CanCallKan(playerId);
             if (concealed == true)
@@ -783,9 +783,9 @@ namespace Gnoj_Ham
         #region Private methods
 
         // Gets every tiles from every opponents virtual discards after the riichi call of the specified player.
-        private List<TilePivot> GetTilesFromVirtualDiscardsAtRank(int riichiPlayerIndex, TilePivot exceptTile)
+        private IReadOnlyList<TilePivot> GetTilesFromVirtualDiscardsAtRank(int riichiPlayerIndex, TilePivot exceptTile)
         {
-            var fullList = new List<TilePivot>();
+            var fullList = new List<TilePivot>(20);
 
             if (_riichis[riichiPlayerIndex] == null)
             {
@@ -904,9 +904,9 @@ namespace Gnoj_Ham
         }
 
         // Checks for players with nagashi mangan.
-        private List<int> CheckForNagashiMangan()
+        private IReadOnlyList<int> CheckForNagashiMangan()
         {
-            var playerIndexList = new List<int>();
+            var playerIndexList = new List<int>(4);
 
             for (var i = 0; i < 4; i++)
             {
@@ -947,7 +947,7 @@ namespace Gnoj_Ham
         /// </summary>
         /// <param name="playerIndex">The player index.</param>
         /// <returns>The list of tiles which can be discarded.</returns>
-        internal List<TilePivot> ExtractDiscardChoicesFromTenpai(int playerIndex)
+        internal IReadOnlyList<TilePivot> ExtractDiscardChoicesFromTenpai(int playerIndex)
         {
             var distinctTilesFromOverallConcealed = GetConcealedTilesFromPlayerPointOfView(playerIndex).Distinct().ToList();
 
@@ -966,7 +966,7 @@ namespace Gnoj_Ham
                 });
 
             // Avoids red doras in the list returned (if possible).
-            var realSubPossibilities = new List<TilePivot>();
+            var realSubPossibilities = new List<TilePivot>(subPossibilities.Count);
             foreach (var tile in subPossibilities.Distinct())
             {
                 TilePivot subTile = null;
@@ -974,10 +974,12 @@ namespace Gnoj_Ham
                 {
                     subTile = _hands[playerIndex].ConcealedTiles.FirstOrDefault(t => t == tile && !t.IsRedDora);
                 }
-                realSubPossibilities.Add(subTile ?? tile);
+
+                if (!realSubPossibilities.Contains(subTile ?? tile))
+                    realSubPossibilities.Add(subTile ?? tile);
             }
 
-            return realSubPossibilities.Distinct().ToList();
+            return realSubPossibilities;
         }
 
         /// <summary>
@@ -1002,7 +1004,7 @@ namespace Gnoj_Ham
                 }
             }
 
-            var playerInfos = new List<EndOfRoundInformationsPivot.PlayerInformationsPivot>();
+            var playerInfos = new List<EndOfRoundInformationsPivot.PlayerInformationsPivot>(4);
 
             // Ryuukyoku (no winner).
             if (winners.Count == 0)

@@ -37,6 +37,7 @@ namespace Gnoj_Ham
         /// <param name="firstList">The first list.</param>
         /// <param name="secondList">The second list.</param>
         /// <returns>The cartesian product; empty list if at least one argument is <c>Null</c>.</returns>
+        /// <remarks>Keep the type 'List' here.</remarks>
         public static List<List<T>> CartesianProduct<T>(this List<List<T>> firstList, List<List<T>> secondList)
         {
             return firstList == null || secondList == null
