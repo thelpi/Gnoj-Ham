@@ -13,6 +13,7 @@ namespace Gnoj_Ham
 
         private readonly List<TilePivot> _concealedTiles;
         private readonly List<TileComboPivot> _declaredCombinations;
+        private bool _combinationsChanged;
 
         /// <summary>
         /// List of concealed tiles.
@@ -88,6 +89,7 @@ namespace Gnoj_Ham
             LatestPick = tiles.Last();
             _concealedTiles = tiles.OrderBy(t => t).ToList();
             _declaredCombinations = new List<TileComboPivot>(4);
+            _combinationsChanged = true;
         }
 
         #endregion Constructors
@@ -414,6 +416,20 @@ namespace Gnoj_Ham
         #region Internal methods
 
         /// <summary>
+        /// Does <see cref="DeclaredCombinations"/> have changed since last check of this property?
+        /// </summary>
+        /// <param name="resetIfTrue">If enabled and combinations have changed, resets the marker to <c>False</c>.</param>
+        internal bool CombinationsHaveChanged(bool resetIfTrue)
+        {
+            var combinationsChanged = _combinationsChanged;
+            if (resetIfTrue && _combinationsChanged)
+            {
+                _combinationsChanged = false;
+            }
+            return combinationsChanged;
+        }
+
+        /// <summary>
         /// Checks if <see cref="Yakus"/> and <see cref="YakusCombinations"/> have to be cancelled because of the furiten rule.
         /// </summary>
         /// <param name="discard">The discard of the current player.</param>
@@ -641,6 +657,7 @@ namespace Gnoj_Ham
                 concealedTiles.AddRange(fromOpenPon.Tiles.Where(t => !ReferenceEquals(t, fromOpenPon.OpenTile)));
 
                 _declaredCombinations[indexOfPon] = new TileComboPivot(concealedTiles, fromOpenPon.OpenTile, fromOpenPon.StolenFrom);
+                _combinationsChanged = true;
                 _concealedTiles.Remove(tile);
             }
         }
@@ -796,6 +813,7 @@ namespace Gnoj_Ham
 
             _declaredCombinations.Add(new TileComboPivot(tilesPick, tile, stolenFrom));
             tilesPick.ForEach(t => _concealedTiles.Remove(t));
+            _combinationsChanged = true;
         }
 
         #endregion
