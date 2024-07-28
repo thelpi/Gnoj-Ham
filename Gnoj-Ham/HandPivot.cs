@@ -21,7 +21,7 @@ namespace Gnoj_Ham
         /// <summary>
         /// List of declared <see cref="TileComboPivot"/>.
         /// </summary>
-        public IReadOnlyCollection<TileComboPivot> DeclaredCombinations => _declaredCombinations;
+        public IReadOnlyList<TileComboPivot> DeclaredCombinations => _declaredCombinations;
 
         /// <summary>
         /// The latest pick (from wall or steal); can't be known by <see cref="_concealedTiles"/> (sorted list).
@@ -100,7 +100,7 @@ namespace Gnoj_Ham
         /// <param name="tiles">List of tiles (other than <paramref name="declaredCombinations"/>).</param>
         /// <param name="declaredCombinations">List of declared combinations.</param>
         /// <returns><c>True</c> if complete; <c>False</c> otherwise.</returns>
-        public static bool IsCompleteFull(List<TilePivot> tiles, List<TileComboPivot> declaredCombinations)
+        public static bool IsCompleteFull(IReadOnlyList<TilePivot> tiles, IReadOnlyList<TileComboPivot> declaredCombinations)
         {
             return IsCompleteBasic(tiles, declaredCombinations).Count > 0
                 || IsSevenPairs(tiles)
@@ -112,7 +112,7 @@ namespace Gnoj_Ham
         /// </summary>
         /// <param name="tiles">List of tiles.</param>
         /// <returns><c>True</c> if "Kokushi musou"; <c>False</c> otherwise.</returns>
-        public static bool IsThirteenOrphans(List<TilePivot> tiles)
+        public static bool IsThirteenOrphans(IReadOnlyList<TilePivot> tiles)
         {
             return tiles != null && tiles.Count == 14 && tiles.Distinct().Count() == 13 && tiles.All(t => t.IsHonorOrTerminal);
         }
@@ -122,7 +122,7 @@ namespace Gnoj_Ham
         /// </summary>
         /// <param name="tiles">List of tiles.</param>
         /// <returns><c>True</c> if "Chiitoitsu"; <c>False</c> otherwise.</returns>
-        public static bool IsSevenPairs(List<TilePivot> tiles)
+        public static bool IsSevenPairs(IReadOnlyList<TilePivot> tiles)
         {
             return tiles != null && tiles.Count == 14 && tiles.Distinct().Count() == 7 && tiles.GroupBy(t => t).All(t => t.Count() == 2);
         }
@@ -140,7 +140,7 @@ namespace Gnoj_Ham
         /// <exception cref="ArgumentNullException"><paramref name="concealedTiles"/> is <c>Null</c>.</exception>
         /// <exception cref="ArgumentNullException"><paramref name="declaredCombinations"/> is <c>Null</c>.</exception>
         /// <exception cref="ArgumentException"><see cref="Messages.InvalidHandTilesCount"/></exception>
-        public static List<List<TileComboPivot>> IsCompleteBasic(List<TilePivot> concealedTiles, List<TileComboPivot> declaredCombinations)
+        public static List<List<TileComboPivot>> IsCompleteBasic(IReadOnlyList<TilePivot> concealedTiles, IReadOnlyList<TileComboPivot> declaredCombinations)
         {
             if (declaredCombinations == null)
             {
@@ -364,13 +364,13 @@ namespace Gnoj_Ham
         /// <exception cref="ArgumentNullException"><paramref name="concealedTiles"/> is <c>Null</c>.</exception>
         /// <exception cref="ArgumentNullException"><paramref name="combinations"/> is <c>Null</c>.</exception>
         /// <exception cref="ArgumentNullException"><paramref name="notInHandTiles"/> is <c>Null</c>.</exception>
-        public static bool IsTenpai(IEnumerable<TilePivot> concealedTiles, IEnumerable<TileComboPivot> combinations, List<TilePivot> notInHandTiles)
+        public static bool IsTenpai(IEnumerable<TilePivot> concealedTiles, IReadOnlyList<TileComboPivot> combinations, IReadOnlyList<TilePivot> notInHandTiles)
         {
             _ = concealedTiles ?? throw new ArgumentNullException(nameof(concealedTiles));
             _ = combinations ?? throw new ArgumentNullException(nameof(combinations));
             _ = notInHandTiles ?? throw new ArgumentNullException(nameof(notInHandTiles));
 
-            return notInHandTiles.Any(sub => IsCompleteFull(new List<TilePivot>(concealedTiles) { sub }, combinations.ToList()));
+            return notInHandTiles.Any(sub => IsCompleteFull(new List<TilePivot>(concealedTiles) { sub }, combinations));
         }
 
         /// <summary>
