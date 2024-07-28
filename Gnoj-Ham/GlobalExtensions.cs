@@ -57,7 +57,7 @@ namespace Gnoj_Ham
         /// <param name="list1">The first list.</param>
         /// <param name="list2">The second list.</param>
         /// <returns><c>True</c> if <paramref name="list1"/> is a bijection of <paramref name="list2"/>; <c>False</c> otherwise.</returns>
-        public static bool IsBijection<T>(this IEnumerable<T> list1, IEnumerable<T> list2) where T : IEquatable<T>
+        public static bool IsBijection<T>(this IReadOnlyList<T> list1, IReadOnlyList<T> list2) where T : IEquatable<T>
         {
             return list1 != null && list2 != null
                 && list1.All(e1 => list2.Contains(e1))

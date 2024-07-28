@@ -60,7 +60,7 @@ namespace Gnoj_Ham
                 return discardableTiles.First();
             }
 
-            var deadTiles = _round.DeadTilesFromIndexPointOfView(_round.CurrentPlayerIndex).ToList();
+            var deadTiles = _round.DeadTilesFromIndexPointOfView(_round.CurrentPlayerIndex);
 
             var (tilesSafety, stopCurrentHand) = ComputeTilesSafety(discardableTiles, deadTiles);
 
@@ -418,7 +418,7 @@ namespace Gnoj_Ham
                 || (tile.Family == FamilyPivot.Wind && winds.Contains(tile.Wind.Value));
         }
 
-        private (IReadOnlyList<(TilePivot tile, int unsafePoints)> bestToWorstChoices, bool shouldGiveUp) ComputeTilesSafety(IEnumerable<TilePivot> discardableTiles, IReadOnlyList<TilePivot> deadTiles)
+        private (IReadOnlyList<(TilePivot tile, int unsafePoints)> bestToWorstChoices, bool shouldGiveUp) ComputeTilesSafety(IReadOnlyList<TilePivot> discardableTiles, IReadOnlyList<TilePivot> deadTiles)
         {
             var tilesSafety = new Dictionary<TilePivot, List<TileSafety>>();
 

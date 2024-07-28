@@ -933,7 +933,7 @@ namespace Gnoj_Ham
         }
 
         // Gets the count of dora for specified tile
-        private int GetDoraCountInternal(TilePivot t, IEnumerable<TilePivot> doraIndicators)
+        private int GetDoraCountInternal(TilePivot t, IReadOnlyList<TilePivot> doraIndicators)
         {
             return doraIndicators.Take(VisibleDorasCount).Count(d => t.IsDoraNext(d));
         }
@@ -1197,9 +1197,9 @@ namespace Gnoj_Ham
         /// </summary>
         /// <param name="playerIndex">The player index.</param>
         /// <returns>Tiles enumeration.</returns>
-        internal IEnumerable<TilePivot> DeadTilesFromIndexPointOfView(int playerIndex)
+        internal IReadOnlyList<TilePivot> DeadTilesFromIndexPointOfView(int playerIndex)
         {
-            return _fullTilesList.Except(GetConcealedTilesFromPlayerPointOfView(playerIndex));
+            return _fullTilesList.Except(GetConcealedTilesFromPlayerPointOfView(playerIndex)).ToList();
         }
 
         // Gets dora count if the specvified tile is a dora

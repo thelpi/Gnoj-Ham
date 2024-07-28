@@ -81,7 +81,7 @@ namespace Gnoj_HamView
         /// <param name="panel">The panel.</param>
         /// <param name="tiles">List of dora tiles.</param>
         /// <param name="visibleCount">Number of tiles not concealed.</param>
-        internal static void SetDorasPanel(this StackPanel panel, IEnumerable<TilePivot> tiles, int visibleCount)
+        internal static void SetDorasPanel(this StackPanel panel, IReadOnlyList<TilePivot> tiles, int visibleCount)
         {
             panel.Children.Clear();
 
