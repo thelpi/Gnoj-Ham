@@ -545,7 +545,7 @@ namespace Gnoj_HamView
                 buttons.Add(StpPickP0.Children[0] as Button);
             }
 
-            var clickableButtons = new List<Button>();
+            var clickableButtons = new List<Button>(tileChoices.Keys.Count);
             foreach (var tileKey in tileChoices.Keys)
             {
                 // Changes the event of every buttons concerned by the call...

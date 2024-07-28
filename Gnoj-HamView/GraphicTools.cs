@@ -296,7 +296,7 @@ namespace Gnoj_HamView
         /// Transforms the enumeration <see cref="CpuSpeedPivot"/> into a list of <see cref="string"/> (with matching index).
         /// </summary>
         /// <returns>List of strings ready for display.</returns>
-        internal static List<string> GetCpuSpeedDisplayValues()
+        internal static IReadOnlyList<string> GetCpuSpeedDisplayValues()
         {
             return Enum.GetValues(typeof(CpuSpeedPivot)).OfType<CpuSpeedPivot>().Select(v =>
             {
@@ -310,7 +310,7 @@ namespace Gnoj_HamView
         /// Transforms the enumeration <see cref="ChronoPivot"/> into a list of <see cref="string"/> (with matching index).
         /// </summary>
         /// <returns>List of strings ready for display.</returns>
-        internal static List<string> GetChronoDisplayValues()
+        internal static IReadOnlyList<string> GetChronoDisplayValues()
         {
             var results = new List<string>();
 
@@ -335,7 +335,7 @@ namespace Gnoj_HamView
         /// Transforms the enumeration <see cref="EndOfGameRulePivot"/> into a list of <see cref="string"/> (with matching index).
         /// </summary>
         /// <returns>List of strings ready for display.</returns>
-        internal static List<string> GetEndOfGameRuleDisplayValue()
+        internal static IReadOnlyList<string> GetEndOfGameRuleDisplayValue()
         {
             var results = new List<string>();
 
@@ -365,7 +365,7 @@ namespace Gnoj_HamView
         /// Transforms the enumeration <see cref="InitialPointsRulePivot"/> into a list of <see cref="string"/> (with matching index).
         /// </summary>
         /// <returns>List of strings ready for display.</returns>
-        internal static List<string> GetInitialPointsRuleDisplayValue()
+        internal static IReadOnlyList<string> GetInitialPointsRuleDisplayValue()
         {
             return Enum.GetValues(typeof(InitialPointsRulePivot))
                     .OfType<InitialPointsRulePivot>()

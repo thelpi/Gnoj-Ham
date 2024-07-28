@@ -16,7 +16,7 @@ namespace Gnoj_HamView
         /// </summary>
         /// <param name="players">Lsit of players.</param>
         /// <param name="endOfRoundInformations">Informations about end of round.</param>
-        public ScoreWindow(List<PlayerPivot> players, EndOfRoundInformationsPivot endOfRoundInformations)
+        public ScoreWindow(IReadOnlyList<PlayerPivot> players, EndOfRoundInformationsPivot endOfRoundInformations)
         {
             InitializeComponent();
 
@@ -42,11 +42,11 @@ namespace Gnoj_HamView
             }
 
             var x = 0;
-            foreach (var p in players.OrderByDescending(p => p.Points))
+            foreach (var (p, i) in players.Select((p, i) => (p, i)).OrderByDescending(ip => ip.p.Points))
             {
                 this.FindControl("LblPlayer", x).Content = p.Name;
                 this.FindControl("LblScore", x).Content = p.Points;
-                this.FindControl("LblGain", x).ApplyGainAndLostStyle(endOfRoundInformations.GetPlayerPointsGain(players.IndexOf(p)));
+                this.FindControl("LblGain", x).ApplyGainAndLostStyle(endOfRoundInformations.GetPlayerPointsGain(i));
                 x++;
             }
         }
