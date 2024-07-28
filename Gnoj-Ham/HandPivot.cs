@@ -181,8 +181,25 @@ namespace Gnoj_Ham
 
             // The first case is not possible because its implies a single tile or several pairs.
             // The second case is not possible more than once because its implies a pair.
-            if (familyGroups.Any(fg => ImpliesSingles.Contains(fg.Count()))
-                || familyGroups.Count(fg => ImpliesPairs.Contains(fg.Count())) > 1)
+            var isSingle = false;
+            var pairCount = 0;
+            foreach (var fg in familyGroups)
+            {
+                var count = fg.Count();
+                if (ImpliesSingles.Contains(count))
+                {
+                    isSingle = true;
+                    break;
+                }
+                if (ImpliesPairs.Contains(count))
+                {
+                    pairCount++;
+                    if (pairCount > 1)
+                        break;
+                }
+            }
+
+            if (isSingle || pairCount > 1)
             {
                 // Empty list.
                 return combinationsSequences;
@@ -217,7 +234,7 @@ namespace Gnoj_Ham
             // - Doesn't contain exactly 5 combinations.
             // - Doesn't contain a pair.
             // - Contains more than one pair.
-            combinationsSequences.RemoveAll(cs => cs.Count() != 5 || cs.Count(c => c.IsPair) != 1);
+            combinationsSequences.RemoveAll(cs => cs.Count != 5 || cs.Count(c => c.IsPair) != 1);
 
             // Filters duplicates sequences
             combinationsSequences.RemoveAll(cs1 =>
@@ -228,6 +245,8 @@ namespace Gnoj_Ham
             return combinationsSequences;
         }
 
+        private static readonly int[] TwoOrThreeTiles = new[] { 2, 3 };
+
         // Builds combinations (pairs and brelans) from dragon family or wind family.
         private static void CheckHonorsForCombinations<T>(IEnumerable<TilePivot> familyGroup,
             Func<TilePivot, T> groupKeyFunc, List<List<TileComboPivot>> combinationsSequences)
@@ -235,7 +254,7 @@ namespace Gnoj_Ham
             var combinations =
                 familyGroup
                     .GroupBy(groupKeyFunc)
-                    .Where(sg => sg.Count() == 2 || sg.Count() == 3)
+                    .Where(sg => TwoOrThreeTiles.Contains(sg.Count()))
                     .Select(sg => new TileComboPivot(sg))
                     .ToList();
 

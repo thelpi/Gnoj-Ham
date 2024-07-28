@@ -116,7 +116,7 @@ namespace Gnoj_Ham
                 tiles.Add(openTile);
             }
 
-            if (tiles.Count() < 2 || tiles.Count() > 4)
+            if (tiles.Count < 2 || tiles.Count > 4)
             {
                 throw new ArgumentException(Messages.InvalidTilesCount, nameof(concealedTiles));
             }
@@ -225,7 +225,7 @@ namespace Gnoj_Ham
                 return _tiles.Select(t => t.Wind).Distinct().Count() == 1;
             }
 
-            if (_tiles.Count() == 3)
+            if (_tiles.Count == 3)
             {
                 if (_tiles.Select(t => t.Number).Distinct().Count() == 1)
                 {
