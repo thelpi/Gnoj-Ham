@@ -17,7 +17,7 @@ namespace Gnoj_Ham
         /// <summary>
         /// List of concealed tiles.
         /// </summary>
-        public IReadOnlyCollection<TilePivot> ConcealedTiles => _concealedTiles;
+        public IReadOnlyList<TilePivot> ConcealedTiles => _concealedTiles;
         /// <summary>
         /// List of declared <see cref="TileComboPivot"/>.
         /// </summary>
@@ -31,7 +31,7 @@ namespace Gnoj_Ham
         /// <summary>
         /// Yakus, if the hand is complete; otherwise <c>Null</c>.
         /// </summary>
-        public IReadOnlyCollection<YakuPivot> Yakus { get; private set; }
+        public IReadOnlyList<YakuPivot> Yakus { get; private set; }
 
         /// <summary>
         /// Combinations computed in the hand to produce <see cref="Yakus"/>;
@@ -56,7 +56,7 @@ namespace Gnoj_Ham
         /// <summary>
         /// Inferred; every tiles of the hand; concealed or not; into combination or not.
         /// </summary>
-        public IReadOnlyCollection<TilePivot> AllTiles
+        public IReadOnlyList<TilePivot> AllTiles
         {
             get
             {

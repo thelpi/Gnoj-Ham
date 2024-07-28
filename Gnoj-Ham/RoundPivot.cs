@@ -33,38 +33,38 @@ namespace Gnoj_Ham
         /// First on the list is the latest to play.
         /// The list is cleared when a jump (ie a call) is made.
         /// </summary>
-        public IReadOnlyCollection<int> PlayerIndexHistory => _playerIndexHistory;
+        public IReadOnlyList<int> PlayerIndexHistory => _playerIndexHistory;
 
         /// <summary>
         /// Wall tiles.
         /// </summary>
-        public IReadOnlyCollection<TilePivot> WallTiles => _wallTiles;
+        public IReadOnlyList<TilePivot> WallTiles => _wallTiles;
 
         /// <summary>
         /// List of compensation tiles. 4 at the beginning, between 0 and 4 at the end.
         /// </summary>
-        public IReadOnlyCollection<TilePivot> CompensationTiles => _compensationTiles;
+        public IReadOnlyList<TilePivot> CompensationTiles => _compensationTiles;
 
         /// <summary>
         /// List of dora indicator tiles. Always 5 (doesn't mean they're all visible).
         /// </summary>
-        public IReadOnlyCollection<TilePivot> DoraIndicatorTiles => _doraIndicatorTiles;
+        public IReadOnlyList<TilePivot> DoraIndicatorTiles => _doraIndicatorTiles;
 
         /// <summary>
         /// List of ura-dora indicator tiles. Always 5 (doesn't mean they're all visible).
         /// </summary>
-        public IReadOnlyCollection<TilePivot> UraDoraIndicatorTiles => _uraDoraIndicatorTiles;
+        public IReadOnlyList<TilePivot> UraDoraIndicatorTiles => _uraDoraIndicatorTiles;
 
         /// <summary>
         /// Other tiles of the treasure Always 4 minus the number of tiles of <see cref="_compensationTiles"/>.
         /// </summary>
-        public IReadOnlyCollection<TilePivot> DeadTreasureTiles => _deadTreasureTiles;
+        public IReadOnlyList<TilePivot> DeadTreasureTiles => _deadTreasureTiles;
 
         /// <summary>
         /// Riichi informations of four players.
         /// </summary>
         /// <remarks>The list if filled by default with <c>Null</c> for every players.</remarks>
-        public IReadOnlyCollection<RiichiPivot> Riichis => _riichis;
+        public IReadOnlyList<RiichiPivot> Riichis => _riichis;
 
         /// <summary>
         /// The current player index, between 0 and 3.
@@ -118,7 +118,7 @@ namespace Gnoj_Ham
         /// <summary>
         /// All tiles from the treasure (concealed or not).
         /// </summary>
-        public IReadOnlyCollection<TilePivot> AllTreasureTiles => DoraIndicatorTiles.Concat(UraDoraIndicatorTiles).Concat(CompensationTiles).Concat(DeadTreasureTiles).ToList();
+        public IReadOnlyList<TilePivot> AllTreasureTiles => DoraIndicatorTiles.Concat(UraDoraIndicatorTiles).Concat(CompensationTiles).Concat(DeadTreasureTiles).ToList();
 
         #endregion Inferred properties
 
@@ -760,7 +760,7 @@ namespace Gnoj_Ham
         /// <param name="playerIndex">Player index.</param>
         /// <returns>Collection of discarded <see cref="TilePivot"/> instances.</returns>
         /// <exception cref="ArgumentOutOfRangeException"><paramref name="playerIndex"/> should be between 0 and 3.</exception>
-        public IReadOnlyCollection<TilePivot> GetDiscard(int playerIndex)
+        public IReadOnlyList<TilePivot> GetDiscard(int playerIndex)
         {
             CheckPlayerIndex(playerIndex);
 
@@ -873,7 +873,7 @@ namespace Gnoj_Ham
         }
 
         // Gets the concealed tile of the round from the point of view of a specified player.
-        private IReadOnlyCollection<TilePivot> GetConcealedTilesFromPlayerPointOfView(int playerIndex)
+        private IReadOnlyList<TilePivot> GetConcealedTilesFromPlayerPointOfView(int playerIndex)
         {
             // Wall tiles.
             var tiles = new List<TilePivot>(_wallTiles);

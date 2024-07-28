@@ -31,7 +31,7 @@ namespace Gnoj_Ham
         /// <summary>
         /// List of players.
         /// </summary>
-        public IReadOnlyCollection<PlayerPivot> Players => _players;
+        public IReadOnlyList<PlayerPivot> Players => _players;
         /// <summary>
         /// Current dominant wind.
         /// </summary>
@@ -81,7 +81,7 @@ namespace Gnoj_Ham
         /// <summary>
         /// Inferred; get players sorted by their ranking.
         /// </summary>
-        public IReadOnlyCollection<PlayerPivot> PlayersRanked => _players.OrderByDescending(p => p.Points).ThenBy(p => (int)p.InitialWind).ToList();
+        public IReadOnlyList<PlayerPivot> PlayersRanked => _players.OrderByDescending(p => p.Points).ThenBy(p => (int)p.InitialWind).ToList();
 
         /// <summary>
         /// Inferred; gets the player index which was the first <see cref="WindPivot.East"/>.

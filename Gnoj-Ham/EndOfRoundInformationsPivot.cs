@@ -48,17 +48,17 @@ namespace Gnoj_Ham
         /// <summary>
         /// Informations relative to each player.
         /// </summary>
-        public IReadOnlyCollection<PlayerInformationsPivot> PlayersInfo => _playersInfo;
+        public IReadOnlyList<PlayerInformationsPivot> PlayersInfo => _playersInfo;
 
         /// <summary>
         /// List of dora indicators for this round.
         /// </summary>
-        public IReadOnlyCollection<TilePivot> DoraTiles => _doraTiles;
+        public IReadOnlyList<TilePivot> DoraTiles => _doraTiles;
 
         /// <summary>
         /// List of uradora indicators for this round.
         /// </summary>
-        public IReadOnlyCollection<TilePivot> UraDoraTiles => _uraDoraTiles;
+        public IReadOnlyList<TilePivot> UraDoraTiles => _uraDoraTiles;
 
         #endregion Embedded properties
 
@@ -179,7 +179,7 @@ namespace Gnoj_Ham
             /// <summary>
             /// Inferred; list of yakus in the hand.
             /// </summary>
-            public IReadOnlyCollection<YakuPivot> Yakus => _hand?.Yakus;
+            public IReadOnlyList<YakuPivot> Yakus => _hand?.Yakus;
 
             /// <summary>
             /// Inferred; <c>True</c> if concealed hand; <c>False</c> otherwise.

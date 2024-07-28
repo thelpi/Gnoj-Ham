@@ -40,11 +40,11 @@ namespace Gnoj_Ham
         /// Yakumans are not in this list as they make every other yakus obsolete.
         /// </summary>
         /// <remarks>Empty for yakumans.</remarks>
-        public IReadOnlyCollection<YakuPivot> Upgrades => _upgrades;
+        public IReadOnlyList<YakuPivot> Upgrades => _upgrades;
         /// <summary>
         /// An example of valid hand; <c>null</c> if none.
         /// </summary>
-        public IReadOnlyCollection<TilePivot> Example { get; private set; }
+        public IReadOnlyList<TilePivot> Example { get; private set; }
 
         #endregion Embedded properties
 
@@ -67,7 +67,7 @@ namespace Gnoj_Ham
 
         #region Constructors
 
-        private YakuPivot(string name, string nameEn, int fanCount, string description = null, int concealedBonusFanCount = 0, IReadOnlyCollection<TilePivot> example = null, params YakuPivot[] upgrades)
+        private YakuPivot(string name, string nameEn, int fanCount, string description = null, int concealedBonusFanCount = 0, IReadOnlyList<TilePivot> example = null, params YakuPivot[] upgrades)
         {
             Name = name;
             NameEn = nameEn;
@@ -91,7 +91,7 @@ namespace Gnoj_Ham
         /// <summary>
         /// List of every instances of <see cref="YakuPivot"/>.
         /// </summary>
-        public static IReadOnlyCollection<YakuPivot> Yakus
+        public static IReadOnlyList<YakuPivot> Yakus
         {
             get
             {

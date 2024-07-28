@@ -18,7 +18,7 @@ namespace Gnoj_Ham
         /// Inferred; list of tiles; includes <see cref="OpenTile"/>.
         /// </summary>
         /// <remarks>Sorted by <see cref="IComparable{TilePivot}"/>.</remarks>
-        public IReadOnlyCollection<TilePivot> Tiles => _tiles;
+        public IReadOnlyList<TilePivot> Tiles => _tiles;
         /// <summary>
         /// Optionnal tile not concealed (from a call "pon", "chi" or "kan").
         /// The tile from a call "ron" is not considered as an open tile.
