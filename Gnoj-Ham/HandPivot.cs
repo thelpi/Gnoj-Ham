@@ -37,7 +37,7 @@ namespace Gnoj_Ham
         /// Combinations computed in the hand to produce <see cref="Yakus"/>;
         /// <c>Null</c> if <see cref="Yakus"/> is <c>Null</c> or contains <see cref="YakuPivot.KokushiMusou"/> or <see cref="YakuPivot.NagashiMangan"/>.
         /// </summary>
-        public List<TileComboPivot> YakusCombinations { get; private set; }
+        public IReadOnlyList<TileComboPivot> YakusCombinations { get; private set; }
 
         #endregion Embedded properties
 
@@ -87,7 +87,7 @@ namespace Gnoj_Ham
         {
             LatestPick = tiles.Last();
             _concealedTiles = tiles.OrderBy(t => t).ToList();
-            _declaredCombinations = new List<TileComboPivot>();
+            _declaredCombinations = new List<TileComboPivot>(4);
         }
 
         #endregion Constructors
@@ -380,7 +380,7 @@ namespace Gnoj_Ham
         /// <param name="dominantWind">The dominant wind.</param>
         /// <param name="playerWind">The player wind.</param>
         /// <returns><c>True</c> if vluable pair in the hand; <c>False</c> otherwise.</returns>
-        public static bool HandWithValuablePair(List<TileComboPivot> combinations, WindPivot dominantWind, WindPivot playerWind)
+        public static bool HandWithValuablePair(IReadOnlyList<TileComboPivot> combinations, WindPivot dominantWind, WindPivot playerWind)
         {
             return combinations != null && combinations.Any(c => c.IsPair && (
                 c.Family == FamilyPivot.Dragon
