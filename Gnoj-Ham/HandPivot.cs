@@ -738,7 +738,7 @@ namespace Gnoj_Ham
         /// <param name="subTiles">List of substitution tiles.</param>
         /// <param name="tileToRemoveFromConcealed">A tile to remove from the hand first.</param>
         /// <returns><c>True</c> if tenpai; <c>False</c> otherwise.</returns>
-        internal bool IsTenpai(List<TilePivot> subTiles, TilePivot tileToRemoveFromConcealed)
+        internal bool IsTenpai(IReadOnlyList<TilePivot> subTiles, TilePivot tileToRemoveFromConcealed)
         {
             var concealedTilesCopy = ConcealedTiles;
             if (tileToRemoveFromConcealed != null)
