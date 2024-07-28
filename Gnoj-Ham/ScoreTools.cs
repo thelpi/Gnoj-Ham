@@ -43,7 +43,7 @@ namespace Gnoj_Ham
         };
 
         // Minimal fan count / Minimal fu count / points lost by the ron opponent / points lost by east if tsumo / points lost by others if tsumo
-        private static readonly List<Tuple<int, int, int, int, int>> CHART_OTHER = new List<Tuple<int, int, int, int, int>>
+        private static readonly IReadOnlyList<Tuple<int, int, int, int, int>> CHART_OTHER = new List<Tuple<int, int, int, int, int>>
         {
             // 1-20 and 1-25 are impossible
             new Tuple<int, int, int, int, int>(1, 030, 1000, 0500, 0300),
@@ -79,7 +79,7 @@ namespace Gnoj_Ham
         };
 
         // Minimal fan count / Minimal fu count / points lost by the ron opponent / points lost by east if tsumo / points lost by others if tsumo
-        private static readonly List<Tuple<int, int, int, int>> CHART_EAST = new List<Tuple<int, int, int, int>>
+        private static readonly IReadOnlyList<Tuple<int, int, int, int>> CHART_EAST = new List<Tuple<int, int, int, int>>
         {
             // 1-20 and 1-25 are impossible
             new Tuple<int, int, int, int>(1, 030, 1500, 0500),
@@ -304,14 +304,14 @@ namespace Gnoj_Ham
         /// </summary>
         /// <param name="game">The current game.</param>
         /// <returns>A list of player with score, order by ascending rank.</returns>
-        public static List<PlayerScorePivot> ComputeCurrentRanking(GamePivot game)
+        public static IReadOnlyList<PlayerScorePivot> ComputeCurrentRanking(GamePivot game)
         {
             if (game == null)
             {
                 throw new ArgumentNullException(nameof(game));
             }
 
-            var playersOrdered = new List<PlayerScorePivot>();
+            var playersOrdered = new List<PlayerScorePivot>(4);
 
             var i = 1;
             foreach (var player in game.Players.OrderByDescending(p => p.Points))

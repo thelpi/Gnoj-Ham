@@ -203,9 +203,9 @@ namespace Gnoj_Ham
         /// Selected tiles are <c>5</c> of non-honor families (one of each).
         /// </param>
         /// <returns>A list of <see cref="TilePivot"/>.</returns>
-        public static List<TilePivot> GetCompleteSet(bool withRedDoras = false)
+        public static IReadOnlyList<TilePivot> GetCompleteSet(bool withRedDoras = false)
         {
-            var tiles = new List<TilePivot>();
+            var tiles = new List<TilePivot>(136);
 
             foreach (var family in Enum.GetValues(typeof(FamilyPivot)).Cast<FamilyPivot>())
             {

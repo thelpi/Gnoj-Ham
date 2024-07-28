@@ -247,7 +247,7 @@ namespace Gnoj_Ham
         }
 
         // Gets the tile corresponding to the specified wind in the purpose to create a sorted list for display.
-        private Tuple<TilePivot, bool> GetTileForSortedListAtSpecifiedWind(WindPivot wind, List<TilePivot> concealedOnly, ref int i)
+        private Tuple<TilePivot, bool> GetTileForSortedListAtSpecifiedWind(WindPivot wind, IReadOnlyList<TilePivot> concealedOnly, ref int i)
         {
             if (wind == StolenFrom.Value)
             {
@@ -319,7 +319,7 @@ namespace Gnoj_Ham
         /// </summary>
         /// <param name="ownerWind">The current wind of the owner.</param>
         /// <returns>List of tiles tuple; the second item is <c>True</c> when the tile is the opened one.</returns>
-        public List<Tuple<TilePivot, bool>> GetSortedTilesForDisplay(WindPivot ownerWind)
+        public IReadOnlyList<Tuple<TilePivot, bool>> GetSortedTilesForDisplay(WindPivot ownerWind)
         {
             if (!StolenFrom.HasValue)
             {
