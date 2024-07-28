@@ -45,7 +45,7 @@ namespace Gnoj_Ham
         /// </summary>
         /// <param name="tenpaiPotentialDiscards">Results of the call to <see cref="RoundPivot.CanCallRiichi"/> that has been made before; set <c>null</c> to force a recompute.</param>
         /// <returns>The tile to discard.</returns>
-        public TilePivot DiscardDecision(List<TilePivot> tenpaiPotentialDiscards)
+        public TilePivot DiscardDecision(IReadOnlyList<TilePivot> tenpaiPotentialDiscards)
         {
             var concealedTiles = _round.GetHand(_round.CurrentPlayerIndex).ConcealedTiles.ToList();
 
@@ -123,7 +123,7 @@ namespace Gnoj_Ham
         /// Checks if the current CPU player can make a riichi call, and computes the decision to do so.
         /// </summary>
         /// <returns>A tuple with the tile to discard (<c>Null</c> if no decision made) and all the tiles 'discardable'.</returns>
-        public (TilePivot choice, List<TilePivot> potentials) RiichiDecision()
+        public (TilePivot choice, IReadOnlyList<TilePivot> potentials) RiichiDecision()
         {
             var riichiTiles = _round.CanCallRiichi();
             return (riichiTiles.Count > 0 ? riichiTiles.First() : null, riichiTiles);
@@ -181,9 +181,9 @@ namespace Gnoj_Ham
         /// <remarks>If any player, including human, calls ron, every players who can call ron will do.</remarks>
         /// <param name="ronCalled">Indicates if the human player has already made a ron call.</param>
         /// <returns>List of player index, other than human player, who decide to call ron.</returns>
-        public List<int> RonDecision(bool ronCalled)
+        public IReadOnlyList<int> RonDecision(bool ronCalled)
         {
-            var callers = new List<int>();
+            var callers = new List<int>(4);
 
             for (var i = 0; i < 4; i++)
             {
@@ -225,7 +225,7 @@ namespace Gnoj_Ham
         /// <param name="kanPossibilities">The first tile of every possible Kan at the moment.</param>
         /// <param name="concealedKan"><c>True</c> if the context is a concealed Kan.</param>
         /// <returns><c>True</c> if Kan is advised.</returns>
-        public bool KanDecisionAdvice(List<TilePivot> kanPossibilities, bool concealedKan)
+        public bool KanDecisionAdvice(IReadOnlyList<TilePivot> kanPossibilities, bool concealedKan)
             => KanDecisionInternal(GamePivot.HUMAN_INDEX, kanPossibilities, concealedKan) != null;
 
         /// <summary>
@@ -298,7 +298,7 @@ namespace Gnoj_Ham
                 : -1;
         }
 
-        private Tuple<int, TilePivot> KanDecisionInternal(int playerId, List<TilePivot> kanPossibilities, bool concealed)
+        private Tuple<int, TilePivot> KanDecisionInternal(int playerId, IReadOnlyList<TilePivot> kanPossibilities, bool concealed)
         {
             // Rinshan kaihou possibility: call
             var tileToRemove = _round.GetHand(playerId).IsFullHand
@@ -366,7 +366,7 @@ namespace Gnoj_Ham
             return tileChoice;
         }
 
-        private bool IsDiscardedOrUnusable(TilePivot tile, int opponentPlayerIndex, List<TilePivot> deadtiles)
+        private bool IsDiscardedOrUnusable(TilePivot tile, int opponentPlayerIndex, IReadOnlyList<TilePivot> deadtiles)
         {
             return _round.GetDiscard(opponentPlayerIndex).Contains(tile) || (
                 tile.IsHonor
@@ -418,7 +418,7 @@ namespace Gnoj_Ham
                 || (tile.Family == FamilyPivot.Wind && winds.Contains(tile.Wind.Value));
         }
 
-        private (List<(TilePivot tile, int unsafePoints)> bestToWorstChoices, bool shouldGiveUp) ComputeTilesSafety(IEnumerable<TilePivot> discardableTiles, List<TilePivot> deadTiles)
+        private (IReadOnlyList<(TilePivot tile, int unsafePoints)> bestToWorstChoices, bool shouldGiveUp) ComputeTilesSafety(IEnumerable<TilePivot> discardableTiles, IReadOnlyList<TilePivot> deadTiles)
         {
             var tilesSafety = new Dictionary<TilePivot, List<TileSafety>>();
 
@@ -428,7 +428,7 @@ namespace Gnoj_Ham
             var stopCurrentHand = false;
             foreach (var tile in discardableTiles)
             {
-                tilesSafety.Add(tile, new List<TileSafety>());
+                tilesSafety.Add(tile, new List<TileSafety>(3));
                 foreach (var i in Enumerable.Range(0, 4).Where(i => i != _round.CurrentPlayerIndex))
                 {
                     // stop the building of the hand is opponent is riichi or has 3 or more combinations visible
@@ -467,7 +467,7 @@ namespace Gnoj_Ham
             return (tilesSafety.OrderBy(t => t.Value.Sum(s => (int)s)).Select(t => (t.Key, t.Value.Sum(s => (int)s))).ToList(), stopCurrentHand);
         }
 
-        private List<int> GetTenpaiOpponentIndexes(int playerIndex) => Enumerable.Range(0, 4).Where(i => i != playerIndex && PlayerIsCloseToWin(i)).ToList();
+        private IReadOnlyList<int> GetTenpaiOpponentIndexes(int playerIndex) => Enumerable.Range(0, 4).Where(i => i != playerIndex && PlayerIsCloseToWin(i)).ToList();
 
         private bool PlayerIsCloseToWin(int i) => _round.IsRiichi(i) || _round.GetHand(i).DeclaredCombinations.Count > 2;
 

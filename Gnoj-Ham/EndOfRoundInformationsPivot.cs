@@ -89,7 +89,7 @@ namespace Gnoj_Ham
         /// <exception cref="ArgumentNullException"><paramref name="playersInfo"/> is <c>Null</c>.</exception>
         /// <exception cref="ArgumentOutOfRangeException"><paramref name="playersInfo"/> count is beyond <c>4</c>.</exception>
         internal EndOfRoundInformationsPivot(bool ryuukyoku, bool toNextEast, bool displayUraDora,
-            List<PlayerInformationsPivot> playersInfo, int honbaCount, int pendingRiichiCount,
+            IReadOnlyList<PlayerInformationsPivot> playersInfo, int honbaCount, int pendingRiichiCount,
             IEnumerable<TilePivot> doraTiles, IEnumerable<TilePivot> uraDoraTiles, int doraVisibleCount)
         {
             if (playersInfo == null)
@@ -105,7 +105,7 @@ namespace Gnoj_Ham
             Ryuukyoku = ryuukyoku;
             ToNextEast = toNextEast;
             DisplayUraDora = displayUraDora;
-            _playersInfo = playersInfo;
+            _playersInfo = playersInfo.ToList();
             HonbaCount = honbaCount;
             PendingRiichiCount = pendingRiichiCount;
             _doraTiles = new List<TilePivot>(doraTiles ?? new List<TilePivot>());
@@ -235,7 +235,7 @@ namespace Gnoj_Ham
             /// <c>isLeaned</c> indicates if the tile should be displayed leaned.
             /// <c>isWinPick</c> indicates if the tile should be displayed apart.
             /// </returns>
-            public List<(TilePivot tile, bool isLeaned, bool isWinPick)> GetFullHandForDisplay()
+            public IReadOnlyList<(TilePivot tile, bool isLeaned, bool isWinPick)> GetFullHandForDisplay()
             {
                 if (_hand == null)
                 {
