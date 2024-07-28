@@ -76,6 +76,7 @@ namespace Gnoj_Ham
         /// <param name="fourCpus">Indicates if four players are CPU.</param>
         /// <returns>List of four <see cref="PlayerPivot"/>, not sorted.</returns>
         /// <exception cref="ArgumentException"><see cref="Messages.InvalidPlayerName"/></exception>
+        /// <remarks>Keey the 'List' type in return.</remarks>
         public static List<PlayerPivot> GetFourPlayers(string humanPlayerName, InitialPointsRulePivot initialPointsRulePivot, bool fourCpus)
         {
             if (!fourCpus)
@@ -108,6 +109,7 @@ namespace Gnoj_Ham
         /// <returns>Four players generated.</returns>
         /// <exception cref="ArgumentNullException"><paramref name="permanentPlayers"/> is <c>Null</c>.</exception>
         /// <exception cref="ArgumentException">Four players are required.</exception>
+        /// <remarks>Keey the 'List' type in return.</remarks>
         public static List<PlayerPivot> GetFourPlayersFromPermanent(IReadOnlyList<PermanentPlayerPivot> permanentPlayers, InitialPointsRulePivot initialPointsRulePivot)
         {
             _ = permanentPlayers ?? throw new ArgumentNullException(nameof(permanentPlayers));
