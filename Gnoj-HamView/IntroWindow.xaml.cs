@@ -48,13 +48,12 @@ namespace Gnoj_HamView
                 (EndOfGameRulePivot)CbbEndOfGameRule.SelectedIndex,
                 ChkUseRedDoras.IsChecked == true,
                 ChkUseNagashiMangan.IsChecked == true,
-                ChkFourCpus.IsChecked == true,
                 ChkDebugMode.IsChecked == true,
                 ChkDiscardTip.IsChecked == true);
 
-            if (ruleset.FourCpus)
+            if (ChkFourCpus.IsChecked == true)
             {
-                new AutoPlayWindow(ruleset).ShowDialog();
+                new AutoPlayWindow(ruleset, ChkBenchmark.IsChecked == true).ShowDialog();
             }
             else
             {
@@ -93,6 +92,7 @@ namespace Gnoj_HamView
             // Dvelopment tools
             ChkDebugMode.IsChecked = false;
             ChkFourCpus.IsChecked = false;
+            ChkBenchmark.IsChecked = true;
         }
 
         private void SaveConfiguration()

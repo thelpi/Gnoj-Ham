@@ -118,7 +118,7 @@ namespace Gnoj_Ham
             _save = save;
 
             Ruleset = ruleset;
-            _players = PlayerPivot.GetFourPlayers(humanPlayerName, Ruleset.InitialPointsRule, Ruleset.FourCpus);
+            _players = PlayerPivot.GetFourPlayers(humanPlayerName, Ruleset.InitialPointsRule);
             DominantWind = WindPivot.East;
             EastIndexTurnCount = 1;
             EastIndex = FirstEastIndex;
@@ -260,14 +260,16 @@ namespace Gnoj_Ham
             string error = null;
             if (Ruleset.AreDefaultRules())
             {
-                var humanPlayer = Players.First(_ => !_.IsCpu);
-
-                error = _save.UpdateAndSave(endOfRoundInformations,
-                    ronPlayerIndex.HasValue,
-                    humanIsRiichi,
-                    humanIsConcealed,
-                    Players.OrderByDescending(_ => _.Points).ToList().IndexOf(humanPlayer),
-                    humanPlayer.Points);
+                var humanPlayer = Players.FirstOrDefault(_ => !_.IsCpu);
+                if (humanPlayer != null)
+                {
+                    error = _save.UpdateAndSave(endOfRoundInformations,
+                        ronPlayerIndex.HasValue,
+                        humanIsRiichi,
+                        humanIsConcealed,
+                        Players.OrderByDescending(_ => _.Points).ToList().IndexOf(humanPlayer),
+                        humanPlayer.Points);
+                }
             }
 
             return (endOfRoundInformations, error);

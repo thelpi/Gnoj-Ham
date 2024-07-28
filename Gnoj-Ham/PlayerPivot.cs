@@ -73,16 +73,12 @@ namespace Gnoj_Ham
         /// </summary>
         /// <param name="humanPlayerName">The name of the human player; other players will be <see cref="IsCpu"/>.</param>
         /// <param name="initialPointsRulePivot">Rule for initial points count.</param>
-        /// <param name="fourCpus">Indicates if four players are CPU.</param>
         /// <returns>List of four <see cref="PlayerPivot"/>, not sorted.</returns>
         /// <exception cref="ArgumentException"><see cref="Messages.InvalidPlayerName"/></exception>
         /// <remarks>Keey the 'List' type in return.</remarks>
-        public static List<PlayerPivot> GetFourPlayers(string humanPlayerName, InitialPointsRulePivot initialPointsRulePivot, bool fourCpus)
+        public static List<PlayerPivot> GetFourPlayers(string humanPlayerName, InitialPointsRulePivot initialPointsRulePivot)
         {
-            if (!fourCpus)
-            {
-                humanPlayerName = CheckName(humanPlayerName);
-            }
+            humanPlayerName = CheckName(humanPlayerName);
 
             var eastIndex = GlobalTools.Randomizer.Next(0, 4);
 
@@ -90,10 +86,10 @@ namespace Gnoj_Ham
             for (var i = 0; i < 4; i++)
             {
                 players.Add(new PlayerPivot(
-                    i == GamePivot.HUMAN_INDEX && !fourCpus ? humanPlayerName : $"{CPU_NAME_PREFIX}{i}",
+                    i == GamePivot.HUMAN_INDEX ? humanPlayerName : $"{CPU_NAME_PREFIX}{i}",
                     GetWindFromIndex(eastIndex, i),
                     initialPointsRulePivot,
-                    fourCpus || i != GamePivot.HUMAN_INDEX,
+                    i != GamePivot.HUMAN_INDEX,
                     null
                 ));
             }

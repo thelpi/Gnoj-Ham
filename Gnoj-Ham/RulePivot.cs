@@ -21,7 +21,7 @@ namespace Gnoj_Ham
             {
                 if (_default == null)
                 {
-                    _default = new RulePivot(InitialPointsRulePivot.K25, EndOfGameRulePivot.EnchousenAndTobi, true, true, false, false, false);
+                    _default = new RulePivot(InitialPointsRulePivot.K25, EndOfGameRulePivot.EnchousenAndTobi, true, true, false, false);
                 }
 
                 return _default;
@@ -53,11 +53,6 @@ namespace Gnoj_Ham
         public bool UseNagashiMangan { get; }
 
         /// <summary>
-        /// Game with four CPUs.
-        /// </summary>
-        public bool FourCpus { get; }
-
-        /// <summary>
         /// Use debug mode.
         /// </summary>
         public bool DebugMode { get; }
@@ -78,16 +73,14 @@ namespace Gnoj_Ham
         /// <param name="endOfGameRule"><see cref="EndOfGameRule"/>.</param>
         /// <param name="useRedDoras"><see cref="UseRedDoras"/>.</param>
         /// <param name="useNagashiMangan"><see cref="UseNagashiMangan"/>.</param>
-        /// <param name="fourCpus"><see cref="FourCpus"/>.</param>
         /// <param name="debugMode"><see cref="DebugMode"/>.</param>
         /// <param name="discardTip"><see cref="DiscardTip"/>.</param>
-        public RulePivot(InitialPointsRulePivot initialPointsRule, EndOfGameRulePivot endOfGameRule, bool useRedDoras, bool useNagashiMangan, bool fourCpus, bool debugMode, bool discardTip)
+        public RulePivot(InitialPointsRulePivot initialPointsRule, EndOfGameRulePivot endOfGameRule, bool useRedDoras, bool useNagashiMangan, bool debugMode, bool discardTip)
         {
             InitialPointsRule = initialPointsRule;
             EndOfGameRule = endOfGameRule;
             UseRedDoras = useRedDoras;
             UseNagashiMangan = useNagashiMangan;
-            FourCpus = fourCpus;
             DebugMode = debugMode;
             DiscardTip = discardTip;
         }
@@ -113,7 +106,6 @@ namespace Gnoj_Ham
                 && other.UseNagashiMangan == UseNagashiMangan
                 && other.InitialPointsRule == InitialPointsRule
                 && other.EndOfGameRule == EndOfGameRule
-                && other.FourCpus == FourCpus
                 && other.UseRedDoras == UseRedDoras
                 && other.DebugMode == DebugMode
                 && other.DiscardTip == DiscardTip;

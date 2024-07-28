@@ -18,6 +18,7 @@
             <Label Content="Games in progress..." HorizontalAlignment="Center" />
             <ProgressBar Height="25" Width="250" Name="PgbGames" Maximum="1" />
         </StackPanel>
+        <RichTextBox Visibility="Collapsed" Name="TxtResultsRaw" />
         <ListView Visibility="Collapsed" Name="ScoresList">
             <ListView.View>
                 <GridView>
@@ -73,6 +74,5 @@
                 </GridView>
             </ListView.View>
         </ListView>
-        <!--<RichTextBox Visibility="Collapsed" Name="TxtResultsRaw" />-->
     </StackPanel>
 </Window>

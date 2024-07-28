@@ -19,37 +19,37 @@ namespace Gnoj_HamView
         private DateTime _timestamp;
         private readonly Dictionary<string, (int count, double sum)> _times = new Dictionary<string, (int, double)>(50);
         private int _currentGameIndex;
-        private RulePivot _ruleset;
+        private readonly RulePivot _ruleset;
         private int _totalGamesCount;
         private List<PermanentPlayerPivot> _permanentPlayers;
+        private readonly bool _enableBenchmark;
 
         /// <summary>
         /// Constructor.
         /// </summary>
         /// <param name="ruleset">Instance of <see cref="RulePivot"/>.</param>
-        /// <exception cref="ArgumentException">Ruleset is not for four CPUs.</exception>
-        public AutoPlayWindow(RulePivot ruleset)
+        /// <param name="enableBenchmark">Enable benchmark.</param>
+        public AutoPlayWindow(RulePivot ruleset, bool enableBenchmark)
         {
             InitializeComponent();
-
-            if (!ruleset.FourCpus)
-            {
-                throw new ArgumentException($"{nameof(ruleset.FourCpus)} should be enabled.");
-            }
 
             InitializeAutoPlayWorker();
 
             _ruleset = ruleset;
+            _enableBenchmark = enableBenchmark;
         }
 
         private void AddTimeEntry(string name)
         {
-            /*var elapsed = (DateTime.Now - _timestamp).TotalMilliseconds;
-            var currentEntry = _times.ContainsKey(name)
-                ? _times[name]
-                : (0, 0);
-            _times[name] = (currentEntry.count + 1, currentEntry.sum + elapsed);
-            _timestamp = DateTime.Now;*/
+            if (_enableBenchmark)
+            {
+                var elapsed = (DateTime.Now - _timestamp).TotalMilliseconds;
+                var currentEntry = _times.ContainsKey(name)
+                    ? _times[name]
+                    : (0, 0);
+                _times[name] = (currentEntry.count + 1, currentEntry.sum + elapsed);
+                _timestamp = DateTime.Now;
+            }
         }
 
         private void Window_Closing(object sender, CancelEventArgs e)
@@ -230,6 +230,19 @@ namespace Gnoj_HamView
                             WaitingPanel.Visibility = Visibility.Collapsed;
                             ActionPanel.Visibility = Visibility.Visible;
                             ScoresList.Visibility = Visibility.Visible;
+                            if (_enableBenchmark)
+                            {
+                                TxtResultsRaw.Visibility = Visibility.Visible;
+
+                                var sb = new StringBuilder();
+                                sb.AppendLine("Action\tCount\tSum (s)\tAverage (ms)");
+                                foreach (var r in _times.OrderByDescending(t => t.Value.sum).Select(t => t.Key))
+                                {
+                                    sb.AppendLine($"{r}\t{_times[r].count}\t{Math.Floor(_times[r].sum / 1000)}\t{Math.Floor(_times[r].sum / _times[r].count)}");
+                                }
+                                TxtResultsRaw.AppendText(sb.ToString());
+                            }
+                            WindowState = WindowState.Maximized;
                         }
                     }
                     else
