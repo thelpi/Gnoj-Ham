@@ -90,7 +90,7 @@ namespace Gnoj_Ham
         /// <exception cref="ArgumentOutOfRangeException"><paramref name="playersInfo"/> count is beyond <c>4</c>.</exception>
         internal EndOfRoundInformationsPivot(bool ryuukyoku, bool toNextEast, bool displayUraDora,
             IReadOnlyList<PlayerInformationsPivot> playersInfo, int honbaCount, int pendingRiichiCount,
-            IEnumerable<TilePivot> doraTiles, IEnumerable<TilePivot> uraDoraTiles, int doraVisibleCount)
+            IReadOnlyList<TilePivot> doraTiles, IReadOnlyList<TilePivot> uraDoraTiles, int doraVisibleCount)
         {
             if (playersInfo == null)
             {
