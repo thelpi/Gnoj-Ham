@@ -67,7 +67,7 @@ namespace Gnoj_HamView
             _timestamp = DateTime.Now;
             if (newGame)
             {
-                _game = new GamePivot(_ruleset, _permanentPlayers);
+                _game = new GamePivot(_ruleset, _permanentPlayers, new Random());
             }
             _autoPlay.RunWorkerAsync();
         }

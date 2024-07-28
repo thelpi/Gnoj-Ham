@@ -125,6 +125,12 @@ namespace Gnoj_Ham
         #region Events
 
         /// <summary>
+        /// Delegate for the <see cref="TileEventArgs"/> event.
+        /// </summary>
+        /// <param name="evt">The event.</param>
+        public delegate void TileEventHandler(TileEventArgs evt);
+
+        /// <summary>
         /// Event triggered when the tiles count in the wall changes.
         /// </summary>
         public event EventHandler NotifyWallCount;
@@ -143,8 +149,9 @@ namespace Gnoj_Ham
         /// </summary>
         /// <param name="game">The <see cref="Game"/> value.</param>
         /// <param name="firstPlayerIndex">The initial <see cref="CurrentPlayerIndex"/> value.</param>
+        /// <param name="random">Randomizer instance.</param>
         /// <exception cref="ArgumentOutOfRangeException"><paramref name="firstPlayerIndex"/> value should be between <c>0</c> and <c>3</c>.</exception>
-        internal RoundPivot(GamePivot game, int firstPlayerIndex)
+        internal RoundPivot(GamePivot game, int firstPlayerIndex, Random random)
         {
             if (firstPlayerIndex < 0 || firstPlayerIndex > 3)
             {
@@ -153,12 +160,12 @@ namespace Gnoj_Ham
 
             Game = game;
 
-            WallOpeningIndex = GlobalTools.Randomizer.Next(0, 4);
+            WallOpeningIndex = random.Next(0, 4);
 
             _fullTilesList = TilePivot
-                                .GetCompleteSet(Game.Ruleset.UseRedDoras)
-                                .OrderBy(t => GlobalTools.Randomizer.NextDouble())
-                                .ToList();
+                .GetCompleteSet(Game.Ruleset.UseRedDoras)
+                .OrderBy(t => random.NextDouble())
+                .ToList();
 
             // Add below specific calls to sort the draw
             // DrivenDrawPivot.HumanTenpai(_fullTilesList);

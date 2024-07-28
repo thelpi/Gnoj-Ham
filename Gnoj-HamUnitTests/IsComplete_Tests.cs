@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Gnoj_Ham;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -37,7 +38,7 @@ namespace Gnoj_HamUnitTests
                 TilePivot.GetTile(tilesSet, FamilyPivot.Circle, number: 4)
             };
 
-            concealedTiles = concealedTiles.OrderBy(t => GlobalTools.Randomizer.NextDouble()).ToList();
+            concealedTiles = concealedTiles.OrderBy(t => new Random().NextDouble()).ToList();
 
             var result = HandPivot.IsCompleteBasic(concealedTiles, new List<TileComboPivot>());
 
@@ -69,7 +70,7 @@ namespace Gnoj_HamUnitTests
                 TilePivot.GetTile(tilesSet, FamilyPivot.Circle, number: 6)
             };
 
-            concealedTiles = concealedTiles.OrderBy(t => GlobalTools.Randomizer.NextDouble()).ToList();
+            concealedTiles = concealedTiles.OrderBy(t => new Random().NextDouble()).ToList();
 
             var result = HandPivot.IsCompleteBasic(concealedTiles, new List<TileComboPivot>
             {

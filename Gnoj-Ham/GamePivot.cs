@@ -27,6 +27,7 @@ namespace Gnoj_Ham
 
         private readonly PlayerSavePivot _save;
         private readonly List<PlayerPivot> _players;
+        private readonly Random _random;
 
         /// <summary>
         /// List of players.
@@ -103,10 +104,11 @@ namespace Gnoj_Ham
         /// <param name="humanPlayerName">The name of the human player; other players will be <see cref="PlayerPivot.IsCpu"/>.</param>
         /// <param name="ruleset">Ruleset for the game.</param>
         /// <param name="save">Player save stats.</param>
+        /// <param name="random">Randomizer instance.</param>
         /// <exception cref="ArgumentNullException"><paramref name="save"/> is <c>Null</c> while ruleset is default.</exception>
         /// <exception cref="ArgumentNullException"><paramref name="ruleset"/> is <c>Null</c>.</exception>
         /// <exception cref="ArgumentException"><paramref name="humanPlayerName"/> is invalid.</exception>
-        public GamePivot(string humanPlayerName, RulePivot ruleset, PlayerSavePivot save)
+        public GamePivot(string humanPlayerName, RulePivot ruleset, PlayerSavePivot save, Random random)
         {
             _ = ruleset ?? throw new ArgumentNullException(nameof(ruleset));
 
@@ -118,13 +120,14 @@ namespace Gnoj_Ham
             _save = save;
 
             Ruleset = ruleset;
-            _players = PlayerPivot.GetFourPlayers(humanPlayerName, Ruleset.InitialPointsRule);
+            _players = PlayerPivot.GetFourPlayers(humanPlayerName, Ruleset.InitialPointsRule, random);
             DominantWind = WindPivot.East;
             EastIndexTurnCount = 1;
             EastIndex = FirstEastIndex;
             EastRank = 1;
+            _random = random;
 
-            Round = new RoundPivot(this, EastIndex);
+            Round = new RoundPivot(this, EastIndex, random);
         }
 
         /// <summary>
@@ -132,21 +135,23 @@ namespace Gnoj_Ham
         /// </summary>
         /// <param name="ruleset">Ruleset for the game.</param>
         /// <param name="permanentPlayers">Four permanent players.</param>
+        /// <param name="random">Randomizer instance.</param>
         /// <exception cref="ArgumentNullException"><paramref name="ruleset"/> is <c>Null</c>.</exception>
         /// <exception cref="ArgumentNullException"><paramref name="permanentPlayers"/> is <c>Null</c>.</exception>
         /// <exception cref="ArgumentException">Four players are required.</exception>
-        public GamePivot(RulePivot ruleset, IReadOnlyList<PermanentPlayerPivot> permanentPlayers)
+        public GamePivot(RulePivot ruleset, IReadOnlyList<PermanentPlayerPivot> permanentPlayers, Random random)
         {
             _ = ruleset ?? throw new ArgumentNullException(nameof(ruleset));
 
             Ruleset = ruleset;
-            _players = PlayerPivot.GetFourPlayersFromPermanent(permanentPlayers, Ruleset.InitialPointsRule);
+            _players = PlayerPivot.GetFourPlayersFromPermanent(permanentPlayers, Ruleset.InitialPointsRule, random);
             DominantWind = WindPivot.East;
             EastIndexTurnCount = 1;
             EastIndex = FirstEastIndex;
             EastRank = 1;
+            _random = random;
 
-            Round = new RoundPivot(this, EastIndex);
+            Round = new RoundPivot(this, EastIndex, random);
         }
 
         #endregion Constructors
@@ -254,7 +259,7 @@ namespace Gnoj_Ham
                 EastIndexTurnCount++;
             }
 
-            Round = new RoundPivot(this, EastIndex);
+            Round = new RoundPivot(this, EastIndex, _random);
 
         Exit:
             string error = null;

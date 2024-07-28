@@ -73,14 +73,15 @@ namespace Gnoj_Ham
         /// </summary>
         /// <param name="humanPlayerName">The name of the human player; other players will be <see cref="IsCpu"/>.</param>
         /// <param name="initialPointsRulePivot">Rule for initial points count.</param>
+        /// <param name="random">Randomizer instance.</param>
         /// <returns>List of four <see cref="PlayerPivot"/>, not sorted.</returns>
         /// <exception cref="ArgumentException"><see cref="Messages.InvalidPlayerName"/></exception>
         /// <remarks>Keey the 'List' type in return.</remarks>
-        public static List<PlayerPivot> GetFourPlayers(string humanPlayerName, InitialPointsRulePivot initialPointsRulePivot)
+        public static List<PlayerPivot> GetFourPlayers(string humanPlayerName, InitialPointsRulePivot initialPointsRulePivot, Random random)
         {
             humanPlayerName = CheckName(humanPlayerName);
 
-            var eastIndex = GlobalTools.Randomizer.Next(0, 4);
+            var eastIndex = random.Next(0, 4);
 
             var players = new List<PlayerPivot>(4);
             for (var i = 0; i < 4; i++)
@@ -102,18 +103,19 @@ namespace Gnoj_Ham
         /// </summary>
         /// <param name="permanentPlayers">Four permanent players.</param>
         /// <param name="initialPointsRulePivot">Rule for initial points count.</param>
+        /// <param name="random">Randomizer instance.</param>
         /// <returns>Four players generated.</returns>
         /// <exception cref="ArgumentNullException"><paramref name="permanentPlayers"/> is <c>Null</c>.</exception>
         /// <exception cref="ArgumentException">Four players are required.</exception>
         /// <remarks>Keey the 'List' type in return.</remarks>
-        public static List<PlayerPivot> GetFourPlayersFromPermanent(IReadOnlyList<PermanentPlayerPivot> permanentPlayers, InitialPointsRulePivot initialPointsRulePivot)
+        public static List<PlayerPivot> GetFourPlayersFromPermanent(IReadOnlyList<PermanentPlayerPivot> permanentPlayers, InitialPointsRulePivot initialPointsRulePivot, Random random)
         {
             _ = permanentPlayers ?? throw new ArgumentNullException(nameof(permanentPlayers));
 
             if (permanentPlayers.Count != 4)
                 throw new ArgumentException("Four players are required.", nameof(permanentPlayers));
 
-            var eastIndex = GlobalTools.Randomizer.Next(0, 4);
+            var eastIndex = random.Next(0, 4);
 
             return permanentPlayers
                 .Select((p, i) => new PlayerPivot($"{CPU_NAME_PREFIX}{i}", GetWindFromIndex(eastIndex, i), initialPointsRulePivot, true, p))

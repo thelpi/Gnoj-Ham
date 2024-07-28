@@ -42,7 +42,7 @@ namespace Gnoj_HamView
 
             LblPlayerP0.Content = playerName;
 
-            _game = new GamePivot(playerName, ruleset, save);
+            _game = new GamePivot(playerName, ruleset, save, new Random());
             _tickSound = new System.Media.SoundPlayer(Properties.Resources.tick);
 
             _overlayStoryboard = FindResource("StbHideOverlay") as Storyboard;
