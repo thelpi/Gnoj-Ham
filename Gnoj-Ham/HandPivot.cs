@@ -773,11 +773,6 @@ namespace Gnoj_Ham
         // Creates a declared combination from the specified tiles
         private void CheckTilesForCallAndExtractCombo(IEnumerable<TilePivot> tiles, int expectedCount, TilePivot tile, WindPivot? stolenFrom)
         {
-            if (tiles.Count() < expectedCount)
-            {
-                throw new InvalidOperationException(Messages.InvalidCall);
-            }
-
             var tilesPick = tiles.Take(expectedCount).ToList();
 
             _declaredCombinations.Add(new TileComboPivot(tilesPick, tile, stolenFrom));
