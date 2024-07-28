@@ -324,7 +324,7 @@ namespace Gnoj_Ham
         // Assumes that all tiles are from the same family, and this family is caracter / circle / bamboo.
         private static List<List<TileComboPivot>> GetCombinationSequencesRecursive(IEnumerable<TilePivot> tiles)
         {
-            var combinationsSequences = new List<List<TileComboPivot>>();
+            var combinationsSequences = new List<List<TileComboPivot>>(10);
 
             var distinctNumbers = tiles.Select(tg => tg.Number).Distinct().OrderBy(v => v).ToList();
             foreach (var number in distinctNumbers)
@@ -348,7 +348,7 @@ namespace Gnoj_Ham
                     }
                     else
                     {
-                        combinationsSequences.Add(new List<TileComboPivot>() { combination });
+                        combinationsSequences.Add(new List<TileComboPivot> { combination });
                     }
                 }
             }
@@ -493,11 +493,11 @@ namespace Gnoj_Ham
                 winningSequences.Add(new List<TileComboPivot>(concealedTiles.GroupBy(t => t).Select(c => new TileComboPivot(c))));
             }
 
-            var yakusSequences = new Dictionary<IReadOnlyList<YakuPivot>, List<TileComboPivot>>();
+            var yakusSequences = new Dictionary<IReadOnlyList<YakuPivot>, IReadOnlyList<TileComboPivot>>();
 
             if (IsThirteenOrphans(concealedTiles))
             {
-                var yakus = new List<YakuPivot>() { YakuPivot.KokushiMusou };
+                var yakus = new List<YakuPivot> { YakuPivot.KokushiMusou };
                 if (context.IsTenhou())
                 {
                     yakus.Add(YakuPivot.Tenhou);
