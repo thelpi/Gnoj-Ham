@@ -140,7 +140,8 @@ namespace Gnoj_Ham
         /// <exception cref="ArgumentNullException"><paramref name="concealedTiles"/> is <c>Null</c>.</exception>
         /// <exception cref="ArgumentNullException"><paramref name="declaredCombinations"/> is <c>Null</c>.</exception>
         /// <exception cref="ArgumentException"><see cref="Messages.InvalidHandTilesCount"/></exception>
-        public static List<List<TileComboPivot>> IsCompleteBasic(IReadOnlyList<TilePivot> concealedTiles, IReadOnlyList<TileComboPivot> declaredCombinations)
+        /// <remarks>Keep the type 'List' here.</remarks>
+        public static IReadOnlyList<List<TileComboPivot>> IsCompleteBasic(IReadOnlyList<TilePivot> concealedTiles, IReadOnlyList<TileComboPivot> declaredCombinations)
         {
             if (declaredCombinations == null)
             {
@@ -157,7 +158,8 @@ namespace Gnoj_Ham
                 throw new ArgumentException(Messages.InvalidHandTilesCount, nameof(concealedTiles));
             }
 
-            var combinationsSequences = new List<List<TileComboPivot>>();
+            // bad approximation of size
+            var combinationsSequences = new List<List<TileComboPivot>>(20);
 
             // Every combinations are declared.
             if (declaredCombinations.Count == 4)
@@ -254,9 +256,9 @@ namespace Gnoj_Ham
 
         // Assumes that all tiles are from the same family, and this family is caracter / circle / bamboo.
         // Also assumes that referenced tile is included in the list.
-        private static List<TileComboPivot> GetCombinationsForTile(TilePivot tile, IEnumerable<TilePivot> tiles)
+        private static IReadOnlyList<TileComboPivot> GetCombinationsForTile(TilePivot tile, IEnumerable<TilePivot> tiles)
         {
-            var combinations = new List<TileComboPivot>();
+            var combinations = new List<TileComboPivot>(5);
 
             var sameNumber = tiles.Where(t => t.Number == tile.Number).ToList();
 
@@ -485,10 +487,10 @@ namespace Gnoj_Ham
             Yakus = null;
             YakusCombinations = null;
 
-            var regularCombinationsSequences = IsCompleteBasic(concealedTiles, new List<TileComboPivot>(_declaredCombinations));
+            var winningSequences = IsCompleteBasic(concealedTiles, new List<TileComboPivot>(_declaredCombinations)).ToList();
             if (IsSevenPairs(concealedTiles))
             {
-                regularCombinationsSequences.Add(new List<TileComboPivot>(concealedTiles.GroupBy(t => t).Select(c => new TileComboPivot(c))));
+                winningSequences.Add(new List<TileComboPivot>(concealedTiles.GroupBy(t => t).Select(c => new TileComboPivot(c))));
             }
 
             var yakusSequences = new Dictionary<IReadOnlyList<YakuPivot>, List<TileComboPivot>>();
@@ -516,7 +518,7 @@ namespace Gnoj_Ham
             }
             else
             {
-                foreach (var combinationsSequence in regularCombinationsSequences)
+                foreach (var combinationsSequence in winningSequences)
                 {
                     var yakus = YakuPivot.GetYakus(combinationsSequence, context);
                     yakusSequences.Add(yakus, combinationsSequence);

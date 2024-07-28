@@ -78,7 +78,7 @@ namespace Gnoj_HamUnitTests
 
             Assert.IsNotNull(result);
             Assert.AreEqual(2, result.Count);
-            result.ForEach(cg => AssertFiveCombinationsIncludingOnePair(cg));
+            result.ToList().ForEach(cg => AssertFiveCombinationsIncludingOnePair(cg));
         }
 
         private static void AssertFiveCombinationsIncludingOnePair(List<TileComboPivot> result)
