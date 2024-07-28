@@ -83,7 +83,7 @@ namespace Gnoj_Ham
         /// Constructor.
         /// </summary>
         /// <param name="tiles">Initial list of <see cref="TilePivot"/> (13).</param>
-        internal HandPivot(IReadOnlyList<TilePivot> tiles)
+        internal HandPivot(IEnumerable<TilePivot> tiles)
         {
             LatestPick = tiles.Last();
             _concealedTiles = tiles.OrderBy(t => t).ToList();
@@ -366,7 +366,7 @@ namespace Gnoj_Ham
         /// <exception cref="ArgumentNullException"><paramref name="concealedTiles"/> is <c>Null</c>.</exception>
         /// <exception cref="ArgumentNullException"><paramref name="combinations"/> is <c>Null</c>.</exception>
         /// <exception cref="ArgumentNullException"><paramref name="notInHandTiles"/> is <c>Null</c>.</exception>
-        public static bool IsTenpai(IReadOnlyList<TilePivot> concealedTiles, IReadOnlyList<TileComboPivot> combinations, IReadOnlyList<TilePivot> notInHandTiles)
+        public static bool IsTenpai(IEnumerable<TilePivot> concealedTiles, IReadOnlyList<TileComboPivot> combinations, IReadOnlyList<TilePivot> notInHandTiles)
         {
             _ = concealedTiles ?? throw new ArgumentNullException(nameof(concealedTiles));
             _ = combinations ?? throw new ArgumentNullException(nameof(combinations));
@@ -402,7 +402,7 @@ namespace Gnoj_Ham
         /// Aggregation of discards from opponents since the riichi call; includes tiles stolen by another opponent and tiles used to call opened kan.
         /// </param>
         /// <returns><c>True</c> if furiten; <c>False</c> otherwise.</returns>
-        internal bool CancelYakusIfFuriten(IReadOnlyList<TilePivot> discard, IReadOnlyList<TilePivot> opponentDiscards)
+        internal bool CancelYakusIfFuriten(IEnumerable<TilePivot> discard, IEnumerable<TilePivot> opponentDiscards)
         {
             if (discard?.Any(t => IsCompleteFull(new List<TilePivot>(ConcealedTiles) { t }, DeclaredCombinations.ToList())) == true)
             {
@@ -773,11 +773,15 @@ namespace Gnoj_Ham
         // Creates a declared combination from the specified tiles
         private void CheckTilesForCallAndExtractCombo(IEnumerable<TilePivot> tiles, int expectedCount, TilePivot tile, WindPivot? stolenFrom)
         {
-            // assumes count OK
-            var tilesPick = tiles.Take(expectedCount);
+            if (tiles.Count() < expectedCount)
+            {
+                throw new InvalidOperationException(Messages.InvalidCall);
+            }
+
+            var tilesPick = tiles.Take(expectedCount).ToList();
 
             _declaredCombinations.Add(new TileComboPivot(tilesPick, tile, stolenFrom));
-            _concealedTiles.RemoveAll(tilesPick.Contains);
+            tilesPick.ForEach(t => _concealedTiles.Remove(t));
         }
 
         #endregion
