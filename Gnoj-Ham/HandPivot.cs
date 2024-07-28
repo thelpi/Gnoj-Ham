@@ -83,7 +83,7 @@ namespace Gnoj_Ham
         /// Constructor.
         /// </summary>
         /// <param name="tiles">Initial list of <see cref="TilePivot"/> (13).</param>
-        internal HandPivot(IEnumerable<TilePivot> tiles)
+        internal HandPivot(IReadOnlyList<TilePivot> tiles)
         {
             LatestPick = tiles.Last();
             _concealedTiles = tiles.OrderBy(t => t).ToList();
@@ -366,7 +366,7 @@ namespace Gnoj_Ham
         /// <exception cref="ArgumentNullException"><paramref name="concealedTiles"/> is <c>Null</c>.</exception>
         /// <exception cref="ArgumentNullException"><paramref name="combinations"/> is <c>Null</c>.</exception>
         /// <exception cref="ArgumentNullException"><paramref name="notInHandTiles"/> is <c>Null</c>.</exception>
-        public static bool IsTenpai(IEnumerable<TilePivot> concealedTiles, IReadOnlyList<TileComboPivot> combinations, IReadOnlyList<TilePivot> notInHandTiles)
+        public static bool IsTenpai(IReadOnlyList<TilePivot> concealedTiles, IReadOnlyList<TileComboPivot> combinations, IReadOnlyList<TilePivot> notInHandTiles)
         {
             _ = concealedTiles ?? throw new ArgumentNullException(nameof(concealedTiles));
             _ = combinations ?? throw new ArgumentNullException(nameof(combinations));
@@ -402,7 +402,7 @@ namespace Gnoj_Ham
         /// Aggregation of discards from opponents since the riichi call; includes tiles stolen by another opponent and tiles used to call opened kan.
         /// </param>
         /// <returns><c>True</c> if furiten; <c>False</c> otherwise.</returns>
-        internal bool CancelYakusIfFuriten(IEnumerable<TilePivot> discard, IEnumerable<TilePivot> opponentDiscards)
+        internal bool CancelYakusIfFuriten(IReadOnlyList<TilePivot> discard, IReadOnlyList<TilePivot> opponentDiscards)
         {
             if (discard?.Any(t => IsCompleteFull(new List<TilePivot>(ConcealedTiles) { t }, DeclaredCombinations.ToList())) == true)
             {
