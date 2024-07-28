@@ -74,11 +74,7 @@ namespace Gnoj_Ham
             Description = description ?? string.Empty;
             FanCount = fanCount;
             ConcealedBonusFanCount = concealedBonusFanCount;
-            _upgrades = new List<YakuPivot>();
-            if (upgrades != null && upgrades.Length > 0)
-            {
-                _upgrades.AddRange(upgrades);
-            }
+            _upgrades = upgrades?.ToList() ?? new List<YakuPivot>();
             Example = example;
         }
 
@@ -776,7 +772,7 @@ namespace Gnoj_Ham
         /// <param name="concealedHand"><c>True</c> if the hand is concealed; <c>False</c> otherwise.</param>
         /// <returns>The best combination of yakus.</returns>
         /// <exception cref="ArgumentNullException"><paramref name="yakus"/> is <c>Null</c>.</exception>
-        public static List<YakuPivot> GetBestYakusFromList(IEnumerable<List<YakuPivot>> yakus, bool concealedHand)
+        public static IReadOnlyList<YakuPivot> GetBestYakusFromList(IEnumerable<IReadOnlyList<YakuPivot>> yakus, bool concealedHand)
         {
             return yakus == null
                 ? throw new ArgumentNullException(nameof(yakus))
@@ -798,7 +794,7 @@ namespace Gnoj_Ham
         /// <exception cref="ArgumentNullException"><paramref name="combinationsSequence"/> is <c>Null</c>.</exception>
         /// <exception cref="ArgumentNullException"><paramref name="context"/> is <c>Null</c>.</exception>
         /// <exception cref="NotImplementedException">The <see cref="YakuPivot"/> to check is not implemented.</exception>
-        public static List<YakuPivot> GetYakus(List<TileComboPivot> combinationsSequence, WinContextPivot context)
+        public static IReadOnlyList<YakuPivot> GetYakus(List<TileComboPivot> combinationsSequence, WinContextPivot context)
         {
             if (combinationsSequence == null)
             {
@@ -810,7 +806,7 @@ namespace Gnoj_Ham
                 throw new ArgumentNullException(nameof(context));
             }
 
-            var yakus = new List<YakuPivot>();
+            var yakus = new List<YakuPivot>(Yakus.Count);
 
             foreach (var yaku in Yakus.Where(y => y.IsYakuman))
             {

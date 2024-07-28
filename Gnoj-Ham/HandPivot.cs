@@ -491,7 +491,7 @@ namespace Gnoj_Ham
                 regularCombinationsSequences.Add(new List<TileComboPivot>(concealedTiles.GroupBy(t => t).Select(c => new TileComboPivot(c))));
             }
 
-            var yakusSequences = new Dictionary<List<YakuPivot>, List<TileComboPivot>>();
+            var yakusSequences = new Dictionary<IReadOnlyList<YakuPivot>, List<TileComboPivot>>();
 
             if (IsThirteenOrphans(concealedTiles))
             {
