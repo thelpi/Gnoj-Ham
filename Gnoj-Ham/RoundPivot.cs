@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Linq;
 
 namespace Gnoj_Ham
@@ -943,28 +942,6 @@ namespace Gnoj_Ham
 
         #region Internal methods
 
-        private readonly Dictionary<int, List<TilePivot>> _lastCheckOverallConcealed = new Dictionary<int, List<TilePivot>>
-        {
-            { 0, new List<TilePivot>() },
-            { 1, new List<TilePivot>() },
-            { 2, new List<TilePivot>() },
-            { 3, new List<TilePivot>() }
-        };
-        private readonly Dictionary<int, List<(TilePivot, bool)>> _lastCheckConcealedTiles = new Dictionary<int, List<(TilePivot, bool)>>
-        {
-            { 0, new List<(TilePivot, bool)>() },
-            { 1, new List<(TilePivot, bool)>() },
-            { 2, new List<(TilePivot, bool)>() },
-            { 3, new List<(TilePivot, bool)>() }
-        };
-        private readonly Dictionary<int, IReadOnlyList<TileComboPivot>> _lastCheckCombinations = new Dictionary<int, IReadOnlyList<TileComboPivot>>
-        {
-            { 0, new List<TileComboPivot>() },
-            { 1, new List<TileComboPivot>() },
-            { 2, new List<TileComboPivot>() },
-            { 3, new List<TileComboPivot>() }
-        };
-
         /// <summary>
         /// Checks if the hand of the specified player is tenpai and list tiles which can be discarded.
         /// </summary>
@@ -974,31 +951,19 @@ namespace Gnoj_Ham
         {
             var distinctTilesFromOverallConcealed = GetConcealedTilesFromPlayerPointOfView(playerIndex).Distinct().ToList();
 
-            var currentConcealedTiles = _hands[playerIndex].ConcealedTiles
+            var subPossibilities = new ConcurrentBag<TilePivot>();
+            _hands[playerIndex].ConcealedTiles
                 .Distinct()
-                .ToList();
-
-            var actualConcealedTilesToCheck = currentConcealedTiles;
-            if (distinctTilesFromOverallConcealed.IsBijection(_lastCheckOverallConcealed[playerIndex])
-                && _hands[playerIndex].DeclaredCombinations.IsBijection(_lastCheckCombinations[playerIndex]))
-            {
-                actualConcealedTilesToCheck = currentConcealedTiles.Where(t => !_lastCheckConcealedTiles[playerIndex].Any(x => x.Item1 == t)).ToList();
-            }
-
-            var subPossibilities = new ConcurrentBag<TilePivot>(_lastCheckConcealedTiles[playerIndex].Where(t => t.Item2).Select(t => t.Item1));
-            actualConcealedTilesToCheck.ExecuteInParallel(tileToSub =>
-            {
-                var tempListConcealed = new List<TilePivot>(_hands[playerIndex].ConcealedTiles);
-                tempListConcealed.Remove(tileToSub);
-                if (HandPivot.IsTenpai(tempListConcealed, _hands[playerIndex].DeclaredCombinations, distinctTilesFromOverallConcealed))
+                .ToList()
+                .ExecuteInParallel(tileToSub =>
                 {
-                    subPossibilities.Add(tileToSub);
-                }
-            });
-
-            _lastCheckConcealedTiles[playerIndex] = currentConcealedTiles.Select(t => (t, subPossibilities.Contains(t))).ToList();
-            _lastCheckOverallConcealed[playerIndex] = distinctTilesFromOverallConcealed;
-            _lastCheckCombinations[playerIndex] = _hands[playerIndex].DeclaredCombinations;
+                    var tempListConcealed = new List<TilePivot>(_hands[playerIndex].ConcealedTiles);
+                    tempListConcealed.Remove(tileToSub);
+                    if (HandPivot.IsTenpai(tempListConcealed, _hands[playerIndex].DeclaredCombinations, distinctTilesFromOverallConcealed))
+                    {
+                        subPossibilities.Add(tileToSub);
+                    }
+                });
 
             // Avoids red doras in the list returned (if possible).
             var realSubPossibilities = new List<TilePivot>(subPossibilities.Count);
