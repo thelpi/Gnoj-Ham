@@ -328,7 +328,7 @@ namespace Gnoj_HamView
                         skipCurrentAction = false;
                     isFirstTurn = false;
 
-                    if (!skipCurrentAction && !humanRonPending && !_game.CpuVs && _game.Round.CanCallRon(GamePivot.HUMAN_INDEX))
+                    if (!skipCurrentAction && !humanRonPending && _game.Round.CanCallRon(GamePivot.HUMAN_INDEX))
                     {
                         Dispatcher.Invoke(() =>
                         {
@@ -364,7 +364,7 @@ namespace Gnoj_HamView
                         CommonCallKan(kanInProgress.Item3);
                     }
 
-                    if (!skipCurrentAction && !_game.CpuVs && _game.Round.CanCallPonOrKan(GamePivot.HUMAN_INDEX, out var isSelfKan))
+                    if (!skipCurrentAction && _game.Round.CanCallPonOrKan(GamePivot.HUMAN_INDEX, out var isSelfKan))
                     {
                         if (!isSelfKan)
                         {
@@ -657,7 +657,7 @@ namespace Gnoj_HamView
 
             // Note : this value is stored here because the call to "CallPon" makes it change.
             var previousPlayerIndex = _game.Round.PreviousPlayerIndex;
-            var isCpu = _game.CpuVs || playerIndex != GamePivot.HUMAN_INDEX;
+            var isCpu = playerIndex != GamePivot.HUMAN_INDEX;
 
             if (_game.Round.CallPon(playerIndex))
             {
@@ -928,7 +928,7 @@ namespace Gnoj_HamView
         // Clears and refills the hand panel of the specified player index.
         private void FillHandPanel(int pIndex, TilePivot pickTile = null)
         {
-            var isHuman = pIndex == GamePivot.HUMAN_INDEX && !_game.CpuVs;
+            var isHuman = pIndex == GamePivot.HUMAN_INDEX;
 
             var panel = this.FindPanel("StpHandP", pIndex);
 
@@ -1139,7 +1139,7 @@ namespace Gnoj_HamView
                 // When the player has 14 tiles and need to discard
                 // A kan call might be possible
 
-                if (!_game.CpuVs && !skippedInnerKan)
+                if (!skippedInnerKan)
                 {
                     var kanPossibilities = _game.Round.CanCallKan(GamePivot.HUMAN_INDEX);
                     if (kanPossibilities.Count > 0)
@@ -1180,7 +1180,7 @@ namespace Gnoj_HamView
                     }
                 }
 
-                if (!_game.CpuVs && _game.Round.CanCallPon(GamePivot.HUMAN_INDEX))
+                if (_game.Round.CanCallPon(GamePivot.HUMAN_INDEX))
                 {
                     BtnPon.Visibility = Visibility.Visible;
                     if (_game.Ruleset.DiscardTip)
@@ -1194,20 +1194,17 @@ namespace Gnoj_HamView
                     }
                 }
 
-                if (!_game.CpuVs)
+                var kanPossibilities = _game.Round.CanCallKan(GamePivot.HUMAN_INDEX);
+                if (kanPossibilities.Count > 0)
                 {
-                    var kanPossibilities = _game.Round.CanCallKan(GamePivot.HUMAN_INDEX);
-                    if (kanPossibilities.Count > 0)
+                    BtnKan.Visibility = Visibility.Visible;
+                    if (_game.Ruleset.DiscardTip)
                     {
-                        BtnKan.Visibility = Visibility.Visible;
-                        if (_game.Ruleset.DiscardTip)
+                        needAdvice = true;
+                        if (_game.Round.IaManager.KanDecisionAdvice(kanPossibilities, false))
                         {
-                            needAdvice = true;
-                            if (_game.Round.IaManager.KanDecisionAdvice(kanPossibilities, false))
-                            {
-                                BtnKan.Foreground = Brushes.DarkMagenta;
-                                advised = true;
-                            }
+                            BtnKan.Foreground = Brushes.DarkMagenta;
+                            advised = true;
                         }
                     }
                 }
