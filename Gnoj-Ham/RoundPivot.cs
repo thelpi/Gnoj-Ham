@@ -957,6 +957,13 @@ namespace Gnoj_Ham
             { 2, new List<(TilePivot, bool)>() },
             { 3, new List<(TilePivot, bool)>() }
         };
+        private readonly Dictionary<int, IReadOnlyList<TileComboPivot>> _lastCheckCombinations = new Dictionary<int, IReadOnlyList<TileComboPivot>>
+        {
+            { 0, new List<TileComboPivot>() },
+            { 1, new List<TileComboPivot>() },
+            { 2, new List<TileComboPivot>() },
+            { 3, new List<TileComboPivot>() }
+        };
 
         /// <summary>
         /// Checks if the hand of the specified player is tenpai and list tiles which can be discarded.
@@ -973,7 +980,7 @@ namespace Gnoj_Ham
 
             var actualConcealedTilesToCheck = currentConcealedTiles;
             if (distinctTilesFromOverallConcealed.IsBijection(_lastCheckOverallConcealed[playerIndex])
-                && _hands[playerIndex].CombinationsHaveChanged(true))
+                && _hands[playerIndex].DeclaredCombinations.IsBijection(_lastCheckCombinations[playerIndex]))
             {
                 actualConcealedTilesToCheck = currentConcealedTiles.Where(t => !_lastCheckConcealedTiles[playerIndex].Any(x => x.Item1 == t)).ToList();
             }
@@ -991,6 +998,7 @@ namespace Gnoj_Ham
 
             _lastCheckConcealedTiles[playerIndex] = currentConcealedTiles.Select(t => (t, subPossibilities.Contains(t))).ToList();
             _lastCheckOverallConcealed[playerIndex] = distinctTilesFromOverallConcealed;
+            _lastCheckCombinations[playerIndex] = _hands[playerIndex].DeclaredCombinations;
 
             // Avoids red doras in the list returned (if possible).
             var realSubPossibilities = new List<TilePivot>(subPossibilities.Count);
