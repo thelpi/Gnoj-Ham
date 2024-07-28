@@ -167,7 +167,25 @@ namespace Gnoj_HamView
                 || BtnRon.Visibility == Visibility.Visible)
             {
                 CancelDiscardHighlight();
-                RunAutoPlay(skipCurrentAction: true);
+                if (BtnKan.Visibility == Visibility.Visible && _game.Round.IsHumanPlayer)
+                {
+                    RefreshPlayerTurnStyle();
+                    SetActionButtonsVisibility(preDiscard: true, skippedInnerKan: true);
+                    if (_game.Round.HumanCanAutoDiscard())
+                    {
+                        // Not a real CPU sleep: the auto-discard by human player is considered as such
+                        Thread.Sleep(((CpuSpeedPivot)Properties.Settings.Default.CpuSpeed).ParseSpeed());
+                        RaiseButtonClickEvent(new PanelButton("StpPickP", 0));
+                    }
+                    else
+                    {
+                        ActivateTimer(StpPickP0.Children[0] as Button);
+                    }
+                }
+                else
+                {
+                    RunAutoPlay(skipCurrentAction: true);
+                }
             }
             else if (StpPickP0.Children.Count > 0)
             {
@@ -1095,7 +1113,7 @@ namespace Gnoj_HamView
         }
 
         // Sets the Visibility property of every action buttons
-        private void SetActionButtonsVisibility(bool preDiscard = false, bool cpuPlay = false)
+        private void SetActionButtonsVisibility(bool preDiscard = false, bool cpuPlay = false, bool skippedInnerKan = false)
         {
             // Default behavior.
             BtnChii.Visibility = Visibility.Collapsed;
@@ -1121,7 +1139,7 @@ namespace Gnoj_HamView
                 // When the player has 14 tiles and need to discard
                 // A kan call might be possible
 
-                if (!_game.CpuVs)
+                if (!_game.CpuVs && !skippedInnerKan)
                 {
                     var kanPossibilities = _game.Round.CanCallKan(GamePivot.HUMAN_INDEX);
                     if (kanPossibilities.Count > 0)
