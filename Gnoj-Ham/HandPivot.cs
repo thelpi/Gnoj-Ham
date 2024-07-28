@@ -12,6 +12,7 @@ namespace Gnoj_Ham
         #region Embedded properties
 
         private readonly List<TilePivot> _concealedTiles;
+        private readonly List<(TilePivot tile, bool isNew, bool isCheck)> _tilesTenpaiChecker;
         private readonly List<TileComboPivot> _declaredCombinations;
         private bool _combinationsChanged;
 
@@ -88,6 +89,7 @@ namespace Gnoj_Ham
         {
             LatestPick = tiles.Last();
             _concealedTiles = tiles.OrderBy(t => t).ToList();
+            _tilesTenpaiChecker = tiles.Distinct().Select(t => (t, true, false)).ToList();
             _declaredCombinations = new List<TileComboPivot>(4);
             _combinationsChanged = true;
         }
@@ -658,7 +660,7 @@ namespace Gnoj_Ham
 
                 _declaredCombinations[indexOfPon] = new TileComboPivot(concealedTiles, fromOpenPon.OpenTile, fromOpenPon.StolenFrom);
                 _combinationsChanged = true;
-                _concealedTiles.Remove(tile);
+                RemoveConcealedTile(tile);
             }
         }
 
@@ -746,7 +748,8 @@ namespace Gnoj_Ham
                 return false;
             }
 
-            _concealedTiles.Remove(tile);
+            RemoveConcealedTile(tile);
+
             return true;
         }
 
@@ -764,7 +767,7 @@ namespace Gnoj_Ham
             }
 
             LatestPick = tile ?? throw new ArgumentNullException(nameof(tile));
-            _concealedTiles.Add(tile);
+            AddConcealedTile(tile);
             _concealedTiles.Sort();
         }
 
@@ -812,8 +815,22 @@ namespace Gnoj_Ham
             var tilesPick = tiles.Take(expectedCount).ToList();
 
             _declaredCombinations.Add(new TileComboPivot(tilesPick, tile, stolenFrom));
-            tilesPick.ForEach(t => _concealedTiles.Remove(t));
+            tilesPick.ForEach(RemoveConcealedTile);
             _combinationsChanged = true;
+        }
+
+        private void AddConcealedTile(TilePivot t)
+        {
+            _concealedTiles.Add(t);
+            if (!_tilesTenpaiChecker.Any(_ => _.tile == t))
+                _tilesTenpaiChecker.Add((t, true, false));
+        }
+
+        private void RemoveConcealedTile(TilePivot t)
+        {
+            _concealedTiles.Remove(t);
+            if (!_concealedTiles.Contains(t))
+                _tilesTenpaiChecker.RemoveAll(_ => _.tile == t);
         }
 
         #endregion
