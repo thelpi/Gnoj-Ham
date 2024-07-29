@@ -3,7 +3,7 @@
 namespace Gnoj_Ham.AutoPlayEvents
 {
     /// <summary>
-    /// Event triggered when the human can make a call.
+    /// Event triggered when the human can make an automatic call.
     /// </summary>
     public class HumanCallNotifierEventArgs : EventArgs
     {

@@ -370,7 +370,7 @@ namespace Gnoj_HamView
                         }
                     });
                 };
-                autoPlay.AfterPick += e =>
+                autoPlay.PickNotifier += e =>
                 {
                     Dispatcher.Invoke(() =>
                     {
@@ -381,7 +381,7 @@ namespace Gnoj_HamView
                         SetWallsLength();
                     });
                 };
-                autoPlay.HighlightPreviousPlayerDiscard += e =>
+                autoPlay.DiscardTileNotifier += e =>
                 {
                     Dispatcher.Invoke(() => HighlightPreviousPlayerDiscard());
                 };
@@ -418,15 +418,15 @@ namespace Gnoj_HamView
                     });
                     ActivateTimer(autoButtonOnTimer);
                 };
-                autoPlay.InvokeOverlay += e =>
+                autoPlay.CallNotifier += e =>
                 {
                     InvokeOverlay($"{e.Action}", e.PlayerIndex);
                 };
-                autoPlay.NotifyRiichiTiles += e =>
+                autoPlay.RiichiChoicesNotifier += e =>
                 {
                     _riichiTiles = e.Tiles;
                 };
-                autoPlay.RefreshPlayerTurnStyle += e =>
+                autoPlay.TurnChangeNotifier += e =>
                 {
                     RefreshPlayerTurnStyle();
                 };

@@ -15,13 +15,40 @@ namespace Gnoj_Ham
 
         #region Events
 
+        /// <summary>
+        /// Event to notify <see cref="HumanCallNotifierEventArgs"/>.
+        /// </summary>
         public event Action<HumanCallNotifierEventArgs> HumanCallNotifier;
-        public event Action<DiscardTileNotifierEventArgs> HighlightPreviousPlayerDiscard;
-        public event Action<CallNotifierEventArgs> InvokeOverlay;
+
+        /// <summary>
+        /// Event to notify <see cref="DiscardTileNotifierEventArgs"/>.
+        /// </summary>
+        public event Action<DiscardTileNotifierEventArgs> DiscardTileNotifier;
+
+        /// <summary>
+        /// Event to notify <see cref="CallNotifierEventArgs"/>.
+        /// </summary>
+        public event Action<CallNotifierEventArgs> CallNotifier;
+
+        /// <summary>
+        /// Event to notify <see cref="ReadyToCallNotifierEventArgs"/>.
+        /// </summary>
         public event Action<ReadyToCallNotifierEventArgs> ReadyToCallNotifier;
-        public event Action<TurnChangeEventArgs> RefreshPlayerTurnStyle;
-        public event Action<AfterPickEventArgs> AfterPick;
-        public event Action<RiichiChoicesEventArgs> NotifyRiichiTiles;
+
+        /// <summary>
+        /// Event to notify <see cref="TurnChangeNotifierEventArgs"/>.
+        /// </summary>
+        public event Action<TurnChangeNotifierEventArgs> TurnChangeNotifier;
+
+        /// <summary>
+        /// Event to notify <see cref="PickNotifierEventArgs"/>.
+        /// </summary>
+        public event Action<PickNotifierEventArgs> PickNotifier;
+
+        /// <summary>
+        /// Event to notify <see cref="RiichiChoicesNotifierEventArgs"/>.
+        /// </summary>
+        public event Action<RiichiChoicesNotifierEventArgs> RiichiChoicesNotifier;
 
         #endregion Events
 
@@ -172,6 +199,15 @@ namespace Gnoj_Ham
             return false;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="cancellationToken"></param>
+        /// <param name="skipCurrentAction"></param>
+        /// <param name="humanRonPending"></param>
+        /// <param name="autoCallMahjong"></param>
+        /// <param name="sleepTime"></param>
+        /// <returns></returns>
         public (bool endOfRound, int? ronPlayerId, CallTypePivot? humanAction) AutoPlayHuman(
             CancellationToken cancellationToken,
             bool skipCurrentAction,
@@ -197,7 +233,7 @@ namespace Gnoj_Ham
                     }
                     else
                     {
-                        HighlightPreviousPlayerDiscard?.Invoke(new DiscardTileNotifierEventArgs());
+                        DiscardTileNotifier?.Invoke(new DiscardTileNotifierEventArgs());
                     }
                     break;
                 }
@@ -221,7 +257,7 @@ namespace Gnoj_Ham
                 {
                     if (!isSelfKan)
                     {
-                        HighlightPreviousPlayerDiscard?.Invoke(new DiscardTileNotifierEventArgs());
+                        DiscardTileNotifier?.Invoke(new DiscardTileNotifierEventArgs());
                     }
                     break;
                 }
@@ -244,7 +280,7 @@ namespace Gnoj_Ham
 
                 if (!skipCurrentAction && _game.Round.IsHumanPlayer && _game.Round.CanCallChii().Count > 0)
                 {
-                    HighlightPreviousPlayerDiscard?.Invoke(new DiscardTileNotifierEventArgs());
+                    DiscardTileNotifier?.Invoke(new DiscardTileNotifierEventArgs());
                     break;
                 }
 
@@ -295,7 +331,7 @@ namespace Gnoj_Ham
             var opponentsCallRon = _game.Round.IaManager.RonDecision(humanRonPending);
             foreach (var opponentPlayerIndex in opponentsCallRon)
             {
-                InvokeOverlay?.Invoke(new CallNotifierEventArgs { Action = CallTypePivot.Ron, PlayerIndex = opponentPlayerIndex });
+                CallNotifier?.Invoke(new CallNotifierEventArgs { Action = CallTypePivot.Ron, PlayerIndex = opponentPlayerIndex });
             }
 
             return humanRonPending || opponentsCallRon.Count > 0;
@@ -303,32 +339,32 @@ namespace Gnoj_Ham
 
         private TilePivot OpponentBeginCallKan(int playerId, TilePivot kanTilePick, bool concealedKan)
         {
-            RefreshPlayerTurnStyle?.Invoke(new TurnChangeEventArgs());
+            TurnChangeNotifier?.Invoke(new TurnChangeNotifierEventArgs());
 
             var compensationTile = _game.Round.CallKan(playerId, concealedKan ? kanTilePick : null);
             if (compensationTile != null)
             {
-                InvokeOverlay?.Invoke(new CallNotifierEventArgs { PlayerIndex = playerId, Action = CallTypePivot.Kan });
+                CallNotifier?.Invoke(new CallNotifierEventArgs { PlayerIndex = playerId, Action = CallTypePivot.Kan });
             }
             return compensationTile;
         }
 
         private void Pick()
         {
-            RefreshPlayerTurnStyle?.Invoke(new TurnChangeEventArgs());
+            TurnChangeNotifier?.Invoke(new TurnChangeNotifierEventArgs());
 
-            var pick = _game.Round.Pick();
+            _ = _game.Round.Pick();
 
-            AfterPick?.Invoke(new AfterPickEventArgs());
+            PickNotifier?.Invoke(new PickNotifierEventArgs());
         }
 
         private void ChiiCall(Tuple<TilePivot, bool> chiiTilePick, int sleepTime)
         {
-            RefreshPlayerTurnStyle?.Invoke(new TurnChangeEventArgs());
+            TurnChangeNotifier?.Invoke(new TurnChangeNotifierEventArgs());
 
             if (_game.Round.CallChii(chiiTilePick.Item2 ? chiiTilePick.Item1.Number - 1 : chiiTilePick.Item1.Number))
             {
-                InvokeOverlay?.Invoke(new CallNotifierEventArgs { Action = CallTypePivot.Chii, PlayerIndex = _game.Round.CurrentPlayerIndex });
+                CallNotifier?.Invoke(new CallNotifierEventArgs { Action = CallTypePivot.Chii, PlayerIndex = _game.Round.CurrentPlayerIndex });
 
                 ReadyToCallNotifier?.Invoke(new ReadyToCallNotifierEventArgs { Call = CallTypePivot.Chii });
 
@@ -341,7 +377,7 @@ namespace Gnoj_Ham
 
         private void PonCall(int playerIndex, int sleepTime)
         {
-            RefreshPlayerTurnStyle?.Invoke(new TurnChangeEventArgs());
+            TurnChangeNotifier?.Invoke(new TurnChangeNotifierEventArgs());
 
             // Note : this value is stored here because the call to "CallPon" makes it change.
             var previousPlayerIndex = _game.Round.PreviousPlayerIndex;
@@ -349,7 +385,7 @@ namespace Gnoj_Ham
 
             if (_game.Round.CallPon(playerIndex))
             {
-                InvokeOverlay?.Invoke(new CallNotifierEventArgs { PlayerIndex = playerIndex, Action = CallTypePivot.Pon });
+                CallNotifier?.Invoke(new CallNotifierEventArgs { PlayerIndex = playerIndex, Action = CallTypePivot.Pon });
 
                 ReadyToCallNotifier?.Invoke(new ReadyToCallNotifierEventArgs { Call = CallTypePivot.Pon, PreviousPlayerIndex = previousPlayerIndex, PlayerIndex = playerIndex });
 
@@ -377,7 +413,7 @@ namespace Gnoj_Ham
         {
             if (_game.Round.IaManager.TsumoDecision(kanInProgress != null))
             {
-                InvokeOverlay?.Invoke(new CallNotifierEventArgs { Action = CallTypePivot.Tsumo, PlayerIndex = _game.Round.CurrentPlayerIndex });
+                CallNotifier?.Invoke(new CallNotifierEventArgs { Action = CallTypePivot.Tsumo, PlayerIndex = _game.Round.CurrentPlayerIndex });
                 return true;
             }
 
@@ -406,7 +442,7 @@ namespace Gnoj_Ham
         {
             if (!_game.Round.IsHumanPlayer)
             {
-                InvokeOverlay?.Invoke(new CallNotifierEventArgs { PlayerIndex = _game.Round.CurrentPlayerIndex, Action = CallTypePivot.Riichi });
+                CallNotifier?.Invoke(new CallNotifierEventArgs { PlayerIndex = _game.Round.CurrentPlayerIndex, Action = CallTypePivot.Riichi });
                 Thread.Sleep(sleepTime);
             }
 
@@ -427,7 +463,7 @@ namespace Gnoj_Ham
             }
 
             var riichiTiles = _game.Round.CanCallRiichi();
-            NotifyRiichiTiles?.Invoke(new RiichiChoicesEventArgs { Tiles = riichiTiles });
+            RiichiChoicesNotifier?.Invoke(new RiichiChoicesNotifierEventArgs { Tiles = riichiTiles });
             if (riichiTiles.Count > 0)
             {
                 var adviseRiichi = _game.Ruleset.DiscardTip && _game.Round.IaManager.RiichiDecision().choice != null;

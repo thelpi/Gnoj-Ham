@@ -42,13 +42,13 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AutoPlayEvents\AfterPickEventArgs.cs" />
+    <Compile Include="AutoPlayEvents\PickNotifierEventArgs.cs" />
     <Compile Include="AutoPlayEvents\DiscardTileNotifierEventArgs.cs" />
     <Compile Include="AutoPlayEvents\HumanCallNotifierEventArgs.cs" />
     <Compile Include="AutoPlayEvents\CallNotifierEventArgs.cs" />
     <Compile Include="AutoPlayEvents\ReadyToCallNotifierEventArgs.cs" />
-    <Compile Include="AutoPlayEvents\RiichiChoicesEventArgs.cs" />
-    <Compile Include="AutoPlayEvents\TurnChangeEventArgs.cs" />
+    <Compile Include="AutoPlayEvents\RiichiChoicesNotifierEventArgs.cs" />
+    <Compile Include="AutoPlayEvents\TurnChangeNotifierEventArgs.cs" />
     <Compile Include="AutoPlayPivot.cs" />
     <Compile Include="EndOfGameRulePivot.cs" />
     <Compile Include="CallTypePivot.cs" />
