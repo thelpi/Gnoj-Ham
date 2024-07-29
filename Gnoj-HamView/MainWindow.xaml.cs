@@ -356,16 +356,13 @@ namespace Gnoj_HamView
                                 SetActionButtonsVisibility(cpuPlay: !_game.Round.PreviousIsHumanPlayer);
                                 break;
                             case CallTypePivot.Kan:
-                                Dispatcher.Invoke(() =>
+                                if (e.PotentialPreviousPlayerIndex.HasValue)
                                 {
-                                    if (e.PotentialPreviousPlayerIndex.HasValue)
-                                    {
-                                        FillDiscardPanel(e.PotentialPreviousPlayerIndex.Value);
-                                    }
-                                    FillCombinationStack(_game.Round.CurrentPlayerIndex);
-                                    SetActionButtonsVisibility(cpuPlay: !_game.Round.IsHumanPlayer, preDiscard: _game.Round.IsHumanPlayer);
-                                    StpDoras.SetDorasPanel(_game.Round.DoraIndicatorTiles, _game.Round.VisibleDorasCount);
-                                });
+                                    FillDiscardPanel(e.PotentialPreviousPlayerIndex.Value);
+                                }
+                                FillCombinationStack(_game.Round.CurrentPlayerIndex);
+                                SetActionButtonsVisibility(cpuPlay: !_game.Round.IsHumanPlayer, preDiscard: _game.Round.IsHumanPlayer);
+                                StpDoras.SetDorasPanel(_game.Round.DoraIndicatorTiles, _game.Round.VisibleDorasCount);
                                 break;
                         }
                     });
