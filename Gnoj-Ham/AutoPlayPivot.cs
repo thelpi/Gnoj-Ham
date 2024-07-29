@@ -15,15 +15,12 @@ namespace Gnoj_Ham
 
         #region Events
 
-        public event Action<HumanCanCallRonEventArgs> HumanCanCallRon;
+        public event Action<HumanCallNotifierEventArgs> HumanCallNotifier;
         public event Action<DiscardTileNotifierEventArgs> HighlightPreviousPlayerDiscard;
         public event Action<CallNotifierEventArgs> InvokeOverlay;
         public event Action<ReadyToCallNotifierEventArgs> ReadyToCallNotifier;
         public event Action<TurnChangeEventArgs> RefreshPlayerTurnStyle;
         public event Action<AfterPickEventArgs> AfterPick;
-        public event Action<HumanCallTsumoEventArgs> HumanCallTsumo;
-        public event Action<HumanCallRiichiEventArgs> HumanCallRiichi;
-        public event Action<HumanDoesNotCallEventArgs> HumanDoesNotCall;
         public event Action<RiichiChoicesEventArgs> NotifyRiichiTiles;
 
         #endregion Events
@@ -193,7 +190,7 @@ namespace Gnoj_Ham
 
                 if (!skipCurrentAction && !humanRonPending && _game.Round.CanCallRon(GamePivot.HUMAN_INDEX))
                 {
-                    HumanCanCallRon?.Invoke(new HumanCanCallRonEventArgs());
+                    HumanCallNotifier?.Invoke(new HumanCallNotifierEventArgs { Call = CallTypePivot.Ron });
                     if (autoCallMahjong)
                     {
                         result = (result.endOfRound, result.ronPlayerId, CallTypePivot.Ron);
@@ -425,7 +422,7 @@ namespace Gnoj_Ham
 
             if (_game.Round.CanCallTsumo(false))
             {
-                HumanCallTsumo?.Invoke(new HumanCallTsumoEventArgs());
+                HumanCallNotifier?.Invoke(new HumanCallNotifierEventArgs { Call = CallTypePivot.Tsumo });
                 return autoCallMahjong ? CallTypePivot.Tsumo : default(CallTypePivot?);
             }
 
@@ -433,8 +430,8 @@ namespace Gnoj_Ham
             NotifyRiichiTiles?.Invoke(new RiichiChoicesEventArgs { Tiles = riichiTiles });
             if (riichiTiles.Count > 0)
             {
-                var riichiDecision = _game.Ruleset.DiscardTip && _game.Round.IaManager.RiichiDecision().choice != null;
-                HumanCallRiichi?.Invoke(new HumanCallRiichiEventArgs(riichiDecision));
+                var adviseRiichi = _game.Ruleset.DiscardTip && _game.Round.IaManager.RiichiDecision().choice != null;
+                HumanCallNotifier?.Invoke(new HumanCallNotifierEventArgs { Call = CallTypePivot.Riichi, RiichiAdvised = adviseRiichi });
                 return null;
             }
             else if (_game.Round.HumanCanAutoDiscard())
@@ -445,7 +442,7 @@ namespace Gnoj_Ham
             }
             else
             {
-                HumanDoesNotCall?.Invoke(new HumanDoesNotCallEventArgs());
+                HumanCallNotifier?.Invoke(new HumanCallNotifierEventArgs { Call = CallTypePivot.NoCall });
             }
 
             return null;

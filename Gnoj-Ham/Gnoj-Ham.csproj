@@ -44,10 +44,7 @@
   <ItemGroup>
     <Compile Include="AutoPlayEvents\AfterPickEventArgs.cs" />
     <Compile Include="AutoPlayEvents\DiscardTileNotifierEventArgs.cs" />
-    <Compile Include="AutoPlayEvents\HumanCallRiichiEventArgs.cs" />
-    <Compile Include="AutoPlayEvents\HumanCallTsumoEventArgs.cs" />
-    <Compile Include="AutoPlayEvents\HumanCanCallRonEventArgs.cs" />
-    <Compile Include="AutoPlayEvents\HumanDoesNotCallEventArgs.cs" />
+    <Compile Include="AutoPlayEvents\HumanCallNotifierEventArgs.cs" />
     <Compile Include="AutoPlayEvents\CallNotifierEventArgs.cs" />
     <Compile Include="AutoPlayEvents\ReadyToCallNotifierEventArgs.cs" />
     <Compile Include="AutoPlayEvents\RiichiChoicesEventArgs.cs" />

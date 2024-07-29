@@ -385,47 +385,38 @@ namespace Gnoj_HamView
                 {
                     Dispatcher.Invoke(() => HighlightPreviousPlayerDiscard());
                 };
-                autoPlay.HumanCallRiichi += e =>
+                autoPlay.HumanCallNotifier += e =>
                 {
+                    Button autoButtonOnTimer = null;
                     Dispatcher.Invoke(() =>
                     {
-                        GrdOverlayCanCall.Visibility = Visibility.Visible;
-                        BtnRiichi.Visibility = Visibility.Visible;
-                        BtnSkipCall.Visibility = Visibility.Visible;
-
-                        if (e.ChooseToRiichi)
-                            BtnRiichi.Foreground = Brushes.DarkMagenta;
+                        if (e.Call == CallTypePivot.NoCall)
+                        {
+                            autoButtonOnTimer = StpPickP0.Children[0] as Button;
+                        }
                         else
-                            BtnSkipCall.Foreground = Brushes.DarkMagenta;
+                        {
+                            GrdOverlayCanCall.Visibility = Visibility.Visible;
+                            BtnSkipCall.Visibility = Visibility.Visible;
+                            switch (e.Call)
+                            {
+                                case CallTypePivot.Riichi:
+                                    BtnRiichi.Visibility = Visibility.Visible;
+                                    if (e.RiichiAdvised)
+                                        BtnRiichi.Foreground = Brushes.DarkMagenta;
+                                    else
+                                        BtnSkipCall.Foreground = Brushes.DarkMagenta;
+                                    break;
+                                case CallTypePivot.Ron:
+                                    BtnRon.Visibility = Visibility.Visible;
+                                    break;
+                                case CallTypePivot.Tsumo:
+                                    BtnTsumo.Visibility = Visibility.Visible;
+                                    break;
+                            }
+                        }
                     });
-                    ActivateTimer(null);
-                };
-                autoPlay.HumanCallTsumo += e =>
-                {
-                    Dispatcher.Invoke(() =>
-                    {
-                        GrdOverlayCanCall.Visibility = Visibility.Visible;
-                        BtnTsumo.Visibility = Visibility.Visible;
-                        BtnSkipCall.Visibility = Visibility.Visible;
-                    });
-                    ActivateTimer(null);
-                };
-                autoPlay.HumanCanCallRon += e =>
-                {
-                    Dispatcher.Invoke(() =>
-                    {
-                        GrdOverlayCanCall.Visibility = Visibility.Visible;
-                        BtnRon.Visibility = Visibility.Visible;
-                        BtnSkipCall.Visibility = Visibility.Visible;
-                    });
-                    ActivateTimer(null);
-                };
-                autoPlay.HumanDoesNotCall += e =>
-                {
-                    Dispatcher.Invoke(() =>
-                    {
-                        ActivateTimer(StpPickP0.Children[0] as Button);
-                    });
+                    ActivateTimer(autoButtonOnTimer);
                 };
                 autoPlay.InvokeOverlay += e =>
                 {
