@@ -317,27 +317,57 @@ namespace Gnoj_HamView
 
                 var autoPlay = new AutoPlayPivot(_game, _ => { });
 
-                autoPlay.AfterChii += e =>
+                autoPlay.ReadyToCallNotifier += e =>
                 {
                     Dispatcher.Invoke(() =>
                     {
-                        FillHandPanel(_game.Round.CurrentPlayerIndex);
-                        FillCombinationStack(_game.Round.CurrentPlayerIndex);
-                        FillDiscardPanel(_game.Round.PreviousPlayerIndex);
-                        SetActionButtonsVisibility(cpuPlay: !_game.Round.IsHumanPlayer);
-                        if (_game.Round.IsHumanPlayer)
+                        switch (e.Call)
                         {
-                            ActivateTimer(GetFirstAvailableDiscardButton());
+                            case CallTypePivot.Chii:
+                                FillHandPanel(_game.Round.CurrentPlayerIndex);
+                                FillCombinationStack(_game.Round.CurrentPlayerIndex);
+                                FillDiscardPanel(_game.Round.PreviousPlayerIndex);
+                                SetActionButtonsVisibility(cpuPlay: !_game.Round.IsHumanPlayer);
+                                if (_game.Round.IsHumanPlayer)
+                                {
+                                    ActivateTimer(GetFirstAvailableDiscardButton());
+                                }
+                                break;
+                            case CallTypePivot.Pon:
+                                var isCpu = e.PlayerIndex != GamePivot.HUMAN_INDEX;
+                                FillHandPanel(e.PlayerIndex);
+                                FillCombinationStack(e.PlayerIndex);
+                                FillDiscardPanel(e.PreviousPlayerIndex);
+                                SetActionButtonsVisibility(cpuPlay: isCpu);
+                                if (!isCpu)
+                                {
+                                    ActivateTimer(GetFirstAvailableDiscardButton());
+                                }
+                                break;
+                            case CallTypePivot.Riichi:
+                                FillHandPanel(_game.Round.PreviousPlayerIndex);
+                                FillDiscardPanel(_game.Round.PreviousPlayerIndex);
+                                SetActionButtonsVisibility(cpuPlay: !_game.Round.PreviousIsHumanPlayer);
+                                this.FindName<Image>("RiichiStickP", _game.Round.PreviousPlayerIndex).Visibility = Visibility.Visible;
+                                break;
+                            case CallTypePivot.NoCall:
+                                FillHandPanel(_game.Round.PreviousPlayerIndex);
+                                FillDiscardPanel(_game.Round.PreviousPlayerIndex);
+                                SetActionButtonsVisibility(cpuPlay: !_game.Round.PreviousIsHumanPlayer);
+                                break;
+                            case CallTypePivot.Kan:
+                                Dispatcher.Invoke(() =>
+                                {
+                                    if (e.PotentialPreviousPlayerIndex.HasValue)
+                                    {
+                                        FillDiscardPanel(e.PotentialPreviousPlayerIndex.Value);
+                                    }
+                                    FillCombinationStack(_game.Round.CurrentPlayerIndex);
+                                    SetActionButtonsVisibility(cpuPlay: !_game.Round.IsHumanPlayer, preDiscard: _game.Round.IsHumanPlayer);
+                                    StpDoras.SetDorasPanel(_game.Round.DoraIndicatorTiles, _game.Round.VisibleDorasCount);
+                                });
+                                break;
                         }
-                    });
-                };
-                autoPlay.AfterDiscard += e =>
-                {
-                    Dispatcher.Invoke(() =>
-                    {
-                        FillHandPanel(_game.Round.PreviousPlayerIndex);
-                        FillDiscardPanel(_game.Round.PreviousPlayerIndex);
-                        SetActionButtonsVisibility(cpuPlay: !_game.Round.PreviousIsHumanPlayer);
                     });
                 };
                 autoPlay.AfterPick += e =>
@@ -349,44 +379,6 @@ namespace Gnoj_HamView
                             SetActionButtonsVisibility(preDiscard: true);
                         }
                         SetWallsLength();
-                    });
-                };
-                autoPlay.AfterPon += e =>
-                {
-                    var isCpu = e.PlayerIndex != GamePivot.HUMAN_INDEX;
-                    Dispatcher.Invoke(() =>
-                    {
-                        FillHandPanel(e.PlayerIndex);
-                        FillCombinationStack(e.PlayerIndex);
-                        FillDiscardPanel(e.PreviousPlayerIndex);
-                        SetActionButtonsVisibility(cpuPlay: isCpu);
-                        if (!isCpu)
-                        {
-                            ActivateTimer(GetFirstAvailableDiscardButton());
-                        }
-                    });
-                };
-                autoPlay.AfterRiichi += e =>
-                {
-                    Dispatcher.Invoke(() =>
-                    {
-                        FillHandPanel(_game.Round.PreviousPlayerIndex);
-                        FillDiscardPanel(_game.Round.PreviousPlayerIndex);
-                        SetActionButtonsVisibility(cpuPlay: !_game.Round.PreviousIsHumanPlayer);
-                        this.FindName<Image>("RiichiStickP", _game.Round.PreviousPlayerIndex).Visibility = Visibility.Visible;
-                    });
-                };
-                autoPlay.CommonCallKan += e =>
-                {
-                    Dispatcher.Invoke(() =>
-                    {
-                        if (e.PreviousPlayerIndex.HasValue)
-                        {
-                            FillDiscardPanel(e.PreviousPlayerIndex.Value);
-                        }
-                        FillCombinationStack(_game.Round.CurrentPlayerIndex);
-                        SetActionButtonsVisibility(cpuPlay: !_game.Round.IsHumanPlayer, preDiscard: _game.Round.IsHumanPlayer);
-                        StpDoras.SetDorasPanel(_game.Round.DoraIndicatorTiles, _game.Round.VisibleDorasCount);
                     });
                 };
                 autoPlay.HighlightPreviousPlayerDiscard += e =>
@@ -448,7 +440,7 @@ namespace Gnoj_HamView
                     RefreshPlayerTurnStyle();
                 };
 
-                var result = autoPlay.AutoPlayHuman(
+                var (endOfRound, ronPlayerId, humanAction) = autoPlay.AutoPlayHuman(
                     _cancellationToken,
                     (bool)argumentsList[0],
                     (bool)argumentsList[1],
@@ -457,13 +449,13 @@ namespace Gnoj_HamView
 
                 evt.Result = new AutoPlayResult
                 {
-                    EndOfRound = result.endOfRound,
-                    PanelButton = result.humanAction.HasValue
-                        ? (result.humanAction == CallTypePivot.NoCall
+                    EndOfRound = endOfRound,
+                    PanelButton = humanAction.HasValue
+                        ? (humanAction == CallTypePivot.NoCall
                             ? new PanelButton("StpPickP", 0)
-                            : new PanelButton($"Btn{result.humanAction}", -1))
+                            : new PanelButton($"Btn{humanAction}", -1))
                         : null,
-                    RonPlayerId = result.ronPlayerId
+                    RonPlayerId = ronPlayerId
                 };
             };
             _autoPlay.RunWorkerCompleted += delegate (object sender, RunWorkerCompletedEventArgs evt)

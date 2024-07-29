@@ -16,19 +16,15 @@ namespace Gnoj_Ham
         #region Events
 
         public event Action<HumanCanCallRonEventArgs> HumanCanCallRon;
-        public event Action<HighlightPreviousPlayerDiscardEventArgs> HighlightPreviousPlayerDiscard;
-        public event Action<InvokeOverlayEventArgs> InvokeOverlay;
-        public event Action<CommonCallKanEventArgs> CommonCallKan;
-        public event Action<RefreshPlayerTurnStyleEventArgs> RefreshPlayerTurnStyle;
+        public event Action<DiscardTileNotifierEventArgs> HighlightPreviousPlayerDiscard;
+        public event Action<CallNotifierEventArgs> InvokeOverlay;
+        public event Action<ReadyToCallNotifierEventArgs> ReadyToCallNotifier;
+        public event Action<TurnChangeEventArgs> RefreshPlayerTurnStyle;
         public event Action<AfterPickEventArgs> AfterPick;
-        public event Action<AfterChiiEventArgs> AfterChii;
-        public event Action<AfterPonEventArgs> AfterPon;
-        public event Action<AfterDiscardEventArgs> AfterDiscard;
-        public event Action<AfterRiichiEventArgs> AfterRiichi;
         public event Action<HumanCallTsumoEventArgs> HumanCallTsumo;
         public event Action<HumanCallRiichiEventArgs> HumanCallRiichi;
         public event Action<HumanDoesNotCallEventArgs> HumanDoesNotCall;
-        public event Action<NotifyRiichiTilesEventArgs> NotifyRiichiTiles;
+        public event Action<RiichiChoicesEventArgs> NotifyRiichiTiles;
 
         #endregion Events
 
@@ -204,7 +200,7 @@ namespace Gnoj_Ham
                     }
                     else
                     {
-                        HighlightPreviousPlayerDiscard?.Invoke(new HighlightPreviousPlayerDiscardEventArgs());
+                        HighlightPreviousPlayerDiscard?.Invoke(new DiscardTileNotifierEventArgs());
                     }
                     break;
                 }
@@ -221,14 +217,14 @@ namespace Gnoj_Ham
 
                 if (kanInProgress != null)
                 {
-                    CommonCallKan?.Invoke(new CommonCallKanEventArgs(kanInProgress.Item3));
+                    ReadyToCallNotifier?.Invoke(new ReadyToCallNotifierEventArgs { Call = CallTypePivot.Kan, PotentialPreviousPlayerIndex = kanInProgress.Item3 });
                 }
 
                 if (!skipCurrentAction && _game.Round.CanCallPonOrKan(GamePivot.HUMAN_INDEX, out var isSelfKan))
                 {
                     if (!isSelfKan)
                     {
-                        HighlightPreviousPlayerDiscard?.Invoke(new HighlightPreviousPlayerDiscardEventArgs());
+                        HighlightPreviousPlayerDiscard?.Invoke(new DiscardTileNotifierEventArgs());
                     }
                     break;
                 }
@@ -251,7 +247,7 @@ namespace Gnoj_Ham
 
                 if (!skipCurrentAction && _game.Round.IsHumanPlayer && _game.Round.CanCallChii().Count > 0)
                 {
-                    HighlightPreviousPlayerDiscard?.Invoke(new HighlightPreviousPlayerDiscardEventArgs());
+                    HighlightPreviousPlayerDiscard?.Invoke(new DiscardTileNotifierEventArgs());
                     break;
                 }
 
@@ -302,7 +298,7 @@ namespace Gnoj_Ham
             var opponentsCallRon = _game.Round.IaManager.RonDecision(humanRonPending);
             foreach (var opponentPlayerIndex in opponentsCallRon)
             {
-                InvokeOverlay?.Invoke(new InvokeOverlayEventArgs(opponentPlayerIndex, CallTypePivot.Ron));
+                InvokeOverlay?.Invoke(new CallNotifierEventArgs { Action = CallTypePivot.Ron, PlayerIndex = opponentPlayerIndex });
             }
 
             return humanRonPending || opponentsCallRon.Count > 0;
@@ -310,19 +306,19 @@ namespace Gnoj_Ham
 
         private TilePivot OpponentBeginCallKan(int playerId, TilePivot kanTilePick, bool concealedKan)
         {
-            RefreshPlayerTurnStyle?.Invoke(new RefreshPlayerTurnStyleEventArgs());
+            RefreshPlayerTurnStyle?.Invoke(new TurnChangeEventArgs());
 
             var compensationTile = _game.Round.CallKan(playerId, concealedKan ? kanTilePick : null);
             if (compensationTile != null)
             {
-                InvokeOverlay?.Invoke(new InvokeOverlayEventArgs(playerId, CallTypePivot.Kan));
+                InvokeOverlay?.Invoke(new CallNotifierEventArgs { PlayerIndex = playerId, Action = CallTypePivot.Kan });
             }
             return compensationTile;
         }
 
         private void Pick()
         {
-            RefreshPlayerTurnStyle?.Invoke(new RefreshPlayerTurnStyleEventArgs());
+            RefreshPlayerTurnStyle?.Invoke(new TurnChangeEventArgs());
 
             var pick = _game.Round.Pick();
 
@@ -331,13 +327,13 @@ namespace Gnoj_Ham
 
         private void ChiiCall(Tuple<TilePivot, bool> chiiTilePick, int sleepTime)
         {
-            RefreshPlayerTurnStyle?.Invoke(new RefreshPlayerTurnStyleEventArgs());
+            RefreshPlayerTurnStyle?.Invoke(new TurnChangeEventArgs());
 
             if (_game.Round.CallChii(chiiTilePick.Item2 ? chiiTilePick.Item1.Number - 1 : chiiTilePick.Item1.Number))
             {
-                InvokeOverlay?.Invoke(new InvokeOverlayEventArgs(_game.Round.CurrentPlayerIndex, CallTypePivot.Chii));
+                InvokeOverlay?.Invoke(new CallNotifierEventArgs { Action = CallTypePivot.Chii, PlayerIndex = _game.Round.CurrentPlayerIndex });
 
-                AfterChii?.Invoke(new AfterChiiEventArgs());
+                ReadyToCallNotifier?.Invoke(new ReadyToCallNotifierEventArgs { Call = CallTypePivot.Chii });
 
                 if (!_game.Round.IsHumanPlayer)
                 {
@@ -348,7 +344,7 @@ namespace Gnoj_Ham
 
         private void PonCall(int playerIndex, int sleepTime)
         {
-            RefreshPlayerTurnStyle?.Invoke(new RefreshPlayerTurnStyleEventArgs());
+            RefreshPlayerTurnStyle?.Invoke(new TurnChangeEventArgs());
 
             // Note : this value is stored here because the call to "CallPon" makes it change.
             var previousPlayerIndex = _game.Round.PreviousPlayerIndex;
@@ -356,9 +352,9 @@ namespace Gnoj_Ham
 
             if (_game.Round.CallPon(playerIndex))
             {
-                InvokeOverlay?.Invoke(new InvokeOverlayEventArgs(playerIndex, CallTypePivot.Pon));
+                InvokeOverlay?.Invoke(new CallNotifierEventArgs { PlayerIndex = playerIndex, Action = CallTypePivot.Pon });
 
-                AfterPon?.Invoke(new AfterPonEventArgs(playerIndex, previousPlayerIndex));
+                ReadyToCallNotifier?.Invoke(new ReadyToCallNotifierEventArgs { Call = CallTypePivot.Pon, PreviousPlayerIndex = previousPlayerIndex, PlayerIndex = playerIndex });
 
                 if (isCpu)
                 {
@@ -376,7 +372,7 @@ namespace Gnoj_Ham
 
             if (_game.Round.Discard(tile))
             {
-                AfterDiscard?.Invoke(new AfterDiscardEventArgs());
+                ReadyToCallNotifier?.Invoke(new ReadyToCallNotifierEventArgs { Call = CallTypePivot.NoCall });
             }
         }
 
@@ -384,7 +380,7 @@ namespace Gnoj_Ham
         {
             if (_game.Round.IaManager.TsumoDecision(kanInProgress != null))
             {
-                InvokeOverlay?.Invoke(new InvokeOverlayEventArgs(_game.Round.CurrentPlayerIndex, CallTypePivot.Tsumo));
+                InvokeOverlay?.Invoke(new CallNotifierEventArgs { Action = CallTypePivot.Tsumo, PlayerIndex = _game.Round.CurrentPlayerIndex });
                 return true;
             }
 
@@ -413,13 +409,13 @@ namespace Gnoj_Ham
         {
             if (!_game.Round.IsHumanPlayer)
             {
-                InvokeOverlay?.Invoke(new InvokeOverlayEventArgs(_game.Round.CurrentPlayerIndex, CallTypePivot.Riichi));
+                InvokeOverlay?.Invoke(new CallNotifierEventArgs { PlayerIndex = _game.Round.CurrentPlayerIndex, Action = CallTypePivot.Riichi });
                 Thread.Sleep(sleepTime);
             }
 
             if (_game.Round.CallRiichi(tile))
             {
-                AfterRiichi?.Invoke(new AfterRiichiEventArgs());
+                ReadyToCallNotifier?.Invoke(new ReadyToCallNotifierEventArgs { Call = CallTypePivot.Riichi });
             }
         }
 
@@ -434,7 +430,7 @@ namespace Gnoj_Ham
             }
 
             var riichiTiles = _game.Round.CanCallRiichi();
-            NotifyRiichiTiles?.Invoke(new NotifyRiichiTilesEventArgs(riichiTiles));
+            NotifyRiichiTiles?.Invoke(new RiichiChoicesEventArgs { Tiles = riichiTiles });
             if (riichiTiles.Count > 0)
             {
                 var riichiDecision = _game.Ruleset.DiscardTip && _game.Round.IaManager.RiichiDecision().choice != null;
