@@ -171,7 +171,6 @@ namespace Gnoj_Ham
         public event AfterChiiEventHandler AfterChii;
         public event AfterPonEventHandler AfterPon;
         public event AfterDiscardEventHandler AfterDiscard;
-        public event TimerEventHandler Timer;
         public event AfterRiichiEventHandler AfterRiichi;
         public event HumanCallTsumoEventHandler HumanCallTsumo;
         public event HumanCallRiichiEventHandler HumanCallRiichi;
@@ -180,11 +179,12 @@ namespace Gnoj_Ham
 
         #endregion Events
 
-        private (bool endOfRound, int? ronPlayerId, HumanActionPivot? humanAction) AutoPlayHuman(
+        public (bool endOfRound, int? ronPlayerId, HumanActionPivot? humanAction) AutoPlayHuman(
             CancellationToken cancellationToken,
             bool skipCurrentAction,
             bool humanRonPending,
-            bool autoCallMahjong)
+            bool autoCallMahjong,
+            int sleepTime)
         {
             Tuple<int, TilePivot, int?> kanInProgress = null;
             (bool endOfRound, int? ronPlayerId, HumanActionPivot? humanAction) result = default;
@@ -245,7 +245,7 @@ namespace Gnoj_Ham
                 var opponentPlayerId = _game.Round.IaManager.PonDecision();
                 if (opponentPlayerId > -1)
                 {
-                    PonCall(opponentPlayerId);
+                    PonCall(opponentPlayerId, sleepTime);
                     continue;
                 }
 
@@ -258,13 +258,13 @@ namespace Gnoj_Ham
                 var chiiTilePick = _game.Round.IaManager.ChiiDecision();
                 if (chiiTilePick != null)
                 {
-                    ChiiCall(chiiTilePick);
+                    ChiiCall(chiiTilePick, sleepTime);
                     continue;
                 }
 
                 if (kanInProgress != null)
                 {
-                    if (OpponentAfterPick(ref kanInProgress))
+                    if (OpponentAfterPick(ref kanInProgress, sleepTime))
                     {
                         result = (true, result.ronPlayerId, result.humanAction);
                         break;
@@ -280,13 +280,13 @@ namespace Gnoj_Ham
 
                 if (_game.Round.IsHumanPlayer)
                 {
-                    result = (result.endOfRound, result.ronPlayerId, HumanAutoPlay(autoCallMahjong));
+                    result = (result.endOfRound, result.ronPlayerId, HumanAutoPlay(autoCallMahjong, sleepTime));
                     break;
                 }
                 else
                 {
                     Pick();
-                    if (OpponentAfterPick(ref kanInProgress))
+                    if (OpponentAfterPick(ref kanInProgress, sleepTime))
                     {
                         result = (true, result.ronPlayerId, result.humanAction);
                         break;
@@ -329,7 +329,7 @@ namespace Gnoj_Ham
             AfterPick?.Invoke(new AfterPickEventArgs());
         }
 
-        private void ChiiCall(Tuple<TilePivot, bool> chiiTilePick)
+        private void ChiiCall(Tuple<TilePivot, bool> chiiTilePick, int sleepTime)
         {
             RefreshPlayerTurnStyle?.Invoke(new RefreshPlayerTurnStyleEventArgs());
 
@@ -341,12 +341,12 @@ namespace Gnoj_Ham
 
                 if (!_game.Round.IsHumanPlayer)
                 {
-                    Discard(_game.Round.IaManager.DiscardDecision(new List<TilePivot>()));
+                    Discard(_game.Round.IaManager.DiscardDecision(new List<TilePivot>()), sleepTime);
                 }
             }
         }
 
-        private void PonCall(int playerIndex)
+        private void PonCall(int playerIndex, int sleepTime)
         {
             RefreshPlayerTurnStyle?.Invoke(new RefreshPlayerTurnStyleEventArgs());
 
@@ -362,16 +362,16 @@ namespace Gnoj_Ham
 
                 if (isCpu)
                 {
-                    Discard(_game.Round.IaManager.DiscardDecision(new List<TilePivot>()));
+                    Discard(_game.Round.IaManager.DiscardDecision(new List<TilePivot>()), sleepTime);
                 }
             }
         }
 
-        private void Discard(TilePivot tile)
+        private void Discard(TilePivot tile, int sleepTime)
         {
             if (!_game.Round.IsHumanPlayer)
             {
-                Timer?.Invoke(new TimerEventArgs());
+                Thread.Sleep(sleepTime);
             }
 
             if (_game.Round.Discard(tile))
@@ -380,7 +380,7 @@ namespace Gnoj_Ham
             }
         }
 
-        private bool OpponentAfterPick(ref Tuple<int, TilePivot, int?> kanInProgress)
+        private bool OpponentAfterPick(ref Tuple<int, TilePivot, int?> kanInProgress, int sleepTime)
         {
             if (_game.Round.IaManager.TsumoDecision(kanInProgress != null))
             {
@@ -401,20 +401,20 @@ namespace Gnoj_Ham
             var (riichiTile, riichiTiles) = _game.Round.IaManager.RiichiDecision();
             if (riichiTile != null)
             {
-                CallRiichi(riichiTile);
+                CallRiichi(riichiTile, sleepTime);
                 return false;
             }
 
-            Discard(_game.Round.IaManager.DiscardDecision(riichiTiles));
+            Discard(_game.Round.IaManager.DiscardDecision(riichiTiles), sleepTime);
             return false;
         }
 
-        private void CallRiichi(TilePivot tile)
+        private void CallRiichi(TilePivot tile, int sleepTime)
         {
             if (!_game.Round.IsHumanPlayer)
             {
                 InvokeOverlay?.Invoke(new InvokeOverlayEventArgs(_game.Round.CurrentPlayerIndex, HumanActionPivot.Riichi));
-                Timer?.Invoke(new TimerEventArgs());
+                Thread.Sleep(sleepTime);
             }
 
             if (_game.Round.CallRiichi(tile))
@@ -423,7 +423,7 @@ namespace Gnoj_Ham
             }
         }
 
-        private HumanActionPivot? HumanAutoPlay(bool autoCallMahjong)
+        private HumanActionPivot? HumanAutoPlay(bool autoCallMahjong, int sleepTime)
         {
             Pick();
 
@@ -444,7 +444,7 @@ namespace Gnoj_Ham
             else if (_game.Round.HumanCanAutoDiscard())
             {
                 // Not a real CPU sleep: the auto-discard by human player is considered as such
-                Timer?.Invoke(new TimerEventArgs());
+                Thread.Sleep(sleepTime);
                 return HumanActionPivot.Discard;
             }
             else

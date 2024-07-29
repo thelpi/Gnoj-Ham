@@ -28,7 +28,8 @@ namespace Gnoj_HamView
         private readonly Storyboard _overlayStoryboard;
         private bool _waitForDecision;
         private IReadOnlyList<TilePivot> _riichiTiles;
-        private bool _hardStopAutoplay = false;
+        private readonly CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
+        private readonly CancellationToken _cancellationToken;
 
         /// <summary>
         /// Constructor.
@@ -40,6 +41,7 @@ namespace Gnoj_HamView
         {
             InitializeComponent();
 
+            _cancellationToken = _cancellationTokenSource.Token;
             LblPlayerP0.Content = playerName;
 
             _game = new GamePivot(playerName, ruleset, save, new Random());
@@ -70,7 +72,7 @@ namespace Gnoj_HamView
 
         private void Window_Closing(object sender, CancelEventArgs e)
         {
-            _hardStopAutoplay = true;
+            _cancellationTokenSource.Cancel();
         }
 
         private void BtnDiscard_Click(object sender, RoutedEventArgs e)
@@ -312,133 +314,161 @@ namespace Gnoj_HamView
             _autoPlay.DoWork += delegate (object sender, DoWorkEventArgs evt)
             {
                 var argumentsList = evt.Argument as object[];
-                var skipCurrentAction = (bool)argumentsList[0];
-                var humanRonPending = (bool)argumentsList[1];
-                Tuple<int, TilePivot, int?> kanInProgress = null;
-                var result = new AutoPlayResult
+
+                var autoPlay = new AutoPlayPivot(_game, _ => { });
+
+                autoPlay.AfterChii += e =>
                 {
-                    EndOfRound = false,
-                    PanelButton = null,
-                    RonPlayerId = null
+                    Dispatcher.Invoke(() =>
+                    {
+                        FillHandPanel(_game.Round.CurrentPlayerIndex);
+                        FillCombinationStack(_game.Round.CurrentPlayerIndex);
+                        FillDiscardPanel(_game.Round.PreviousPlayerIndex);
+                        SetActionButtonsVisibility(cpuPlay: !_game.Round.IsHumanPlayer);
+                        if (_game.Round.IsHumanPlayer)
+                        {
+                            ActivateTimer(GetFirstAvailableDiscardButton());
+                        }
+                    });
                 };
-                var isFirstTurn = true;
-                while (!_hardStopAutoplay)
+                autoPlay.AfterDiscard += e =>
                 {
-                    if (!isFirstTurn)
-                        skipCurrentAction = false;
-                    isFirstTurn = false;
-
-                    if (!skipCurrentAction && !humanRonPending && _game.Round.CanCallRon(GamePivot.HUMAN_INDEX))
+                    Dispatcher.Invoke(() =>
                     {
-                        Dispatcher.Invoke(() =>
+                        FillHandPanel(_game.Round.PreviousPlayerIndex);
+                        FillDiscardPanel(_game.Round.PreviousPlayerIndex);
+                        SetActionButtonsVisibility(cpuPlay: !_game.Round.PreviousIsHumanPlayer);
+                    });
+                };
+                autoPlay.AfterPick += e =>
+                {
+                    Dispatcher.Invoke(() =>
+                    {
+                        if (_game.Round.IsHumanPlayer)
                         {
-                            GrdOverlayCanCall.Visibility = Visibility.Visible;
-                            BtnRon.Visibility = Visibility.Visible;
-                            BtnSkipCall.Visibility = Visibility.Visible;
-                        });
-                        ActivateTimer(null);
-                        if (Properties.Settings.Default.AutoCallMahjong)
-                        {
-                            result.PanelButton = new PanelButton("BtnRon", -1);
+                            SetActionButtonsVisibility(preDiscard: true);
                         }
+                        SetWallsLength();
+                    });
+                };
+                autoPlay.AfterPon += e =>
+                {
+                    var isCpu = e.PlayerIndex != GamePivot.HUMAN_INDEX;
+                    Dispatcher.Invoke(() =>
+                    {
+                        FillHandPanel(e.PlayerIndex);
+                        FillCombinationStack(e.PlayerIndex);
+                        FillDiscardPanel(e.PreviousPlayerIndex);
+                        SetActionButtonsVisibility(cpuPlay: isCpu);
+                        if (!isCpu)
+                        {
+                            ActivateTimer(GetFirstAvailableDiscardButton());
+                        }
+                    });
+                };
+                autoPlay.AfterRiichi += e =>
+                {
+                    Dispatcher.Invoke(() =>
+                    {
+                        FillHandPanel(_game.Round.PreviousPlayerIndex);
+                        FillDiscardPanel(_game.Round.PreviousPlayerIndex);
+                        SetActionButtonsVisibility(cpuPlay: !_game.Round.PreviousIsHumanPlayer);
+                        this.FindName<Image>("RiichiStickP", _game.Round.PreviousPlayerIndex).Visibility = Visibility.Visible;
+                    });
+                };
+                autoPlay.CommonCallKan += e =>
+                {
+                    Dispatcher.Invoke(() =>
+                    {
+                        if (e.PreviousPlayerIndex.HasValue)
+                        {
+                            FillDiscardPanel(e.PreviousPlayerIndex.Value);
+                        }
+                        FillCombinationStack(_game.Round.CurrentPlayerIndex);
+                        SetActionButtonsVisibility(cpuPlay: !_game.Round.IsHumanPlayer, preDiscard: _game.Round.IsHumanPlayer);
+                        StpDoras.SetDorasPanel(_game.Round.DoraIndicatorTiles, _game.Round.VisibleDorasCount);
+                    });
+                };
+                autoPlay.HighlightPreviousPlayerDiscard += e =>
+                {
+                    Dispatcher.Invoke(() => HighlightPreviousPlayerDiscard());
+                };
+                autoPlay.HumanCallRiichi += e =>
+                {
+                    Dispatcher.Invoke(() =>
+                    {
+                        GrdOverlayCanCall.Visibility = Visibility.Visible;
+                        BtnRiichi.Visibility = Visibility.Visible;
+                        BtnSkipCall.Visibility = Visibility.Visible;
+
+                        if (e.ChooseToRiichi)
+                            BtnRiichi.Foreground = Brushes.DarkMagenta;
                         else
-                        {
-                            Dispatcher.Invoke(() => HighlightPreviousPlayerDiscard());
-                        }
-                        break;
-                    }
-
-                    if (CheckOpponensRonCall(humanRonPending))
+                            BtnSkipCall.Foreground = Brushes.DarkMagenta;
+                    });
+                    ActivateTimer(null);
+                };
+                autoPlay.HumanCallTsumo += e =>
+                {
+                    Dispatcher.Invoke(() =>
                     {
-                        result.EndOfRound = true;
-                        result.RonPlayerId = kanInProgress != null ? kanInProgress.Item1 : _game.Round.PreviousPlayerIndex;
-                        if (kanInProgress != null)
-                        {
-                            _game.Round.UndoPickCompensationTile();
-                        }
-                        break;
-                    }
-
-                    if (kanInProgress != null)
+                        GrdOverlayCanCall.Visibility = Visibility.Visible;
+                        BtnTsumo.Visibility = Visibility.Visible;
+                        BtnSkipCall.Visibility = Visibility.Visible;
+                    });
+                    ActivateTimer(null);
+                };
+                autoPlay.HumanCanCallRon += e =>
+                {
+                    Dispatcher.Invoke(() =>
                     {
-                        CommonCallKan(kanInProgress.Item3);
-                    }
-
-                    if (!skipCurrentAction && _game.Round.CanCallPonOrKan(GamePivot.HUMAN_INDEX, out var isSelfKan))
+                        GrdOverlayCanCall.Visibility = Visibility.Visible;
+                        BtnRon.Visibility = Visibility.Visible;
+                        BtnSkipCall.Visibility = Visibility.Visible;
+                    });
+                    ActivateTimer(null);
+                };
+                autoPlay.HumanDoesNotCall += e =>
+                {
+                    Dispatcher.Invoke(() =>
                     {
-                        if (!isSelfKan)
-                        {
-                            Dispatcher.Invoke(() => HighlightPreviousPlayerDiscard());
-                        }
-                        break;
-                    }
+                        ActivateTimer(StpPickP0.Children[0] as Button);
+                    });
+                };
+                autoPlay.InvokeOverlay += e =>
+                {
+                    InvokeOverlay($"{e.Action}", e.PlayerIndex);
+                };
+                autoPlay.NotifyRiichiTiles += e =>
+                {
+                    _riichiTiles = e.Tiles;
+                };
+                autoPlay.RefreshPlayerTurnStyle += e =>
+                {
+                    RefreshPlayerTurnStyle();
+                };
 
-                    var opponentWithKanTilePick = _game.Round.IaManager.KanDecision(false);
-                    if (opponentWithKanTilePick != null)
-                    {
-                        var previousPlayerIndex = _game.Round.PreviousPlayerIndex;
-                        var compensationTile = OpponentBeginCallKan(opponentWithKanTilePick.Item1, opponentWithKanTilePick.Item2, false);
-                        kanInProgress = new Tuple<int, TilePivot, int?>(opponentWithKanTilePick.Item1, compensationTile, previousPlayerIndex);
-                        continue;
-                    }
+                var result = autoPlay.AutoPlayHuman(
+                    _cancellationToken,
+                    (bool)argumentsList[0],
+                    (bool)argumentsList[1],
+                    Properties.Settings.Default.AutoCallMahjong,
+                    ((CpuSpeedPivot)Properties.Settings.Default.CpuSpeed).ParseSpeed());
 
-                    var opponentPlayerId = _game.Round.IaManager.PonDecision();
-                    if (opponentPlayerId > -1)
-                    {
-                        PonCall(opponentPlayerId);
-                        continue;
-                    }
-
-                    if (!skipCurrentAction && _game.Round.IsHumanPlayer && _game.Round.CanCallChii().Count > 0)
-                    {
-                        Dispatcher.Invoke(() => HighlightPreviousPlayerDiscard());
-                        break;
-                    }
-
-                    var chiiTilePick = _game.Round.IaManager.ChiiDecision();
-                    if (chiiTilePick != null)
-                    {
-                        ChiiCall(chiiTilePick);
-                        continue;
-                    }
-
-                    if (kanInProgress != null)
-                    {
-                        if (OpponentAfterPick(ref kanInProgress))
-                        {
-                            result.EndOfRound = true;
-                            break;
-                        }
-                        continue;
-                    }
-
-                    if (_game.Round.IsWallExhaustion)
-                    {
-                        result.EndOfRound = true;
-                        break;
-                    }
-
-                    if (_game.Round.IsHumanPlayer)
-                    {
-                        result.PanelButton = HumanAutoPlay();
-                        break;
-                    }
-                    else
-                    {
-                        Pick();
-                        if (OpponentAfterPick(ref kanInProgress))
-                        {
-                            result.EndOfRound = true;
-                            break;
-                        }
-                    }
-                }
-
-                evt.Result = result;
+                evt.Result = new AutoPlayResult
+                {
+                    EndOfRound = result.endOfRound,
+                    PanelButton = result.humanAction.HasValue
+                        ? (result.humanAction == HumanActionPivot.Discard
+                            ? new PanelButton("StpPickP", 0)
+                            : new PanelButton($"Btn{result.humanAction}", -1))
+                        : null,
+                    RonPlayerId = result.ronPlayerId
+                };
             };
             _autoPlay.RunWorkerCompleted += delegate (object sender, RunWorkerCompletedEventArgs evt)
             {
-                if (!_hardStopAutoplay)
+                if (!_cancellationToken.IsCancellationRequested)
                 {
                     var autoPlayResult = evt.Result as AutoPlayResult;
                     if (autoPlayResult.EndOfRound)
@@ -496,58 +526,6 @@ namespace Gnoj_HamView
             }
 
             return humanRonPending || opponentsCallRon.Count > 0;
-        }
-
-        // Proceeds to autoplay for human player.
-        private PanelButton HumanAutoPlay()
-        {
-            Pick();
-
-            if (_game.Round.CanCallTsumo(false))
-            {
-                Dispatcher.Invoke(() =>
-                {
-                    GrdOverlayCanCall.Visibility = Visibility.Visible;
-                    BtnTsumo.Visibility = Visibility.Visible;
-                    BtnSkipCall.Visibility = Visibility.Visible;
-                });
-                ActivateTimer(null);
-                return Properties.Settings.Default.AutoCallMahjong ? new PanelButton("BtnTsumo", -1) : null;
-            }
-
-            _riichiTiles = _game.Round.CanCallRiichi();
-            if (_riichiTiles.Count > 0)
-            {
-                var riichiDecision = _game.Ruleset.DiscardTip && _game.Round.IaManager.RiichiDecision().choice != null;
-                Dispatcher.Invoke(() =>
-                {
-                    GrdOverlayCanCall.Visibility = Visibility.Visible;
-                    BtnRiichi.Visibility = Visibility.Visible;
-                    BtnSkipCall.Visibility = Visibility.Visible;
-
-                    if (riichiDecision)
-                        BtnRiichi.Foreground = Brushes.DarkMagenta;
-                    else
-                        BtnSkipCall.Foreground = Brushes.DarkMagenta;
-                });
-                ActivateTimer(null);
-                return null;
-            }
-            else if (_game.Round.HumanCanAutoDiscard())
-            {
-                // Not a real CPU sleep: the auto-discard by human player is considered as such
-                Thread.Sleep(((CpuSpeedPivot)Properties.Settings.Default.CpuSpeed).ParseSpeed());
-                return new PanelButton("StpPickP", 0);
-            }
-            else
-            {
-                Dispatcher.Invoke(() =>
-                {
-                    ActivateTimer(StpPickP0.Children[0] as Button);
-                });
-            }
-
-            return null;
         }
 
         // Restrict possible discards on the specified selection of tiles.
@@ -682,21 +660,6 @@ namespace Gnoj_HamView
             }
         }
 
-        // Pick action (human or CPU).
-        private void Pick()
-        {
-            RefreshPlayerTurnStyle();
-            var pick = _game.Round.Pick();
-            Dispatcher.Invoke(() =>
-            {
-                if (_game.Round.IsHumanPlayer)
-                {
-                    SetActionButtonsVisibility(preDiscard: true);
-                }
-                SetWallsLength();
-            });
-        }
-
         // Riichi call action (human or CPU).
         private void CallRiichi(TilePivot tile)
         {
@@ -721,49 +684,6 @@ namespace Gnoj_HamView
                     RunAutoPlay();
                 }
             }
-        }
-
-        // Proceeds to call a kan for an opponent.
-        private TilePivot OpponentBeginCallKan(int playerId, TilePivot kanTilePick, bool concealedKan)
-        {
-            RefreshPlayerTurnStyle();
-
-            var compensationTile = _game.Round.CallKan(playerId, concealedKan ? kanTilePick : null);
-            if (compensationTile != null)
-            {
-                InvokeOverlay("Kan", playerId);
-            }
-            return compensationTile;
-        }
-
-        // Manages every possible moves for the current opponent after his pick.
-        private bool OpponentAfterPick(ref Tuple<int, TilePivot, int?> kanInProgress)
-        {
-            if (_game.Round.IaManager.TsumoDecision(kanInProgress != null))
-            {
-                InvokeOverlay("Tsumo", _game.Round.CurrentPlayerIndex);
-                return true;
-            }
-
-            var opponentWithKanTilePick = _game.Round.IaManager.KanDecision(true);
-            if (opponentWithKanTilePick != null)
-            {
-                var compensationTile = OpponentBeginCallKan(_game.Round.CurrentPlayerIndex, opponentWithKanTilePick.Item2, true);
-                kanInProgress = new Tuple<int, TilePivot, int?>(_game.Round.CurrentPlayerIndex, compensationTile, null);
-                return false;
-            }
-
-            kanInProgress = null;
-
-            var (riichiTile, riichiTiles) = _game.Round.IaManager.RiichiDecision();
-            if (riichiTile != null)
-            {
-                CallRiichi(riichiTile);
-                return false;
-            }
-
-            Discard(_game.Round.IaManager.DiscardDecision(riichiTiles));
-            return false;
         }
 
         // Inner process kan call.
