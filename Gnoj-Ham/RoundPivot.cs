@@ -125,12 +125,6 @@ namespace Gnoj_Ham
         #region Events
 
         /// <summary>
-        /// Delegate for the <see cref="TileEventArgs"/> event.
-        /// </summary>
-        /// <param name="evt">The event.</param>
-        public delegate void TileEventHandler(TileEventArgs evt);
-
-        /// <summary>
         /// Event triggered when the tiles count in the wall changes.
         /// </summary>
         public event EventHandler NotifyWallCount;

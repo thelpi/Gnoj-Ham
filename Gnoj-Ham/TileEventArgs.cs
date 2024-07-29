@@ -3,6 +3,12 @@
 namespace Gnoj_Ham
 {
     /// <summary>
+    /// Delegate for the <see cref="TileEventArgs"/> event.
+    /// </summary>
+    /// <param name="evt">The event.</param>
+    public delegate void TileEventHandler(TileEventArgs evt);
+
+    /// <summary>
     /// Event triggered when a tile is involved in an action; it can be a pick, a discard or a call.
     /// </summary>
     /// <seealso cref="EventArgs"/>

@@ -42,8 +42,24 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AutoPlayEvents\AfterChiiEventArgs.cs" />
+    <Compile Include="AutoPlayEvents\AfterDiscardEventArgs.cs" />
+    <Compile Include="AutoPlayEvents\AfterPickEventArgs.cs" />
+    <Compile Include="AutoPlayEvents\AfterPonEventArgs.cs" />
+    <Compile Include="AutoPlayEvents\AfterRiichiEventArgs.cs" />
+    <Compile Include="AutoPlayEvents\CommonCallKanEventArgs.cs" />
+    <Compile Include="AutoPlayEvents\HighlightPreviousPlayerDiscardEventArgs.cs" />
+    <Compile Include="AutoPlayEvents\HumanCallRiichiEventArgs.cs" />
+    <Compile Include="AutoPlayEvents\HumanCallTsumoEventArgs.cs" />
+    <Compile Include="AutoPlayEvents\HumanCanCallRonEventArgs.cs" />
+    <Compile Include="AutoPlayEvents\HumanDoesNotCallEventArgs.cs" />
+    <Compile Include="AutoPlayEvents\InvokeOverlayEventArgs.cs" />
+    <Compile Include="AutoPlayEvents\NotifyRiichiTilesEventArgs.cs" />
+    <Compile Include="AutoPlayEvents\RefreshPlayerTurnStyleEventArgs.cs" />
+    <Compile Include="AutoPlayEvents\TimerEventArgs.cs" />
     <Compile Include="AutoPlayPivot.cs" />
     <Compile Include="EndOfGameRulePivot.cs" />
+    <Compile Include="HumanActionPivot.cs" />
     <Compile Include="IaManagerPivot.cs" />
     <Compile Include="DragonPivot.cs" />
     <Compile Include="DrawTypePivot.cs" />
