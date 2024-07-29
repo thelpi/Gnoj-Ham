@@ -764,7 +764,7 @@ namespace Gnoj_HamView
         }
 
         // Triggered when the tiles count in the wall is updated.
-        private void OnNotifyWallCount(object sender, EventArgs e)
+        private void OnNotifyWallCount()
         {
             Dispatcher.Invoke(() =>
             {
@@ -897,7 +897,7 @@ namespace Gnoj_HamView
             };
 
             // event is forced because the subscription is made too late relative to first triggered event
-            OnNotifyWallCount(null, null);
+            OnNotifyWallCount();
 
             StpDoras.SetDorasPanel(_game.Round.DoraIndicatorTiles, _game.Round.VisibleDorasCount);
             LblDominantWind.Content = _game.DominantWind.ToWindDisplay();

@@ -2,8 +2,6 @@
 
 namespace Gnoj_Ham.AutoPlayEvents
 {
-    public delegate void InvokeOverlayEventHandler(InvokeOverlayEventArgs evt);
-
     public class InvokeOverlayEventArgs : EventArgs
     {
         public int PlayerIndex { get; }

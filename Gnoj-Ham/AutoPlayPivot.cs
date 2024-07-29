@@ -13,6 +13,25 @@ namespace Gnoj_Ham
         private readonly GamePivot _game;
         private readonly Action<string> _addTimeEntry;
 
+        #region Events
+
+        public event Action<HumanCanCallRonEventArgs> HumanCanCallRon;
+        public event Action<HighlightPreviousPlayerDiscardEventArgs> HighlightPreviousPlayerDiscard;
+        public event Action<InvokeOverlayEventArgs> InvokeOverlay;
+        public event Action<CommonCallKanEventArgs> CommonCallKan;
+        public event Action<RefreshPlayerTurnStyleEventArgs> RefreshPlayerTurnStyle;
+        public event Action<AfterPickEventArgs> AfterPick;
+        public event Action<AfterChiiEventArgs> AfterChii;
+        public event Action<AfterPonEventArgs> AfterPon;
+        public event Action<AfterDiscardEventArgs> AfterDiscard;
+        public event Action<AfterRiichiEventArgs> AfterRiichi;
+        public event Action<HumanCallTsumoEventArgs> HumanCallTsumo;
+        public event Action<HumanCallRiichiEventArgs> HumanCallRiichi;
+        public event Action<HumanDoesNotCallEventArgs> HumanDoesNotCall;
+        public event Action<NotifyRiichiTilesEventArgs> NotifyRiichiTiles;
+
+        #endregion Events
+
         /// <summary>
         /// 
         /// </summary>
@@ -159,25 +178,6 @@ namespace Gnoj_Ham
             _addTimeEntry(nameof(RoundPivot.Discard));
             return false;
         }
-
-        #region Events
-
-        public event HumanCanCallRonEventHandler HumanCanCallRon;
-        public event HighlightPreviousPlayerDiscardEventHandler HighlightPreviousPlayerDiscard;
-        public event InvokeOverlayEventHandler InvokeOverlay;
-        public event CommonCallKanEventHandler CommonCallKan;
-        public event RefreshPlayerTurnStyleEventHandler RefreshPlayerTurnStyle;
-        public event AfterPickEventHandler AfterPick;
-        public event AfterChiiEventHandler AfterChii;
-        public event AfterPonEventHandler AfterPon;
-        public event AfterDiscardEventHandler AfterDiscard;
-        public event AfterRiichiEventHandler AfterRiichi;
-        public event HumanCallTsumoEventHandler HumanCallTsumo;
-        public event HumanCallRiichiEventHandler HumanCallRiichi;
-        public event HumanDoesNotCallEventHandler HumanDoesNotCall;
-        public event NotifyRiichiTilesEventHandler NotifyRiichiTiles;
-
-        #endregion Events
 
         public (bool endOfRound, int? ronPlayerId, HumanActionPivot? humanAction) AutoPlayHuman(
             CancellationToken cancellationToken,

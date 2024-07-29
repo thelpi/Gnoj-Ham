@@ -127,12 +127,12 @@ namespace Gnoj_Ham
         /// <summary>
         /// Event triggered when the tiles count in the wall changes.
         /// </summary>
-        public event EventHandler NotifyWallCount;
+        public event Action NotifyWallCount;
 
         /// <summary>
         /// Event triggered when a tile is picked.
         /// </summary>
-        public event TileEventHandler NotifyPick;
+        public event Action<TileEventArgs> NotifyPick;
 
         #endregion Events
 
@@ -199,7 +199,7 @@ namespace Gnoj_Ham
 
             var tile = _wallTiles.First();
             _wallTiles.Remove(tile);
-            NotifyWallCount?.Invoke(null, null);
+            NotifyWallCount?.Invoke();
             _hands[CurrentPlayerIndex].Pick(tile);
             NotifyPick?.Invoke(new TileEventArgs(CurrentPlayerIndex, tile));
             _waitForDiscard = true;
@@ -814,7 +814,7 @@ namespace Gnoj_Ham
             _deadTreasureTiles.Add(_wallTiles.Last());
 
             _wallTiles.RemoveAt(_wallTiles.Count - 1);
-            NotifyWallCount?.Invoke(null, null);
+            NotifyWallCount?.Invoke();
 
             _hands[CurrentPlayerIndex].Pick(compensationTile);
             NotifyPick?.Invoke(new TileEventArgs(CurrentPlayerIndex, compensationTile));
