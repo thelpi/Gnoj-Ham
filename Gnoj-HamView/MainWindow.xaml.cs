@@ -459,7 +459,7 @@ namespace Gnoj_HamView
                 {
                     EndOfRound = result.endOfRound,
                     PanelButton = result.humanAction.HasValue
-                        ? (result.humanAction == HumanActionPivot.Discard
+                        ? (result.humanAction == CallTypePivot.NoCall
                             ? new PanelButton("StpPickP", 0)
                             : new PanelButton($"Btn{result.humanAction}", -1))
                         : null,

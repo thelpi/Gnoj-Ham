@@ -179,7 +179,7 @@ namespace Gnoj_Ham
             return false;
         }
 
-        public (bool endOfRound, int? ronPlayerId, HumanActionPivot? humanAction) AutoPlayHuman(
+        public (bool endOfRound, int? ronPlayerId, CallTypePivot? humanAction) AutoPlayHuman(
             CancellationToken cancellationToken,
             bool skipCurrentAction,
             bool humanRonPending,
@@ -187,7 +187,7 @@ namespace Gnoj_Ham
             int sleepTime)
         {
             Tuple<int, TilePivot, int?> kanInProgress = null;
-            (bool endOfRound, int? ronPlayerId, HumanActionPivot? humanAction) result = default;
+            (bool endOfRound, int? ronPlayerId, CallTypePivot? humanAction) result = default;
             var isFirstTurn = true;
             while (!cancellationToken.IsCancellationRequested)
             {
@@ -200,7 +200,7 @@ namespace Gnoj_Ham
                     HumanCanCallRon?.Invoke(new HumanCanCallRonEventArgs());
                     if (autoCallMahjong)
                     {
-                        result = (result.endOfRound, result.ronPlayerId, HumanActionPivot.Ron);
+                        result = (result.endOfRound, result.ronPlayerId, CallTypePivot.Ron);
                     }
                     else
                     {
@@ -302,7 +302,7 @@ namespace Gnoj_Ham
             var opponentsCallRon = _game.Round.IaManager.RonDecision(humanRonPending);
             foreach (var opponentPlayerIndex in opponentsCallRon)
             {
-                InvokeOverlay?.Invoke(new InvokeOverlayEventArgs(opponentPlayerIndex, HumanActionPivot.Ron));
+                InvokeOverlay?.Invoke(new InvokeOverlayEventArgs(opponentPlayerIndex, CallTypePivot.Ron));
             }
 
             return humanRonPending || opponentsCallRon.Count > 0;
@@ -315,7 +315,7 @@ namespace Gnoj_Ham
             var compensationTile = _game.Round.CallKan(playerId, concealedKan ? kanTilePick : null);
             if (compensationTile != null)
             {
-                InvokeOverlay?.Invoke(new InvokeOverlayEventArgs(playerId, HumanActionPivot.Kan));
+                InvokeOverlay?.Invoke(new InvokeOverlayEventArgs(playerId, CallTypePivot.Kan));
             }
             return compensationTile;
         }
@@ -335,7 +335,7 @@ namespace Gnoj_Ham
 
             if (_game.Round.CallChii(chiiTilePick.Item2 ? chiiTilePick.Item1.Number - 1 : chiiTilePick.Item1.Number))
             {
-                InvokeOverlay?.Invoke(new InvokeOverlayEventArgs(_game.Round.CurrentPlayerIndex, HumanActionPivot.Chii));
+                InvokeOverlay?.Invoke(new InvokeOverlayEventArgs(_game.Round.CurrentPlayerIndex, CallTypePivot.Chii));
 
                 AfterChii?.Invoke(new AfterChiiEventArgs());
 
@@ -356,7 +356,7 @@ namespace Gnoj_Ham
 
             if (_game.Round.CallPon(playerIndex))
             {
-                InvokeOverlay?.Invoke(new InvokeOverlayEventArgs(playerIndex, HumanActionPivot.Pon));
+                InvokeOverlay?.Invoke(new InvokeOverlayEventArgs(playerIndex, CallTypePivot.Pon));
 
                 AfterPon?.Invoke(new AfterPonEventArgs(playerIndex, previousPlayerIndex));
 
@@ -384,7 +384,7 @@ namespace Gnoj_Ham
         {
             if (_game.Round.IaManager.TsumoDecision(kanInProgress != null))
             {
-                InvokeOverlay?.Invoke(new InvokeOverlayEventArgs(_game.Round.CurrentPlayerIndex, HumanActionPivot.Tsumo));
+                InvokeOverlay?.Invoke(new InvokeOverlayEventArgs(_game.Round.CurrentPlayerIndex, CallTypePivot.Tsumo));
                 return true;
             }
 
@@ -413,7 +413,7 @@ namespace Gnoj_Ham
         {
             if (!_game.Round.IsHumanPlayer)
             {
-                InvokeOverlay?.Invoke(new InvokeOverlayEventArgs(_game.Round.CurrentPlayerIndex, HumanActionPivot.Riichi));
+                InvokeOverlay?.Invoke(new InvokeOverlayEventArgs(_game.Round.CurrentPlayerIndex, CallTypePivot.Riichi));
                 Thread.Sleep(sleepTime);
             }
 
@@ -423,14 +423,14 @@ namespace Gnoj_Ham
             }
         }
 
-        private HumanActionPivot? HumanAutoPlay(bool autoCallMahjong, int sleepTime)
+        private CallTypePivot? HumanAutoPlay(bool autoCallMahjong, int sleepTime)
         {
             Pick();
 
             if (_game.Round.CanCallTsumo(false))
             {
                 HumanCallTsumo?.Invoke(new HumanCallTsumoEventArgs());
-                return autoCallMahjong ? HumanActionPivot.Tsumo : default(HumanActionPivot?);
+                return autoCallMahjong ? CallTypePivot.Tsumo : default(CallTypePivot?);
             }
 
             var riichiTiles = _game.Round.CanCallRiichi();
@@ -445,7 +445,7 @@ namespace Gnoj_Ham
             {
                 // Not a real CPU sleep: the auto-discard by human player is considered as such
                 Thread.Sleep(sleepTime);
-                return HumanActionPivot.Discard;
+                return CallTypePivot.NoCall;
             }
             else
             {

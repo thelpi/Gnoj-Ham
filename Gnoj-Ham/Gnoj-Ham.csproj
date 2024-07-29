@@ -58,7 +58,7 @@
     <Compile Include="AutoPlayEvents\RefreshPlayerTurnStyleEventArgs.cs" />
     <Compile Include="AutoPlayPivot.cs" />
     <Compile Include="EndOfGameRulePivot.cs" />
-    <Compile Include="HumanActionPivot.cs" />
+    <Compile Include="CallTypePivot.cs" />
     <Compile Include="IaManagerPivot.cs" />
     <Compile Include="DragonPivot.cs" />
     <Compile Include="DrawTypePivot.cs" />
