@@ -53,13 +53,13 @@ namespace Gnoj_HamUnitTests
 
             var game = new GamePivot(RulePivot.Default, permanentPlayers, random);
 
-            var autoPlay = new AutoPlayPivot(game, s => { });
+            var autoPlay = new AutoPlayPivot(game);
 
             IReadOnlyList<PlayerScorePivot> scores = null;
             while (true)
             {
-                var result = autoPlay.AutoPlay(new System.Threading.CancellationToken());
-                var (endOfRoundInfo, _) = game.NextRound(result);
+                var result = autoPlay.RunAutoPlay(new System.Threading.CancellationToken());
+                var (endOfRoundInfo, _) = game.NextRound(result.ronPlayerId);
 
                 if (endOfRoundInfo.EndOfGame)
                 {

@@ -6,7 +6,7 @@ using Gnoj_Ham.AutoPlayEvents;
 namespace Gnoj_Ham
 {
     /// <summary>
-    /// 
+    /// Autu play management.
     /// </summary>
     public class AutoPlayPivot
     {
@@ -52,168 +52,50 @@ namespace Gnoj_Ham
 
         #endregion Events
 
+        #region Constructors
+
         /// <summary>
-        /// 
+        /// Constructor.
         /// </summary>
-        /// <param name="game"></param>
-        /// <param name="addTimeEntry"></param>
+        /// <param name="game">The game instance.</param>
+        public AutoPlayPivot(GamePivot game)
+            : this(game, x => { })
+        { }
+
+        /// <summary>
+        /// Constructor.
+        /// </summary>
+        /// <param name="game">The game instance.</param>
+        /// <param name="addTimeEntry">A method to callback to register a time period associated to an action (the input string).</param>
         public AutoPlayPivot(GamePivot game, Action<string> addTimeEntry)
         {
             _game = game;
             _addTimeEntry = addTimeEntry;
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="cancellationToken"></param>
-        /// <returns></returns>
-        public int? AutoPlay(CancellationToken cancellationToken)
-        {
-            Tuple<int, TilePivot, int?> kanInProgress = null;
-            int? ronPlayerId = null;
-            while (!cancellationToken.IsCancellationRequested)
-            {
-                var ronDecision = _game.Round.IaManager.RonDecision(false);
-                _addTimeEntry(nameof(IaManagerPivot.RonDecision));
-                if (ronDecision.Count > 0)
-                {
-                    ronPlayerId = kanInProgress != null ? kanInProgress.Item1 : _game.Round.PreviousPlayerIndex;
-                    if (kanInProgress != null)
-                    {
-                        _game.Round.UndoPickCompensationTile();
-                        _addTimeEntry(nameof(RoundPivot.UndoPickCompensationTile));
-                    }
-                    break;
-                }
-
-                var opponentWithKanTilePick = _game.Round.IaManager.KanDecision(false);
-                _addTimeEntry(nameof(IaManagerPivot.KanDecision));
-                if (opponentWithKanTilePick != null)
-                {
-                    var previousPlayerIndex = _game.Round.PreviousPlayerIndex;
-                    var compensationTile = OpponentBeginCallKanCpuOnly(opponentWithKanTilePick.Item1, opponentWithKanTilePick.Item2, false);
-                    kanInProgress = new Tuple<int, TilePivot, int?>(opponentWithKanTilePick.Item1, compensationTile, previousPlayerIndex);
-                    continue;
-                }
-
-                var opponentPlayerId = _game.Round.IaManager.PonDecision();
-                _addTimeEntry(nameof(IaManagerPivot.PonDecision));
-                if (opponentPlayerId > -1)
-                {
-                    var canCallPon = _game.Round.CallPon(opponentPlayerId);
-                    _addTimeEntry(nameof(RoundPivot.CallPon));
-                    if (canCallPon)
-                    {
-                        var discardDecision = _game.Round.IaManager.DiscardDecision(new List<TilePivot>());
-                        _addTimeEntry(nameof(IaManagerPivot.DiscardDecision));
-                        _game.Round.Discard(discardDecision);
-                        _addTimeEntry(nameof(RoundPivot.Discard));
-                    }
-                    continue;
-                }
-
-                var chiiTilePick = _game.Round.IaManager.ChiiDecision();
-                _addTimeEntry(nameof(IaManagerPivot.ChiiDecision));
-                if (chiiTilePick != null)
-                {
-                    var callChii = _game.Round.CallChii(chiiTilePick.Item2 ? chiiTilePick.Item1.Number - 1 : chiiTilePick.Item1.Number);
-                    _addTimeEntry(nameof(RoundPivot.CallChii));
-                    if (callChii)
-                    {
-                        var discardDecision = _game.Round.IaManager.DiscardDecision(new List<TilePivot>());
-                        _addTimeEntry(nameof(IaManagerPivot.DiscardDecision));
-                        _game.Round.Discard(discardDecision);
-                        _addTimeEntry(nameof(RoundPivot.Discard));
-                    }
-                    continue;
-                }
-
-                if (kanInProgress != null)
-                {
-                    if (OpponentAfterPickOnly(ref kanInProgress))
-                    {
-                        break;
-                    }
-                    continue;
-                }
-
-                if (_game.Round.IsWallExhaustion)
-                {
-                    break;
-                }
-
-                _game.Round.Pick();
-                _addTimeEntry(nameof(RoundPivot.Pick));
-                if (OpponentAfterPickOnly(ref kanInProgress))
-                {
-                    break;
-                }
-            }
-
-            return ronPlayerId;
-        }
-
-        // Proceeds to call a kan for an opponent.
-        private TilePivot OpponentBeginCallKanCpuOnly(int playerId, TilePivot kanTilePick, bool concealedKan)
-        {
-            var kanResult = _game.Round.CallKan(playerId, concealedKan ? kanTilePick : null);
-            _addTimeEntry(nameof(RoundPivot.CallKan));
-            return kanResult;
-        }
-
-        // Manages every possible moves for the current opponent after his pick.
-        private bool OpponentAfterPickOnly(ref Tuple<int, TilePivot, int?> kanInProgress)
-        {
-            var tsumoDecision = _game.Round.IaManager.TsumoDecision(kanInProgress != null);
-            _addTimeEntry(nameof(IaManagerPivot.TsumoDecision));
-            if (tsumoDecision)
-            {
-                return true;
-            }
-
-            var opponentWithKanTilePick = _game.Round.IaManager.KanDecision(true);
-            _addTimeEntry(nameof(IaManagerPivot.KanDecision));
-            if (opponentWithKanTilePick != null)
-            {
-                var compensationTile = OpponentBeginCallKanCpuOnly(_game.Round.CurrentPlayerIndex, opponentWithKanTilePick.Item2, true);
-                kanInProgress = new Tuple<int, TilePivot, int?>(_game.Round.CurrentPlayerIndex, compensationTile, null);
-                return false;
-            }
-
-            kanInProgress = null;
-
-            var (riichiTile, riichiTiles) = _game.Round.IaManager.RiichiDecision();
-            _addTimeEntry(nameof(IaManagerPivot.RiichiDecision));
-            if (riichiTile != null)
-            {
-                _game.Round.CallRiichi(riichiTile);
-                _addTimeEntry(nameof(RoundPivot.CallRiichi));
-                return false;
-            }
-
-            var discardDecision = _game.Round.IaManager.DiscardDecision(riichiTiles);
-            _addTimeEntry(nameof(IaManagerPivot.DiscardDecision));
-            _game.Round.Discard(discardDecision);
-            _addTimeEntry(nameof(RoundPivot.Discard));
-            return false;
-        }
+        #endregion Constructors
 
         /// <summary>
-        /// 
+        /// Starts and runs the auto player.
         /// </summary>
-        /// <param name="cancellationToken"></param>
-        /// <param name="skipCurrentAction"></param>
-        /// <param name="humanRonPending"></param>
-        /// <param name="autoCallMahjong"></param>
-        /// <param name="sleepTime"></param>
-        /// <returns></returns>
-        public (bool endOfRound, int? ronPlayerId, CallTypePivot? humanAction) AutoPlayHuman(
+        /// <param name="cancellationToken">Cancellation token.</param>
+        /// <param name="declinedHumanCall">Indicates that a potential call has been suggested to the human player and has been declined..</param>
+        /// <param name="humanRonPending">Indicates that the human player has called 'Ron', but the same call by opponents has to be checked too.</param>
+        /// <param name="autoCallMahjong">When enabled, if the human player can call 'Tsumo' or 'Ron', the call is automatically made.</param>
+        /// <param name="sleepTime">The time to wait after any action (call or discard).</param>
+        /// <returns>A tuple that includes:
+        /// <list type="bullet">
+        /// <item>endOfRound: indicates if the round is over; otherwise, the control is given back to the human player.</item>
+        /// <item>ronPlayerId: indicates, if one or several calls 'Ron' has been made, the player index who lost in that situation.</item>
+        /// <item>humanAction: indicates a decision to automatically apply when the control is given back to human player.</item>
+        /// </list>
+        /// </returns>
+        public (bool endOfRound, int? ronPlayerId, CallTypePivot? humanAction) RunAutoPlay(
             CancellationToken cancellationToken,
-            bool skipCurrentAction,
-            bool humanRonPending,
-            bool autoCallMahjong,
-            int sleepTime)
+            bool declinedHumanCall = false,
+            bool humanRonPending = false,
+            bool autoCallMahjong = false,
+            int sleepTime = 0)
         {
             Tuple<int, TilePivot, int?> kanInProgress = null;
             (bool endOfRound, int? ronPlayerId, CallTypePivot? humanAction) result = default;
@@ -221,10 +103,10 @@ namespace Gnoj_Ham
             while (!cancellationToken.IsCancellationRequested)
             {
                 if (!isFirstTurn)
-                    skipCurrentAction = false;
+                    declinedHumanCall = false;
                 isFirstTurn = false;
 
-                if (!_game.CpuVs && !skipCurrentAction && !humanRonPending && _game.Round.CanCallRon(GamePivot.HUMAN_INDEX))
+                if (!_game.CpuVs && !declinedHumanCall && !humanRonPending && _game.Round.CanCallRon(GamePivot.HUMAN_INDEX))
                 {
                     HumanCallNotifier?.Invoke(new HumanCallNotifierEventArgs { Call = CallTypePivot.Ron });
                     if (autoCallMahjong)
@@ -254,7 +136,7 @@ namespace Gnoj_Ham
                     ReadyToCallNotifier?.Invoke(new ReadyToCallNotifierEventArgs { Call = CallTypePivot.Kan, PotentialPreviousPlayerIndex = kanInProgress.Item3 });
                 }
 
-                if (!_game.CpuVs && !skipCurrentAction && _game.Round.CanCallPonOrKan(GamePivot.HUMAN_INDEX, out var isSelfKan))
+                if (!_game.CpuVs && !declinedHumanCall && _game.Round.CanCallPonOrKan(GamePivot.HUMAN_INDEX, out var isSelfKan))
                 {
                     if (!isSelfKan)
                     {
@@ -281,7 +163,7 @@ namespace Gnoj_Ham
                     continue;
                 }
 
-                if (!skipCurrentAction && _game.Round.IsHumanPlayer && _game.Round.CanCallChii().Count > 0)
+                if (!declinedHumanCall && _game.Round.IsHumanPlayer && _game.Round.CanCallChii().Count > 0)
                 {
                     DiscardTileNotifier?.Invoke(new DiscardTileNotifierEventArgs());
                     break;
@@ -329,6 +211,8 @@ namespace Gnoj_Ham
 
             return result;
         }
+
+        #region Private methods
 
         private bool CheckOpponensRonCall(bool humanRonPending)
         {
@@ -508,5 +392,7 @@ namespace Gnoj_Ham
 
             return null;
         }
+
+        #endregion Private methods
     }
 }

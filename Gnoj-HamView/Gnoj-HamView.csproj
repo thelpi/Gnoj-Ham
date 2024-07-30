@@ -94,7 +94,6 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="AnglePivot.cs" />
-    <Compile Include="AutoPlayResult.cs" />
     <Compile Include="AutoPlayWindow.xaml.cs">
       <DependentUpon>AutoPlayWindow.xaml</DependentUpon>
     </Compile>

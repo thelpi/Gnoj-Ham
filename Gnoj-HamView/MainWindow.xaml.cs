@@ -315,7 +315,7 @@ namespace Gnoj_HamView
             {
                 var argumentsList = evt.Argument as object[];
 
-                var autoPlay = new AutoPlayPivot(_game, _ => { });
+                var autoPlay = new AutoPlayPivot(_game);
 
                 autoPlay.ReadyToCallNotifier += e =>
                 {
@@ -428,36 +428,30 @@ namespace Gnoj_HamView
                     RefreshPlayerTurnStyle();
                 };
 
-                var (endOfRound, ronPlayerId, humanAction) = autoPlay.AutoPlayHuman(
+                evt.Result = autoPlay.RunAutoPlay(
                     _cancellationToken,
                     (bool)argumentsList[0],
                     (bool)argumentsList[1],
                     Properties.Settings.Default.AutoCallMahjong,
                     ((CpuSpeedPivot)Properties.Settings.Default.CpuSpeed).ParseSpeed());
-
-                evt.Result = new AutoPlayResult
-                {
-                    EndOfRound = endOfRound,
-                    PanelButton = humanAction.HasValue
-                        ? (humanAction == CallTypePivot.NoCall
-                            ? new PanelButton("StpPickP", 0)
-                            : new PanelButton($"Btn{humanAction}", -1))
-                        : null,
-                    RonPlayerId = ronPlayerId
-                };
             };
             _autoPlay.RunWorkerCompleted += delegate (object sender, RunWorkerCompletedEventArgs evt)
             {
                 if (!_cancellationToken.IsCancellationRequested)
                 {
-                    var autoPlayResult = evt.Result as AutoPlayResult;
-                    if (autoPlayResult.EndOfRound)
+                    var (endOfRound, ronPlayerId, humanAction) =  ((bool, int ?, CallTypePivot ?))evt.Result;
+                    if (endOfRound)
                     {
-                        NewRound(autoPlayResult.RonPlayerId);
+                        NewRound(ronPlayerId);
                     }
                     else
                     {
-                        RaiseButtonClickEvent(autoPlayResult.PanelButton);
+                        var button = humanAction.HasValue
+                            ? (humanAction == CallTypePivot.NoCall
+                                ? new PanelButton("StpPickP", 0)
+                                : new PanelButton($"Btn{humanAction}", -1))
+                            : null;
+                        RaiseButtonClickEvent(button);
                     }
                 }
             };

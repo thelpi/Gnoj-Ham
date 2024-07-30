@@ -82,7 +82,9 @@ namespace Gnoj_HamView
             };
             _autoPlay.DoWork += delegate (object sender, DoWorkEventArgs evt)
             {
-                evt.Result = new AutoPlayPivot(_game, AddTimeEntry).AutoPlay(_cancellationToken);
+                var autoPlayer = new AutoPlayPivot(_game, AddTimeEntry);
+                var autoResult = autoPlayer.RunAutoPlay(_cancellationToken);
+                evt.Result = autoResult.ronPlayerId;
             };
             _autoPlay.RunWorkerCompleted += delegate (object sender, RunWorkerCompletedEventArgs evt)
             {
