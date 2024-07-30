@@ -224,7 +224,7 @@ namespace Gnoj_Ham
                     skipCurrentAction = false;
                 isFirstTurn = false;
 
-                if (!skipCurrentAction && !humanRonPending && _game.Round.CanCallRon(GamePivot.HUMAN_INDEX))
+                if (!_game.CpuVs && !skipCurrentAction && !humanRonPending && _game.Round.CanCallRon(GamePivot.HUMAN_INDEX))
                 {
                     HumanCallNotifier?.Invoke(new HumanCallNotifierEventArgs { Call = CallTypePivot.Ron });
                     if (autoCallMahjong)
@@ -254,7 +254,7 @@ namespace Gnoj_Ham
                     ReadyToCallNotifier?.Invoke(new ReadyToCallNotifierEventArgs { Call = CallTypePivot.Kan, PotentialPreviousPlayerIndex = kanInProgress.Item3 });
                 }
 
-                if (!skipCurrentAction && _game.Round.CanCallPonOrKan(GamePivot.HUMAN_INDEX, out var isSelfKan))
+                if (!_game.CpuVs && !skipCurrentAction && _game.Round.CanCallPonOrKan(GamePivot.HUMAN_INDEX, out var isSelfKan))
                 {
                     if (!isSelfKan)
                     {
@@ -392,7 +392,7 @@ namespace Gnoj_Ham
 
             // Note : this value is stored here because the call to "CallPon" makes it change.
             var previousPlayerIndex = _game.Round.PreviousPlayerIndex;
-            var isCpu = playerIndex != GamePivot.HUMAN_INDEX;
+            var isCpu = playerIndex != GamePivot.HUMAN_INDEX || _game.CpuVs;
 
             var callPon = _game.Round.CallPon(playerIndex);
             _addTimeEntry(nameof(RoundPivot.CallPon));
