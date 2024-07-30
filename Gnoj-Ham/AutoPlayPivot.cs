@@ -244,6 +244,7 @@ namespace Gnoj_Ham
                     if (kanInProgress != null)
                     {
                         _game.Round.UndoPickCompensationTile();
+                        _addTimeEntry(nameof(RoundPivot.UndoPickCompensationTile));
                     }
                     break;
                 }
@@ -263,6 +264,7 @@ namespace Gnoj_Ham
                 }
 
                 var opponentWithKanTilePick = _game.Round.IaManager.KanDecision(false);
+                _addTimeEntry(nameof(IaManagerPivot.KanDecision));
                 if (opponentWithKanTilePick != null)
                 {
                     var previousPlayerIndex = _game.Round.PreviousPlayerIndex;
@@ -272,6 +274,7 @@ namespace Gnoj_Ham
                 }
 
                 var opponentPlayerId = _game.Round.IaManager.PonDecision();
+                _addTimeEntry(nameof(IaManagerPivot.PonDecision));
                 if (opponentPlayerId > -1)
                 {
                     PonCall(opponentPlayerId, sleepTime);
@@ -285,6 +288,7 @@ namespace Gnoj_Ham
                 }
 
                 var chiiTilePick = _game.Round.IaManager.ChiiDecision();
+                _addTimeEntry(nameof(IaManagerPivot.ChiiDecision));
                 if (chiiTilePick != null)
                 {
                     ChiiCall(chiiTilePick, sleepTime);
@@ -329,6 +333,7 @@ namespace Gnoj_Ham
         private bool CheckOpponensRonCall(bool humanRonPending)
         {
             var opponentsCallRon = _game.Round.IaManager.RonDecision(humanRonPending);
+            _addTimeEntry(nameof(IaManagerPivot.RonDecision));
             foreach (var opponentPlayerIndex in opponentsCallRon)
             {
                 CallNotifier?.Invoke(new CallNotifierEventArgs { Action = CallTypePivot.Ron, PlayerIndex = opponentPlayerIndex });
@@ -342,6 +347,7 @@ namespace Gnoj_Ham
             TurnChangeNotifier?.Invoke(new TurnChangeNotifierEventArgs());
 
             var compensationTile = _game.Round.CallKan(playerId, concealedKan ? kanTilePick : null);
+            _addTimeEntry(nameof(RoundPivot.CallKan));
             if (compensationTile != null)
             {
                 CallNotifier?.Invoke(new CallNotifierEventArgs { PlayerIndex = playerId, Action = CallTypePivot.Kan });
@@ -354,6 +360,7 @@ namespace Gnoj_Ham
             TurnChangeNotifier?.Invoke(new TurnChangeNotifierEventArgs());
 
             _ = _game.Round.Pick();
+            _addTimeEntry(nameof(RoundPivot.Pick));
 
             PickNotifier?.Invoke(new PickNotifierEventArgs());
         }
@@ -362,7 +369,9 @@ namespace Gnoj_Ham
         {
             TurnChangeNotifier?.Invoke(new TurnChangeNotifierEventArgs());
 
-            if (_game.Round.CallChii(chiiTilePick.Item2 ? chiiTilePick.Item1.Number - 1 : chiiTilePick.Item1.Number))
+            var callChii = _game.Round.CallChii(chiiTilePick.Item2 ? chiiTilePick.Item1.Number - 1 : chiiTilePick.Item1.Number);
+            _addTimeEntry(nameof(RoundPivot.CallChii));
+            if (callChii)
             {
                 CallNotifier?.Invoke(new CallNotifierEventArgs { Action = CallTypePivot.Chii, PlayerIndex = _game.Round.CurrentPlayerIndex });
 
@@ -370,7 +379,9 @@ namespace Gnoj_Ham
 
                 if (!_game.Round.IsHumanPlayer)
                 {
-                    Discard(_game.Round.IaManager.DiscardDecision(new List<TilePivot>()), sleepTime);
+                    var discardDecision = _game.Round.IaManager.DiscardDecision(new List<TilePivot>());
+                    _addTimeEntry(nameof(IaManagerPivot.DiscardDecision));
+                    Discard(discardDecision, sleepTime);
                 }
             }
         }
@@ -383,7 +394,9 @@ namespace Gnoj_Ham
             var previousPlayerIndex = _game.Round.PreviousPlayerIndex;
             var isCpu = playerIndex != GamePivot.HUMAN_INDEX;
 
-            if (_game.Round.CallPon(playerIndex))
+            var callPon = _game.Round.CallPon(playerIndex);
+            _addTimeEntry(nameof(RoundPivot.CallPon));
+            if (callPon)
             {
                 CallNotifier?.Invoke(new CallNotifierEventArgs { PlayerIndex = playerIndex, Action = CallTypePivot.Pon });
 
@@ -391,7 +404,9 @@ namespace Gnoj_Ham
 
                 if (isCpu)
                 {
-                    Discard(_game.Round.IaManager.DiscardDecision(new List<TilePivot>()), sleepTime);
+                    var discardDecision = _game.Round.IaManager.DiscardDecision(new List<TilePivot>());
+                    _addTimeEntry(nameof(IaManagerPivot.DiscardDecision));
+                    Discard(discardDecision, sleepTime);
                 }
             }
         }
@@ -403,7 +418,9 @@ namespace Gnoj_Ham
                 Thread.Sleep(sleepTime);
             }
 
-            if (_game.Round.Discard(tile))
+            var hasDiscard = _game.Round.Discard(tile);
+            _addTimeEntry(nameof(RoundPivot.Discard));
+            if (hasDiscard)
             {
                 ReadyToCallNotifier?.Invoke(new ReadyToCallNotifierEventArgs { Call = CallTypePivot.NoCall });
             }
@@ -411,13 +428,16 @@ namespace Gnoj_Ham
 
         private bool OpponentAfterPick(ref Tuple<int, TilePivot, int?> kanInProgress, int sleepTime)
         {
-            if (_game.Round.IaManager.TsumoDecision(kanInProgress != null))
+            var tsumoDecision = _game.Round.IaManager.TsumoDecision(kanInProgress != null);
+            _addTimeEntry(nameof(IaManagerPivot.TsumoDecision));
+            if (tsumoDecision)
             {
                 CallNotifier?.Invoke(new CallNotifierEventArgs { Action = CallTypePivot.Tsumo, PlayerIndex = _game.Round.CurrentPlayerIndex });
                 return true;
             }
 
             var opponentWithKanTilePick = _game.Round.IaManager.KanDecision(true);
+            _addTimeEntry(nameof(IaManagerPivot.KanDecision));
             if (opponentWithKanTilePick != null)
             {
                 var compensationTile = OpponentBeginCallKan(_game.Round.CurrentPlayerIndex, opponentWithKanTilePick.Item2, true);
@@ -428,6 +448,7 @@ namespace Gnoj_Ham
             kanInProgress = null;
 
             var (riichiTile, riichiTiles) = _game.Round.IaManager.RiichiDecision();
+            _addTimeEntry(nameof(IaManagerPivot.RiichiDecision));
             if (riichiTile != null)
             {
                 CallRiichi(riichiTile, sleepTime);
@@ -435,6 +456,7 @@ namespace Gnoj_Ham
             }
 
             Discard(_game.Round.IaManager.DiscardDecision(riichiTiles), sleepTime);
+            _addTimeEntry(nameof(IaManagerPivot.DiscardDecision));
             return false;
         }
 
@@ -446,7 +468,9 @@ namespace Gnoj_Ham
                 Thread.Sleep(sleepTime);
             }
 
-            if (_game.Round.CallRiichi(tile))
+            var callRiichi = _game.Round.CallRiichi(tile);
+            _addTimeEntry(nameof(RoundPivot.CallRiichi));
+            if (callRiichi)
             {
                 ReadyToCallNotifier?.Invoke(new ReadyToCallNotifierEventArgs { Call = CallTypePivot.Riichi });
             }
@@ -467,6 +491,7 @@ namespace Gnoj_Ham
             if (riichiTiles.Count > 0)
             {
                 var adviseRiichi = _game.Ruleset.DiscardTip && _game.Round.IaManager.RiichiDecision().choice != null;
+                _addTimeEntry(nameof(IaManagerPivot.RiichiDecision));
                 HumanCallNotifier?.Invoke(new HumanCallNotifierEventArgs { Call = CallTypePivot.Riichi, RiichiAdvised = adviseRiichi });
                 return null;
             }
