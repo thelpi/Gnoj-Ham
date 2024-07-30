@@ -193,19 +193,16 @@ namespace Gnoj_Ham
                     break;
                 }
 
+                Pick();
                 if (_game.Round.IsHumanPlayer)
                 {
                     result = (result.endOfRound, result.ronPlayerId, HumanAutoPlay(autoCallMahjong, sleepTime));
                     break;
                 }
-                else
+                else if (OpponentAfterPick(ref kanInProgress, sleepTime))
                 {
-                    Pick();
-                    if (OpponentAfterPick(ref kanInProgress, sleepTime))
-                    {
-                        result = (true, result.ronPlayerId, result.humanAction);
-                        break;
-                    }
+                    result = (true, result.ronPlayerId, result.humanAction);
+                    break;
                 }
             }
 
@@ -362,8 +359,6 @@ namespace Gnoj_Ham
 
         private CallTypePivot? HumanAutoPlay(bool autoCallMahjong, int sleepTime)
         {
-            Pick();
-
             if (_game.Round.CanCallTsumo(false))
             {
                 HumanCallNotifier?.Invoke(new HumanCallNotifierEventArgs { Call = CallTypePivot.Tsumo });
