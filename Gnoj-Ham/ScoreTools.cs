@@ -73,8 +73,8 @@ namespace Gnoj_Ham
             new Tuple<int, int, int, int, int>(3, 040, 5200, 2600, 1300),
             new Tuple<int, int, int, int, int>(3, 050, 6400, 3200, 1600),
             new Tuple<int, int, int, int, int>(3, 060, 7700, 3900, 2000),
-            new Tuple<int, int, int, int, int>(4, 020, 5200, 2800, 1300),
-            new Tuple<int, int, int, int, int>(4, 025, 6400, 3200, 1800),
+            new Tuple<int, int, int, int, int>(4, 020, 5200, 2600, 1300),
+            new Tuple<int, int, int, int, int>(4, 025, 6400, 3200, 1600),
             new Tuple<int, int, int, int, int>(4, 030, 7700, 3900, 2000)
         };
 
@@ -108,7 +108,7 @@ namespace Gnoj_Ham
             new Tuple<int, int, int, int>(3, 030, 5800, 2000),
             new Tuple<int, int, int, int>(3, 040, 7700, 2600),
             new Tuple<int, int, int, int>(3, 050, 9600, 3200),
-            new Tuple<int, int, int, int>(3, 060, 10600, 3900),
+            new Tuple<int, int, int, int>(3, 060, 11600, 3900),
             new Tuple<int, int, int, int>(4, 020, 7700, 2600),
             new Tuple<int, int, int, int>(4, 025, 9600, 3200),
             new Tuple<int, int, int, int>(4, 030, 11600, 3900)
