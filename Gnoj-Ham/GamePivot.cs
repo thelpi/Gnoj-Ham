@@ -196,6 +196,10 @@ namespace Gnoj_Ham
             {
                 HonbaCount++;
             }
+            else
+            {
+                HonbaCount = 0;
+            }
 
             if (Ruleset.EndOfGameRule.TobiRuleApply() && _players.Any(p => p.Points < 0))
             {
