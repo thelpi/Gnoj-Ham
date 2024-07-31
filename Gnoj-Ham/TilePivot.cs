@@ -13,6 +13,9 @@ namespace Gnoj_Ham
     {
         #region Embedded properties
 
+        // a unique code for a tile (consider this as the hashcode value)
+        private readonly int _code;
+
         /// <summary>
         /// Family.
         /// </summary>
@@ -64,6 +67,7 @@ namespace Gnoj_Ham
             Family = family;
             Number = number;
             IsRedDora = isRedDora;
+            _code = number + (10 * (int)family);
         }
 
         // Constructor for wind.
@@ -71,6 +75,7 @@ namespace Gnoj_Ham
         {
             Family = FamilyPivot.Wind;
             Wind = wind;
+            _code = (int)(wind + 1) * 1000;
         }
 
         // Constructor for dragon.
@@ -78,6 +83,7 @@ namespace Gnoj_Ham
         {
             Family = FamilyPivot.Dragon;
             Dragon = dragon;
+            _code = (int)(dragon + 1) * 100;
         }
 
         #endregion Constructors
@@ -148,10 +154,7 @@ namespace Gnoj_Ham
         public bool Equals(TilePivot other)
         {
             return !(other is null)
-                && other.Family == Family
-                && other.Wind == Wind
-                && other.Dragon == Dragon
-                && other.Number == Number;
+                && other._code == _code;
         }
 
         /// <summary>
@@ -160,7 +163,7 @@ namespace Gnoj_Ham
         /// <returns>Hashcode of this instance.</returns>
         public override int GetHashCode()
         {
-            return Tuple.Create(Family, Number, Wind, Dragon).GetHashCode();
+            return _code;
         }
 
         /// <summary>
