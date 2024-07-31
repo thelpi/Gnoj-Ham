@@ -131,12 +131,6 @@ namespace Gnoj_Ham
 
             // The sort is important here...
             _tiles = tiles.OrderBy(t => t).ToList();
-
-            // ...to check the validity of a potential sequence
-            if (!IsValidCombination())
-            {
-                throw new ArgumentException(Messages.InvalidCombination, nameof(tiles));
-            }
         }
 
         #endregion
@@ -202,49 +196,6 @@ namespace Gnoj_Ham
         #endregion Interfaces implementation and overrides from base
 
         #region Private methods
-
-        // Checks if the list of tiles forms a valid combination.
-        private bool IsValidCombination()
-        {
-            var families = _tiles.Select(t => t.Family).Distinct();
-            if (families.Count() > 1)
-            {
-                // KO : more than one family.
-                return false;
-            }
-
-            var family = families.First();
-            if (family == FamilyPivot.Dragon)
-            {
-                // Expected : only one type of dragon.
-                return _tiles.Select(t => t.Dragon).Distinct().Count() == 1;
-            }
-            else if (family == FamilyPivot.Wind)
-            {
-                // Expected : only one type of wind.
-                return _tiles.Select(t => t.Wind).Distinct().Count() == 1;
-            }
-
-            if (_tiles.Count == 3)
-            {
-                if (_tiles.Select(t => t.Number).Distinct().Count() == 1)
-                {
-                    // OK : only one number of caracter / circle / bamboo.
-                    return true;
-                }
-                else
-                {
-                    // Expected : tiles form a sequence [0 / +1 / +2]
-                    return _tiles.ElementAt(0).Number == _tiles.ElementAt(1).Number - 1
-                        && _tiles.ElementAt(1).Number == _tiles.ElementAt(2).Number - 1;
-                }
-            }
-            else
-            {
-                // Expected : only one number of caracter / circle / bamboo.
-                return _tiles.Select(t => t.Number).Distinct().Count() == 1;
-            }
-        }
 
         // Gets the tile corresponding to the specified wind in the purpose to create a sorted list for display.
         private Tuple<TilePivot, bool> GetTileForSortedListAtSpecifiedWind(WindPivot wind, IReadOnlyList<TilePivot> concealedOnly, ref int i)
