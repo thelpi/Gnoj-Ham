@@ -1040,10 +1040,19 @@ namespace Gnoj_Ham
                 // These two are negative points.
                 var eastOrLoserLostCumul = 0;
                 var notEastLostCumul = 0;
+                var honbaPoints = ScoreTools.GetHonbaPoints(Game.HonbaCountBeforeScoring);
 
                 foreach (var pIndex in winners)
                 {
                     var phand = _hands[pIndex];
+
+                    // in case of multiple rons; the winning player closest to east win the prize
+                    var winnerHonba = honbaPoints;
+                    if (ronPlayerIndex.HasValue && winners.Count > 1
+                        && Game.GetPlayerCurrentWind(pIndex) != winners.Min(w => Game.GetPlayerCurrentWind(w)))
+                    {
+                        winnerHonba = 0;
+                    }
 
                     // In case of ron, fix the "LatestPick" property of the winning hand
                     if (ronPlayerIndex.HasValue)
@@ -1100,8 +1109,6 @@ namespace Gnoj_Ham
 
                     var riichiPart = Game.PendingRiichiCount * ScoreTools.RIICHI_COST;
 
-                    var honbaPoints = ScoreTools.GetHonbaPoints(Game.HonbaCountBeforeScoring, winners.Count, !ronPlayerIndex.HasValue);
-
                     // In case of ron with multiple winners, only the one who comes right next to "ronPlayerIndex" takes the stack of riichi.
                     if (winners.Count > 1)
                     {
@@ -1116,7 +1123,7 @@ namespace Gnoj_Ham
                     }
 
                     playerInfos.Add(new EndOfRoundInformationsPivot.PlayerInformationsPivot(
-                        pIndex, fanCount, fuCount, phand, basePoints + riichiPart + honbaPoints,
+                        pIndex, fanCount, fuCount, phand, basePoints + riichiPart + winnerHonba,
                         dorasCount, uraDorasCount, redDorasCount, basePoints));
 
                     notEastLostCumul -= finalScore.Item2;
@@ -1153,7 +1160,7 @@ namespace Gnoj_Ham
                         else
                         {
                             playerInfos.Add(new EndOfRoundInformationsPivot.PlayerInformationsPivot(
-                                liablePlayerId, liablePlayersLost[liablePlayerId]));
+                                liablePlayerId, liablePlayersLost[liablePlayerId] - honbaPoints));
                         }
                     }
                     if (playerInfos.Any(pi => pi.Index == ronPlayerIndex.Value))
@@ -1168,7 +1175,7 @@ namespace Gnoj_Ham
                 }
                 else if (ronPlayerIndex.HasValue)
                 {
-                    playerInfos.Add(new EndOfRoundInformationsPivot.PlayerInformationsPivot(ronPlayerIndex.Value, eastOrLoserLostCumul));
+                    playerInfos.Add(new EndOfRoundInformationsPivot.PlayerInformationsPivot(ronPlayerIndex.Value, eastOrLoserLostCumul - honbaPoints));
                 }
                 else
                 {
@@ -1176,7 +1183,7 @@ namespace Gnoj_Ham
                     {
                         if (!winners.Contains(pIndex))
                         {
-                            playerInfos.Add(new EndOfRoundInformationsPivot.PlayerInformationsPivot(pIndex, Game.GetPlayerCurrentWind(pIndex) == WindPivot.East ? eastOrLoserLostCumul : notEastLostCumul));
+                            playerInfos.Add(new EndOfRoundInformationsPivot.PlayerInformationsPivot(pIndex, (Game.GetPlayerCurrentWind(pIndex) == WindPivot.East ? eastOrLoserLostCumul : notEastLostCumul) - (honbaPoints / 3)));
                         }
                     }
                 }

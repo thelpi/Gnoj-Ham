@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Gnoj_Ham;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -10,9 +11,9 @@ namespace Gnoj_HamUnitTests
     {
         private readonly Dictionary<int, (string pName, int points)[]> _expected = new Dictionary<int, (string pName, int points)[]>
         {
-            { 1000, new[] { ("CPU_0", 42500), ("CPU_1", 23900), ("CPU_2", 19000), ("CPU_3", 15700) } },
-            { 666, new[] { ("CPU_0", 62000), ("CPU_1", 21600), ("CPU_3", 9800), ("CPU_2", 8200) } },
-            { 999999, new[] { ("CPU_3", 33900), ("CPU_0", 32700), ("CPU_1", 17100), ("CPU_2", 16400) } }
+            { 1000, new[] { ("CPU_0", 42900), ("CPU_1", 23700), ("CPU_2", 17900), ("CPU_3", 15500) } },
+            { 666, new[] { ("CPU_0", 61300), ("CPU_1", 21200), ("CPU_3", 9700), ("CPU_2", 7800) } },
+            { 999999, new[] { ("CPU_3", 33800), ("CPU_0", 32600), ("CPU_1", 17000), ("CPU_2", 16600) } }
         };
 
         [TestMethod]

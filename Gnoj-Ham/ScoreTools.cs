@@ -285,19 +285,12 @@ namespace Gnoj_Ham
         }
 
         /// <summary>
-        /// Comptues honba points.
+        /// Gets the total points value of honbas .
         /// </summary>
-        /// <param name="honbaCount">Honba count.</param>
-        /// <param name="winnerPlayersCount">Winners count.</param>
-        /// <param name="isTsumo">Winner is tsumo.</param>
-        /// <returns>Honba points.</returns>
-        /// <exception cref="ArgumentOutOfRangeException"><paramref name="winnerPlayersCount"/> should be greater than <c>0</c> if <paramref name="isTsumo"/> is <c>False</c>.</exception>
-        public static int GetHonbaPoints(int honbaCount, int winnerPlayersCount, bool isTsumo)
-        {
-            return winnerPlayersCount < 1 && !isTsumo
-                ? throw new ArgumentOutOfRangeException(nameof(winnerPlayersCount))
-                : honbaCount > 0 ? (honbaCount * HONBA_VALUE) / (isTsumo ? 3 : winnerPlayersCount) : 0;
-        }
+        /// <param name="honbaCount">Honbas count.</param>
+        /// <returns>Total points.</returns>
+        public static int GetHonbaPoints(int honbaCount)
+            => honbaCount * HONBA_VALUE;
 
         /// <summary>
         /// Computes the rank and score of every players at the current state of the game.
