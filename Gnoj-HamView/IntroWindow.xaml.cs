@@ -17,11 +17,7 @@ namespace Gnoj_HamView
         {
             InitializeComponent();
 
-#if DEBUG
             DevelopmentTab.Visibility = Visibility.Visible;
-#else
-            DevelopmentTab.Visibility = Visibility.Collapsed;
-#endif
 
             CbbEndOfGameRule.ItemsSource = GraphicTools.GetEndOfGameRuleDisplayValue();
             CbbPointsRule.ItemsSource = GraphicTools.GetInitialPointsRuleDisplayValue();
