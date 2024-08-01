@@ -94,6 +94,10 @@ namespace Gnoj_Ham
 
         #region Static methods
 
+        private static readonly int[] ImpliesSingles = new[] { 1, 4, 7, 10 };
+        private static readonly int[] ImpliesPairs = new[] { 2, 5, 8, 11 };
+        private static readonly int[] TwoOrThreeTiles = new[] { 2, 3 };
+
         /// <summary>
         /// Checks if the specified list of tiles forms a complete hand.
         /// </summary>
@@ -102,9 +106,24 @@ namespace Gnoj_Ham
         /// <returns><c>True</c> if complete; <c>False</c> otherwise.</returns>
         public static bool IsCompleteFull(IReadOnlyList<TilePivot> tiles, IReadOnlyList<TileComboPivot> declaredCombinations)
         {
-            return IsCompleteBasic(tiles, declaredCombinations).Count > 0
+            return IsCompleteBasic(tiles, declaredCombinations.Count)
                 || IsSevenPairs(tiles)
                 || IsThirteenOrphans(tiles);
+        }
+
+        /// <summary>
+        /// Checks if the hand contains a valuable pair (dragon, dominant wind, player wind).
+        /// </summary>
+        /// <param name="combinations">Lsit of combinations.</param>
+        /// <param name="dominantWind">The dominant wind.</param>
+        /// <param name="playerWind">The player wind.</param>
+        /// <returns><c>True</c> if vluable pair in the hand; <c>False</c> otherwise.</returns>
+        public static bool HandWithValuablePair(IReadOnlyList<TileComboPivot> combinations, WindPivot dominantWind, WindPivot playerWind)
+        {
+            return combinations != null && combinations.Any(c => c.IsPair && (
+                c.Family == FamilyPivot.Dragon
+                || (c.Family == FamilyPivot.Wind && (c.Tiles.First().Wind == dominantWind || c.Tiles.First().Wind == playerWind))
+            ));
         }
 
         /// <summary>
@@ -127,8 +146,26 @@ namespace Gnoj_Ham
             return tiles.Count == 14 && tiles.GroupBy(t => t).All(t => t.Count() == 2);
         }
 
-        private static readonly int[] ImpliesSingles = new[] { 1, 4, 7, 10 };
-        private static readonly int[] ImpliesPairs = new[] { 2, 5, 8, 11 };
+        /// <summary>
+        /// Checks if the specified tiles form a complete hand (four combinations of three tiles and a pair).
+        /// "Kokushi musou" and "Chiitoitsu" must be checked separately.
+        /// </summary>
+        /// <param name="concealedTiles">List of concealed tiles.</param>
+        /// <param name="declaredCombinationsCount">Count of declared combinations.</param>
+        /// <returns>True if the hand is complete.</returns>
+        internal static bool IsCompleteBasic(IReadOnlyList<TilePivot> concealedTiles, int declaredCombinationsCount)
+        {
+            // Every combinations are declared.
+            if (declaredCombinationsCount == 4)
+            {
+                // The last two should form a pair.
+                return concealedTiles[0] == concealedTiles[1];
+            }
+
+            var combinationsSequences = GetCombinationsSequences(concealedTiles);
+
+            return combinationsSequences.Any(cs => cs.Count == 5 - declaredCombinationsCount && cs.Count(c => c.IsPair) == 1);
+        }
 
         /// <summary>
         /// Checks if the specified tiles form a complete hand (four combinations of three tiles and a pair).
@@ -137,26 +174,62 @@ namespace Gnoj_Ham
         /// <param name="concealedTiles">List of concealed tiles.</param>
         /// <param name="declaredCombinations">List of declared combinations.</param>
         /// <returns>A list of every valid sequences of combinations.</returns>
-        /// <remarks>Keep the type 'List' here.</remarks>
         internal static IReadOnlyList<List<TileComboPivot>> IsCompleteBasic(IReadOnlyList<TilePivot> concealedTiles, IReadOnlyList<TileComboPivot> declaredCombinations)
         {
-            // bad approximation of size
-            var combinationsSequences = new List<List<TileComboPivot>>(20);
-
             // Every combinations are declared.
             if (declaredCombinations.Count == 4)
             {
-                // The last two should form a pair.
-                if (concealedTiles[0] == concealedTiles[1])
-                {
-                    combinationsSequences.Add(
+                return concealedTiles[0] == concealedTiles[1]
+                    ? new List<List<TileComboPivot>>
+                    {
                         new List<TileComboPivot>(declaredCombinations)
                         {
                             new TileComboPivot(concealedTiles)
-                        });
-                }
-                return combinationsSequences;
+                        }
+                    }
+                    : new List<List<TileComboPivot>>();
             }
+
+            var combinationsSequences = GetCombinationsSequences(concealedTiles);
+
+            // Adds the declared combinations to each sequence of combinations.
+            foreach (var combinationsSequence in combinationsSequences)
+            {
+                combinationsSequence.AddRange(declaredCombinations);
+            }
+
+            // Filters invalid sequences :
+            // - Doesn't contain exactly 5 combinations.
+            // - Doesn't contain a pair.
+            // - Contains more than one pair.
+            combinationsSequences.RemoveAll(cs => cs.Count != 5 || cs.Count(c => c.IsPair) != 1);
+
+            // Filters duplicates sequences
+            combinationsSequences.RemoveAll(cs1 =>
+                combinationsSequences.Exists(cs2 =>
+                    combinationsSequences.IndexOf(cs2) < combinationsSequences.IndexOf(cs1)
+                    && cs1.IsBijection(cs2)));
+
+            return combinationsSequences;
+        }
+
+        /// <summary>
+        /// Computes if a hand is tenpai (any of <paramref name="notInHandTiles"/> can complete the hand, which must have 13th tiles).
+        /// </summary>
+        /// <param name="concealedTiles">Concealed tiles of the hand.</param>
+        /// <param name="combinations">Declared combinations of the hand.</param>
+        /// <param name="notInHandTiles">List of substitution tiles.</param>
+        /// <returns><c>True</c> if tenpai; <c>False</c> otherwise.</returns>
+        internal static bool IsTenpai(IReadOnlyList<TilePivot> concealedTiles, IReadOnlyList<TileComboPivot> combinations, IReadOnlyList<TilePivot> notInHandTiles)
+        {
+            return notInHandTiles.Any(sub => IsCompleteFull(new List<TilePivot>(concealedTiles) { sub }, combinations));
+        }
+
+        // Gets every possible combinations from the given list of tiles
+        private static List<List<TileComboPivot>> GetCombinationsSequences(IReadOnlyList<TilePivot> concealedTiles)
+        {
+            // bad approximation of size
+            var combinationsSequences = new List<List<TileComboPivot>>(20);
 
             // Creates a group for each family
             var familyGroups = concealedTiles.GroupBy(t => t.Family);
@@ -181,53 +254,30 @@ namespace Gnoj_Ham
                 }
             }
 
-            if (isSingle || pairCount > 1)
+            if (!isSingle && pairCount <= 1)
             {
-                // Empty list.
-                return combinationsSequences;
-            }
-
-            foreach (var familyGroup in familyGroups)
-            {
-                switch (familyGroup.Key)
+                foreach (var familyGroup in familyGroups)
                 {
-                    case FamilyPivot.Dragon:
-                        CheckHonorsForCombinations(familyGroup, k => k.Dragon.Value, combinationsSequences);
-                        break;
-                    case FamilyPivot.Wind:
-                        CheckHonorsForCombinations(familyGroup, t => t.Wind.Value, combinationsSequences);
-                        break;
-                    default:
-                        var temporaryCombinationsSequences = GetCombinationSequencesRecursive(familyGroup);
-                        // Cartesian product of existant sequences and temporary list.
-                        combinationsSequences = combinationsSequences.Count > 0 ?
-                            combinationsSequences.CartesianProduct(temporaryCombinationsSequences) : temporaryCombinationsSequences;
-                        break;
+                    switch (familyGroup.Key)
+                    {
+                        case FamilyPivot.Dragon:
+                            CheckHonorsForCombinations(familyGroup, k => k.Dragon.Value, combinationsSequences);
+                            break;
+                        case FamilyPivot.Wind:
+                            CheckHonorsForCombinations(familyGroup, t => t.Wind.Value, combinationsSequences);
+                            break;
+                        default:
+                            var temporaryCombinationsSequences = GetCombinationSequencesRecursive(familyGroup);
+                            // Cartesian product of existant sequences and temporary list.
+                            combinationsSequences = combinationsSequences.Count > 0 ?
+                                combinationsSequences.CartesianProduct(temporaryCombinationsSequences) : temporaryCombinationsSequences;
+                            break;
+                    }
                 }
             }
 
-            // Adds the declared combinations to each sequence of combinations.
-            foreach (var combinationsSequence in combinationsSequences)
-            {
-                combinationsSequence.AddRange(declaredCombinations);
-            }
-
-            // Filters invalid sequences :
-            // - Doesn't contain exactly 5 combinations.
-            // - Doesn't contain a pair.
-            // - Contains more than one pair.
-            combinationsSequences.RemoveAll(cs => cs.Count != 5 || cs.Count(c => c.IsPair) != 1);
-
-            // Filters duplicates sequences
-            combinationsSequences.RemoveAll(cs1 =>
-                combinationsSequences.Exists(cs2 =>
-                    combinationsSequences.IndexOf(cs2) < combinationsSequences.IndexOf(cs1)
-                    && cs1.IsBijection(cs2)));
-
             return combinationsSequences;
         }
-
-        private static readonly int[] TwoOrThreeTiles = new[] { 2, 3 };
 
         // Builds combinations (pairs and brelans) from dragon family or wind family.
         private static void CheckHonorsForCombinations<T>(IEnumerable<TilePivot> familyGroup,
@@ -355,33 +405,6 @@ namespace Gnoj_Ham
             }
 
             return combinationsSequences;
-        }
-
-        /// <summary>
-        /// Computes if a hand is tenpai (any of <paramref name="notInHandTiles"/> can complete the hand, which must have 13th tiles).
-        /// </summary>
-        /// <param name="concealedTiles">Concealed tiles of the hand.</param>
-        /// <param name="combinations">Declared combinations of the hand.</param>
-        /// <param name="notInHandTiles">List of substitution tiles.</param>
-        /// <returns><c>True</c> if tenpai; <c>False</c> otherwise.</returns>
-        internal static bool IsTenpai(IReadOnlyList<TilePivot> concealedTiles, IReadOnlyList<TileComboPivot> combinations, IReadOnlyList<TilePivot> notInHandTiles)
-        {
-            return notInHandTiles.Any(sub => IsCompleteFull(new List<TilePivot>(concealedTiles) { sub }, combinations));
-        }
-
-        /// <summary>
-        /// Checks if the hand contains a valuable pair (dragon, dominant wind, player wind).
-        /// </summary>
-        /// <param name="combinations">Lsit of combinations.</param>
-        /// <param name="dominantWind">The dominant wind.</param>
-        /// <param name="playerWind">The player wind.</param>
-        /// <returns><c>True</c> if vluable pair in the hand; <c>False</c> otherwise.</returns>
-        public static bool HandWithValuablePair(IReadOnlyList<TileComboPivot> combinations, WindPivot dominantWind, WindPivot playerWind)
-        {
-            return combinations != null && combinations.Any(c => c.IsPair && (
-                c.Family == FamilyPivot.Dragon
-                || (c.Family == FamilyPivot.Wind && (c.Tiles.First().Wind == dominantWind || c.Tiles.First().Wind == playerWind))
-            ));
         }
 
         #endregion Static methods
