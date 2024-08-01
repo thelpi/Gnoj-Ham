@@ -99,31 +99,12 @@ namespace Gnoj_Ham
         /// <param name="concealedTiles">List of concealed tiles.</param>
         /// <param name="openTile">Optionnal; the <see cref="OpenTile"/> value; default value is <c>Null</c>.</param>
         /// <param name="stolenFrom">Optionnal; the <see cref="StolenFrom"/> value; default value is <c>Null</c>.</param>
-        /// <exception cref="ArgumentNullException"><paramref name="concealedTiles"/> is <c>Null</c>.</exception>
-        /// <exception cref="ArgumentException"><see cref="Messages.InvalidTilesCount"/></exception>
-        /// <exception cref="ArgumentException"><see cref="Messages.InvalidCombination"/></exception>
-        /// <exception cref="ArgumentException"><see cref="Messages.StolenFromNotSpecified"/></exception>
-        public TileComboPivot(IEnumerable<TilePivot> concealedTiles, TilePivot openTile = null, WindPivot? stolenFrom = null)
+        internal TileComboPivot(IEnumerable<TilePivot> concealedTiles, TilePivot openTile = null, WindPivot? stolenFrom = null)
         {
-            if (concealedTiles is null)
-            {
-                throw new ArgumentNullException(nameof(concealedTiles));
-            }
-
             var tiles = new List<TilePivot>(concealedTiles);
             if (openTile != null)
             {
                 tiles.Add(openTile);
-            }
-
-            if (tiles.Count < 2 || tiles.Count > 4)
-            {
-                throw new ArgumentException(Messages.InvalidTilesCount, nameof(concealedTiles));
-            }
-
-            if (openTile != null && !stolenFrom.HasValue)
-            {
-                throw new ArgumentException(Messages.StolenFromNotSpecified, nameof(stolenFrom));
             }
 
             OpenTile = openTile;

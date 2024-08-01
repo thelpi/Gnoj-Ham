@@ -112,9 +112,9 @@ namespace Gnoj_Ham
         /// </summary>
         /// <param name="tiles">List of tiles.</param>
         /// <returns><c>True</c> if "Kokushi musou"; <c>False</c> otherwise.</returns>
-        public static bool IsThirteenOrphans(IReadOnlyList<TilePivot> tiles)
+        internal static bool IsThirteenOrphans(IReadOnlyList<TilePivot> tiles)
         {
-            return tiles != null && tiles.Count == 14 && tiles.Distinct().Count() == 13 && tiles.All(t => t.IsHonorOrTerminal);
+            return tiles.Count == 14 && tiles.All(t => t.IsHonorOrTerminal) && tiles.Distinct().Count() == 13;
         }
 
         /// <summary>
@@ -122,9 +122,9 @@ namespace Gnoj_Ham
         /// </summary>
         /// <param name="tiles">List of tiles.</param>
         /// <returns><c>True</c> if "Chiitoitsu"; <c>False</c> otherwise.</returns>
-        public static bool IsSevenPairs(IReadOnlyList<TilePivot> tiles)
+        internal static bool IsSevenPairs(IReadOnlyList<TilePivot> tiles)
         {
-            return tiles != null && tiles.Count == 14 && tiles.Distinct().Count() == 7 && tiles.GroupBy(t => t).All(t => t.Count() == 2);
+            return tiles.Count == 14 && tiles.GroupBy(t => t).All(t => t.Count() == 2);
         }
 
         private static readonly int[] ImpliesSingles = new[] { 1, 4, 7, 10 };
@@ -137,27 +137,9 @@ namespace Gnoj_Ham
         /// <param name="concealedTiles">List of concealed tiles.</param>
         /// <param name="declaredCombinations">List of declared combinations.</param>
         /// <returns>A list of every valid sequences of combinations.</returns>
-        /// <exception cref="ArgumentNullException"><paramref name="concealedTiles"/> is <c>Null</c>.</exception>
-        /// <exception cref="ArgumentNullException"><paramref name="declaredCombinations"/> is <c>Null</c>.</exception>
-        /// <exception cref="ArgumentException"><see cref="Messages.InvalidHandTilesCount"/></exception>
         /// <remarks>Keep the type 'List' here.</remarks>
-        public static IReadOnlyList<List<TileComboPivot>> IsCompleteBasic(IReadOnlyList<TilePivot> concealedTiles, IReadOnlyList<TileComboPivot> declaredCombinations)
+        internal static IReadOnlyList<List<TileComboPivot>> IsCompleteBasic(IReadOnlyList<TilePivot> concealedTiles, IReadOnlyList<TileComboPivot> declaredCombinations)
         {
-            if (declaredCombinations == null)
-            {
-                throw new ArgumentNullException(nameof(declaredCombinations));
-            }
-
-            if (concealedTiles == null)
-            {
-                throw new ArgumentNullException(nameof(concealedTiles));
-            }
-
-            if (declaredCombinations.Count * 3 + concealedTiles.Count != 14)
-            {
-                throw new ArgumentException(Messages.InvalidHandTilesCount, nameof(concealedTiles));
-            }
-
             // bad approximation of size
             var combinationsSequences = new List<List<TileComboPivot>>(20);
 
@@ -382,15 +364,8 @@ namespace Gnoj_Ham
         /// <param name="combinations">Declared combinations of the hand.</param>
         /// <param name="notInHandTiles">List of substitution tiles.</param>
         /// <returns><c>True</c> if tenpai; <c>False</c> otherwise.</returns>
-        /// <exception cref="ArgumentNullException"><paramref name="concealedTiles"/> is <c>Null</c>.</exception>
-        /// <exception cref="ArgumentNullException"><paramref name="combinations"/> is <c>Null</c>.</exception>
-        /// <exception cref="ArgumentNullException"><paramref name="notInHandTiles"/> is <c>Null</c>.</exception>
-        public static bool IsTenpai(IReadOnlyList<TilePivot> concealedTiles, IReadOnlyList<TileComboPivot> combinations, IReadOnlyList<TilePivot> notInHandTiles)
+        internal static bool IsTenpai(IReadOnlyList<TilePivot> concealedTiles, IReadOnlyList<TileComboPivot> combinations, IReadOnlyList<TilePivot> notInHandTiles)
         {
-            _ = concealedTiles ?? throw new ArgumentNullException(nameof(concealedTiles));
-            _ = combinations ?? throw new ArgumentNullException(nameof(combinations));
-            _ = notInHandTiles ?? throw new ArgumentNullException(nameof(notInHandTiles));
-
             return notInHandTiles.Any(sub => IsCompleteFull(new List<TilePivot>(concealedTiles) { sub }, combinations));
         }
 
