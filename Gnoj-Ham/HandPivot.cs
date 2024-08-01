@@ -311,62 +311,64 @@ namespace Gnoj_Ham
         {
             var combinations = new List<TileComboPivot>(5);
 
-            var sameNumber = tiles.Where(t => t.Number == tile.Number).ToList();
+            var sameNumber = tiles.Count(t => t.Number == tile.Number);
 
-            if (sameNumber.Count > 1)
+            if (sameNumber > 1)
             {
                 // Can make a pair.
-                combinations.Add(new TileComboPivot(new List<TilePivot>
-                {
-                    tile,
-                    tile
-                }));
-                if (sameNumber.Count > 2)
+                combinations.Add(new TileComboPivot(tile, tile));
+                if (sameNumber > 2)
                 {
                     // Can make a brelan.
-                    combinations.Add(new TileComboPivot(new List<TilePivot>
-                    {
-                        tile,
-                        tile,
-                        tile
-                    }));
+                    combinations.Add(new TileComboPivot(tile, tile, tile));
                 }
             }
 
-            var secondLow = tiles.FirstOrDefault(t => t.Number == tile.Number - 2);
-            var firstLow = tiles.FirstOrDefault(t => t.Number == tile.Number - 1);
-            var firstHigh = tiles.FirstOrDefault(t => t.Number == tile.Number + 1);
-            var secondHigh = tiles.FirstOrDefault(t => t.Number == tile.Number + 2);
+            TilePivot secondLow = null;
+            TilePivot firstLow = null;
+            TilePivot firstHigh = null;
+            TilePivot secondHigh = null;
+            var count = 0;
+            foreach (var t in tiles)
+            {
+                if (t.Number == tile.Number - 2)
+                {
+                    secondLow = t;
+                    count++;
+                }
+                else if (t.Number == tile.Number - 1)
+                {
+                    firstLow = t;
+                    count++;
+                }
+                else if(t.Number == tile.Number + 1)
+                {
+                    firstHigh = t;
+                    count++;
+                }
+                else if (t.Number == tile.Number + 2)
+                {
+                    secondHigh = t;
+                    count++;
+                }
+                if (count == 4)
+                    break;
+            }
 
             if (secondLow != null && firstLow != null)
             {
                 // Can make a sequence.
-                combinations.Add(new TileComboPivot(new List<TilePivot>
-                {
-                    secondLow,
-                    firstLow,
-                    tile
-                }));
+                combinations.Add(new TileComboPivot(secondLow, firstLow, tile));
             }
             if (firstLow != null && firstHigh != null)
             {
                 // Can make a sequence.
-                combinations.Add(new TileComboPivot(new List<TilePivot>
-                {
-                    firstLow,
-                    tile,
-                    firstHigh
-                }));
+                combinations.Add(new TileComboPivot(firstLow, tile, firstHigh));
             }
             if (firstHigh != null && secondHigh != null)
             {
                 // Can make a sequence.
-                combinations.Add(new TileComboPivot(new List<TilePivot>
-                {
-                    tile,
-                    firstHigh,
-                    secondHigh
-                }));
+                combinations.Add(new TileComboPivot(tile, firstHigh, secondHigh));
             }
 
             return combinations;
@@ -378,6 +380,7 @@ namespace Gnoj_Ham
             var combinationsSequences = new List<List<TileComboPivot>>(10);
 
             var distinctNumbers = tiles.Select(tg => tg.Number).Distinct().OrderBy(v => v).ToList();
+
             foreach (var number in distinctNumbers)
             {
                 var combinations = GetCombinationsForTile(tiles.First(fg => fg.Number == number), tiles);

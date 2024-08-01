@@ -12,7 +12,7 @@ namespace Gnoj_Ham
     {
         #region Embedded properties
 
-        private readonly List<TilePivot> _tiles;
+        private readonly TilePivot[] _tiles;
 
         /// <summary>
         /// Inferred; list of tiles; includes <see cref="OpenTile"/>.
@@ -41,19 +41,19 @@ namespace Gnoj_Ham
         /// <summary>
         /// Inferred; indicates if the combination is a pair.
         /// </summary>
-        public bool IsPair => _tiles.Count == 2;
+        public bool IsPair => _tiles.Length == 2;
         /// <summary>
         /// Inferred; indicates if the combination is a brelan.
         /// </summary>
-        public bool IsBrelan => _tiles.Count == 3 && !IsSequence;
+        public bool IsBrelan => _tiles.Length == 3 && !IsSequence;
         /// <summary>
         /// Inferred; indicates if the combination is a square.
         /// </summary>
-        public bool IsSquare => _tiles.Count == 4;
+        public bool IsSquare => _tiles.Length == 4;
         /// <summary>
         /// Inferred; indicates if the combination is a sequence.
         /// </summary>
-        public bool IsSequence => _tiles.Count == 3 && _tiles[0].Number != _tiles[1].Number;
+        public bool IsSequence => _tiles.Length == 3 && _tiles[0].Number != _tiles[1].Number;
         /// <summary>
         /// Inferred; indicates if the combination is a brelan or a square.
         /// </summary>
@@ -111,7 +111,20 @@ namespace Gnoj_Ham
             StolenFrom = stolenFrom;
 
             // The sort is important here...
-            _tiles = tiles.OrderBy(t => t).ToList();
+            _tiles = tiles.OrderBy(t => t).ToArray();
+        }
+
+        /// <summary>
+        /// Constructor.
+        /// </summary>
+        /// <param name="tiles">List of concealed tiles.</param>
+        internal TileComboPivot(params TilePivot[] tiles)
+        {
+            OpenTile = null;
+            StolenFrom = null;
+
+            // The sort is important here...
+            _tiles = tiles;
         }
 
         #endregion
@@ -156,9 +169,9 @@ namespace Gnoj_Ham
         /// <returns>Hashcode of this instance.</returns>
         public override int GetHashCode()
         {
-            return _tiles.Count == 2
+            return _tiles.Length == 2
                 ? Tuple.Create(_tiles[0], _tiles[1]).GetHashCode()
-                : _tiles.Count == 4
+                : _tiles.Length == 4
                     ? Tuple.Create(_tiles[0], _tiles[1], _tiles[2], _tiles[3]).GetHashCode()
                     : Tuple.Create(_tiles[0], _tiles[1], _tiles[2]).GetHashCode();
         }
