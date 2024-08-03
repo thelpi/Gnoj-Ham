@@ -24,7 +24,7 @@ namespace Gnoj_Ham
         /// <summary>
         /// <see cref="WindPivot"/> at the first round of the game.
         /// </summary>
-        public WindPivot InitialWind { get; private set; }
+        internal WindPivot InitialWind { get; private set; }
         /// <summary>
         /// Number of points.
         /// </summary>
@@ -32,11 +32,11 @@ namespace Gnoj_Ham
         /// <summary>
         /// Indicates if the player is managed by the CPU.
         /// </summary>
-        public bool IsCpu { get; private set; }
+        internal bool IsCpu { get; private set; }
         /// <summary>
         /// Permanent player the current instance is based upon.
         /// </summary>
-        public PermanentPlayerPivot PermanentPlayer { get; }
+        internal PermanentPlayerPivot PermanentPlayer { get; }
 
         #endregion Embedded properties
 
@@ -77,7 +77,7 @@ namespace Gnoj_Ham
         /// <returns>List of four <see cref="PlayerPivot"/>, not sorted.</returns>
         /// <exception cref="ArgumentException"><see cref="Messages.InvalidPlayerName"/></exception>
         /// <remarks>Keey the 'List' type in return.</remarks>
-        public static List<PlayerPivot> GetFourPlayers(string humanPlayerName, InitialPointsRulePivot initialPointsRulePivot, Random random)
+        internal static List<PlayerPivot> GetFourPlayers(string humanPlayerName, InitialPointsRulePivot initialPointsRulePivot, Random random)
         {
             humanPlayerName = CheckName(humanPlayerName);
 
@@ -108,7 +108,7 @@ namespace Gnoj_Ham
         /// <exception cref="ArgumentNullException"><paramref name="permanentPlayers"/> is <c>Null</c>.</exception>
         /// <exception cref="ArgumentException">Four players are required.</exception>
         /// <remarks>Keey the 'List' type in return.</remarks>
-        public static List<PlayerPivot> GetFourPlayersFromPermanent(IReadOnlyList<PermanentPlayerPivot> permanentPlayers, InitialPointsRulePivot initialPointsRulePivot, Random random)
+        internal static List<PlayerPivot> GetFourPlayersFromPermanent(IReadOnlyList<PermanentPlayerPivot> permanentPlayers, InitialPointsRulePivot initialPointsRulePivot, Random random)
         {
             _ = permanentPlayers ?? throw new ArgumentNullException(nameof(permanentPlayers));
 

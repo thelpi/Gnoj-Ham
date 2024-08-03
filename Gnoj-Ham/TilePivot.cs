@@ -47,15 +47,15 @@ namespace Gnoj_Ham
         /// <summary>
         /// Inferred; indicates if the instance is an honor.
         /// </summary>
-        public bool IsHonor => Family == FamilyPivot.Dragon || Family == FamilyPivot.Wind;
+        internal bool IsHonor => Family == FamilyPivot.Dragon || Family == FamilyPivot.Wind;
         /// <summary>
         /// Inferred; indicates if the instance is a terminal.
         /// </summary>
-        public bool IsTerminal => Number == 1 || Number == 9;
+        internal bool IsTerminal => Number == 1 || Number == 9;
         /// <summary>
         /// Inferred; indicates if the instance is an honor or a terminal.
         /// </summary>
-        public bool IsHonorOrTerminal => IsTerminal || IsHonor;
+        internal bool IsHonorOrTerminal => IsTerminal || IsHonor;
 
         #endregion Inferred properties
 
@@ -206,7 +206,7 @@ namespace Gnoj_Ham
         /// Selected tiles are <c>5</c> of non-honor families (one of each).
         /// </param>
         /// <returns>A list of <see cref="TilePivot"/>.</returns>
-        public static IReadOnlyList<TilePivot> GetCompleteSet(bool withRedDoras = false)
+        internal static IReadOnlyList<TilePivot> GetCompleteSet(bool withRedDoras = false)
         {
             var tiles = new List<TilePivot>(136);
 
@@ -257,7 +257,7 @@ namespace Gnoj_Ham
         /// <param name="wind">Optionnal; the <see cref="Wind"/> value; default value is <c>Null</c>.</param>
         /// <param name="isRedDora">Optionnal; the <see cref="IsRedDora"/> value; default value is <c>Null</c>.</param>
         /// <returns></returns>
-        public static TilePivot GetTile(IEnumerable<TilePivot> tilesSet, FamilyPivot family, byte? number = null,
+        internal static TilePivot GetTile(IEnumerable<TilePivot> tilesSet, FamilyPivot family, byte? number = null,
             DragonPivot? dragon = null, WindPivot? wind = null, bool? isRedDora = null)
         {
             if (tilesSet == null)
@@ -296,7 +296,7 @@ namespace Gnoj_Ham
         /// <param name="other">The previous tile.</param>
         /// <returns><c>True</c> if dora; <c>False</c> otherwise.</returns>
         /// <exception cref="ArgumentNullException"><paramref name="other"/> is <c>Null</c>.</exception>
-        public bool IsDoraNext(TilePivot other)
+        internal bool IsDoraNext(TilePivot other)
         {
             if (other == null)
             {
@@ -330,7 +330,7 @@ namespace Gnoj_Ham
         /// </summary>
         /// <param name="combo">The combination.</param>
         /// <returns><c>True</c> if on the closed edge; <c>False</c> otherwise.</returns>
-        public bool TileIsEdgeWait(TileComboPivot combo)
+        internal bool TileIsEdgeWait(TileComboPivot combo)
         {
             return combo != null && combo.IsSequence && combo.Tiles.Contains(this)
                 && (
@@ -344,7 +344,7 @@ namespace Gnoj_Ham
         /// </summary>
         /// <param name="combo">The combination.</param>
         /// <returns><c>True</c> if in the middle; <c>False</c> otherwise.</returns>
-        public bool TileIsMiddleWait(TileComboPivot combo)
+        internal bool TileIsMiddleWait(TileComboPivot combo)
         {
             return combo != null && combo.IsSequence && combo.Tiles.Contains(this)
                 && combo.SequenceFirstNumber != Number

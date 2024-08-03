@@ -15,7 +15,7 @@ namespace Gnoj_Ham
         /// </summary>
         /// <param name="initialPointsRule">The <see cref="InitialPointsRulePivot"/> value.</param>
         /// <returns>The number of points.</returns>
-        public static int GetInitialPointsFromRule(this InitialPointsRulePivot initialPointsRule)
+        internal static int GetInitialPointsFromRule(this InitialPointsRulePivot initialPointsRule)
         {
             switch (initialPointsRule)
             {
@@ -36,7 +36,7 @@ namespace Gnoj_Ham
         /// <param name="secondList">The second list.</param>
         /// <returns>The cartesian product; empty list if at least one argument is <c>Null</c>.</returns>
         /// <remarks>Keep the type 'List' here.</remarks>
-        public static List<List<T>> CartesianProduct<T>(this List<List<T>> firstList, List<List<T>> secondList)
+        internal static List<List<T>> CartesianProduct<T>(this List<List<T>> firstList, List<List<T>> secondList)
         {
             return firstList == null || secondList == null
                 ? new List<List<T>>()
@@ -55,7 +55,7 @@ namespace Gnoj_Ham
         /// <param name="list1">The first list.</param>
         /// <param name="list2">The second list.</param>
         /// <returns><c>True</c> if <paramref name="list1"/> is a bijection of <paramref name="list2"/>; <c>False</c> otherwise.</returns>
-        public static bool IsBijection<T>(this IReadOnlyList<T> list1, IReadOnlyList<T> list2) where T : IEquatable<T>
+        internal static bool IsBijection<T>(this IReadOnlyList<T> list1, IReadOnlyList<T> list2) where T : IEquatable<T>
         {
             return list1 != null && list2 != null
                 && list1.All(e1 => list2.Contains(e1))
@@ -67,7 +67,7 @@ namespace Gnoj_Ham
         /// </summary>
         /// <param name="drawType">The <see cref="DrawTypePivot"/>.</param>
         /// <returns><c>True</c> if self draw; <c>False</c> otherwise.</returns>
-        public static bool IsSelfDraw(this DrawTypePivot drawType)
+        internal static bool IsSelfDraw(this DrawTypePivot drawType)
         {
             return drawType == DrawTypePivot.Wall || drawType == DrawTypePivot.Compensation;
         }
@@ -77,7 +77,7 @@ namespace Gnoj_Ham
         /// </summary>
         /// <param name="origin">The wind.</param>
         /// <returns>The left wind.</returns>
-        public static WindPivot Left(this WindPivot origin)
+        internal static WindPivot Left(this WindPivot origin)
         {
             switch (origin)
             {
@@ -97,7 +97,7 @@ namespace Gnoj_Ham
         /// </summary>
         /// <param name="origin">The wind.</param>
         /// <returns>The right wind.</returns>
-        public static WindPivot Right(this WindPivot origin)
+        internal static WindPivot Right(this WindPivot origin)
         {
             switch (origin)
             {
@@ -117,7 +117,7 @@ namespace Gnoj_Ham
         /// </summary>
         /// <param name="origin">The wind.</param>
         /// <returns>The opposite wind.</returns>
-        public static WindPivot Opposite(this WindPivot origin)
+        internal static WindPivot Opposite(this WindPivot origin)
         {
             switch (origin)
             {

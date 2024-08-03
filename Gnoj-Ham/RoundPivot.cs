@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -33,7 +32,7 @@ namespace Gnoj_Ham
         /// First on the list is the latest to play.
         /// The list is cleared when a jump (ie a call) is made.
         /// </summary>
-        public IReadOnlyList<int> PlayerIndexHistory => _playerIndexHistory;
+        internal IReadOnlyList<int> PlayerIndexHistory => _playerIndexHistory;
 
         /// <summary>
         /// Wall tiles.
@@ -43,7 +42,7 @@ namespace Gnoj_Ham
         /// <summary>
         /// List of compensation tiles. 4 at the beginning, between 0 and 4 at the end.
         /// </summary>
-        public IReadOnlyList<TilePivot> CompensationTiles => _compensationTiles;
+        internal IReadOnlyList<TilePivot> CompensationTiles => _compensationTiles;
 
         /// <summary>
         /// List of dora indicator tiles. Always 5 (doesn't mean they're all visible).
@@ -53,18 +52,18 @@ namespace Gnoj_Ham
         /// <summary>
         /// List of ura-dora indicator tiles. Always 5 (doesn't mean they're all visible).
         /// </summary>
-        public IReadOnlyList<TilePivot> UraDoraIndicatorTiles => _uraDoraIndicatorTiles;
+        internal IReadOnlyList<TilePivot> UraDoraIndicatorTiles => _uraDoraIndicatorTiles;
 
         /// <summary>
         /// Other tiles of the treasure Always 4 minus the number of tiles of <see cref="_compensationTiles"/>.
         /// </summary>
-        public IReadOnlyList<TilePivot> DeadTreasureTiles => _deadTreasureTiles;
+        internal IReadOnlyList<TilePivot> DeadTreasureTiles => _deadTreasureTiles;
 
         /// <summary>
         /// Riichi informations of four players.
         /// </summary>
         /// <remarks>The list if filled by default with <c>Null</c> for every players.</remarks>
-        public IReadOnlyList<RiichiPivot> Riichis => _riichis;
+        internal IReadOnlyList<RiichiPivot> Riichis => _riichis;
 
         /// <summary>
         /// The current player index, between 0 and 3.
@@ -108,7 +107,7 @@ namespace Gnoj_Ham
         /// <summary>
         /// Inferred; indicates if the current round is over by wall exhaustion.
         /// </summary>
-        public bool IsWallExhaustion => WallTiles.Count == 0;
+        internal bool IsWallExhaustion => WallTiles.Count == 0;
 
         /// <summary>
         /// Inferred; count of visible doras.
@@ -190,7 +189,7 @@ namespace Gnoj_Ham
         /// Tries to pick the next tile from the wall.
         /// </summary>
         /// <returns>The tile if success; <c>null</c> if failure (ie exhausted wall).</returns>
-        public TilePivot Pick()
+        internal TilePivot Pick()
         {
             if (_wallTiles.Count == 0 || _waitForDiscard)
             {
@@ -543,7 +542,7 @@ namespace Gnoj_Ham
         /// </summary>
         /// <param name="playerIndex">The player index.</param>
         /// <returns><c>True</c> if calling ron is possible; <c>False</c> otherwise.</returns>
-        public bool CanCallRon(int playerIndex)
+        internal bool CanCallRon(int playerIndex)
         {
             var tile = _waitForDiscard ? null : _discards[PreviousPlayerIndex].LastOrDefault();
             var forKokushiOnly = false;
@@ -583,7 +582,7 @@ namespace Gnoj_Ham
         /// <returns><c>True</c> if tenpai; <c>False</c> otherwise.</returns>
         /// <exception cref="ArgumentException">A tile to remove has to be specified in this context of hand.</exception>
         /// <exception cref="ArgumentException">A tile to remove can't be specified in this context of hand.</exception>
-        public bool IsTenpai(int playerIndex, TilePivot tileToRemoveFromConcealed)
+        internal bool IsTenpai(int playerIndex, TilePivot tileToRemoveFromConcealed)
         {
             var hand = _hands[playerIndex];
             if (hand.IsFullHand && (tileToRemoveFromConcealed == null || !hand.ConcealedTiles.Contains(tileToRemoveFromConcealed)))
@@ -662,7 +661,7 @@ namespace Gnoj_Ham
         /// <param name="playerIndex">Player index.</param>
         /// <param name="isSelfKan">If the method returns <c>True</c>, this indicates a self kan if <c>True</c>.</param>
         /// <returns><c>True</c> if call available; <c>False otherwise</c>.</returns>
-        public bool CanCallPonOrKan(int playerIndex, out bool isSelfKan)
+        internal bool CanCallPonOrKan(int playerIndex, out bool isSelfKan)
         {
             isSelfKan = _waitForDiscard;
             return CanCallKan(playerIndex).Count > 0 || CanCallPon(playerIndex);
@@ -673,7 +672,7 @@ namespace Gnoj_Ham
         /// </summary>
         /// <param name="concealed"><c>True</c> to check only concealed kan (or from a previous pon); <c>False</c> to check the opposite; <c>Null</c> for both.</param>
         /// <returns>The player index who can make the kan call, and the possible tiles; <c>Null</c> is none.</returns>
-        public Tuple<int, IReadOnlyList<TilePivot>> OpponentsCanCallKan(bool? concealed)
+        internal Tuple<int, IReadOnlyList<TilePivot>> OpponentsCanCallKan(bool? concealed)
         {
             for (var i = 0; i < 4; i++)
             {
@@ -696,7 +695,7 @@ namespace Gnoj_Ham
         /// <param name="playerId">The player index.</param>
         /// <param name="concealed"><c>True</c> to check only concealed kan (or from a previous pon); <c>False</c> to check the opposite; <c>Null</c> for both.</param>
         /// <returns>List of possible tiles.</returns>
-        public IReadOnlyList<TilePivot> CanCallKanWithChoices(int playerId, bool? concealed)
+        internal IReadOnlyList<TilePivot> CanCallKanWithChoices(int playerId, bool? concealed)
         {
             var tiles = CanCallKan(playerId);
             if (concealed == true)
@@ -716,7 +715,7 @@ namespace Gnoj_Ham
         /// Checks if a pon call can be made by any opponent of the human player.
         /// </summary>
         /// <returns>The player index who can make the pon call; <c>-1</c> is none.</returns>
-        public int OpponentsCanCallPon()
+        internal int OpponentsCanCallPon()
         {
             var opponentsIndex = Enumerable.Range(0, 4).Where(i =>
             {
@@ -730,7 +729,7 @@ namespace Gnoj_Ham
         /// Checks if a chii call can be made by any opponent of the human player.
         /// </summary>
         /// <returns>Same type of return than the method <see cref="CanCallChii()"/>, for the opponent who can call chii.</returns>
-        public Dictionary<TilePivot, bool> OpponentsCanCallChii()
+        internal Dictionary<TilePivot, bool> OpponentsCanCallChii()
         {
             if (!IsHumanPlayer)
             {
@@ -751,8 +750,9 @@ namespace Gnoj_Ham
         /// <returns><c>True</c> if the tile is discardable; <c>False</c> otherwise.</returns>
         public bool CanDiscard(TilePivot tile)
         {
-            return _waitForDiscard && (!IsRiichi(CurrentPlayerIndex) || ReferenceEquals(tile, _hands[CurrentPlayerIndex].LatestPick))
-&& _hands[CurrentPlayerIndex].CanDiscardTile(tile, _stealingInProgress);
+            return _waitForDiscard
+                && (!IsRiichi(CurrentPlayerIndex) || ReferenceEquals(tile, _hands[CurrentPlayerIndex].LatestPick))
+                && _hands[CurrentPlayerIndex].CanDiscardTile(tile, _stealingInProgress);
         }
 
         /// <summary>

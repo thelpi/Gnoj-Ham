@@ -94,7 +94,7 @@ namespace Gnoj_HamView
 
                     if (endOfRoundInfo.EndOfGame)
                     {
-                        ScoreTools.ComputeCurrentRanking(_game);
+                        _game.ComputeCurrentRanking();
 
                         _currentGameIndex++;
                         PgbGames.Value = _currentGameIndex / (double)_totalGamesCount;

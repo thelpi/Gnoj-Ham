@@ -63,7 +63,7 @@ namespace Gnoj_HamUnitTests
 
                 if (endOfRoundInfo.EndOfGame)
                 {
-                    scores = ScoreTools.ComputeCurrentRanking(game);
+                    scores = game.ComputeCurrentRanking();
                     break;
                 }
             }

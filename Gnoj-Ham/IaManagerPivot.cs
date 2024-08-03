@@ -138,7 +138,7 @@ namespace Gnoj_Ham
         /// Checks if any CPU player can make a pon call, and computes its decision if any.
         /// </summary>
         /// <returns>The player index who makes the call; <c>-1</c> is none.</returns>
-        public int PonDecision()
+        internal int PonDecision()
         {
             var opponentPlayerId = _round.OpponentsCanCallPon();
             if (opponentPlayerId > -1)
@@ -154,7 +154,7 @@ namespace Gnoj_Ham
         /// </summary>
         /// <param name="isKanCompensation"><c>True</c> if it's while a kan call is in progress; <c>False</c> otherwise.</param>
         /// <returns><c>True</c> if the decision is made; <c>False</c> otherwise.</returns>
-        public bool TsumoDecision(bool isKanCompensation)
+        internal bool TsumoDecision(bool isKanCompensation)
         {
             return _round.CanCallTsumo(isKanCompensation);
         }
@@ -172,7 +172,7 @@ namespace Gnoj_Ham
         /// - The second item indicates the base tile of the kand (several choices are possible).
         /// <c>Null</c> otherwise.
         /// </returns>
-        public Tuple<int, TilePivot> KanDecision(bool checkConcealedOnly)
+        internal Tuple<int, TilePivot> KanDecision(bool checkConcealedOnly)
         {
             var opponentPlayerIdWithTiles = _round.OpponentsCanCallKan(checkConcealedOnly);
             return opponentPlayerIdWithTiles != null
@@ -218,7 +218,7 @@ namespace Gnoj_Ham
         /// - The second item indicates if this tile represents the first number in the sequence (<c>True</c>) or the second (<c>False</c>).
         /// <c>Null</c> otherwise.
         /// </returns>
-        public Tuple<TilePivot, bool> ChiiDecision()
+        internal Tuple<TilePivot, bool> ChiiDecision()
         {
             var chiiTiles = _round.OpponentsCanCallChii();
             return chiiTiles.Count > 0 ? ChiiDecisionInternal(chiiTiles) : null;

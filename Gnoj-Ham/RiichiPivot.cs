@@ -7,7 +7,7 @@ namespace Gnoj_Ham
     /// <summary>
     /// Represents informations relative to a riichi call.
     /// </summary>
-    public class RiichiPivot
+    internal class RiichiPivot
     {
         #region Embedded properties
 
@@ -16,23 +16,23 @@ namespace Gnoj_Ham
         /// <summary>
         /// Position in the player discard.
         /// </summary>
-        public int DiscardRank { get; private set; }
+        internal int DiscardRank { get; private set; }
 
         /// <summary>
         /// <c>True</c> if the riichi is "daburu" (at first turn without interruption).
         /// </summary>
-        public bool IsDaburu { get; private set; }
+        internal bool IsDaburu { get; private set; }
 
         /// <summary>
         /// The tile discarded when the call has been made.
         /// </summary>
-        public TilePivot Tile { get; private set; }
+        internal TilePivot Tile { get; private set; }
 
         /// <summary>
         /// The rank, in the virtual discard of each opponent, when the riichi call has been made.
         /// </summary>
         /// <remarks>Key is the opponent index, value is the rank (<c>-1</c> if none).</remarks>
-        public IReadOnlyDictionary<int, int> OpponentsVirtualDiscardRank => _opponentsVirtualDiscardRank;
+        internal IReadOnlyDictionary<int, int> OpponentsVirtualDiscardRank => _opponentsVirtualDiscardRank;
 
         #endregion Embedded properties
 
@@ -50,7 +50,7 @@ namespace Gnoj_Ham
         /// <exception cref="ArgumentOutOfRangeException"><paramref name="discardRank"/> is out of range.</exception>
         /// <exception cref="ArgumentException"><see cref="Messages.InvalidDiscardRank"/></exception>
         /// <exception cref="ArgumentException"><see cref="Messages.InvalidOpponentsVirtualDiscardRank"/></exception>
-        public RiichiPivot(int discardRank, bool isDaburu, TilePivot tile, IDictionary<int, int> opponentsVirtualDiscardRank)
+        internal RiichiPivot(int discardRank, bool isDaburu, TilePivot tile, IDictionary<int, int> opponentsVirtualDiscardRank)
         {
             if (opponentsVirtualDiscardRank == null)
             {

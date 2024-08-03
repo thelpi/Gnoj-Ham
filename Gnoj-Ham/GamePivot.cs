@@ -40,11 +40,11 @@ namespace Gnoj_Ham
         /// <summary>
         /// Index of the player in <see cref="_players"/> currently east.
         /// </summary>
-        public int EastIndex { get; private set; }
+        internal int EastIndex { get; private set; }
         /// <summary>
         /// Number of rounds with the current <see cref="EastIndex"/>.
         /// </summary>
-        public int EastIndexTurnCount { get; private set; }
+        internal int EastIndexTurnCount { get; private set; }
         /// <summary>
         /// Honba count.
         /// </summary>
@@ -53,7 +53,7 @@ namespace Gnoj_Ham
         /// <summary>
         /// Honba count before scoring.
         /// </summary>
-        public int HonbaCountBeforeScoring => HonbaCount > 0 ? HonbaCount - 1 : 0;
+        internal int HonbaCountBeforeScoring => HonbaCount > 0 ? HonbaCount - 1 : 0;
         /// <summary>
         /// Pending riichi count.
         /// </summary>
@@ -78,21 +78,21 @@ namespace Gnoj_Ham
         /// <summary>
         /// Inferred; current east player.
         /// </summary>
-        public PlayerPivot CurrentEastPlayer => _players[EastIndex];
+        internal PlayerPivot CurrentEastPlayer => _players[EastIndex];
         /// <summary>
         /// Inferred; get players sorted by their ranking.
         /// </summary>
-        public IReadOnlyList<PlayerPivot> PlayersRanked => _players.OrderByDescending(p => p.Points).ThenBy(p => (int)p.InitialWind).ToList();
+        internal IReadOnlyList<PlayerPivot> PlayersRanked => _players.OrderByDescending(p => p.Points).ThenBy(p => (int)p.InitialWind).ToList();
 
         /// <summary>
         /// Inferred; gets the player index which was the first <see cref="WindPivot.East"/>.
         /// </summary>
-        public int FirstEastIndex => _players.FindIndex(p => p.InitialWind == WindPivot.East);
+        internal int FirstEastIndex => _players.FindIndex(p => p.InitialWind == WindPivot.East);
 
         /// <summary>
         /// Inferred; indicates the game is between CPU only.
         /// </summary>
-        public bool CpuVs => _players.All(_ => _.IsCpu);
+        internal bool CpuVs => _players.All(_ => _.IsCpu);
 
         #endregion
 
@@ -159,10 +159,28 @@ namespace Gnoj_Ham
         #region Public methods
 
         /// <summary>
+        /// Computes the rank and score of every players at the current state of the game.
+        /// </summary>
+        /// <returns>A list of player with score, order by ascending rank.</returns>
+        public IReadOnlyList<PlayerScorePivot> ComputeCurrentRanking()
+        {
+            var playersOrdered = new List<PlayerScorePivot>(4);
+
+            var i = 1;
+            foreach (var player in Players.OrderByDescending(p => p.Points))
+            {
+                playersOrdered.Add(new PlayerScorePivot(player, i, ScoreTools.ComputeUma(i), Ruleset.InitialPointsRule.GetInitialPointsFromRule()));
+                i++;
+            }
+
+            return playersOrdered;
+        }
+
+        /// <summary>
         /// Adds a pending riichi.
         /// </summary>
         /// <param name="playerIndex">The player index.</param>
-        public void AddPendingRiichi(int playerIndex)
+        internal void AddPendingRiichi(int playerIndex)
         {
             if (playerIndex < 0 || playerIndex > 3)
             {
@@ -320,7 +338,7 @@ namespace Gnoj_Ham
         /// </summary>
         /// <param name="wind">The wind.</param>
         /// <returns>The player index.</returns>
-        public int GetPlayerIndexByCurrentWind(WindPivot wind)
+        internal int GetPlayerIndexByCurrentWind(WindPivot wind)
         {
             return Enumerable.Range(0, 4).First(i => GetPlayerCurrentWind(i) == wind);
         }

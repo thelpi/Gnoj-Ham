@@ -18,11 +18,11 @@ namespace Gnoj_Ham
         /// <summary>
         /// <c>True</c> to "Ryuukyoku" (otherwie, resets <see cref="GamePivot.PendingRiichiCount"/>).
         /// </summary>
-        public bool Ryuukyoku { get; private set; }
+        internal bool Ryuukyoku { get; private set; }
         /// <summary>
         /// <c>True</c> if the current east has not won this round.
         /// </summary>
-        public bool ToNextEast { get; private set; }
+        internal bool ToNextEast { get; private set; }
         /// <summary>
         /// Indicates the end of the game if <c>True</c>.
         /// </summary>
@@ -31,7 +31,7 @@ namespace Gnoj_Ham
         /// <summary>
         /// Indicates if the dura-dora tiles must be displayed.
         /// </summary>
-        public bool DisplayUraDora { get; private set; }
+        internal bool DisplayUraDora { get; private set; }
         /// <summary>
         /// Honba count.
         /// </summary>
@@ -158,7 +158,7 @@ namespace Gnoj_Ham
             /// <summary>
             /// Points gain for this round (might be negative).
             /// </summary>
-            public int PointsGain { get; private set; }
+            internal int PointsGain { get; private set; }
             /// <summary>
             /// Dora count.
             /// </summary>
@@ -269,7 +269,7 @@ namespace Gnoj_Ham
             /// Adds points to <see cref="PointsGain"/>.
             /// </summary>
             /// <param name="points">Points to add.</param>
-            public void AddPoints(int points)
+            internal void AddPoints(int points)
             {
                 PointsGain += points;
             }

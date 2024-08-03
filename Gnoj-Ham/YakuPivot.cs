@@ -20,7 +20,7 @@ namespace Gnoj_Ham
         /// <summary>
         /// Name (english).
         /// </summary>
-        public string NameEn { get; private set; }
+        internal string NameEn { get; private set; }
         /// <summary>
         /// Description.
         /// </summary>
@@ -40,7 +40,7 @@ namespace Gnoj_Ham
         /// Yakumans are not in this list as they make every other yakus obsolete.
         /// </summary>
         /// <remarks>Empty for yakumans.</remarks>
-        public IReadOnlyList<YakuPivot> Upgrades => _upgrades;
+        internal IReadOnlyList<YakuPivot> Upgrades => _upgrades;
         /// <summary>
         /// An example of valid hand; <c>null</c> if none.
         /// </summary>
@@ -53,7 +53,7 @@ namespace Gnoj_Ham
         /// <summary>
         /// Inferred; indicates if the yaku is only valid when concealed.
         /// </summary>
-        public bool IsConcealedOnly => FanCount == 0;
+        internal bool IsConcealedOnly => FanCount == 0;
         /// <summary>
         /// Inferred; indicates the fan count when concealed.
         /// </summary>
@@ -61,7 +61,7 @@ namespace Gnoj_Ham
         /// <summary>
         /// Inferred; indicates if the yaku is a yakuman (when concealed, at least).
         /// </summary>
-        public bool IsYakuman => ConcealedFanCount == 13;
+        internal bool IsYakuman => ConcealedFanCount == 13;
 
         #endregion Inferred properties
 
@@ -550,55 +550,55 @@ namespace Gnoj_Ham
         /// <summary>
         /// Kokushi musou; yakuman.
         /// </summary>
-        public static readonly YakuPivot KokushiMusou = Yakus.First(y => y.Name == KOKUSHI_MUSOU);
+        internal static readonly YakuPivot KokushiMusou = Yakus.First(y => y.Name == KOKUSHI_MUSOU);
         /// <summary>
         /// Daisangen; yakuman.
         /// </summary>
-        public static readonly YakuPivot Daisangen = Yakus.First(y => y.Name == DAISANGEN);
+        internal static readonly YakuPivot Daisangen = Yakus.First(y => y.Name == DAISANGEN);
         /// <summary>
         /// Suuankou; yakuman.
         /// </summary>
-        public static readonly YakuPivot Suuankou = Yakus.First(y => y.Name == SUUANKOU);
+        internal static readonly YakuPivot Suuankou = Yakus.First(y => y.Name == SUUANKOU);
         /// <summary>
         /// Shousuushii; yakuman.
         /// </summary>
-        public static readonly YakuPivot Shousuushii = Yakus.First(y => y.Name == SHOUSUUSHII);
+        internal static readonly YakuPivot Shousuushii = Yakus.First(y => y.Name == SHOUSUUSHII);
         /// <summary>
         /// Daisuushii; yakuman.
         /// </summary>
-        public static readonly YakuPivot Daisuushii = Yakus.First(y => y.Name == DAISUUSHII);
+        internal static readonly YakuPivot Daisuushii = Yakus.First(y => y.Name == DAISUUSHII);
         /// <summary>
         /// Tsuuiisou; yakuman.
         /// </summary>
-        public static readonly YakuPivot Tsuuiisou = Yakus.First(y => y.Name == TSUUIISOU);
+        internal static readonly YakuPivot Tsuuiisou = Yakus.First(y => y.Name == TSUUIISOU);
         /// <summary>
         /// Ryuuiisou; yakuman.
         /// </summary>
-        public static readonly YakuPivot Ryuuiisou = Yakus.First(y => y.Name == RYUUIISOU);
+        internal static readonly YakuPivot Ryuuiisou = Yakus.First(y => y.Name == RYUUIISOU);
         /// <summary>
         /// Chinroutou; yakuman.
         /// </summary>
-        public static readonly YakuPivot Chinroutou = Yakus.First(y => y.Name == CHINROUTOU);
+        internal static readonly YakuPivot Chinroutou = Yakus.First(y => y.Name == CHINROUTOU);
         /// <summary>
         /// Chuuren poutou; yakuman.
         /// </summary>
-        public static readonly YakuPivot ChuurenPoutou = Yakus.First(y => y.Name == CHUUREN_POUTOU);
+        internal static readonly YakuPivot ChuurenPoutou = Yakus.First(y => y.Name == CHUUREN_POUTOU);
         /// <summary>
         /// Suukantsu; yakuman.
         /// </summary>
-        public static readonly YakuPivot Suukantsu = Yakus.First(y => y.Name == SUUKANTSU);
+        internal static readonly YakuPivot Suukantsu = Yakus.First(y => y.Name == SUUKANTSU);
         /// <summary>
         /// Tenhou; yakuman.
         /// </summary>
-        public static readonly YakuPivot Tenhou = Yakus.First(y => y.Name == TENHOU);
+        internal static readonly YakuPivot Tenhou = Yakus.First(y => y.Name == TENHOU);
         /// <summary>
         /// Chiihou; yakuman.
         /// </summary>
-        public static readonly YakuPivot Chiihou = Yakus.First(y => y.Name == CHIIHOU);
+        internal static readonly YakuPivot Chiihou = Yakus.First(y => y.Name == CHIIHOU);
         /// <summary>
         /// Renhou; yakuman (optionnal).
         /// </summary>
-        public static readonly YakuPivot Renhou = Yakus.First(y => y.Name == RENHOU);
+        internal static readonly YakuPivot Renhou = Yakus.First(y => y.Name == RENHOU);
         /// <summary>
         /// Nagashi mangan.
         /// </summary>
@@ -606,103 +606,103 @@ namespace Gnoj_Ham
         /// <summary>
         /// Chiniisou.
         /// </summary>
-        public static readonly YakuPivot Chiniisou = Yakus.First(y => y.Name == CHINIISOU);
+        internal static readonly YakuPivot Chiniisou = Yakus.First(y => y.Name == CHINIISOU);
         /// <summary>
         /// Honiisou.
         /// </summary>
-        public static readonly YakuPivot Honiisou = Yakus.First(y => y.Name == HONIISOU);
+        internal static readonly YakuPivot Honiisou = Yakus.First(y => y.Name == HONIISOU);
         /// <summary>
         /// Junchan.
         /// </summary>
-        public static readonly YakuPivot Junchan = Yakus.First(y => y.Name == JUNCHAN);
+        internal static readonly YakuPivot Junchan = Yakus.First(y => y.Name == JUNCHAN);
         /// <summary>
         /// Ryanpeikou
         /// </summary>
-        public static readonly YakuPivot Ryanpeikou = Yakus.First(y => y.Name == RYANPEIKOU);
+        internal static readonly YakuPivot Ryanpeikou = Yakus.First(y => y.Name == RYANPEIKOU);
         /// <summary>
         /// Daburu riichi.
         /// </summary>
-        public static readonly YakuPivot DaburuRiichi = Yakus.First(y => y.Name == DABURU_RIICHI);
+        internal static readonly YakuPivot DaburuRiichi = Yakus.First(y => y.Name == DABURU_RIICHI);
         /// <summary>
         /// Chanta.
         /// </summary>
-        public static readonly YakuPivot Chanta = Yakus.First(y => y.Name == CHANTA);
+        internal static readonly YakuPivot Chanta = Yakus.First(y => y.Name == CHANTA);
         /// <summary>
         /// Sanshoku doujun.
         /// </summary>
-        public static readonly YakuPivot SanshokuDoujun = Yakus.First(y => y.Name == SANSHOKU_DOUJUN);
+        internal static readonly YakuPivot SanshokuDoujun = Yakus.First(y => y.Name == SANSHOKU_DOUJUN);
         /// <summary>
         /// Ittsu.
         /// </summary>
-        public static readonly YakuPivot Ittsu = Yakus.First(y => y.Name == ITTSU);
+        internal static readonly YakuPivot Ittsu = Yakus.First(y => y.Name == ITTSU);
         /// <summary>
         /// Toitoi.
         /// </summary>
-        public static readonly YakuPivot Toitoi = Yakus.First(y => y.Name == TOITOI);
+        internal static readonly YakuPivot Toitoi = Yakus.First(y => y.Name == TOITOI);
         /// <summary>
         /// Sanankou.
         /// </summary>
-        public static readonly YakuPivot Sanankou = Yakus.First(y => y.Name == SANANKOU);
+        internal static readonly YakuPivot Sanankou = Yakus.First(y => y.Name == SANANKOU);
         /// <summary>
         /// Sanshoku doukou.
         /// </summary>
-        public static readonly YakuPivot SanshokuDoukou = Yakus.First(y => y.Name == SANSHOKU_DOUKOU);
+        internal static readonly YakuPivot SanshokuDoukou = Yakus.First(y => y.Name == SANSHOKU_DOUKOU);
         /// <summary>
         /// Sankantsu.
         /// </summary>
-        public static readonly YakuPivot Sankantsu = Yakus.First(y => y.Name == SANKANTSU);
+        internal static readonly YakuPivot Sankantsu = Yakus.First(y => y.Name == SANKANTSU);
         /// <summary>
         /// Chiitoitsu.
         /// </summary>
-        public static readonly YakuPivot Chiitoitsu = Yakus.First(y => y.Name == CHIITOITSU);
+        internal static readonly YakuPivot Chiitoitsu = Yakus.First(y => y.Name == CHIITOITSU);
         /// <summary>
         /// Honroutou.
         /// </summary>
-        public static readonly YakuPivot Honroutou = Yakus.First(y => y.Name == HONROUTOU);
+        internal static readonly YakuPivot Honroutou = Yakus.First(y => y.Name == HONROUTOU);
         /// <summary>
         /// Shousangen.
         /// </summary>
-        public static readonly YakuPivot Shousangen = Yakus.First(y => y.Name == SHOUSANGEN);
+        internal static readonly YakuPivot Shousangen = Yakus.First(y => y.Name == SHOUSANGEN);
         /// <summary>
         /// Haitei.
         /// </summary>
-        public static readonly YakuPivot Haitei = Yakus.First(y => y.Name == HAITEI);
+        internal static readonly YakuPivot Haitei = Yakus.First(y => y.Name == HAITEI);
         /// <summary>
         /// Rinshan kaihou.
         /// </summary>
-        public static readonly YakuPivot RinshanKaihou = Yakus.First(y => y.Name == RINSHAN_KAIHOU);
+        internal static readonly YakuPivot RinshanKaihou = Yakus.First(y => y.Name == RINSHAN_KAIHOU);
         /// <summary>
         /// Chankan.
         /// </summary>
-        public static readonly YakuPivot Chankan = Yakus.First(y => y.Name == CHANKAN);
+        internal static readonly YakuPivot Chankan = Yakus.First(y => y.Name == CHANKAN);
         /// <summary>
         /// Tanyao.
         /// </summary>
-        public static readonly YakuPivot Tanyao = Yakus.First(y => y.Name == TANYAO);
+        internal static readonly YakuPivot Tanyao = Yakus.First(y => y.Name == TANYAO);
         /// <summary>
         /// Yakuhai.
         /// </summary>
-        public static readonly YakuPivot Yakuhai = Yakus.First(y => y.Name == YAKUHAI);
+        internal static readonly YakuPivot Yakuhai = Yakus.First(y => y.Name == YAKUHAI);
         /// <summary>
         /// Riichi.
         /// </summary>
-        public static readonly YakuPivot Riichi = Yakus.First(y => y.Name == RIICHI);
+        internal static readonly YakuPivot Riichi = Yakus.First(y => y.Name == RIICHI);
         /// <summary>
         /// Ippatsu.
         /// </summary>
-        public static readonly YakuPivot Ippatsu = Yakus.First(y => y.Name == IPPATSU);
+        internal static readonly YakuPivot Ippatsu = Yakus.First(y => y.Name == IPPATSU);
         /// <summary>
         /// Menzen tsumo.
         /// </summary>
-        public static readonly YakuPivot MenzenTsumo = Yakus.First(y => y.Name == MENZEN_TSUMO);
+        internal static readonly YakuPivot MenzenTsumo = Yakus.First(y => y.Name == MENZEN_TSUMO);
         /// <summary>
         /// Pinfu.
         /// </summary>
-        public static readonly YakuPivot Pinfu = Yakus.First(y => y.Name == PINFU);
+        internal static readonly YakuPivot Pinfu = Yakus.First(y => y.Name == PINFU);
         /// <summary>
         /// Iipeikou.
         /// </summary>
-        public static readonly YakuPivot Iipeikou = Yakus.First(y => y.Name == IIPEIKOU);
+        internal static readonly YakuPivot Iipeikou = Yakus.First(y => y.Name == IIPEIKOU);
 
         #endregion Static properties
 
@@ -772,7 +772,7 @@ namespace Gnoj_Ham
         /// <param name="concealedHand"><c>True</c> if the hand is concealed; <c>False</c> otherwise.</param>
         /// <returns>The best combination of yakus.</returns>
         /// <exception cref="ArgumentNullException"><paramref name="yakus"/> is <c>Null</c>.</exception>
-        public static IReadOnlyList<YakuPivot> GetBestYakusFromList(IEnumerable<IReadOnlyList<YakuPivot>> yakus, bool concealedHand)
+        internal static IReadOnlyList<YakuPivot> GetBestYakusFromList(IEnumerable<IReadOnlyList<YakuPivot>> yakus, bool concealedHand)
         {
             return yakus == null
                 ? throw new ArgumentNullException(nameof(yakus))
@@ -794,7 +794,7 @@ namespace Gnoj_Ham
         /// <exception cref="ArgumentNullException"><paramref name="combinationsSequence"/> is <c>Null</c>.</exception>
         /// <exception cref="ArgumentNullException"><paramref name="context"/> is <c>Null</c>.</exception>
         /// <exception cref="NotImplementedException">The <see cref="YakuPivot"/> to check is not implemented.</exception>
-        public static IReadOnlyList<YakuPivot> GetYakus(List<TileComboPivot> combinationsSequence, WinContextPivot context)
+        internal static IReadOnlyList<YakuPivot> GetYakus(List<TileComboPivot> combinationsSequence, WinContextPivot context)
         {
             if (combinationsSequence == null)
             {

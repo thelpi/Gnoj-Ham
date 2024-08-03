@@ -26,18 +26,18 @@ namespace Gnoj_Ham
         /// <summary>
         /// The latest pick (from wall or steal); can't be known by <see cref="_concealedTiles"/> (sorted list).
         /// </summary>
-        public TilePivot LatestPick { get; private set; }
+        internal TilePivot LatestPick { get; private set; }
 
         /// <summary>
         /// Yakus, if the hand is complete; otherwise <c>Null</c>.
         /// </summary>
-        public IReadOnlyList<YakuPivot> Yakus { get; private set; }
+        internal IReadOnlyList<YakuPivot> Yakus { get; private set; }
 
         /// <summary>
         /// Combinations computed in the hand to produce <see cref="Yakus"/>;
         /// <c>Null</c> if <see cref="Yakus"/> is <c>Null</c> or contains <see cref="YakuPivot.KokushiMusou"/> or <see cref="YakuPivot.NagashiMangan"/>.
         /// </summary>
-        public IReadOnlyList<TileComboPivot> YakusCombinations { get; private set; }
+        internal IReadOnlyList<TileComboPivot> YakusCombinations { get; private set; }
 
         #endregion Embedded properties
 
@@ -46,17 +46,17 @@ namespace Gnoj_Ham
         /// <summary>
         /// Inferred; indicates if the hand is complete (can tsumo or ron depending on context).
         /// </summary>
-        public bool IsComplete => Yakus != null && Yakus.Count > 0;
+        internal bool IsComplete => Yakus != null && Yakus.Count > 0;
 
         /// <summary>
         /// Inferred; indicates if the hand is concealed.
         /// </summary>
-        public bool IsConcealed => !_declaredCombinations.Any(c => !c.IsConcealed);
+        internal bool IsConcealed => !_declaredCombinations.Any(c => !c.IsConcealed);
 
         /// <summary>
         /// Inferred; every tiles of the hand; concealed or not; into combination or not.
         /// </summary>
-        public IReadOnlyList<TilePivot> AllTiles
+        internal IReadOnlyList<TilePivot> AllTiles
         {
             get
             {
@@ -104,7 +104,7 @@ namespace Gnoj_Ham
         /// <param name="tiles">List of tiles (other than <paramref name="declaredCombinations"/>).</param>
         /// <param name="declaredCombinations">List of declared combinations.</param>
         /// <returns><c>True</c> if complete; <c>False</c> otherwise.</returns>
-        public static bool IsCompleteFull(IReadOnlyList<TilePivot> tiles, IReadOnlyList<TileComboPivot> declaredCombinations)
+        internal static bool IsCompleteFull(IReadOnlyList<TilePivot> tiles, IReadOnlyList<TileComboPivot> declaredCombinations)
         {
             return IsCompleteBasic(tiles, declaredCombinations.Count)
                 || IsSevenPairs(tiles)
@@ -118,7 +118,7 @@ namespace Gnoj_Ham
         /// <param name="dominantWind">The dominant wind.</param>
         /// <param name="playerWind">The player wind.</param>
         /// <returns><c>True</c> if vluable pair in the hand; <c>False</c> otherwise.</returns>
-        public static bool HandWithValuablePair(IReadOnlyList<TileComboPivot> combinations, WindPivot dominantWind, WindPivot playerWind)
+        internal static bool HandWithValuablePair(IReadOnlyList<TileComboPivot> combinations, WindPivot dominantWind, WindPivot playerWind)
         {
             return combinations != null && combinations.Any(c => c.IsPair && (
                 c.Family == FamilyPivot.Dragon
@@ -807,7 +807,7 @@ namespace Gnoj_Ham
         /// Checks if the hand has finished on a closed wait.
         /// </summary>
         /// <returns><c>True</c> if contains a closed wait; <c>False</c> otherwise.</returns>
-        public bool HandWithClosedWait()
+        internal bool HandWithClosedWait()
         {
             if (YakusCombinations == null)
             {

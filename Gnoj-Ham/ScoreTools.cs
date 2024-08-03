@@ -7,14 +7,14 @@ namespace Gnoj_Ham
     /// <summary>
     /// Tools to compute score.
     /// </summary>
-    public static class ScoreTools
+    internal static class ScoreTools
     {
         #region Points chart
 
         /// <summary>
         /// Riichi cost.
         /// </summary>
-        public const int RIICHI_COST = 1000;
+        internal const int RIICHI_COST = 1000;
 
         private const int HONBA_VALUE = 300;
         private const int TENPAI_BASE_POINTS = 1000;
@@ -121,7 +121,7 @@ namespace Gnoj_Ham
         /// </summary>
         /// <param name="countTenpai">Count of tenpai players.</param>
         /// <returns>Points for tenpai players; Points for non-tenpai players.</returns>
-        public static Tuple<int, int> GetRyuukyokuPoints(int countTenpai)
+        internal static Tuple<int, int> GetRyuukyokuPoints(int countTenpai)
         {
             return countTenpai == 1
                 ? new Tuple<int, int>(TENPAI_BASE_POINTS * (4 - countTenpai), -TENPAI_BASE_POINTS)
@@ -140,7 +140,7 @@ namespace Gnoj_Ham
         /// <param name="redDorasCount">Optionnal; red doras count.</param>
         /// <returns>The fan count.</returns>
         /// <exception cref="ArgumentNullException"><paramref name="yakus"/> is <c>Null</c>.</exception>
-        public static int GetFanCount(IReadOnlyList<YakuPivot> yakus, bool concealed, int dorasCount = 0, int uraDorasCount = 0, int redDorasCount = 0)
+        internal static int GetFanCount(IReadOnlyList<YakuPivot> yakus, bool concealed, int dorasCount = 0, int uraDorasCount = 0, int redDorasCount = 0)
         {
             if (yakus == null)
             {
@@ -167,7 +167,7 @@ namespace Gnoj_Ham
         /// <param name="dominantWind">The dominant wind;</param>
         /// <param name="playerWind">The player wind.</param>
         /// <exception cref="ArgumentNullException"><paramref name="hand"/> is <c>Null</c>.</exception>
-        public static int GetFuCount(HandPivot hand, bool isTsumo, WindPivot dominantWind, WindPivot playerWind)
+        internal static int GetFuCount(HandPivot hand, bool isTsumo, WindPivot dominantWind, WindPivot playerWind)
         {
             if (hand == null)
             {
@@ -221,7 +221,7 @@ namespace Gnoj_Ham
         /// - Number of points lost by east players (or one of the three remaining if the winner is east; or the specific loser if ron).
         /// - Number of points lost by the two other players.
         /// </returns>
-        public static Tuple<int, int> GetPoints(int fanCount, int fuCount, bool isTsumo, WindPivot playerWind)
+        internal static Tuple<int, int> GetPoints(int fanCount, int fuCount, bool isTsumo, WindPivot playerWind)
         {
             var v1 = 0;
             var v2 = 0;
@@ -289,35 +289,15 @@ namespace Gnoj_Ham
         /// </summary>
         /// <param name="honbaCount">Honbas count.</param>
         /// <returns>Total points.</returns>
-        public static int GetHonbaPoints(int honbaCount)
+        internal static int GetHonbaPoints(int honbaCount)
             => honbaCount * HONBA_VALUE;
 
         /// <summary>
-        /// Computes the rank and score of every players at the current state of the game.
+        /// Computes uma at the specified rank.
         /// </summary>
-        /// <param name="game">The current game.</param>
-        /// <returns>A list of player with score, order by ascending rank.</returns>
-        public static IReadOnlyList<PlayerScorePivot> ComputeCurrentRanking(GamePivot game)
-        {
-            if (game == null)
-            {
-                throw new ArgumentNullException(nameof(game));
-            }
-
-            var playersOrdered = new List<PlayerScorePivot>(4);
-
-            var i = 1;
-            foreach (var player in game.Players.OrderByDescending(p => p.Points))
-            {
-                playersOrdered.Add(new PlayerScorePivot(player, i, ComputeUma(i), game.Ruleset.InitialPointsRule.GetInitialPointsFromRule()));
-                i++;
-            }
-
-            return playersOrdered;
-        }
-
-        // Computes uma at the specified rank.
-        private static int ComputeUma(int rank)
+        /// <param name="rank">The rank.</param>
+        /// <returns>Uma.</returns>
+        internal static int ComputeUma(int rank)
         {
             // TODO : manage more than one rule.
             return rank == 1 ? 15 : (rank == 2 ? 5 : (rank == 3 ? -5 : -15));

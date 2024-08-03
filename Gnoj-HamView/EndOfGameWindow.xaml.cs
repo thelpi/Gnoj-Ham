@@ -16,7 +16,7 @@ namespace Gnoj_HamView
         {
             InitializeComponent();
 
-            var playerScores = ScoreTools.ComputeCurrentRanking(game);
+            var playerScores = game.ComputeCurrentRanking();
             for (var i = 0; i < playerScores.Count; i++)
             {
                 this.FindControl("LblRank", i).Content = playerScores[i].Rank;

@@ -19,7 +19,7 @@ namespace Gnoj_Ham
         /// <summary>
         /// Number of games played.
         /// </summary>
-        public int GamesCount => _scores.Count;
+        internal int GamesCount => _scores.Count;
 
         /// <summary>
         /// Cumulated score.
@@ -64,7 +64,7 @@ namespace Gnoj_Ham
         /// </summary>
         /// <param name="score"></param>
         /// <exception cref="ArgumentNullException"><paramref name="score"/> is <c>Null</c>.</exception>
-        public void AddGameScore(PlayerScorePivot score)
+        internal void AddGameScore(PlayerScorePivot score)
         {
             _ = score ?? throw new ArgumentNullException(nameof(score));
 
@@ -74,7 +74,7 @@ namespace Gnoj_Ham
         /// <summary>
         /// Resets player's score.
         /// </summary>
-        public void ResetScores()
+        internal void ResetScores()
         {
             _scores.Clear();
         }

@@ -93,7 +93,7 @@ namespace Gnoj_Ham
         /// Checks if the instance is default ruleset.
         /// </summary>
         /// <returns><c>True</c> if default ruleset.</returns>
-        public bool AreDefaultRules() => Equals(Default);
+        internal bool AreDefaultRules() => Equals(Default);
 
         #endregion Public methods
 
