@@ -10,9 +10,9 @@ namespace Gnoj_HamUnitTests
     {
         private readonly Dictionary<int, (string pName, int points)[]> _expected = new Dictionary<int, (string pName, int points)[]>
         {
-            { 1000, new[] { ("CPU_0", 42900), ("CPU_1", 23700), ("CPU_2", 17900), ("CPU_3", 15500) } },
-            { 666, new[] { ("CPU_0", 61300), ("CPU_1", 21200), ("CPU_3", 9700), ("CPU_2", 7800) } },
-            { 999999, new[] { ("CPU_3", 33800), ("CPU_0", 32600), ("CPU_1", 17000), ("CPU_2", 16600) } }
+            { 1000, new[] { ("CPU_0", 42900), ("CPU_1", 26300), ("CPU_3", 18100), ("CPU_2", 12700) } },
+            { 666, new[] { ("CPU_0", 63900), ("CPU_1", 15400), ("CPU_3", 12300), ("CPU_2", 8400) } },
+            { 999999, new[] { ("CPU_1", 54400), ("CPU_0", 20100), ("CPU_2", 18900), ("CPU_3", 6600) } }
         };
 
         [TestMethod]

@@ -47,7 +47,7 @@ namespace Gnoj_Ham
         /// <returns>The tile to discard.</returns>
         public TilePivot DiscardDecision(IReadOnlyList<TilePivot> tenpaiPotentialDiscards)
         {
-            var concealedTiles = _round.GetHand(_round.CurrentPlayerIndex).ConcealedTiles.ToList();
+            var concealedTiles = _round.GetHand(_round.CurrentPlayerIndex).ConcealedTiles;
 
             var discardableTiles = concealedTiles
                 .Where(t => _round.CanDiscard(t))
@@ -68,12 +68,7 @@ namespace Gnoj_Ham
             tenpaiPotentialDiscards = tenpaiPotentialDiscards ?? _round.ExtractDiscardChoicesFromTenpai(_round.CurrentPlayerIndex);
             if (tenpaiPotentialDiscards.Count > 0)
             {
-                // but select the best of possible discards
-                if (stopCurrentHand)
-                    return tenpaiPotentialDiscards.OrderBy(t => tilesSafety.First(_ => _.tile == t).unsafePoints).First();
-
-                // otherwise (no visible risk), avoid discard dora
-                return tenpaiPotentialDiscards.OrderBy(t => _round.GetDoraCount(t) + (t.IsRedDora ? 1 : 0)).First();
+                return GetBestDiscardFromList(tenpaiPotentialDiscards, tilesSafety, stopCurrentHand);
             }
 
             if (stopCurrentHand)
@@ -113,7 +108,7 @@ namespace Gnoj_Ham
                     // all things being equal, wind are the best to discard
                     .ThenBy(t => t.Key.Family == FamilyPivot.Wind)
                     // all things being equal, the closer to side the better
-                    .ThenBy(t => t.Key.DistanceToMiddle())
+                    .ThenBy(t => t.Key.DistanceToMiddle(false))
                     .Reverse();
 
             return tilesGroup.First(tg => discardableTiles.Contains(tg.Key)).Key;
@@ -126,7 +121,17 @@ namespace Gnoj_Ham
         public (TilePivot choice, IReadOnlyList<TilePivot> potentials) RiichiDecision()
         {
             var riichiTiles = _round.CanCallRiichi();
-            return (riichiTiles.Count > 0 ? riichiTiles.First() : null, riichiTiles);
+
+            if (riichiTiles.Count < 2)
+                return (riichiTiles.Count > 0 ? riichiTiles.First() : null, riichiTiles);
+
+            var deadTiles = _round.DeadTilesFromIndexPointOfView(_round.CurrentPlayerIndex);
+
+            var (tilesSafety, stopCurrentHand) = ComputeTilesSafety(riichiTiles, deadTiles);
+
+            var tileSelected = GetBestDiscardFromList(riichiTiles, tilesSafety, stopCurrentHand);
+
+            return (tileSelected, riichiTiles);
         }
 
         /// <summary>
@@ -246,6 +251,29 @@ namespace Gnoj_Ham
         #endregion Public methods
 
         #region Private methods
+
+        private TilePivot GetBestDiscardFromList(IReadOnlyList<TilePivot> tenpaiPotentialDiscards,
+            IReadOnlyList<(TilePivot tile, int unsafePoints)> tilesSafety, bool playsSafe)
+        {
+            if (tenpaiPotentialDiscards.Count == 1)
+                return tenpaiPotentialDiscards.First();
+
+            int safetyFunc(TilePivot t) => tilesSafety.First(_ => _.tile == t).unsafePoints;
+            int dorasFunc(TilePivot t) => _round.GetDoraCount(t) + (t.IsRedDora ? 1 : 0);
+
+            var orderedTiles = playsSafe
+                ? tenpaiPotentialDiscards
+                    .OrderBy(safetyFunc)
+                    .ThenBy(dorasFunc)
+                : tenpaiPotentialDiscards
+                    .OrderBy(dorasFunc)
+                    .ThenBy(safetyFunc);
+
+            return orderedTiles
+                .ThenByDescending(t => t.DistanceToMiddle(true))
+                .ThenBy(t => t)
+                .First();
+        }
 
         private int PonDecisionInternal(int playerIndex)
         {
