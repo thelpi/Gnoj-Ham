@@ -10,8 +10,6 @@ namespace Gnoj_Ham
     /// </summary>
     public static class GlobalExtensions
     {
-        private const int MAX_PARALLELISM = 4;
-
         /// <summary>
         /// Extension; gets the number of points from the specified <see cref="InitialPointsRulePivot"/> value.
         /// </summary>
@@ -180,27 +178,6 @@ namespace Gnoj_Ham
         internal static bool EnchousenRuleApply(this EndOfGameRulePivot endOfGameRule)
         {
             return endOfGameRule == EndOfGameRulePivot.Enchousen || endOfGameRule == EndOfGameRulePivot.EnchousenAndTobi;
-        }
-
-        /// <summary>
-        /// Execute, for items of a collection, a méthod in parallel
-        /// </summary>
-        /// <typeparam name="T">The targeted type of the collection.</typeparam>
-        /// <param name="sourceCollection">Source collection.</param>
-        /// <param name="executable">Method to apply on each item.</param>
-        /// <param name="parallelism">Number of parallel threads.</param>
-        internal static void ExecuteInParallel<T>(this IList<T> sourceCollection, Action<T> executable, int parallelism = MAX_PARALLELISM)
-        {
-            var itemsPerThread = sourceCollection.Count / parallelism;
-            var remainsForLastThread = sourceCollection.Count % parallelism;
-            Parallel.For(0, parallelism, i =>
-            {
-                var currentThreadItemsCount = itemsPerThread + (i == parallelism - 1 ? remainsForLastThread : 0);
-                foreach (var item in sourceCollection.Skip(i * itemsPerThread).Take(currentThreadItemsCount))
-                {
-                    executable(item);
-                }
-            });
         }
     }
 }

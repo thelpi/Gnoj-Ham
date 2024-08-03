@@ -952,23 +952,24 @@ namespace Gnoj_Ham
         {
             var distinctTilesFromOverallConcealed = GetConcealedTilesFromPlayerPointOfView(playerIndex).Distinct().ToList();
 
-            var subPossibilities = new ConcurrentBag<TilePivot>();
-            _hands[playerIndex].ConcealedTiles
+            var tilesToSub = _hands[playerIndex].ConcealedTiles
                 .Distinct()
-                .ToList()
-                .ExecuteInParallel(tileToSub =>
+                .ToList();
+
+            var subPossibilities = new List<TilePivot>(tilesToSub.Count);
+            foreach (var tileToSub in tilesToSub)
+            {
+                var tempListConcealed = new List<TilePivot>(_hands[playerIndex].ConcealedTiles);
+                tempListConcealed.Remove(tileToSub);
+                if (HandPivot.IsTenpai(tempListConcealed, _hands[playerIndex].DeclaredCombinations, distinctTilesFromOverallConcealed))
                 {
-                    var tempListConcealed = new List<TilePivot>(_hands[playerIndex].ConcealedTiles);
-                    tempListConcealed.Remove(tileToSub);
-                    if (HandPivot.IsTenpai(tempListConcealed, _hands[playerIndex].DeclaredCombinations, distinctTilesFromOverallConcealed))
-                    {
-                        subPossibilities.Add(tileToSub);
-                    }
-                });
+                    subPossibilities.Add(tileToSub);
+                }
+            }
 
             // Avoids red doras in the list returned (if possible).
             var realSubPossibilities = new List<TilePivot>(subPossibilities.Count);
-            foreach (var tile in subPossibilities.Distinct())
+            foreach (var tile in subPossibilities)
             {
                 TilePivot subTile = null;
                 if (tile.IsRedDora)
