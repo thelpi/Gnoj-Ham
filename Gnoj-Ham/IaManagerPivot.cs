@@ -345,13 +345,8 @@ namespace Gnoj_Ham
                 // Call the kan if :
                 // - it's a concealed one
                 // - the hand is already open
-                // - it's valuable for "Yakuhai"
                 if (concealed
-                    || (!_round.GetHand(playerId).IsConcealed && (!_itsuFamily.HasValue || _itsuFamily == tile.Family))
-                    || tile.Family == FamilyPivot.Dragon
-                    || (tile.Family == FamilyPivot.Wind
-                        && (tile.Wind == _round.Game.GetPlayerCurrentWind(playerId)
-                            || tile.Wind == _round.Game.DominantWind)))
+                    || (!_round.GetHand(playerId).IsConcealed && (!_itsuFamily.HasValue || _itsuFamily == tile.Family)))
                 {
                     return new Tuple<int, TilePivot>(playerId, tile);
                 }
