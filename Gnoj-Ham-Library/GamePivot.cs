@@ -27,7 +27,7 @@ namespace Gnoj_Ham_Library
         #region Embedded properties
 
         private readonly PlayerSavePivot _save;
-        private readonly List<PlayerPivot> _players;
+        private readonly IReadOnlyList<PlayerPivot> _players;
         private readonly Random _random;
 
         /// <summary>
@@ -85,10 +85,11 @@ namespace Gnoj_Ham_Library
         /// </summary>
         internal IReadOnlyList<PlayerPivot> PlayersRanked => _players.OrderByDescending(p => p.Points).ThenBy(p => (int)p.InitialWind).ToList();
 
+        // TODO: gross
         /// <summary>
         /// Inferred; gets the player index which was the first <see cref="Winds.East"/>.
         /// </summary>
-        internal int FirstEastIndex => _players.FindIndex(p => p.InitialWind == Winds.East);
+        internal int FirstEastIndex => _players.Select((p, i) => (p, i)).First(pi => pi.p.InitialWind == Winds.East).i;
 
         /// <summary>
         /// Inferred; indicates the game is between CPU only.
