@@ -561,7 +561,7 @@ public class HandPivot
     /// <param name="tile">The stolen tile.</param>
     /// <param name="stolenFrom">The wind which the tile has been stolen from.</param>
     /// <param name="fromOpenPon">The <see cref="TileComboPivot"/>, if the kan is called as an override of a previous pon call; <c>Null</c> otherwise.</param>
-    internal void DeclareKan(TilePivot tile, Winds? stolenFrom, TileComboPivot fromOpenPon)
+    internal void DeclareKan(TilePivot tile, Winds? stolenFrom, TileComboPivot? fromOpenPon)
     {
         if (fromOpenPon == null)
         {
@@ -655,7 +655,7 @@ public class HandPivot
     /// <param name="subTiles">List of substitution tiles.</param>
     /// <param name="tileToRemoveFromConcealed">A tile to remove from the hand first.</param>
     /// <returns><c>True</c> if tenpai; <c>False</c> otherwise.</returns>
-    internal bool IsTenpai(IReadOnlyList<TilePivot> subTiles, TilePivot tileToRemoveFromConcealed)
+    internal bool IsTenpai(IReadOnlyList<TilePivot> subTiles, TilePivot? tileToRemoveFromConcealed)
     {
         var concealedTilesCopy = ConcealedTiles;
         if (tileToRemoveFromConcealed != null)

@@ -226,8 +226,8 @@ public class IaManagerPivot
     internal (int pIndex, TilePivot tile)? KanDecision(bool checkConcealedOnly)
     {
         var opponentPlayerIdWithTiles = _round.OpponentsCanCallKan(checkConcealedOnly);
-        return opponentPlayerIdWithTiles != null
-            ? KanDecisionInternal(opponentPlayerIdWithTiles.Item1, opponentPlayerIdWithTiles.Item2, checkConcealedOnly)
+        return opponentPlayerIdWithTiles.HasValue
+            ? KanDecisionInternal(opponentPlayerIdWithTiles.Value.Item1, opponentPlayerIdWithTiles.Value.Item2, checkConcealedOnly)
             : null;
     }
 
