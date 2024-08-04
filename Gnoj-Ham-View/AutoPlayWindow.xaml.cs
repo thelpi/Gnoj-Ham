@@ -71,7 +71,7 @@ public partial class AutoPlayWindow : Window
         {
             if (!_cancellationToken.IsCancellationRequested)
             {
-                var (endOfRoundInfo, _) = _game!.NextRound((int?)evt.Result);
+                var (endOfRoundInfo, _) = _game!.NextRound((PlayerIndices?)evt.Result);
 
                 if (endOfRoundInfo.EndOfGame)
                 {

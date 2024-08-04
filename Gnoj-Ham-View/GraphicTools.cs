@@ -1,5 +1,4 @@
-﻿using System;
-using System.Drawing;
+﻿using System.Drawing;
 using System.IO;
 using System.Windows;
 using System.Windows.Controls;
@@ -222,9 +221,9 @@ internal static class GraphicTools
     /// <param name="nameWithoutIndex">The element name without the player index.</param>
     /// <param name="playerIndex">The player index.</param>
     /// <returns>The element.</returns>
-    internal static T FindName<T>(this Window window, string nameWithoutIndex, int playerIndex) where T : FrameworkElement
+    internal static T FindName<T>(this Window window, string nameWithoutIndex, PlayerIndices playerIndex) where T : FrameworkElement
     {
-        return (window.FindName(string.Concat(nameWithoutIndex, playerIndex)) as T)!;
+        return (window.FindName(string.Concat(nameWithoutIndex, (int)playerIndex)) as T)!;
     }
 
     /// <summary>
@@ -234,7 +233,7 @@ internal static class GraphicTools
     /// <param name="nameWithoutIndex">The control name without the player index.</param>
     /// <param name="playerIndex">The player index.</param>
     /// <returns>The control.</returns>
-    internal static ContentControl FindControl(this Window window, string nameWithoutIndex, int playerIndex)
+    internal static ContentControl FindControl(this Window window, string nameWithoutIndex, PlayerIndices playerIndex)
     {
         return window.FindName<ContentControl>(nameWithoutIndex, playerIndex);
     }
@@ -246,7 +245,7 @@ internal static class GraphicTools
     /// <param name="nameWithoutIndex">The panel name without the player index.</param>
     /// <param name="playerIndex">The player index.</param>
     /// <returns>The panel.</returns>
-    internal static Panel FindPanel(this Window window, string nameWithoutIndex, int playerIndex)
+    internal static Panel FindPanel(this Window window, string nameWithoutIndex, PlayerIndices playerIndex)
     {
         return window.FindName<Panel>(nameWithoutIndex, playerIndex);
     }

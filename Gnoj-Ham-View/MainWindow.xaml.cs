@@ -435,7 +435,7 @@ public partial class MainWindow : Window
         {
             if (!_cancellationToken.IsCancellationRequested)
             {
-                var (endOfRound, ronPlayerId, humanAction) =  ((bool, int?, CallTypes?))evt.Result!;
+                var (endOfRound, ronPlayerId, humanAction) =  ((bool, PlayerIndices?, CallTypes?))evt.Result!;
                 if (endOfRound)
                 {
                     NewRound(ronPlayerId);
@@ -454,7 +454,7 @@ public partial class MainWindow : Window
     }
 
     // Proceeds to new round.
-    private void NewRound(int? ronPlayerIndex)
+    private void NewRound(PlayerIndices? ronPlayerIndex)
     {
         var (endOfRoundInfo, error) = _game.NextRound(ronPlayerIndex);
 
@@ -530,7 +530,10 @@ public partial class MainWindow : Window
         }
 
         // ...and disables every buttons not concerned.
-        buttons.Where(b => !clickableButtons.Contains(b)).All(b => { b.IsEnabled = false; return true; });
+        foreach (var b in buttons.Where(b => !clickableButtons.Contains(b)))
+        {
+            b.IsEnabled = false;
+        }
 
         if (clickableButtons.Count == 1)
         {
@@ -599,7 +602,7 @@ public partial class MainWindow : Window
     }
 
     // Pon call action (human or CPU).
-    private void PonCall(int playerIndex)
+    private void PonCall(PlayerIndices playerIndex)
     {
         RefreshPlayerTurnStyle();
 
@@ -657,12 +660,12 @@ public partial class MainWindow : Window
     }
 
     // Inner process kan call.
-    private void HumanKanCallProcess(TilePivot? tile, int? previousPlayerIndex)
+    private void HumanKanCallProcess(TilePivot? tile, PlayerIndices? previousPlayerIndex)
     {
         RefreshPlayerTurnStyle();
 
         _game.Round.CallKan(GamePivot.HUMAN_INDEX, tile);
-        InvokeOverlay("Kan", GamePivot.HUMAN_INDEX);
+        InvokeOverlay("Kan", (int)GamePivot.HUMAN_INDEX);
         if (CheckOpponensRonCall(false))
         {
             _game.Round.UndoPickCompensationTile();
@@ -719,7 +722,7 @@ public partial class MainWindow : Window
     #region Graphic tools
 
     // Common trunk of the kan call process.
-    private void CommonCallKan(int? previousPlayerIndex)
+    private void CommonCallKan(PlayerIndices? previousPlayerIndex)
     {
         Dispatcher.Invoke(() =>
         {
@@ -756,14 +759,14 @@ public partial class MainWindow : Window
     }
 
     // Displays the call overlay.
-    private void InvokeOverlay(string callName, int playerIndex)
+    private void InvokeOverlay(string callName, PlayerIndices playerIndex)
     {
         Dispatcher.Invoke(() =>
         {
             BtnOpponentCall.Content = $"{callName} !";
-            BtnOpponentCall.HorizontalAlignment = playerIndex == 1 ? HorizontalAlignment.Right : (playerIndex == 3 ? HorizontalAlignment.Left : HorizontalAlignment.Center);
-            BtnOpponentCall.VerticalAlignment = playerIndex == 0 ? VerticalAlignment.Bottom : (playerIndex == 2 ? VerticalAlignment.Top : VerticalAlignment.Center);
-            BtnOpponentCall.Margin = new Thickness(playerIndex == 3 ? 20 : 0, playerIndex == 2 ? 20 : 0, playerIndex == 1 ? 20 : 0, playerIndex == 0 ? 20 : 0);
+            BtnOpponentCall.HorizontalAlignment = playerIndex == PlayerIndices.One ? HorizontalAlignment.Right : (playerIndex == PlayerIndices.Three ? HorizontalAlignment.Left : HorizontalAlignment.Center);
+            BtnOpponentCall.VerticalAlignment = playerIndex == PlayerIndices.Zero ? VerticalAlignment.Bottom : (playerIndex == PlayerIndices.Two ? VerticalAlignment.Top : VerticalAlignment.Center);
+            BtnOpponentCall.Margin = new Thickness(playerIndex == PlayerIndices.Three ? 20 : 0, playerIndex == PlayerIndices.Two ? 20 : 0, playerIndex == PlayerIndices.One ? 20 : 0, playerIndex == PlayerIndices.Zero ? 20 : 0);
             GrdOverlayCall.Visibility = Visibility.Visible;
             _overlayStoryboard.Begin();
         });
@@ -798,12 +801,12 @@ public partial class MainWindow : Window
         Rod5.Height = new GridLength(dim1);
         Rod6.Height = new GridLength(dim1);
 
-        for (var i = 0; i < _game.Players.Count; i++)
+        foreach (var i in Enum.GetValues<PlayerIndices>())
         {
             for (var j = 1; j <= 3; j++)
             {
                 var panel = this.FindPanel($"StpDiscard{j}P", i);
-                if (i % 2 == 0)
+                if (i == PlayerIndices.Zero || i == PlayerIndices.Two)
                 {
                     panel.Height = GraphicTools.TILE_HEIGHT;
                 }
@@ -816,7 +819,7 @@ public partial class MainWindow : Window
     }
 
     // Clears and refills the hand panel of the specified player index.
-    private void FillHandPanel(int pIndex, TilePivot? pickTile = null)
+    private void FillHandPanel(PlayerIndices pIndex, TilePivot? pickTile = null)
     {
         var isHuman = pIndex == GamePivot.HUMAN_INDEX;
 
@@ -877,15 +880,15 @@ public partial class MainWindow : Window
         TxtHonba.Text = _game.HonbaCount.ToString();
         TxtPendingRiichi.Text = _game.PendingRiichiCount.ToString();
 
-        for (var pIndex = 0; pIndex < _game.Players.Count; pIndex++)
+        foreach (var pIndex in Enum.GetValues<PlayerIndices>())
         {
             this.FindPanel("StpCombosP", pIndex).Children.Clear();
             FillHandPanel(pIndex);
             FillDiscardPanel(pIndex);
             this.FindName<Panel>("StpPlayerP", pIndex).ToolTip = _game.GetPlayerCurrentWind(pIndex).DisplayName();
             this.FindControl("LblWindP", pIndex).Content = _game.GetPlayerCurrentWind(pIndex).ToWindDisplay();
-            this.FindControl("LblNameP", pIndex).Content = _game.Players.ElementAt(pIndex).Name;
-            this.FindControl("LblPointsP", pIndex).Content = $"{_game.Players.ElementAt(pIndex).Points / 1000}k";
+            this.FindControl("LblNameP", pIndex).Content = _game.Players.ElementAt((int)pIndex).Name;
+            this.FindControl("LblPointsP", pIndex).Content = $"{_game.Players.ElementAt((int)pIndex).Points / 1000}k";
             this.FindName<Image>("RiichiStickP", pIndex).Visibility = Visibility.Hidden;
         }
 
@@ -900,7 +903,7 @@ public partial class MainWindow : Window
     {
         Dispatcher.Invoke(() =>
         {
-            for (var pIndex = 0; pIndex < _game.Players.Count; pIndex++)
+            foreach (var pIndex in Enum.GetValues<PlayerIndices>())
             {
                 this.FindName<Label>("LblPlayerP", pIndex).Foreground = pIndex == _game.Round.CurrentPlayerIndex ? Brushes.OrangeRed : Brushes.White;
                 this.FindName<Label>("LblWindP", pIndex).Foreground = pIndex == _game.Round.CurrentPlayerIndex ? Brushes.OrangeRed : Brushes.White;
@@ -909,14 +912,14 @@ public partial class MainWindow : Window
     }
 
     // Rebuilds the discard panel of the specified player.
-    private Button? FillDiscardPanel(int pIndex)
+    private Button? FillDiscardPanel(PlayerIndices pIndex)
     {
         for (var r = 1; r <= 3; r++)
         {
             this.FindPanel($"StpDiscard{r}P", pIndex).Children.Clear();
         }
 
-        var reversed = pIndex == 1 || pIndex == 2;
+        var reversed = pIndex == PlayerIndices.One || pIndex == PlayerIndices.Two;
 
         Button? lastButton = null;
         var i = 0;
@@ -963,7 +966,7 @@ public partial class MainWindow : Window
     }
 
     // Adds to the player stack its last combination.
-    private void FillCombinationStack(int pIndex)
+    private void FillCombinationStack(PlayerIndices pIndex)
     {
         var panel = this.FindPanel("StpCombosP", pIndex);
 
@@ -975,20 +978,20 @@ public partial class MainWindow : Window
     }
 
     // Creates a panel for the specified combination.
-    private StackPanel CreateCombinationPanel(int pIndex, TileComboPivot combo)
+    private StackPanel CreateCombinationPanel(PlayerIndices pIndex, TileComboPivot combo)
     {
         var panel = new StackPanel
         {
-            Orientation = pIndex == 0 || pIndex == 2 ? Orientation.Horizontal : Orientation.Vertical
+            Orientation = pIndex == PlayerIndices.Zero || pIndex == PlayerIndices.Two ? Orientation.Horizontal : Orientation.Vertical
         };
 
         var pWind = _game.GetPlayerCurrentWind(pIndex);
 
         var i = 0;
-        var tileTuples = combo.GetSortedTilesForDisplay(pWind);
-        if (pIndex > 0 && pIndex < 3)
+        var tileTuples = combo.GetSortedTilesForDisplay(pWind).AsEnumerable();
+        if (pIndex > PlayerIndices.Zero && pIndex < PlayerIndices.Three)
         {
-            tileTuples.Reverse();
+            tileTuples = tileTuples.Reverse();
         }
 
         foreach (var (tile, stolen) in tileTuples)
@@ -1127,7 +1130,7 @@ public partial class MainWindow : Window
     {
         // the order of consumption of walls; the index follow the player index
         var wallIndexes = new[] { 0, 3, 2, 1 };
-        for (var i = 1; i <= _game.Round.WallOpeningIndex; i++)
+        for (var i = 1; i <= (int)_game.Round.WallOpeningIndex; i++)
         {
             for (var j = 0; j < wallIndexes.Length; j++)
             {
@@ -1147,7 +1150,7 @@ public partial class MainWindow : Window
         {
             var tilesCountForThisWall = Math.Max(0, Math.Min(GamePivot.WALL_TILES_COUNT, wallTiles - (GamePivot.WALL_TILES_COUNT * tilesExpectedCoeff)));
 
-            var wallPanel = this.FindName<StackPanel>("PnlWall", iWall);
+            var wallPanel = this.FindName<StackPanel>("PnlWall", (PlayerIndices)iWall);
 
             // TODO: lazy, walls are always rebuilt
             wallPanel.Children.Clear();

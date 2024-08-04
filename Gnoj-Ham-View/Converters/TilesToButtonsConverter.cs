@@ -6,8 +6,11 @@ namespace Gnoj_Ham_View.Converters;
 
 internal class TilesToButtonsConverter : IValueConverter
 {
-    public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+    public object? Convert(object? value, Type targetType, object parameter, CultureInfo culture)
     {
+        if (value == null)
+            return null;
+
         double rate = 1;
         if (parameter != null)
             double.TryParse(parameter.ToString(), out rate);

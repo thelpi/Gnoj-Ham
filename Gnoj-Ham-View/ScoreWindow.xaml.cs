@@ -1,6 +1,7 @@
 ﻿using System.Windows;
 using System.Windows.Controls;
 using Gnoj_Ham_Library;
+using Gnoj_Ham_Library.Enums;
 
 namespace Gnoj_Ham_View;
 
@@ -33,7 +34,7 @@ public partial class ScoreWindow : Window
             {
                 StpYakus.Children.Add(new GroupBox
                 {
-                    Header = players[p.Index].Name,
+                    Header = players[(int)p.Index].Name,
                     Content = p.GenerateYakusInfosPanel()
                 });
             }
@@ -42,9 +43,9 @@ public partial class ScoreWindow : Window
         var x = 0;
         foreach (var (p, i) in players.Select((p, i) => (p, i)).OrderByDescending(ip => ip.p.Points))
         {
-            this.FindControl("LblPlayer", x).Content = p.Name;
-            this.FindControl("LblScore", x).Content = p.Points;
-            this.FindControl("LblGain", x).ApplyGainAndLostStyle(endOfRoundInformations.GetPlayerPointsGain(i));
+            this.FindControl("LblPlayer", (PlayerIndices)x).Content = p.Name;
+            this.FindControl("LblScore", (PlayerIndices)x).Content = p.Points;
+            this.FindControl("LblGain", (PlayerIndices)x).ApplyGainAndLostStyle(endOfRoundInformations.GetPlayerPointsGain((PlayerIndices)i));
             x++;
         }
     }

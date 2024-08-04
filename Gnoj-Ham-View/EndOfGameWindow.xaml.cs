@@ -1,5 +1,6 @@
 ﻿using System.Windows;
 using Gnoj_Ham_Library;
+using Gnoj_Ham_Library.Enums;
 
 namespace Gnoj_Ham_View;
 
@@ -17,13 +18,13 @@ public partial class EndOfGameWindow : Window
         InitializeComponent();
 
         var playerScores = game.ComputeCurrentRanking();
-        for (var i = 0; i < playerScores.Count; i++)
+        foreach (var i in Enum.GetValues<PlayerIndices>())
         {
-            this.FindControl("LblRank", i).Content = playerScores[i].Rank;
-            this.FindControl("LblPlayer", i).Content = playerScores[i].Player.Name;
-            this.FindControl("LblPoints", i).Content = playerScores[i].Player.Points;
-            this.FindControl("LblUma", i).ApplyGainAndLostStyle(playerScores[i].Uma);
-            this.FindControl("LblScore", i).ApplyGainAndLostStyle(playerScores[i].Score);
+            this.FindControl("LblRank", i).Content = playerScores[(int)i].Rank;
+            this.FindControl("LblPlayer", i).Content = playerScores[(int)i].Player.Name;
+            this.FindControl("LblPoints", i).Content = playerScores[(int)i].Player.Points;
+            this.FindControl("LblUma", i).ApplyGainAndLostStyle(playerScores[(int)i].Uma);
+            this.FindControl("LblScore", i).ApplyGainAndLostStyle(playerScores[(int)i].Score);
         }
     }
 }
