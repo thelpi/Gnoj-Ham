@@ -3,7 +3,7 @@
 /// <summary>
 /// Enumeration of dragons, sorted by dora precedence.
 /// </summary>
-public enum DragonPivot
+public enum Dragons
 {
     /// <summary>
     /// Red dragon.

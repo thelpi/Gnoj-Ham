@@ -10,7 +10,7 @@ public class HumanCallNotifierEventArgs : EventArgs
     /// <summary>
     /// Call type.
     /// </summary>
-    public CallTypePivot Call { get; internal init; }
+    public CallTypes Call { get; internal init; }
 
     /// <summary>
     /// In case of 'Riichi' call, indicates if the call is advised (if the advice feature is eanbled).

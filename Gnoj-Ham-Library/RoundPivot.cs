@@ -234,7 +234,7 @@ namespace Gnoj_Ham_Library
         /// <item>humanAction: indicates a decision to automatically apply when the control is given back to human player.</item>
         /// </list>
         /// </returns>
-        public (bool endOfRound, int? ronPlayerId, CallTypePivot? humanAction) RunAutoPlay(
+        public (bool endOfRound, int? ronPlayerId, CallTypes? humanAction) RunAutoPlay(
             CancellationToken cancellationToken,
             bool declinedHumanCall = false,
             bool humanRonPending = false,
@@ -242,7 +242,7 @@ namespace Gnoj_Ham_Library
             int sleepTime = 0)
         {
             Tuple<int, TilePivot, int?> kanInProgress = null;
-            (bool endOfRound, int? ronPlayerId, CallTypePivot? humanAction) result = default;
+            (bool endOfRound, int? ronPlayerId, CallTypes? humanAction) result = default;
             var isFirstTurn = true;
             while (!cancellationToken.IsCancellationRequested)
             {
@@ -252,10 +252,10 @@ namespace Gnoj_Ham_Library
 
                 if (!Game.CpuVs && !declinedHumanCall && !humanRonPending && CanCallRon(GamePivot.HUMAN_INDEX))
                 {
-                    HumanCallNotifier?.Invoke(new HumanCallNotifierEventArgs { Call = CallTypePivot.Ron });
+                    HumanCallNotifier?.Invoke(new HumanCallNotifierEventArgs { Call = CallTypes.Ron });
                     if (autoCallMahjong)
                     {
-                        result = (result.endOfRound, result.ronPlayerId, CallTypePivot.Ron);
+                        result = (result.endOfRound, result.ronPlayerId, CallTypes.Ron);
                     }
                     else
                     {
@@ -276,7 +276,7 @@ namespace Gnoj_Ham_Library
 
                 if (kanInProgress != null)
                 {
-                    ReadyToCallNotifier?.Invoke(new ReadyToCallNotifierEventArgs { Call = CallTypePivot.Kan, PotentialPreviousPlayerIndex = kanInProgress.Item3 });
+                    ReadyToCallNotifier?.Invoke(new ReadyToCallNotifierEventArgs { Call = CallTypes.Kan, PotentialPreviousPlayerIndex = kanInProgress.Item3 });
                 }
 
                 if (!Game.CpuVs && !declinedHumanCall && CanCallPonOrKan(GamePivot.HUMAN_INDEX, out var isSelfKan))
@@ -696,7 +696,7 @@ namespace Gnoj_Ham_Library
 
             SetYakus(CurrentPlayerIndex,
                 _hands[CurrentPlayerIndex].LatestPick,
-                isKanCompensation ? DrawTypePivot.Compensation : DrawTypePivot.Wall);
+                isKanCompensation ? DrawTypes.Compensation : DrawTypes.Wall);
 
             return _hands[CurrentPlayerIndex].IsComplete;
         }
@@ -731,7 +731,7 @@ namespace Gnoj_Ham_Library
                 return false;
             }
 
-            SetYakus(playerIndex, tile, forKokushiOnly ? DrawTypePivot.OpponentKanCallConcealed : (isChanka ? DrawTypePivot.OpponentKanCallOpen : DrawTypePivot.OpponentDiscard));
+            SetYakus(playerIndex, tile, forKokushiOnly ? DrawTypes.OpponentKanCallConcealed : (isChanka ? DrawTypes.OpponentKanCallOpen : DrawTypes.OpponentDiscard));
 
             return _hands[playerIndex].IsComplete
                 && !_hands[playerIndex].CancelYakusIfFuriten(_discards[playerIndex], GetTilesFromVirtualDiscardsAtRank(playerIndex, tile))
@@ -954,7 +954,7 @@ namespace Gnoj_Ham_Library
             var opponentsCallRon = IaManager.RonDecision(humanRonPending);
             foreach (var opponentPlayerIndex in opponentsCallRon)
             {
-                CallNotifier?.Invoke(new CallNotifierEventArgs { Action = CallTypePivot.Ron, PlayerIndex = opponentPlayerIndex });
+                CallNotifier?.Invoke(new CallNotifierEventArgs { Action = CallTypes.Ron, PlayerIndex = opponentPlayerIndex });
             }
 
             return humanRonPending || opponentsCallRon.Count > 0;
@@ -967,7 +967,7 @@ namespace Gnoj_Ham_Library
             var compensationTile = CallKan(playerId, concealedKan ? kanTilePick : null);
             if (compensationTile != null)
             {
-                CallNotifier?.Invoke(new CallNotifierEventArgs { PlayerIndex = playerId, Action = CallTypePivot.Kan });
+                CallNotifier?.Invoke(new CallNotifierEventArgs { PlayerIndex = playerId, Action = CallTypes.Kan });
             }
             return compensationTile;
         }
@@ -988,9 +988,9 @@ namespace Gnoj_Ham_Library
             var callChii = CallChii(chiiTilePick.Item2 ? chiiTilePick.Item1.Number - 1 : chiiTilePick.Item1.Number);
             if (callChii)
             {
-                CallNotifier?.Invoke(new CallNotifierEventArgs { Action = CallTypePivot.Chii, PlayerIndex = CurrentPlayerIndex });
+                CallNotifier?.Invoke(new CallNotifierEventArgs { Action = CallTypes.Chii, PlayerIndex = CurrentPlayerIndex });
 
-                ReadyToCallNotifier?.Invoke(new ReadyToCallNotifierEventArgs { Call = CallTypePivot.Chii });
+                ReadyToCallNotifier?.Invoke(new ReadyToCallNotifierEventArgs { Call = CallTypes.Chii });
 
                 if (!IsHumanPlayer)
                 {
@@ -1011,9 +1011,9 @@ namespace Gnoj_Ham_Library
             var callPon = CallPon(playerIndex);
             if (callPon)
             {
-                CallNotifier?.Invoke(new CallNotifierEventArgs { PlayerIndex = playerIndex, Action = CallTypePivot.Pon });
+                CallNotifier?.Invoke(new CallNotifierEventArgs { PlayerIndex = playerIndex, Action = CallTypes.Pon });
 
-                ReadyToCallNotifier?.Invoke(new ReadyToCallNotifierEventArgs { Call = CallTypePivot.Pon, PreviousPlayerIndex = previousPlayerIndex, PlayerIndex = playerIndex });
+                ReadyToCallNotifier?.Invoke(new ReadyToCallNotifierEventArgs { Call = CallTypes.Pon, PreviousPlayerIndex = previousPlayerIndex, PlayerIndex = playerIndex });
 
                 if (isCpu)
                 {
@@ -1033,7 +1033,7 @@ namespace Gnoj_Ham_Library
             var hasDiscard = Discard(tile);
             if (hasDiscard)
             {
-                ReadyToCallNotifier?.Invoke(new ReadyToCallNotifierEventArgs { Call = CallTypePivot.NoCall });
+                ReadyToCallNotifier?.Invoke(new ReadyToCallNotifierEventArgs { Call = CallTypes.NoCall });
             }
         }
 
@@ -1042,7 +1042,7 @@ namespace Gnoj_Ham_Library
             var tsumoDecision = IaManager.TsumoDecision(kanInProgress != null);
             if (tsumoDecision)
             {
-                CallNotifier?.Invoke(new CallNotifierEventArgs { Action = CallTypePivot.Tsumo, PlayerIndex = CurrentPlayerIndex });
+                CallNotifier?.Invoke(new CallNotifierEventArgs { Action = CallTypes.Tsumo, PlayerIndex = CurrentPlayerIndex });
                 return true;
             }
 
@@ -1071,23 +1071,23 @@ namespace Gnoj_Ham_Library
         {
             if (!IsHumanPlayer)
             {
-                CallNotifier?.Invoke(new CallNotifierEventArgs { PlayerIndex = CurrentPlayerIndex, Action = CallTypePivot.Riichi });
+                CallNotifier?.Invoke(new CallNotifierEventArgs { PlayerIndex = CurrentPlayerIndex, Action = CallTypes.Riichi });
                 Thread.Sleep(sleepTime);
             }
 
             var callRiichi = CallRiichi(tile);
             if (callRiichi)
             {
-                ReadyToCallNotifier?.Invoke(new ReadyToCallNotifierEventArgs { Call = CallTypePivot.Riichi });
+                ReadyToCallNotifier?.Invoke(new ReadyToCallNotifierEventArgs { Call = CallTypes.Riichi });
             }
         }
 
-        private CallTypePivot? HumanAutoPlay(bool autoCallMahjong, int sleepTime)
+        private CallTypes? HumanAutoPlay(bool autoCallMahjong, int sleepTime)
         {
             if (CanCallTsumo(false))
             {
-                HumanCallNotifier?.Invoke(new HumanCallNotifierEventArgs { Call = CallTypePivot.Tsumo });
-                return autoCallMahjong ? CallTypePivot.Tsumo : default(CallTypePivot?);
+                HumanCallNotifier?.Invoke(new HumanCallNotifierEventArgs { Call = CallTypes.Tsumo });
+                return autoCallMahjong ? CallTypes.Tsumo : default(CallTypes?);
             }
 
             var riichiTiles = CanCallRiichi();
@@ -1095,18 +1095,18 @@ namespace Gnoj_Ham_Library
             if (riichiTiles.Count > 0)
             {
                 var adviseRiichi = Game.Ruleset.DiscardTip && IaManager.RiichiDecision().choice != null;
-                HumanCallNotifier?.Invoke(new HumanCallNotifierEventArgs { Call = CallTypePivot.Riichi, RiichiAdvised = adviseRiichi });
+                HumanCallNotifier?.Invoke(new HumanCallNotifierEventArgs { Call = CallTypes.Riichi, RiichiAdvised = adviseRiichi });
                 return null;
             }
             else if (HumanCanAutoDiscard())
             {
                 // Not a real CPU sleep: the auto-discard by human player is considered as such
                 Thread.Sleep(sleepTime);
-                return CallTypePivot.NoCall;
+                return CallTypes.NoCall;
             }
             else
             {
-                HumanCallNotifier?.Invoke(new HumanCallNotifierEventArgs { Call = CallTypePivot.NoCall });
+                HumanCallNotifier?.Invoke(new HumanCallNotifierEventArgs { Call = CallTypes.NoCall });
             }
 
             return null;
@@ -1182,7 +1182,7 @@ namespace Gnoj_Ham_Library
         }
 
         // Creates the context and calls "SetYakus" for the specified player.
-        private void SetYakus(int playerIndex, TilePivot tile, DrawTypePivot drawType)
+        private void SetYakus(int playerIndex, TilePivot tile, DrawTypes drawType)
         {
             _hands[playerIndex].SetYakus(new WinContextPivot(
                 latestTile: tile,
@@ -1346,7 +1346,7 @@ namespace Gnoj_Ham_Library
                 var notTenpaiPlayersIndex = Enumerable.Range(0, 4).Except(tenpaiPlayersIndex).ToList();
 
                 // Wind turns if East is not tenpai.
-                turnWind = notTenpaiPlayersIndex.Any(tpi => Game.GetPlayerCurrentWind(tpi) == WindPivot.East);
+                turnWind = notTenpaiPlayersIndex.Any(tpi => Game.GetPlayerCurrentWind(tpi) == Winds.East);
 
                 var points = ScoreTools.GetRyuukyokuPoints(tenpaiPlayersIndex.Count);
 
@@ -1355,7 +1355,7 @@ namespace Gnoj_Ham_Library
             }
             else
             {
-                turnWind = !winners.Any(w => Game.GetPlayerCurrentWind(w) == WindPivot.East);
+                turnWind = !winners.Any(w => Game.GetPlayerCurrentWind(w) == Winds.East);
 
                 // Why this list ? Consider the following :
                 // - Player 1 and 2 ron on player 3
@@ -1394,16 +1394,16 @@ namespace Gnoj_Ham_Library
 
                     int? liablePlayerId = null;
                     if (phand.Yakus.Contains(YakuPivot.Daisangen)
-                        && phand.DeclaredCombinations.Count(c => c.Family == FamilyPivot.Dragon) == 3
-                        && phand.DeclaredCombinations.Last(c => c.Family == FamilyPivot.Dragon).StolenFrom.HasValue)
+                        && phand.DeclaredCombinations.Count(c => c.Family == Families.Dragon) == 3
+                        && phand.DeclaredCombinations.Last(c => c.Family == Families.Dragon).StolenFrom.HasValue)
                     {
-                        liablePlayerId = Game.GetPlayerIndexByCurrentWind(phand.DeclaredCombinations.Last(c => c.Family == FamilyPivot.Dragon).StolenFrom.Value);
+                        liablePlayerId = Game.GetPlayerIndexByCurrentWind(phand.DeclaredCombinations.Last(c => c.Family == Families.Dragon).StolenFrom.Value);
                     }
                     else if (phand.Yakus.Contains(YakuPivot.Daisuushii)
-                        && phand.DeclaredCombinations.Count(c => c.Family == FamilyPivot.Wind) == 4
-                        && phand.DeclaredCombinations.Last(c => c.Family == FamilyPivot.Wind).StolenFrom.HasValue)
+                        && phand.DeclaredCombinations.Count(c => c.Family == Families.Wind) == 4
+                        && phand.DeclaredCombinations.Last(c => c.Family == Families.Wind).StolenFrom.HasValue)
                     {
-                        liablePlayerId = Game.GetPlayerIndexByCurrentWind(phand.DeclaredCombinations.Last(c => c.Family == FamilyPivot.Wind).StolenFrom.Value);
+                        liablePlayerId = Game.GetPlayerIndexByCurrentWind(phand.DeclaredCombinations.Last(c => c.Family == Families.Wind).StolenFrom.Value);
                     }
 
                     var isRiichi = phand.Yakus.Contains(YakuPivot.Riichi) || phand.Yakus.Contains(YakuPivot.DaburuRiichi);
@@ -1515,7 +1515,7 @@ namespace Gnoj_Ham_Library
                     {
                         if (!winners.Contains(pIndex))
                         {
-                            playerInfos.Add(new EndOfRoundInformationsPivot.PlayerInformationsPivot(pIndex, (Game.GetPlayerCurrentWind(pIndex) == WindPivot.East ? eastOrLoserLostCumul : notEastLostCumul) - (honbaPoints / 3)));
+                            playerInfos.Add(new EndOfRoundInformationsPivot.PlayerInformationsPivot(pIndex, (Game.GetPlayerCurrentWind(pIndex) == Winds.East ? eastOrLoserLostCumul : notEastLostCumul) - (honbaPoints / 3)));
                         }
                     }
                 }

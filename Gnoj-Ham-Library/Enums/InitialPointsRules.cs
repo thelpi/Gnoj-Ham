@@ -3,7 +3,7 @@
 /// <summary>
 /// Enumeration of rules for points count at a beginning of a game.
 /// </summary>
-public enum InitialPointsRulePivot
+public enum InitialPointsRules
 {
     /// <summary>
     /// 25,000 points.

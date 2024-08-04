@@ -143,14 +143,14 @@ internal static class GraphicTools
     /// <param name="wind">The wind to display.</param>
     /// <returns>The associated japanese caracter.</returns>
     /// <exception cref="NotImplementedException">The wind is not implemented.</exception>
-    internal static string ToWindDisplay(this WindPivot wind)
+    internal static string ToWindDisplay(this Winds wind)
     {
         return wind switch
         {
-            WindPivot.East => "東",
-            WindPivot.South => "南",
-            WindPivot.West => "西",
-            WindPivot.North => "北",
+            Winds.East => "東",
+            Winds.South => "南",
+            Winds.West => "西",
+            Winds.North => "北",
             _ => throw new NotImplementedException(),
         };
     }
@@ -259,8 +259,8 @@ internal static class GraphicTools
     {
         return tile.Family switch
         {
-            FamilyPivot.Dragon => $"{tile.Family.DisplayName()}\r\n{tile.Dragon!.Value.DisplayName()}",
-            FamilyPivot.Wind => $"{tile.Family.DisplayName()}\r\n{tile.Wind!.Value.DisplayName()}",
+            Families.Dragon => $"{tile.Family.DisplayName()}\r\n{tile.Dragon!.Value.DisplayName()}",
+            Families.Wind => $"{tile.Family.DisplayName()}\r\n{tile.Wind!.Value.DisplayName()}",
             _ => $"{tile.Family.DisplayName()}\r\n{tile.Number}" + (tile.IsRedDora ? "\r\nRouge" : string.Empty),
         };
     }
@@ -307,27 +307,27 @@ internal static class GraphicTools
     }
 
     /// <summary>
-    /// Transforms the enumeration <see cref="EndOfGameRulePivot"/> into a list of <see cref="string"/> (with matching index).
+    /// Transforms the enumeration <see cref="EndOfGameRules"/> into a list of <see cref="string"/> (with matching index).
     /// </summary>
     /// <returns>List of strings ready for display.</returns>
     internal static IReadOnlyList<string> GetEndOfGameRuleDisplayValue()
     {
         var results = new List<string>();
 
-        foreach (var rule in Enum.GetValues(typeof(EndOfGameRulePivot)).OfType<EndOfGameRulePivot>())
+        foreach (var rule in Enum.GetValues(typeof(EndOfGameRules)).OfType<EndOfGameRules>())
         {
             switch (rule)
             {
-                case EndOfGameRulePivot.Enchousen:
+                case EndOfGameRules.Enchousen:
                     results.Add("Enchousen");
                     break;
-                case EndOfGameRulePivot.EnchousenAndTobi:
+                case EndOfGameRules.EnchousenAndTobi:
                     results.Add("Enchousen + Tobi");
                     break;
-                case EndOfGameRulePivot.Oorasu:
+                case EndOfGameRules.Oorasu:
                     results.Add("Oorasu");
                     break;
-                case EndOfGameRulePivot.Tobi:
+                case EndOfGameRules.Tobi:
                     results.Add("Tobi");
                     break;
             }
@@ -337,13 +337,13 @@ internal static class GraphicTools
     }
 
     /// <summary>
-    /// Transforms the enumeration <see cref="InitialPointsRulePivot"/> into a list of <see cref="string"/> (with matching index).
+    /// Transforms the enumeration <see cref="InitialPointsRules"/> into a list of <see cref="string"/> (with matching index).
     /// </summary>
     /// <returns>List of strings ready for display.</returns>
     internal static IReadOnlyList<string> GetInitialPointsRuleDisplayValue()
     {
-        return Enum.GetValues(typeof(InitialPointsRulePivot))
-                .OfType<InitialPointsRulePivot>()
+        return Enum.GetValues(typeof(InitialPointsRules))
+                .OfType<InitialPointsRules>()
                 .Select(v => $"{Convert.ToInt32(v.ToString().Replace("K", string.Empty))} 000")
                 .ToList();
     }
@@ -353,14 +353,14 @@ internal static class GraphicTools
     /// </summary>
     /// <param name="family">Family.</param>
     /// <returns>French display name.</returns>
-    internal static string DisplayName(this FamilyPivot family)
+    internal static string DisplayName(this Families family)
     {
         return family switch
         {
-            FamilyPivot.Bamboo => "Bambou",
-            FamilyPivot.Dragon => "Dragon",
-            FamilyPivot.Circle => "Cercle",
-            FamilyPivot.Caracter => "Caractère",
+            Families.Bamboo => "Bambou",
+            Families.Dragon => "Dragon",
+            Families.Circle => "Cercle",
+            Families.Caracter => "Caractère",
             _ => "Vent",
         };
     }
@@ -370,12 +370,12 @@ internal static class GraphicTools
     /// </summary>
     /// <param name="dragon">Dragon.</param>
     /// <returns>French display name.</returns>
-    internal static string DisplayName(this DragonPivot dragon)
+    internal static string DisplayName(this Dragons dragon)
     {
         return dragon switch
         {
-            DragonPivot.Red => "Rouge",
-            DragonPivot.White => "Blanc",
+            Dragons.Red => "Rouge",
+            Dragons.White => "Blanc",
             _ => "Vert",
         };
     }
@@ -385,13 +385,13 @@ internal static class GraphicTools
     /// </summary>
     /// <param name="wind">Wind.</param>
     /// <returns>French display name.</returns>
-    internal static string DisplayName(this WindPivot wind)
+    internal static string DisplayName(this Winds wind)
     {
         return wind switch
         {
-            WindPivot.East => "Est",
-            WindPivot.South => "Sud",
-            WindPivot.West => "Ouest",
+            Winds.East => "Est",
+            Winds.South => "Sud",
+            Winds.West => "Ouest",
             _ => "Nord",
         };
     }

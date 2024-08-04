@@ -23,9 +23,9 @@ namespace Gnoj_Ham_Library
         /// </summary>
         public string Name { get; private set; }
         /// <summary>
-        /// <see cref="WindPivot"/> at the first round of the game.
+        /// <see cref="Winds"/> at the first round of the game.
         /// </summary>
-        internal WindPivot InitialWind { get; private set; }
+        internal Winds InitialWind { get; private set; }
         /// <summary>
         /// Number of points.
         /// </summary>
@@ -43,7 +43,7 @@ namespace Gnoj_Ham_Library
 
         #region Constructors
 
-        private PlayerPivot(string name, WindPivot initialWind, InitialPointsRulePivot initialPointsRulePivot, bool isCpu, PermanentPlayerPivot permanentPlayer)
+        private PlayerPivot(string name, Winds initialWind, InitialPointsRules initialPointsRulePivot, bool isCpu, PermanentPlayerPivot permanentPlayer)
         {
             Name = name;
             InitialWind = initialWind;
@@ -78,7 +78,7 @@ namespace Gnoj_Ham_Library
         /// <returns>List of four <see cref="PlayerPivot"/>, not sorted.</returns>
         /// <exception cref="ArgumentException"><see cref="Messages.InvalidPlayerName"/></exception>
         /// <remarks>Keey the 'List' type in return.</remarks>
-        internal static List<PlayerPivot> GetFourPlayers(string humanPlayerName, InitialPointsRulePivot initialPointsRulePivot, Random random)
+        internal static List<PlayerPivot> GetFourPlayers(string humanPlayerName, InitialPointsRules initialPointsRulePivot, Random random)
         {
             humanPlayerName = CheckName(humanPlayerName);
 
@@ -109,7 +109,7 @@ namespace Gnoj_Ham_Library
         /// <exception cref="ArgumentNullException"><paramref name="permanentPlayers"/> is <c>Null</c>.</exception>
         /// <exception cref="ArgumentException">Four players are required.</exception>
         /// <remarks>Keey the 'List' type in return.</remarks>
-        internal static List<PlayerPivot> GetFourPlayersFromPermanent(IReadOnlyList<PermanentPlayerPivot> permanentPlayers, InitialPointsRulePivot initialPointsRulePivot, Random random)
+        internal static List<PlayerPivot> GetFourPlayersFromPermanent(IReadOnlyList<PermanentPlayerPivot> permanentPlayers, InitialPointsRules initialPointsRulePivot, Random random)
         {
             _ = permanentPlayers ?? throw new ArgumentNullException(nameof(permanentPlayers));
 
@@ -123,8 +123,8 @@ namespace Gnoj_Ham_Library
                 .ToList();
         }
 
-        private static WindPivot GetWindFromIndex(int eastIndex, int i)
-            => i == eastIndex ? WindPivot.East : (i > eastIndex ? (WindPivot)(i - eastIndex) : (WindPivot)(4 - eastIndex + i));
+        private static Winds GetWindFromIndex(int eastIndex, int i)
+            => i == eastIndex ? Winds.East : (i > eastIndex ? (Winds)(i - eastIndex) : (Winds)(4 - eastIndex + i));
 
         private static string CheckName(string humanPlayerName)
         {

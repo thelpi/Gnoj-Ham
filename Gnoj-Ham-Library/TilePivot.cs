@@ -20,22 +20,22 @@ namespace Gnoj_Ham_Library
         /// <summary>
         /// Family.
         /// </summary>
-        public FamilyPivot Family { get; private set; }
+        public Families Family { get; private set; }
         /// <summary>
         /// Number, between <c>1</c> and <c>9</c>.
-        /// <c>0</c> for <see cref="FamilyPivot.Wind"/> and <see cref="FamilyPivot.Dragon"/>.
+        /// <c>0</c> for <see cref="Families.Wind"/> and <see cref="Families.Dragon"/>.
         /// </summary>
         public byte Number { get; private set; }
         /// <summary>
         /// Wind.
-        /// <c>Null</c> if not <see cref="FamilyPivot.Wind"/>.
+        /// <c>Null</c> if not <see cref="Families.Wind"/>.
         /// </summary>
-        public WindPivot? Wind { get; private set; }
+        public Winds? Wind { get; private set; }
         /// <summary>
         /// Dragon.
-        /// <c>Null</c> if not <see cref="FamilyPivot.Dragon"/>.
+        /// <c>Null</c> if not <see cref="Families.Dragon"/>.
         /// </summary>
-        public DragonPivot? Dragon { get; private set; }
+        public Dragons? Dragon { get; private set; }
         /// <summary>
         /// Indicates if the instance is a red dora.
         /// </summary>
@@ -48,7 +48,7 @@ namespace Gnoj_Ham_Library
         /// <summary>
         /// Inferred; indicates if the instance is an honor.
         /// </summary>
-        internal bool IsHonor => Family == FamilyPivot.Dragon || Family == FamilyPivot.Wind;
+        internal bool IsHonor => Family == Families.Dragon || Family == Families.Wind;
         /// <summary>
         /// Inferred; indicates if the instance is a terminal.
         /// </summary>
@@ -63,7 +63,7 @@ namespace Gnoj_Ham_Library
         #region Constructors
 
         // Constructor for non-honor families.
-        private TilePivot(FamilyPivot family, byte number, bool isRedDora = false)
+        private TilePivot(Families family, byte number, bool isRedDora = false)
         {
             Family = family;
             Number = number;
@@ -72,17 +72,17 @@ namespace Gnoj_Ham_Library
         }
 
         // Constructor for wind.
-        private TilePivot(WindPivot wind)
+        private TilePivot(Winds wind)
         {
-            Family = FamilyPivot.Wind;
+            Family = Families.Wind;
             Wind = wind;
             _code = (int)(wind + 1) * 1000;
         }
 
         // Constructor for dragon.
-        private TilePivot(DragonPivot dragon)
+        private TilePivot(Dragons dragon)
         {
-            Family = FamilyPivot.Dragon;
+            Family = Families.Dragon;
             Dragon = dragon;
             _code = (int)(dragon + 1) * 100;
         }
@@ -131,12 +131,12 @@ namespace Gnoj_Ham_Library
 
             switch (Family)
             {
-                case FamilyPivot.Dragon:
-                    return other.Family == FamilyPivot.Dragon ? Dragon.Value < other.Dragon.Value ? -1 : (Dragon.Value == other.Dragon.Value ? 0 : 1) : 1;
-                case FamilyPivot.Wind:
-                    return other.Family == FamilyPivot.Wind
+                case Families.Dragon:
+                    return other.Family == Families.Dragon ? Dragon.Value < other.Dragon.Value ? -1 : (Dragon.Value == other.Dragon.Value ? 0 : 1) : 1;
+                case Families.Wind:
+                    return other.Family == Families.Wind
                         ? Wind.Value < other.Wind.Value ? -1 : (Wind.Value == other.Wind.Value ? 0 : 1)
-                        : other.Family == FamilyPivot.Dragon ? -1 : 1;
+                        : other.Family == Families.Dragon ? -1 : 1;
                 default:
                     return other.Family == Family
                         ? Number < other.Number
@@ -186,9 +186,9 @@ namespace Gnoj_Ham_Library
         {
             switch (Family)
             {
-                case FamilyPivot.Dragon:
+                case Families.Dragon:
                     return $"{Family.ToString().ToLowerInvariant()}_{Dragon.Value.ToString().ToLowerInvariant()}";
-                case FamilyPivot.Wind:
+                case Families.Wind:
                     return $"{Family.ToString().ToLowerInvariant()}_{Wind.Value.ToString().ToLowerInvariant()}";
                 default:
                     return $"{Family.ToString().ToLowerInvariant()}_{Number}" + (IsRedDora ? "_red" : string.Empty);
@@ -211,11 +211,11 @@ namespace Gnoj_Ham_Library
         {
             var tiles = new List<TilePivot>(136);
 
-            foreach (var family in Enum.GetValues(typeof(FamilyPivot)).Cast<FamilyPivot>())
+            foreach (var family in Enum.GetValues(typeof(Families)).Cast<Families>())
             {
-                if (family == FamilyPivot.Dragon)
+                if (family == Families.Dragon)
                 {
-                    foreach (var dragon in Enum.GetValues(typeof(DragonPivot)).Cast<DragonPivot>())
+                    foreach (var dragon in Enum.GetValues(typeof(Dragons)).Cast<Dragons>())
                     {
                         for (var i = 0; i < 4; i++)
                         {
@@ -223,9 +223,9 @@ namespace Gnoj_Ham_Library
                         }
                     }
                 }
-                else if (family == FamilyPivot.Wind)
+                else if (family == Families.Wind)
                 {
-                    foreach (var wind in Enum.GetValues(typeof(WindPivot)).Cast<WindPivot>())
+                    foreach (var wind in Enum.GetValues(typeof(Winds)).Cast<Winds>())
                     {
                         for (var i = 0; i < 4; i++)
                         {
@@ -258,8 +258,8 @@ namespace Gnoj_Ham_Library
         /// <param name="wind">Optionnal; the <see cref="Wind"/> value; default value is <c>Null</c>.</param>
         /// <param name="isRedDora">Optionnal; the <see cref="IsRedDora"/> value; default value is <c>Null</c>.</param>
         /// <returns></returns>
-        internal static TilePivot GetTile(IEnumerable<TilePivot> tilesSet, FamilyPivot family, byte? number = null,
-            DragonPivot? dragon = null, WindPivot? wind = null, bool? isRedDora = null)
+        internal static TilePivot GetTile(IEnumerable<TilePivot> tilesSet, Families family, byte? number = null,
+            Dragons? dragon = null, Winds? wind = null, bool? isRedDora = null)
         {
             if (tilesSet == null)
             {
@@ -311,16 +311,16 @@ namespace Gnoj_Ham_Library
 
             switch (Family)
             {
-                case FamilyPivot.Dragon:
-                    return other.Dragon.Value == DragonPivot.Red
-                        ? Dragon.Value == DragonPivot.White
-                        : other.Dragon.Value == DragonPivot.White ? Dragon.Value == DragonPivot.Green : Dragon.Value == DragonPivot.Red;
-                case FamilyPivot.Wind:
-                    return other.Wind.Value == WindPivot.East
-                        ? Wind.Value == WindPivot.South
-                        : other.Wind.Value == WindPivot.South
-                            ? Wind.Value == WindPivot.West
-                            : other.Wind.Value == WindPivot.West ? Wind.Value == WindPivot.North : Wind.Value == WindPivot.East;
+                case Families.Dragon:
+                    return other.Dragon.Value == Dragons.Red
+                        ? Dragon.Value == Dragons.White
+                        : other.Dragon.Value == Dragons.White ? Dragon.Value == Dragons.Green : Dragon.Value == Dragons.Red;
+                case Families.Wind:
+                    return other.Wind.Value == Winds.East
+                        ? Wind.Value == Winds.South
+                        : other.Wind.Value == Winds.South
+                            ? Wind.Value == Winds.West
+                            : other.Wind.Value == Winds.West ? Wind.Value == Winds.North : Wind.Value == Winds.East;
                 default:
                     return Number == (other.Number == 9 ? 1 : other.Number + 1);
             }

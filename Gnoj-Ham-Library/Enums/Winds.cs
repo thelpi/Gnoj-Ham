@@ -3,7 +3,7 @@
 /// <summary>
 /// Enumeration of winds, sorted by dora precedence.
 /// </summary>
-public enum WindPivot
+public enum Winds
 {
     /// <summary>
     /// East wind.

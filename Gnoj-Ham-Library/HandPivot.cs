@@ -119,11 +119,11 @@ namespace Gnoj_Ham_Library
         /// <param name="dominantWind">The dominant wind.</param>
         /// <param name="playerWind">The player wind.</param>
         /// <returns><c>True</c> if vluable pair in the hand; <c>False</c> otherwise.</returns>
-        internal static bool HandWithValuablePair(IReadOnlyList<TileComboPivot> combinations, WindPivot dominantWind, WindPivot playerWind)
+        internal static bool HandWithValuablePair(IReadOnlyList<TileComboPivot> combinations, Winds dominantWind, Winds playerWind)
         {
             return combinations != null && combinations.Any(c => c.IsPair && (
-                c.Family == FamilyPivot.Dragon
-                || (c.Family == FamilyPivot.Wind && (c.Tiles.First().Wind == dominantWind || c.Tiles.First().Wind == playerWind))
+                c.Family == Families.Dragon
+                || (c.Family == Families.Wind && (c.Tiles.First().Wind == dominantWind || c.Tiles.First().Wind == playerWind))
             ));
         }
 
@@ -261,10 +261,10 @@ namespace Gnoj_Ham_Library
                 {
                     switch (familyGroup.Key)
                     {
-                        case FamilyPivot.Dragon:
+                        case Families.Dragon:
                             CheckHonorsForCombinations(familyGroup, k => k.Dragon.Value, combinationsSequences);
                             break;
-                        case FamilyPivot.Wind:
+                        case Families.Wind:
                             CheckHonorsForCombinations(familyGroup, t => t.Wind.Value, combinationsSequences);
                             break;
                         default:
@@ -564,7 +564,7 @@ namespace Gnoj_Ham_Library
         /// <exception cref="ArgumentNullException"><paramref name="tile"/> is <c>Null</c>.</exception>
         /// <exception cref="ArgumentOutOfRangeException"><paramref name="startNumber"/> is out of range.</exception>
         /// <exception cref="InvalidOperationException"><see cref="Messages.InvalidCall"/></exception>
-        internal void DeclareChii(TilePivot tile, WindPivot stolenFrom, int startNumber)
+        internal void DeclareChii(TilePivot tile, Winds stolenFrom, int startNumber)
         {
             if (tile == null)
             {
@@ -595,7 +595,7 @@ namespace Gnoj_Ham_Library
         /// <param name="stolenFrom">The wind which the tile has been stolen from.</param>
         /// <exception cref="ArgumentNullException"><paramref name="tile"/> is <c>Null</c>.</exception>
         /// <exception cref="InvalidOperationException"><see cref="Messages.InvalidCall"/></exception>
-        internal void DeclarePon(TilePivot tile, WindPivot stolenFrom)
+        internal void DeclarePon(TilePivot tile, Winds stolenFrom)
         {
             if (tile == null)
             {
@@ -613,7 +613,7 @@ namespace Gnoj_Ham_Library
         /// <param name="fromOpenPon">The <see cref="TileComboPivot"/>, if the kan is called as an override of a previous pon call; <c>Null</c> otherwise.</param>
         /// <exception cref="ArgumentNullException"><paramref name="tile"/> is <c>Null</c>.</exception>
         /// <exception cref="InvalidOperationException"><see cref="Messages.InvalidCall"/></exception>
-        internal void DeclareKan(TilePivot tile, WindPivot? stolenFrom, TileComboPivot fromOpenPon)
+        internal void DeclareKan(TilePivot tile, Winds? stolenFrom, TileComboPivot fromOpenPon)
         {
             if (tile == null)
             {
@@ -792,7 +792,7 @@ namespace Gnoj_Ham_Library
         #region Private methods
 
         // Creates a declared combination from the specified tiles
-        private void CheckTilesForCallAndExtractCombo(IEnumerable<TilePivot> tiles, int expectedCount, TilePivot tile, WindPivot? stolenFrom)
+        private void CheckTilesForCallAndExtractCombo(IEnumerable<TilePivot> tiles, int expectedCount, TilePivot tile, Winds? stolenFrom)
         {
             var tilesPick = tiles.Take(expectedCount).ToList();
 

@@ -3,7 +3,7 @@
 /// <summary>
 /// Enumeration of draw types.
 /// </summary>
-internal enum DrawTypePivot
+internal enum DrawTypes
 {
     /// <summary>
     /// From wall.

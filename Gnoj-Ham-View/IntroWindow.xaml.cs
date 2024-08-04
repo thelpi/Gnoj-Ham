@@ -40,8 +40,8 @@ public partial class IntroWindow : Window
             MessageBox.Show($"Une erreur est survenue pendant le chargement du fichier de statistiques du joueur ; les statistiques ne seront pas sauvegardées.\n\nDétails de l'erreur :\n{error}", "Gnoj-Ham - Avertissement");
         }
 
-        var ruleset = new RulePivot((InitialPointsRulePivot)CbbPointsRule.SelectedIndex,
-            (EndOfGameRulePivot)CbbEndOfGameRule.SelectedIndex,
+        var ruleset = new RulePivot((InitialPointsRules)CbbPointsRule.SelectedIndex,
+            (EndOfGameRules)CbbEndOfGameRule.SelectedIndex,
             ChkUseRedDoras.IsChecked == true,
             ChkUseNagashiMangan.IsChecked == true,
             ChkDebugMode.IsChecked == true,

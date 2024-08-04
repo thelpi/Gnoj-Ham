@@ -319,7 +319,7 @@ public partial class MainWindow : Window
                 {
                     switch (e.Call)
                     {
-                        case CallTypePivot.Chii:
+                        case CallTypes.Chii:
                             FillHandPanel(_game.Round.CurrentPlayerIndex);
                             FillCombinationStack(_game.Round.CurrentPlayerIndex);
                             FillDiscardPanel(_game.Round.PreviousPlayerIndex);
@@ -329,7 +329,7 @@ public partial class MainWindow : Window
                                 ActivateTimer(GetFirstAvailableDiscardButton());
                             }
                             break;
-                        case CallTypePivot.Pon:
+                        case CallTypes.Pon:
                             var isCpu = e.PlayerIndex != GamePivot.HUMAN_INDEX;
                             FillHandPanel(e.PlayerIndex);
                             FillCombinationStack(e.PlayerIndex);
@@ -340,18 +340,18 @@ public partial class MainWindow : Window
                                 ActivateTimer(GetFirstAvailableDiscardButton());
                             }
                             break;
-                        case CallTypePivot.Riichi:
+                        case CallTypes.Riichi:
                             FillHandPanel(_game.Round.PreviousPlayerIndex);
                             FillDiscardPanel(_game.Round.PreviousPlayerIndex);
                             SetActionButtonsVisibility(cpuPlay: !_game.Round.PreviousIsHumanPlayer);
                             this.FindName<Image>("RiichiStickP", _game.Round.PreviousPlayerIndex).Visibility = Visibility.Visible;
                             break;
-                        case CallTypePivot.NoCall:
+                        case CallTypes.NoCall:
                             FillHandPanel(_game.Round.PreviousPlayerIndex);
                             FillDiscardPanel(_game.Round.PreviousPlayerIndex);
                             SetActionButtonsVisibility(cpuPlay: !_game.Round.PreviousIsHumanPlayer);
                             break;
-                        case CallTypePivot.Kan:
+                        case CallTypes.Kan:
                             if (e.PotentialPreviousPlayerIndex.HasValue)
                             {
                                 FillDiscardPanel(e.PotentialPreviousPlayerIndex.Value);
@@ -383,7 +383,7 @@ public partial class MainWindow : Window
                 Button? autoButtonOnTimer = null;
                 Dispatcher.Invoke(() =>
                 {
-                    if (e.Call == CallTypePivot.NoCall)
+                    if (e.Call == CallTypes.NoCall)
                     {
                         autoButtonOnTimer = StpPickP0.Children[0] as Button;
                     }
@@ -393,17 +393,17 @@ public partial class MainWindow : Window
                         BtnSkipCall.Visibility = Visibility.Visible;
                         switch (e.Call)
                         {
-                            case CallTypePivot.Riichi:
+                            case CallTypes.Riichi:
                                 BtnRiichi.Visibility = Visibility.Visible;
                                 if (e.RiichiAdvised)
                                     BtnRiichi.Foreground = Brushes.DarkMagenta;
                                 else
                                     BtnSkipCall.Foreground = Brushes.DarkMagenta;
                                 break;
-                            case CallTypePivot.Ron:
+                            case CallTypes.Ron:
                                 BtnRon.Visibility = Visibility.Visible;
                                 break;
-                            case CallTypePivot.Tsumo:
+                            case CallTypes.Tsumo:
                                 BtnTsumo.Visibility = Visibility.Visible;
                                 break;
                         }
@@ -435,7 +435,7 @@ public partial class MainWindow : Window
         {
             if (!_cancellationToken.IsCancellationRequested)
             {
-                var (endOfRound, ronPlayerId, humanAction) =  ((bool, int?, CallTypePivot?))evt.Result!;
+                var (endOfRound, ronPlayerId, humanAction) =  ((bool, int?, CallTypes?))evt.Result!;
                 if (endOfRound)
                 {
                     NewRound(ronPlayerId);
@@ -443,7 +443,7 @@ public partial class MainWindow : Window
                 else
                 {
                     var button = humanAction.HasValue
-                        ? (humanAction == CallTypePivot.NoCall
+                        ? (humanAction == CallTypes.NoCall
                             ? new PanelButton("StpPickP", 0)
                             : new PanelButton($"Btn{humanAction}", -1))
                         : null;

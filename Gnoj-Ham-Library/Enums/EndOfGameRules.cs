@@ -3,7 +3,7 @@
 /// <summary>
 /// Enumeration of rules to end a game.
 /// </summary>
-public enum EndOfGameRulePivot
+public enum EndOfGameRules
 {
     /// <summary>
     /// Game ends after south 4.
@@ -14,7 +14,7 @@ public enum EndOfGameRulePivot
     /// </summary>
     Tobi,
     /// <summary>
-    /// Game ends after south 4, except if the point rule is <see cref="InitialPointsRulePivot.K25"/> and no player is equal or above <c>30000</c> points.
+    /// Game ends after south 4, except if the point rule is <see cref="InitialPointsRules.K25"/> and no player is equal or above <c>30000</c> points.
     /// In such case, the game continues (West, the North) until someone reach <c>30000</c> points.
     /// Still in such case, game cannot end on "Ryuukyoku".
     /// </summary>

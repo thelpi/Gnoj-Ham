@@ -22,7 +22,7 @@ namespace Gnoj_Ham_Library
             {
                 if (_default == null)
                 {
-                    _default = new RulePivot(InitialPointsRulePivot.K25, EndOfGameRulePivot.EnchousenAndTobi, true, true, false, false);
+                    _default = new RulePivot(InitialPointsRules.K25, EndOfGameRules.EnchousenAndTobi, true, true, false, false);
                 }
 
                 return _default;
@@ -36,12 +36,12 @@ namespace Gnoj_Ham_Library
         /// <summary>
         /// Initial points rule.
         /// </summary>
-        public InitialPointsRulePivot InitialPointsRule { get; }
+        public InitialPointsRules InitialPointsRule { get; }
 
         /// <summary>
         /// End of game rule.
         /// </summary>
-        public EndOfGameRulePivot EndOfGameRule { get; }
+        public EndOfGameRules EndOfGameRule { get; }
 
         /// <summary>
         /// Use of red doras.
@@ -76,7 +76,7 @@ namespace Gnoj_Ham_Library
         /// <param name="useNagashiMangan"><see cref="UseNagashiMangan"/>.</param>
         /// <param name="debugMode"><see cref="DebugMode"/>.</param>
         /// <param name="discardTip"><see cref="DiscardTip"/>.</param>
-        public RulePivot(InitialPointsRulePivot initialPointsRule, EndOfGameRulePivot endOfGameRule, bool useRedDoras, bool useNagashiMangan, bool debugMode, bool discardTip)
+        public RulePivot(InitialPointsRules initialPointsRule, EndOfGameRules endOfGameRule, bool useRedDoras, bool useNagashiMangan, bool debugMode, bool discardTip)
         {
             InitialPointsRule = initialPointsRule;
             EndOfGameRule = endOfGameRule;

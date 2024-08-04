@@ -37,7 +37,7 @@ namespace Gnoj_Ham_Library
         /// <summary>
         /// Current dominant wind.
         /// </summary>
-        public WindPivot DominantWind { get; private set; }
+        public Winds DominantWind { get; private set; }
         /// <summary>
         /// Index of the player in <see cref="_players"/> currently east.
         /// </summary>
@@ -86,9 +86,9 @@ namespace Gnoj_Ham_Library
         internal IReadOnlyList<PlayerPivot> PlayersRanked => _players.OrderByDescending(p => p.Points).ThenBy(p => (int)p.InitialWind).ToList();
 
         /// <summary>
-        /// Inferred; gets the player index which was the first <see cref="WindPivot.East"/>.
+        /// Inferred; gets the player index which was the first <see cref="Winds.East"/>.
         /// </summary>
-        internal int FirstEastIndex => _players.FindIndex(p => p.InitialWind == WindPivot.East);
+        internal int FirstEastIndex => _players.FindIndex(p => p.InitialWind == Winds.East);
 
         /// <summary>
         /// Inferred; indicates the game is between CPU only.
@@ -122,7 +122,7 @@ namespace Gnoj_Ham_Library
 
             Ruleset = ruleset;
             _players = PlayerPivot.GetFourPlayers(humanPlayerName, Ruleset.InitialPointsRule, random);
-            DominantWind = WindPivot.East;
+            DominantWind = Winds.East;
             EastIndexTurnCount = 1;
             EastIndex = FirstEastIndex;
             EastRank = 1;
@@ -146,7 +146,7 @@ namespace Gnoj_Ham_Library
 
             Ruleset = ruleset;
             _players = PlayerPivot.GetFourPlayersFromPermanent(permanentPlayers, Ruleset.InitialPointsRule, random);
-            DominantWind = WindPivot.East;
+            DominantWind = Winds.East;
             EastIndexTurnCount = 1;
             EastIndex = FirstEastIndex;
             EastRank = 1;
@@ -227,7 +227,7 @@ namespace Gnoj_Ham_Library
                 goto Exit;
             }
 
-            if (DominantWind == WindPivot.West || DominantWind == WindPivot.North)
+            if (DominantWind == Winds.West || DominantWind == Winds.North)
             {
                 if (!endOfRoundInformations.Ryuukyoku && _players.Any(p => p.Points >= 30000))
                 {
@@ -246,13 +246,13 @@ namespace Gnoj_Ham_Library
                 if (EastIndex == FirstEastIndex)
                 {
                     EastRank = 1;
-                    if (DominantWind == WindPivot.South)
+                    if (DominantWind == Winds.South)
                     {
                         if (Ruleset.EndOfGameRule.EnchousenRuleApply()
-                            && Ruleset.InitialPointsRule == InitialPointsRulePivot.K25
+                            && Ruleset.InitialPointsRule == InitialPointsRules.K25
                             && _players.All(p => p.Points < 30000))
                         {
-                            DominantWind = WindPivot.West;
+                            DominantWind = Winds.West;
                         }
                         else
                         {
@@ -261,11 +261,11 @@ namespace Gnoj_Ham_Library
                             goto Exit;
                         }
                     }
-                    else if (DominantWind == WindPivot.West)
+                    else if (DominantWind == Winds.West)
                     {
-                        DominantWind = WindPivot.North;
+                        DominantWind = Winds.North;
                     }
-                    else if (DominantWind == WindPivot.North)
+                    else if (DominantWind == Winds.North)
                     {
                         endOfRoundInformations.EndOfGame = true;
                         ClearPendingRiichi();
@@ -273,7 +273,7 @@ namespace Gnoj_Ham_Library
                     }
                     else
                     {
-                        DominantWind = WindPivot.South;
+                        DominantWind = Winds.South;
                     }
                 }
             }
@@ -306,12 +306,12 @@ namespace Gnoj_Ham_Library
 
 
         /// <summary>
-        /// Gets the current <see cref="WindPivot"/> of the specified player.
+        /// Gets the current <see cref="Winds"/> of the specified player.
         /// </summary>
         /// <param name="playerIndex">The player index in <see cref="Players"/>.</param>
-        /// <returns>The <see cref="WindPivot"/>.</returns>
+        /// <returns>The <see cref="Winds"/>.</returns>
         /// <exception cref="ArgumentOutOfRangeException"><paramref name="playerIndex"/> is out of range.</exception>
-        public WindPivot GetPlayerCurrentWind(int playerIndex)
+        public Winds GetPlayerCurrentWind(int playerIndex)
         {
             if (playerIndex < 0 || playerIndex > 3)
             {
@@ -320,18 +320,18 @@ namespace Gnoj_Ham_Library
 
             if (playerIndex == EastIndex + 1 || playerIndex == EastIndex - 3)
             {
-                return WindPivot.South;
+                return Winds.South;
             }
             else if (playerIndex == EastIndex + 2 || playerIndex == EastIndex - 2)
             {
-                return WindPivot.West;
+                return Winds.West;
             }
             else if (playerIndex == EastIndex + 3 || playerIndex == EastIndex - 1)
             {
-                return WindPivot.North;
+                return Winds.North;
             }
 
-            return WindPivot.East;
+            return Winds.East;
         }
 
         /// <summary>
@@ -339,7 +339,7 @@ namespace Gnoj_Ham_Library
         /// </summary>
         /// <param name="wind">The wind.</param>
         /// <returns>The player index.</returns>
-        internal int GetPlayerIndexByCurrentWind(WindPivot wind)
+        internal int GetPlayerIndexByCurrentWind(Winds wind)
         {
             return Enumerable.Range(0, 4).First(i => GetPlayerCurrentWind(i) == wind);
         }

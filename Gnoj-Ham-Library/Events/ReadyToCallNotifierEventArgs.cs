@@ -10,7 +10,7 @@ public class ReadyToCallNotifierEventArgs
     /// <summary>
     /// The type of call.
     /// </summary>
-    public CallTypePivot Call { get; internal init; }
+    public CallTypes Call { get; internal init; }
 
     /// <summary>
     /// Player index; usage only for call 'Pon'.

@@ -32,11 +32,11 @@ namespace Gnoj_Ham_Library
         /// <summary>
         /// The current dominant wind.
         /// </summary>
-        internal WindPivot DominantWind { get; private set; }
+        internal Winds DominantWind { get; private set; }
         /// <summary>
         /// The current player wind.
         /// </summary>
-        internal WindPivot PlayerWind { get; private set; }
+        internal Winds PlayerWind { get; private set; }
         /// <summary>
         /// <c>True</c> if it's first turn draw (without call made).
         /// </summary>
@@ -44,7 +44,7 @@ namespace Gnoj_Ham_Library
         /// <summary>
         /// Draw type for <see cref="LatestTile"/>.
         /// </summary>
-        internal DrawTypePivot DrawType { get; private set; }
+        internal DrawTypes DrawType { get; private set; }
         /// <summary>
         /// <c>True</c> if nagashi mangan; <c>False</c> otherwise.
         /// </summary>
@@ -66,7 +66,7 @@ namespace Gnoj_Ham_Library
         /// <param name="isIppatsu">Optionnal; indicates if it's a win by ippatsu (<paramref name="isRiichi"/> can't be <c>False</c> in such case); default value is <c>False</c>.</param>
         /// <exception cref="ArgumentNullException"><paramref name="latestTile"/> is <c>Null</c>.</exception>
         /// <exception cref="ArgumentException"><see cref="Messages.InvalidContextIppatsuValue"/></exception>
-        internal WinContextPivot(TilePivot latestTile, DrawTypePivot drawType, WindPivot dominantWind, WindPivot playerWind,
+        internal WinContextPivot(TilePivot latestTile, DrawTypes drawType, Winds dominantWind, Winds playerWind,
             bool? isFirstOrLast = false, bool? isRiichi = false, bool isIppatsu = false)
         {
             if (isRiichi == false && isIppatsu)
@@ -105,7 +105,7 @@ namespace Gnoj_Ham_Library
         /// <returns><c>True</c> if it gives the yaku; <c>False</c> otherwise.</returns>
         internal bool IsTenhou()
         {
-            return IsFirstTurnDraw && PlayerWind == WindPivot.East && DrawType.IsSelfDraw();
+            return IsFirstTurnDraw && PlayerWind == Winds.East && DrawType.IsSelfDraw();
         }
 
         /// <summary>
@@ -114,7 +114,7 @@ namespace Gnoj_Ham_Library
         /// <returns><c>True</c> if it gives the yaku; <c>False</c> otherwise.</returns>
         internal bool IsChiihou()
         {
-            return IsFirstTurnDraw && PlayerWind != WindPivot.East && DrawType.IsSelfDraw();
+            return IsFirstTurnDraw && PlayerWind != Winds.East && DrawType.IsSelfDraw();
         }
 
         /// <summary>

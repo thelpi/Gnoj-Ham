@@ -96,7 +96,7 @@ public partial class AutoPlayWindow : Window
                 else
                 {
                     // if we are in south (or post-south) : +50%
-                    var currentGameProgression = _game.DominantWind == WindPivot.East ? 0 : 0.5;
+                    var currentGameProgression = _game.DominantWind == Winds.East ? 0 : 0.5;
 
                     // +12.5% for each "East" turn (it's not really accurate as a player can keep "East" several turns)
                     currentGameProgression += (_game.EastRank - 1) * 0.125;

@@ -12,20 +12,20 @@ namespace Gnoj_Ham_Library_Tests
 
             var concealedTiles = new List<TilePivot>
             {
-                TilePivot.GetTile(tilesSet, FamilyPivot.Wind, wind: WindPivot.North),
-                TilePivot.GetTile(tilesSet, FamilyPivot.Wind, wind: WindPivot.North),
-                TilePivot.GetTile(tilesSet, FamilyPivot.Dragon, dragon: DragonPivot.Red),
-                TilePivot.GetTile(tilesSet, FamilyPivot.Dragon, dragon: DragonPivot.Red),
-                TilePivot.GetTile(tilesSet, FamilyPivot.Dragon, dragon: DragonPivot.Red),
-                TilePivot.GetTile(tilesSet, FamilyPivot.Circle, number: 1),
-                TilePivot.GetTile(tilesSet, FamilyPivot.Circle, number: 1),
-                TilePivot.GetTile(tilesSet, FamilyPivot.Circle, number: 1),
-                TilePivot.GetTile(tilesSet, FamilyPivot.Circle, number: 2),
-                TilePivot.GetTile(tilesSet, FamilyPivot.Circle, number: 2),
-                TilePivot.GetTile(tilesSet, FamilyPivot.Circle, number: 3),
-                TilePivot.GetTile(tilesSet, FamilyPivot.Circle, number: 3),
-                TilePivot.GetTile(tilesSet, FamilyPivot.Circle, number: 4),
-                TilePivot.GetTile(tilesSet, FamilyPivot.Circle, number: 4)
+                TilePivot.GetTile(tilesSet, Families.Wind, wind: Winds.North),
+                TilePivot.GetTile(tilesSet, Families.Wind, wind: Winds.North),
+                TilePivot.GetTile(tilesSet, Families.Dragon, dragon: Dragons.Red),
+                TilePivot.GetTile(tilesSet, Families.Dragon, dragon: Dragons.Red),
+                TilePivot.GetTile(tilesSet, Families.Dragon, dragon: Dragons.Red),
+                TilePivot.GetTile(tilesSet, Families.Circle, number: 1),
+                TilePivot.GetTile(tilesSet, Families.Circle, number: 1),
+                TilePivot.GetTile(tilesSet, Families.Circle, number: 1),
+                TilePivot.GetTile(tilesSet, Families.Circle, number: 2),
+                TilePivot.GetTile(tilesSet, Families.Circle, number: 2),
+                TilePivot.GetTile(tilesSet, Families.Circle, number: 3),
+                TilePivot.GetTile(tilesSet, Families.Circle, number: 3),
+                TilePivot.GetTile(tilesSet, Families.Circle, number: 4),
+                TilePivot.GetTile(tilesSet, Families.Circle, number: 4)
             };
 
             concealedTiles = concealedTiles.OrderBy(t => new Random().NextDouble()).ToList();
@@ -44,24 +44,24 @@ namespace Gnoj_Ham_Library_Tests
 
             var concealedTiles = new List<TilePivot>
             {
-                TilePivot.GetTile(tilesSet, FamilyPivot.Circle, number: 1),
-                TilePivot.GetTile(tilesSet, FamilyPivot.Circle, number: 1),
-                TilePivot.GetTile(tilesSet, FamilyPivot.Circle, number: 2),
-                TilePivot.GetTile(tilesSet, FamilyPivot.Circle, number: 2),
-                TilePivot.GetTile(tilesSet, FamilyPivot.Circle, number: 3),
-                TilePivot.GetTile(tilesSet, FamilyPivot.Circle, number: 3),
-                TilePivot.GetTile(tilesSet, FamilyPivot.Circle, number: 4),
-                TilePivot.GetTile(tilesSet, FamilyPivot.Circle, number: 4),
-                TilePivot.GetTile(tilesSet, FamilyPivot.Circle, number: 4),
-                TilePivot.GetTile(tilesSet, FamilyPivot.Circle, number: 5),
-                TilePivot.GetTile(tilesSet, FamilyPivot.Circle, number: 6)
+                TilePivot.GetTile(tilesSet, Families.Circle, number: 1),
+                TilePivot.GetTile(tilesSet, Families.Circle, number: 1),
+                TilePivot.GetTile(tilesSet, Families.Circle, number: 2),
+                TilePivot.GetTile(tilesSet, Families.Circle, number: 2),
+                TilePivot.GetTile(tilesSet, Families.Circle, number: 3),
+                TilePivot.GetTile(tilesSet, Families.Circle, number: 3),
+                TilePivot.GetTile(tilesSet, Families.Circle, number: 4),
+                TilePivot.GetTile(tilesSet, Families.Circle, number: 4),
+                TilePivot.GetTile(tilesSet, Families.Circle, number: 4),
+                TilePivot.GetTile(tilesSet, Families.Circle, number: 5),
+                TilePivot.GetTile(tilesSet, Families.Circle, number: 6)
             };
 
             concealedTiles = concealedTiles.OrderBy(t => new Random().NextDouble()).ToList();
 
             var result = HandPivot.IsCompleteBasic(concealedTiles, new List<TileComboPivot>
             {
-                TileComboPivot.BuildSquare(TilePivot.GetTile(tilesSet, FamilyPivot.Dragon, dragon: DragonPivot.White))
+                TileComboPivot.BuildSquare(TilePivot.GetTile(tilesSet, Families.Dragon, dragon: Dragons.White))
             });
 
             Assert.NotNull(result);

@@ -3,7 +3,7 @@
 /// <summary>
 /// Enumeration of families.
 /// </summary>
-public enum FamilyPivot
+public enum Families
 {
     /// <summary>
     /// Caracter family.

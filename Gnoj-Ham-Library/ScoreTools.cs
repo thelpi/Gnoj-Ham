@@ -168,7 +168,7 @@ namespace Gnoj_Ham_Library
         /// <param name="dominantWind">The dominant wind;</param>
         /// <param name="playerWind">The player wind.</param>
         /// <exception cref="ArgumentNullException"><paramref name="hand"/> is <c>Null</c>.</exception>
-        internal static int GetFuCount(HandPivot hand, bool isTsumo, WindPivot dominantWind, WindPivot playerWind)
+        internal static int GetFuCount(HandPivot hand, bool isTsumo, Winds dominantWind, Winds playerWind)
         {
             if (hand == null)
             {
@@ -222,12 +222,12 @@ namespace Gnoj_Ham_Library
         /// - Number of points lost by east players (or one of the three remaining if the winner is east; or the specific loser if ron).
         /// - Number of points lost by the two other players.
         /// </returns>
-        internal static Tuple<int, int> GetPoints(int fanCount, int fuCount, bool isTsumo, WindPivot playerWind)
+        internal static Tuple<int, int> GetPoints(int fanCount, int fuCount, bool isTsumo, Winds playerWind)
         {
             var v1 = 0;
             var v2 = 0;
 
-            var east = playerWind == WindPivot.East;
+            var east = playerWind == Winds.East;
 
             if ((fanCount == 4 && fuCount >= 40) || (fanCount == 3 && fuCount >= 70))
             {

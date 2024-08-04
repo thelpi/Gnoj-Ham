@@ -12,17 +12,17 @@ namespace Gnoj_Ham_Library
     public static class GlobalExtensions
     {
         /// <summary>
-        /// Extension; gets the number of points from the specified <see cref="InitialPointsRulePivot"/> value.
+        /// Extension; gets the number of points from the specified <see cref="InitialPointsRules"/> value.
         /// </summary>
-        /// <param name="initialPointsRule">The <see cref="InitialPointsRulePivot"/> value.</param>
+        /// <param name="initialPointsRule">The <see cref="InitialPointsRules"/> value.</param>
         /// <returns>The number of points.</returns>
-        internal static int GetInitialPointsFromRule(this InitialPointsRulePivot initialPointsRule)
+        internal static int GetInitialPointsFromRule(this InitialPointsRules initialPointsRule)
         {
             switch (initialPointsRule)
             {
-                case InitialPointsRulePivot.K25:
+                case InitialPointsRules.K25:
                     return 25000;
-                case InitialPointsRulePivot.K30:
+                case InitialPointsRules.K30:
                     return 30000;
                 default:
                     throw new NotImplementedException();
@@ -64,13 +64,13 @@ namespace Gnoj_Ham_Library
         }
 
         /// <summary>
-        /// Extension; checks if the specified <see cref="DrawTypePivot"/> is a self draw.
+        /// Extension; checks if the specified <see cref="DrawTypes"/> is a self draw.
         /// </summary>
-        /// <param name="drawType">The <see cref="DrawTypePivot"/>.</param>
+        /// <param name="drawType">The <see cref="DrawTypes"/>.</param>
         /// <returns><c>True</c> if self draw; <c>False</c> otherwise.</returns>
-        internal static bool IsSelfDraw(this DrawTypePivot drawType)
+        internal static bool IsSelfDraw(this DrawTypes drawType)
         {
-            return drawType == DrawTypePivot.Wall || drawType == DrawTypePivot.Compensation;
+            return drawType == DrawTypes.Wall || drawType == DrawTypes.Compensation;
         }
 
         /// <summary>
@@ -78,18 +78,18 @@ namespace Gnoj_Ham_Library
         /// </summary>
         /// <param name="origin">The wind.</param>
         /// <returns>The left wind.</returns>
-        internal static WindPivot Left(this WindPivot origin)
+        internal static Winds Left(this Winds origin)
         {
             switch (origin)
             {
-                case WindPivot.East:
-                    return WindPivot.North;
-                case WindPivot.South:
-                    return WindPivot.East;
-                case WindPivot.West:
-                    return WindPivot.South;
+                case Winds.East:
+                    return Winds.North;
+                case Winds.South:
+                    return Winds.East;
+                case Winds.West:
+                    return Winds.South;
                 default:
-                    return WindPivot.West;
+                    return Winds.West;
             }
         }
 
@@ -98,18 +98,18 @@ namespace Gnoj_Ham_Library
         /// </summary>
         /// <param name="origin">The wind.</param>
         /// <returns>The right wind.</returns>
-        internal static WindPivot Right(this WindPivot origin)
+        internal static Winds Right(this Winds origin)
         {
             switch (origin)
             {
-                case WindPivot.East:
-                    return WindPivot.South;
-                case WindPivot.South:
-                    return WindPivot.West;
-                case WindPivot.West:
-                    return WindPivot.North;
+                case Winds.East:
+                    return Winds.South;
+                case Winds.South:
+                    return Winds.West;
+                case Winds.West:
+                    return Winds.North;
                 default:
-                    return WindPivot.East;
+                    return Winds.East;
             }
         }
 
@@ -118,18 +118,18 @@ namespace Gnoj_Ham_Library
         /// </summary>
         /// <param name="origin">The wind.</param>
         /// <returns>The opposite wind.</returns>
-        internal static WindPivot Opposite(this WindPivot origin)
+        internal static Winds Opposite(this Winds origin)
         {
             switch (origin)
             {
-                case WindPivot.East:
-                    return WindPivot.West;
-                case WindPivot.South:
-                    return WindPivot.North;
-                case WindPivot.West:
-                    return WindPivot.East;
+                case Winds.East:
+                    return Winds.West;
+                case Winds.South:
+                    return Winds.North;
+                case Winds.West:
+                    return Winds.East;
                 default:
-                    return WindPivot.South;
+                    return Winds.South;
             }
         }
 
@@ -162,23 +162,23 @@ namespace Gnoj_Ham_Library
         }
 
         /// <summary>
-        /// Extension; checks if a <see cref="EndOfGameRulePivot"/> applies "Tobi" or not.
+        /// Extension; checks if a <see cref="EndOfGameRules"/> applies "Tobi" or not.
         /// </summary>
-        /// <param name="endOfGameRule">The <see cref="EndOfGameRulePivot"/> to check.</param>
+        /// <param name="endOfGameRule">The <see cref="EndOfGameRules"/> to check.</param>
         /// <returns><c>True</c> if applies rule; <c>False</c> otherwise.</returns>
-        internal static bool TobiRuleApply(this EndOfGameRulePivot endOfGameRule)
+        internal static bool TobiRuleApply(this EndOfGameRules endOfGameRule)
         {
-            return endOfGameRule == EndOfGameRulePivot.Tobi || endOfGameRule == EndOfGameRulePivot.EnchousenAndTobi;
+            return endOfGameRule == EndOfGameRules.Tobi || endOfGameRule == EndOfGameRules.EnchousenAndTobi;
         }
 
         /// <summary>
-        /// Extension; checks if a <see cref="EndOfGameRulePivot"/> applies "Enchousen" or not.
+        /// Extension; checks if a <see cref="EndOfGameRules"/> applies "Enchousen" or not.
         /// </summary>
-        /// <param name="endOfGameRule">The <see cref="EndOfGameRulePivot"/> to check.</param>
+        /// <param name="endOfGameRule">The <see cref="EndOfGameRules"/> to check.</param>
         /// <returns><c>True</c> if applies rule; <c>False</c> otherwise.</returns>
-        internal static bool EnchousenRuleApply(this EndOfGameRulePivot endOfGameRule)
+        internal static bool EnchousenRuleApply(this EndOfGameRules endOfGameRule)
         {
-            return endOfGameRule == EndOfGameRulePivot.Enchousen || endOfGameRule == EndOfGameRulePivot.EnchousenAndTobi;
+            return endOfGameRule == EndOfGameRules.Enchousen || endOfGameRule == EndOfGameRules.EnchousenAndTobi;
         }
     }
 }

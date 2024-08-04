@@ -28,7 +28,7 @@ namespace Gnoj_Ham_Library
         /// <summary>
         /// If <see cref="OpenTile"/> is specified, indicates the wind which the tile has been stolen from; otherwise <c>Null</c>.
         /// </summary>
-        internal readonly WindPivot? StolenFrom;
+        internal readonly Winds? StolenFrom;
 
         #endregion Embedded properties
 
@@ -61,13 +61,13 @@ namespace Gnoj_Ham_Library
         internal bool IsBrelanOrSquare => IsBrelan || IsSquare;
 
         /// <summary>
-        /// Inferred; gets the combination <see cref="FamilyPivot"/>.
+        /// Inferred; gets the combination <see cref="Families"/>.
         /// </summary>
-        internal FamilyPivot Family => _tiles[0].Family;
+        internal Families Family => _tiles[0].Family;
         /// <summary>
         /// Inferred; indicates if the combination is formed of honors.
         /// </summary>
-        internal bool IsHonor => Family == FamilyPivot.Dragon || Family == FamilyPivot.Wind;
+        internal bool IsHonor => Family == Families.Dragon || Family == Families.Wind;
         /// <summary>
         /// Inferred; indicates if the combination is formed of terminals.
         /// </summary>
@@ -100,7 +100,7 @@ namespace Gnoj_Ham_Library
         /// <param name="concealedTiles">List of concealed tiles.</param>
         /// <param name="openTile">Optionnal; the <see cref="OpenTile"/> value; default value is <c>Null</c>.</param>
         /// <param name="stolenFrom">Optionnal; the <see cref="StolenFrom"/> value; default value is <c>Null</c>.</param>
-        internal TileComboPivot(IEnumerable<TilePivot> concealedTiles, TilePivot openTile = null, WindPivot? stolenFrom = null)
+        internal TileComboPivot(IEnumerable<TilePivot> concealedTiles, TilePivot openTile = null, Winds? stolenFrom = null)
         {
             var tiles = new List<TilePivot>(concealedTiles);
             if (openTile != null)
@@ -193,7 +193,7 @@ namespace Gnoj_Ham_Library
         #region Private methods
 
         // Gets the tile corresponding to the specified wind in the purpose to create a sorted list for display.
-        private Tuple<TilePivot, bool> GetTileForSortedListAtSpecifiedWind(WindPivot wind, IReadOnlyList<TilePivot> concealedOnly, ref int i)
+        private Tuple<TilePivot, bool> GetTileForSortedListAtSpecifiedWind(Winds wind, IReadOnlyList<TilePivot> concealedOnly, ref int i)
         {
             if (wind == StolenFrom.Value)
             {
@@ -265,7 +265,7 @@ namespace Gnoj_Ham_Library
         /// </summary>
         /// <param name="ownerWind">The current wind of the owner.</param>
         /// <returns>List of tiles tuple; the second item is <c>True</c> when the tile is the opened one.</returns>
-        public IReadOnlyList<Tuple<TilePivot, bool>> GetSortedTilesForDisplay(WindPivot ownerWind)
+        public IReadOnlyList<Tuple<TilePivot, bool>> GetSortedTilesForDisplay(Winds ownerWind)
         {
             if (!StolenFrom.HasValue)
             {

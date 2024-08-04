@@ -3,7 +3,7 @@
 /// <summary>
 /// Represents each type of call.
 /// </summary>
-public enum CallTypePivot
+public enum CallTypes
 {
     /// <summary>
     /// Ron.

@@ -15,5 +15,5 @@ public class CallNotifierEventArgs : EventArgs
     /// <summary>
     /// The type of call.
     /// </summary>
-    public CallTypePivot Action { get; internal init; }
+    public CallTypes Action { get; internal init; }
 }

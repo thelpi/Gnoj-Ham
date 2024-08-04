@@ -23,7 +23,7 @@ namespace Gnoj_Ham_Library
         private readonly RoundPivot _round;
 
         // indicates an honiisou (or chiniisou) in progress
-        private FamilyPivot? _itsuFamily;
+        private Families? _itsuFamily;
 
         #region Constructors
 
@@ -88,7 +88,7 @@ namespace Gnoj_Ham_Library
                     })
                     // keeps pair of valuable honor
                     .ThenByDescending(t => t.Count() > 1
-                        && (t.Key.Family == FamilyPivot.Dragon
+                        && (t.Key.Family == Families.Dragon
                             || t.Key.Wind == _round.Game.DominantWind
                             || t.Key.Wind == _round.Game.GetPlayerCurrentWind(_round.CurrentPlayerIndex))
                         && deadTiles.Count(_ => _ == t.Key) < 2)
@@ -107,7 +107,7 @@ namespace Gnoj_Ham_Library
                     // keeps pair
                     .ThenByDescending(t => t.Count())
                     // all things being equal, wind are the best to discard
-                    .ThenBy(t => t.Key.Family == FamilyPivot.Wind)
+                    .ThenBy(t => t.Key.Family == Families.Wind)
                     // all things being equal, the closer to side the better
                     .ThenBy(t => t.Key.DistanceToMiddle(false))
                     .Reverse();
@@ -314,7 +314,7 @@ namespace Gnoj_Ham_Library
                 .Any(_ => _.Count() >= 2 && _.Key != tile && IsDragonOrValuableWind(_.Key, valuableWinds));
 
             // >= 66% of one family or honor
-            var closeToHonitsuFamily = new FamilyPivot?[] { FamilyPivot.Bamboo, FamilyPivot.Caracter, FamilyPivot.Circle }
+            var closeToHonitsuFamily = new Families?[] { Families.Bamboo, Families.Caracter, Families.Circle }
                 .FirstOrDefault(f => hand.ConcealedTiles.Count(t => t.Family == f || t.IsHonor) > 9);
 
             _itsuFamily = _itsuFamily ?? closeToHonitsuFamily;
@@ -322,7 +322,7 @@ namespace Gnoj_Ham_Library
             return hasValuablePair
                 || (dorasCount + redDorasCount) > 0
                 || closeToHonitsuFamily.HasValue
-                || valuableWinds[0] == WindPivot.East
+                || valuableWinds[0] == Winds.East
                 ? playerIndex
                 : -1;
         }
@@ -436,10 +436,10 @@ namespace Gnoj_Ham_Library
                 && _round.GetDiscard(opponentPlayerIndex).Where(_ => _.Family == tile.Family).Distinct().Count() >= 3;
         }
 
-        private static bool IsDragonOrValuableWind(TilePivot tile, WindPivot[] winds)
+        private static bool IsDragonOrValuableWind(TilePivot tile, Winds[] winds)
         {
-            return tile.Family == FamilyPivot.Dragon
-                || (tile.Family == FamilyPivot.Wind && winds.Contains(tile.Wind.Value));
+            return tile.Family == Families.Dragon
+                || (tile.Family == Families.Wind && winds.Contains(tile.Wind.Value));
         }
 
         private (IReadOnlyList<(TilePivot tile, int unsafePoints)> bestToWorstChoices, bool shouldGiveUp) ComputeTilesSafety(IReadOnlyList<TilePivot> discardableTiles, IReadOnlyList<TilePivot> deadTiles)
