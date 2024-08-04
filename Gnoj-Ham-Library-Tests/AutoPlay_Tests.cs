@@ -11,31 +11,11 @@ namespace Gnoj_Ham_Library_Tests
             { 999999, new[] { ("CPU_1", 32300), ("CPU_0", 25400), ("CPU_2", 23900), ("CPU_3", 18400) } }
         };
 
-        [Fact]
-        public void AutoPlay_WithSeed1000_GeneratesExpectedRound()
-        {
-            var seed = 1000;
-
-            InternalAutoPlayAndAssert(seed);
-        }
-
-        [Fact]
-        public void AutoPlay_WithSeed666_GeneratesExpectedRound()
-        {
-            var seed = 666;
-
-            InternalAutoPlayAndAssert(seed);
-        }
-
-        [Fact]
-        public void AutoPlay_WithSeed999999_GeneratesExpectedRound()
-        {
-            var seed = 999999;
-
-            InternalAutoPlayAndAssert(seed);
-        }
-
-        private void InternalAutoPlayAndAssert(int seed)
+        [Theory]
+        [InlineData(1000)]
+        [InlineData(666)]
+        [InlineData(999999)]
+        public void AutoPlay_GeneratesExpectedRound(int seed)
         {
             var random = new Random(seed);
 
