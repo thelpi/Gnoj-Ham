@@ -188,11 +188,11 @@ public class TilePivot : IEquatable<TilePivot>, IComparable<TilePivot>
     {
         var tiles = new List<TilePivot>(136);
 
-        foreach (var family in Enum.GetValues(typeof(Families)).Cast<Families>())
+        foreach (var family in Enum.GetValues<Families>())
         {
             if (family == Families.Dragon)
             {
-                foreach (var dragon in Enum.GetValues(typeof(Dragons)).Cast<Dragons>())
+                foreach (var dragon in Enum.GetValues<Dragons>())
                 {
                     for (var i = 0; i < 4; i++)
                     {
@@ -202,7 +202,7 @@ public class TilePivot : IEquatable<TilePivot>, IComparable<TilePivot>
             }
             else if (family == Families.Wind)
             {
-                foreach (var wind in Enum.GetValues(typeof(Winds)).Cast<Winds>())
+                foreach (var wind in Enum.GetValues<Winds>())
                 {
                     for (var i = 0; i < 4; i++)
                     {

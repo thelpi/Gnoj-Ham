@@ -12,7 +12,7 @@ public class GamePivot
     /// <summary>
     /// Index of the human player in <see cref="Players"/>.
     /// </summary>
-    public const int HUMAN_INDEX = 0;
+    public const PlayerIndices HUMAN_INDEX = PlayerIndices.Zero;
 
     /// <summary>
     /// Number of tiles in a wall.
@@ -37,7 +37,7 @@ public class GamePivot
     /// <summary>
     /// Index of the player in <see cref="Players"/> currently east.
     /// </summary>
-    internal int EastIndex { get; private set; }
+    internal PlayerIndices EastIndex { get; private set; }
     /// <summary>
     /// Number of rounds with the current <see cref="EastIndex"/>.
     /// </summary>
@@ -75,7 +75,7 @@ public class GamePivot
     /// <summary>
     /// Inferred; current east player.
     /// </summary>
-    internal PlayerPivot CurrentEastPlayer => Players[EastIndex];
+    internal PlayerPivot CurrentEastPlayer => Players[(int)EastIndex];
     /// <summary>
     /// Inferred; get players sorted by their ranking.
     /// </summary>
@@ -85,7 +85,7 @@ public class GamePivot
     /// <summary>
     /// Inferred; gets the player index which was the first <see cref="Winds.East"/>.
     /// </summary>
-    internal int FirstEastIndex => Players.Select((p, i) => (p, i)).First(pi => pi.p.InitialWind == Winds.East).i;
+    internal PlayerIndices FirstEastIndex => (PlayerIndices)Players.Select((p, i) => (p, i)).First(pi => pi.p.InitialWind == Winds.East).i;
 
     /// <summary>
     /// Inferred; indicates the game is between CPU only.
@@ -187,10 +187,10 @@ public class GamePivot
     /// Adds a pending riichi.
     /// </summary>
     /// <param name="playerIndex">The player index.</param>
-    internal void AddPendingRiichi(int playerIndex)
+    internal void AddPendingRiichi(PlayerIndices playerIndex)
     {
         PendingRiichiCount++;
-        Players[playerIndex].AddPoints(-ScoreTools.RIICHI_COST);
+        Players[(int)playerIndex].AddPoints(-ScoreTools.RIICHI_COST);
     }
 
     /// <summary>
@@ -199,12 +199,8 @@ public class GamePivot
     /// </summary>
     /// <param name="ronPlayerIndex">The player index on who the call has been made; <c>Null</c> if tsumo or ryuukyoku.</param>
     /// <returns>An instance of <see cref="EndOfRoundInformationsPivot"/> and potentiel error on save of statistics.</returns>
-    /// <exception cref="ArgumentException">Ron player index should be between 0 and 3.</exception>
-    public (EndOfRoundInformationsPivot endOfRoundInformation, string? error) NextRound(int? ronPlayerIndex)
+    public (EndOfRoundInformationsPivot endOfRoundInformation, string? error) NextRound(PlayerIndices? ronPlayerIndex)
     {
-        if (ronPlayerIndex.HasValue && (ronPlayerIndex > 3 || ronPlayerIndex < 0))
-            throw new ArgumentException("Ron player index should be between 0 and 3.", nameof(ronPlayerIndex));
-
         var endOfRoundInformations = Round.EndOfRound(ronPlayerIndex);
 
         // used for stats
@@ -315,14 +311,8 @@ public class GamePivot
     /// </summary>
     /// <param name="playerIndex">The player index in <see cref="Players"/>.</param>
     /// <returns>The <see cref="Winds"/>.</returns>
-    /// <exception cref="ArgumentOutOfRangeException"><paramref name="playerIndex"/> is out of range.</exception>
-    public Winds GetPlayerCurrentWind(int playerIndex)
+    public Winds GetPlayerCurrentWind(PlayerIndices playerIndex)
     {
-        if (playerIndex < 0 || playerIndex > 3)
-        {
-            throw new ArgumentOutOfRangeException(nameof(playerIndex));
-        }
-
         if (playerIndex == EastIndex + 1 || playerIndex == EastIndex - 3)
         {
             return Winds.South;
@@ -344,9 +334,9 @@ public class GamePivot
     /// </summary>
     /// <param name="wind">The wind.</param>
     /// <returns>The player index.</returns>
-    internal int GetPlayerIndexByCurrentWind(Winds wind)
+    internal PlayerIndices GetPlayerIndexByCurrentWind(Winds wind)
     {
-        return Enumerable.Range(0, 4).First(i => GetPlayerCurrentWind(i) == wind);
+        return Enum.GetValues<PlayerIndices>().First(i => GetPlayerCurrentWind(i) == wind);
     }
 
     #endregion Public methods

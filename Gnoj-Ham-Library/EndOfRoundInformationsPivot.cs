@@ -1,4 +1,6 @@
-﻿namespace Gnoj_Ham_Library;
+﻿using Gnoj_Ham_Library.Enums;
+
+namespace Gnoj_Ham_Library;
 
 /// <summary>
 /// Represents informations computed at the end of a round.
@@ -107,7 +109,7 @@ public class EndOfRoundInformationsPivot
     /// <param name="playerIndex">Player index.</param>
     /// <param name="defaultValue">Optionnal, value to return if player not found; default value is <c>0</c>.</param>
     /// <returns>The points gain.</returns>
-    public int GetPlayerPointsGain(int playerIndex, int defaultValue = 0)
+    public int GetPlayerPointsGain(PlayerIndices playerIndex, int defaultValue = 0)
     {
         return PlayersInfo.FirstOrDefault(p => p.Index == playerIndex)?.PointsGain ?? defaultValue;
     }
@@ -126,7 +128,7 @@ public class EndOfRoundInformationsPivot
         /// <summary>
         /// Index in <see cref="GamePivot.Players"/>.
         /// </summary>
-        public int Index { get; private set; }
+        public PlayerIndices Index { get; private set; }
         /// <summary>
         /// Fan count.
         /// </summary>
@@ -186,7 +188,7 @@ public class EndOfRoundInformationsPivot
         /// <param name="uraDoraCount">The <see cref="UraDoraCount"/> value.</param>
         /// <param name="redDoraCount">The <see cref="RedDoraCount"/> value.</param>
         /// <param name="handPointsGain">The <see cref="HandPointsGain"/> value.</param>
-        internal PlayerInformationsPivot(int index, int fanCount, int fuCount, HandPivot? hand,
+        internal PlayerInformationsPivot(PlayerIndices index, int fanCount, int fuCount, HandPivot? hand,
             int pointsGain, int doraCount, int uraDoraCount, int redDoraCount, int handPointsGain)
         {
             Index = index;
@@ -205,7 +207,7 @@ public class EndOfRoundInformationsPivot
         /// </summary>
         /// <param name="index">The <see cref="Index"/> value.</param>
         /// <param name="pointsGain">The <see cref="PointsGain"/> value.</param>
-        internal PlayerInformationsPivot(int index, int pointsGain)
+        internal PlayerInformationsPivot(PlayerIndices index, int pointsGain)
             : this(index, 0, 0, null, pointsGain, 0, 0, 0, 0) { }
 
         #endregion Constructors

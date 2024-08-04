@@ -273,7 +273,7 @@ internal static class GraphicTools
     /// <returns>List of strings ready for display.</returns>
     internal static IReadOnlyList<string> GetCpuSpeedDisplayValues()
     {
-        return Enum.GetValues(typeof(CpuSpeedPivot)).OfType<CpuSpeedPivot>().Select(v =>
+        return Enum.GetValues<CpuSpeedPivot>().Select(v =>
         {
             var intParsedValue = v.ParseSpeed();
 
@@ -289,7 +289,7 @@ internal static class GraphicTools
     {
         var results = new List<string>();
 
-        foreach (var ch in Enum.GetValues(typeof(ChronoPivot)).OfType<ChronoPivot>())
+        foreach (var ch in Enum.GetValues<ChronoPivot>())
         {
             switch (ch)
             {
@@ -314,7 +314,7 @@ internal static class GraphicTools
     {
         var results = new List<string>();
 
-        foreach (var rule in Enum.GetValues(typeof(EndOfGameRules)).OfType<EndOfGameRules>())
+        foreach (var rule in Enum.GetValues<EndOfGameRules>())
         {
             switch (rule)
             {
@@ -342,8 +342,7 @@ internal static class GraphicTools
     /// <returns>List of strings ready for display.</returns>
     internal static IReadOnlyList<string> GetInitialPointsRuleDisplayValue()
     {
-        return Enum.GetValues(typeof(InitialPointsRules))
-                .OfType<InitialPointsRules>()
+        return Enum.GetValues<InitialPointsRules>()
                 .Select(v => $"{Convert.ToInt32(v.ToString().Replace("K", string.Empty))} 000")
                 .ToList();
     }

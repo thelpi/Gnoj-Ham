@@ -15,15 +15,15 @@ public class ReadyToCallNotifierEventArgs
     /// <summary>
     /// Player index; usage only for call 'Pon'.
     /// </summary>
-    public int PlayerIndex { get; internal init; }
+    public PlayerIndices PlayerIndex { get; internal init; }
 
     /// <summary>
     /// Previous player index; usage only for call 'Pon'.
     /// </summary>
-    public int PreviousPlayerIndex { get; internal init; }
+    public PlayerIndices PreviousPlayerIndex { get; internal init; }
 
     /// <summary>
     /// Previous player index; usage only for call 'Kan''.
     /// </summary>
-    public int? PotentialPreviousPlayerIndex { get; internal init; }
+    public PlayerIndices? PotentialPreviousPlayerIndex { get; internal init; }
 }

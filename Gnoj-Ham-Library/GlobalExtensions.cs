@@ -121,7 +121,7 @@ public static class GlobalExtensions
     /// <param name="playerIndex">The player index.</param>
     /// <param name="nIndex">The N value.</param>
     /// <returns>The relative player index.</returns>
-    public static int RelativePlayerIndex(this int playerIndex, int nIndex)
+    public static PlayerIndices RelativePlayerIndex(this PlayerIndices playerIndex, int nIndex)
     {
         if (nIndex == 0)
         {
@@ -129,7 +129,7 @@ public static class GlobalExtensions
         }
 
         var nIndexMod = nIndex % 4;
-        var newIndex = playerIndex + nIndexMod;
+        var newIndex = (int)playerIndex + nIndexMod;
 
         if (nIndex > 0 && newIndex > 3)
         {
@@ -140,7 +140,7 @@ public static class GlobalExtensions
             newIndex = 4 - Math.Abs(newIndex % 4);
         }
 
-        return newIndex;
+        return (PlayerIndices)newIndex;
     }
 
     /// <summary>

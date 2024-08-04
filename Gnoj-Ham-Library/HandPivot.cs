@@ -71,7 +71,7 @@ public class HandPivot
     /// <summary>
     /// Inferred; indicates if the hand, including openings, contains 14 tiles (4th tile from kans not included).
     /// </summary>
-    public bool IsFullHand => _declaredCombinations.Count * 3 + _concealedTiles.Count == 14;
+    public bool IsFullHand => (_declaredCombinations.Count * 3) + _concealedTiles.Count == 14;
 
     #endregion Inferred properties
 
@@ -439,7 +439,7 @@ public class HandPivot
     /// <param name="currentRound">The current round</param>
     /// <param name="playerIndex">The player index of the hand.</param>
     /// <returns><c>True</c> if temporary furiten; <c>False</c> otherwise.</returns>
-    internal bool CancelYakusIfTemporaryFuriten(RoundPivot currentRound, int playerIndex)
+    internal bool CancelYakusIfTemporaryFuriten(RoundPivot currentRound, PlayerIndices playerIndex)
     {
         var i = 0;
         while (currentRound.PlayerIndexHistory.Count < i
@@ -449,7 +449,8 @@ public class HandPivot
             // The tile discarded by the latest player is the tile we ron !
             if (i > 0)
             {
-                var lastFromDiscard = currentRound.GetDiscard(currentRound.PlayerIndexHistory.ElementAt(i)).LastOrDefault();
+                var discard = currentRound.GetDiscard(currentRound.PlayerIndexHistory[i]);
+                var lastFromDiscard = discard.Count > 0 ? discard[discard.Count - 1] : null;
                 if (lastFromDiscard != null && IsCompleteFull(new List<TilePivot>(ConcealedTiles) { lastFromDiscard }, DeclaredCombinations.ToList()))
                 {
                     Yakus = null;
@@ -475,7 +476,7 @@ public class HandPivot
             concealedTiles.Add(context.LatestTile!);
         }
 
-        var tilesCount = concealedTiles.Count + _declaredCombinations.Count * 3;
+        var tilesCount = concealedTiles.Count + (_declaredCombinations.Count * 3);
 
         Yakus = null;
         YakusCombinations = null;

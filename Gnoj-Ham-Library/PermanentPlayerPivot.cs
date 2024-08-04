@@ -5,7 +5,7 @@
 /// </summary>
 public class PermanentPlayerPivot
 {
-    private readonly List<PlayerScorePivot> _scores = new List<PlayerScorePivot>(10);
+    private readonly List<PlayerScorePivot> _scores = new(10);
 
     /// <summary>
     /// Unique identifier.

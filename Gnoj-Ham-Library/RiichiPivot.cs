@@ -1,4 +1,6 @@
-﻿namespace Gnoj_Ham_Library;
+﻿using Gnoj_Ham_Library.Enums;
+
+namespace Gnoj_Ham_Library;
 
 /// <summary>
 /// Represents informations relative to a riichi call.
@@ -24,7 +26,7 @@ internal class RiichiPivot
     /// The rank, in the virtual discard of each opponent, when the riichi call has been made.
     /// </summary>
     /// <remarks>Key is the opponent index, value is the rank (<c>-1</c> if none).</remarks>
-    internal IReadOnlyDictionary<int, int> OpponentsVirtualDiscardRank { get; }
+    internal IReadOnlyDictionary<PlayerIndices, int> OpponentsVirtualDiscardRank { get; }
 
     /// <summary>
     /// Constructor.
@@ -33,11 +35,11 @@ internal class RiichiPivot
     /// <param name="isDaburu">The <see cref="IsDaburu"/> value.</param>
     /// <param name="tile">The <see cref="Tile"/> value.</param>
     /// <param name="opponentsVirtualDiscardRank">The <see cref="_opponentsVirtualDiscardRank"/> value.</param>
-    internal RiichiPivot(int discardRank, bool isDaburu, TilePivot tile, IDictionary<int, int> opponentsVirtualDiscardRank)
+    internal RiichiPivot(int discardRank, bool isDaburu, TilePivot tile, IDictionary<PlayerIndices, int> opponentsVirtualDiscardRank)
     {
         DiscardRank = discardRank;
         IsDaburu = isDaburu;
         Tile = tile;
-        OpponentsVirtualDiscardRank = new Dictionary<int, int>(opponentsVirtualDiscardRank);
+        OpponentsVirtualDiscardRank = new Dictionary<PlayerIndices, int>(opponentsVirtualDiscardRank);
     }
 }

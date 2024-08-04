@@ -64,10 +64,10 @@ public class PlayerPivot
     {
         humanPlayerName = CheckName(humanPlayerName);
 
-        var eastIndex = random.Next(0, 4);
+        var eastIndex = (PlayerIndices)random.Next(0, 4);
 
         var players = new List<PlayerPivot>(4);
-        for (var i = 0; i < 4; i++)
+        foreach (var i in Enum.GetValues<PlayerIndices>())
         {
             players.Add(new PlayerPivot(
                 i == GamePivot.HUMAN_INDEX ? humanPlayerName : $"{CPU_NAME_PREFIX}{i}",
@@ -90,15 +90,15 @@ public class PlayerPivot
     /// <returns>Four players generated.</returns>
     internal static IReadOnlyList<PlayerPivot> GetFourPlayersFromPermanent(IReadOnlyList<PermanentPlayerPivot> permanentPlayers, InitialPointsRules initialPointsRulePivot, Random random)
     {
-        var eastIndex = random.Next(0, 4);
+        var eastIndex = (PlayerIndices)random.Next(0, 4);
 
         return permanentPlayers
-            .Select((p, i) => new PlayerPivot($"{CPU_NAME_PREFIX}{i}", GetWindFromIndex(eastIndex, i), initialPointsRulePivot, true, p))
+            .Select((p, i) => new PlayerPivot($"{CPU_NAME_PREFIX}{i}", GetWindFromIndex(eastIndex, (PlayerIndices)i), initialPointsRulePivot, true, p))
             .ToList();
     }
 
-    private static Winds GetWindFromIndex(int eastIndex, int i)
-        => i == eastIndex ? Winds.East : (i > eastIndex ? (Winds)(i - eastIndex) : (Winds)(4 - eastIndex + i));
+    private static Winds GetWindFromIndex(PlayerIndices eastIndex, PlayerIndices i)
+        => i == eastIndex ? Winds.East : (i > eastIndex ? (Winds)(i - eastIndex) : (Winds)(4 - (int)eastIndex + i));
 
     private static string CheckName(string? humanPlayerName)
     {

@@ -21,7 +21,7 @@ public class IaManagerPivot
 
     // indicates an honiisou (or chiniisou) in progress
     private Families? _itsuFamily;
-    private static readonly int[] MiddleNumbers = new[] { 4, 5, 6 };
+    private static readonly int[] MiddleNumbers = [4, 5, 6];
 
     /// <summary>
     /// Constructor.
@@ -136,11 +136,11 @@ public class IaManagerPivot
     /// <remarks>If any player, including human, calls ron, every players who can call ron will do.</remarks>
     /// <param name="ronCalled">Indicates if the human player has already made a ron call.</param>
     /// <returns>List of player index, other than human player, who decide to call ron.</returns>
-    public IReadOnlyList<int> RonDecision(bool ronCalled)
+    public IReadOnlyList<PlayerIndices> RonDecision(bool ronCalled)
     {
-        var callers = new List<int>(4);
+        var callers = new List<PlayerIndices>(4);
 
-        for (var i = 0; i < 4; i++)
+        foreach (var i in Enum.GetValues<PlayerIndices>())
         {
             if ((i != GamePivot.HUMAN_INDEX || _round.Game.CpuVs) && _round.CanCallRon(i))
             {
@@ -173,7 +173,7 @@ public class IaManagerPivot
     /// </summary>
     /// <returns><c>True</c> if Pon is advised.</returns>
     public bool PonDecisionAdvice()
-        => PonDecisionInternal(GamePivot.HUMAN_INDEX) > -1;
+        => PonDecisionInternal(GamePivot.HUMAN_INDEX).HasValue;
 
     /// <summary>
     /// Computes an advice for the human player to call a Chii or not; assumes the Chii is possible.
@@ -189,12 +189,12 @@ public class IaManagerPivot
     /// Checks if any CPU player can make a pon call, and computes its decision if any.
     /// </summary>
     /// <returns>The player index who makes the call; <c>-1</c> is none.</returns>
-    internal int PonDecision()
+    internal PlayerIndices? PonDecision()
     {
         var opponentPlayerId = _round.OpponentsCanCallPon();
-        if (opponentPlayerId > -1)
+        if (opponentPlayerId.HasValue)
         {
-            opponentPlayerId = PonDecisionInternal(opponentPlayerId);
+            opponentPlayerId = PonDecisionInternal(opponentPlayerId.Value);
         }
 
         return opponentPlayerId;
@@ -223,7 +223,7 @@ public class IaManagerPivot
     /// - The second item indicates the base tile of the kand (several choices are possible).
     /// <c>Null</c> otherwise.
     /// </returns>
-    internal (int pIndex, TilePivot tile)? KanDecision(bool checkConcealedOnly)
+    internal (PlayerIndices pIndex, TilePivot tile)? KanDecision(bool checkConcealedOnly)
     {
         var opponentPlayerIdWithTiles = _round.OpponentsCanCallKan(checkConcealedOnly);
         return opponentPlayerIdWithTiles.HasValue
@@ -271,7 +271,7 @@ public class IaManagerPivot
             .First();
     }
 
-    private int PonDecisionInternal(int playerIndex)
+    private PlayerIndices? PonDecisionInternal(PlayerIndices playerIndex)
     {
         var tile = _round.GetDiscard(_round.PreviousPlayerIndex)[_round.GetDiscard(_round.PreviousPlayerIndex).Count - 1];
 
@@ -298,7 +298,7 @@ public class IaManagerPivot
 
         if (!canPonForYakuhai && valuableHonorPairs < 2 && !closeToChinitsu)
         {
-            return -1;
+            return null;
         }
 
         var dorasCount = hand.ConcealedTiles
@@ -319,10 +319,10 @@ public class IaManagerPivot
             || closeToHonitsuFamily.HasValue
             || valuableWinds[0] == Winds.East
             ? playerIndex
-            : -1;
+            : null;
     }
 
-    private (int pIndex, TilePivot tile)? KanDecisionInternal(int playerId, IReadOnlyList<TilePivot> kanPossibilities, bool concealed)
+    private (PlayerIndices pIndex, TilePivot tile)? KanDecisionInternal(PlayerIndices playerId, IReadOnlyList<TilePivot> kanPossibilities, bool concealed)
     {
         // Rinshan kaihou possibility: call
         var tileToRemove = _round.GetHand(playerId).IsFullHand
@@ -385,7 +385,7 @@ public class IaManagerPivot
         return tileChoice;
     }
 
-    private bool IsDiscardedOrUnusable(TilePivot tile, int opponentPlayerIndex, IReadOnlyList<TilePivot> deadtiles)
+    private bool IsDiscardedOrUnusable(TilePivot tile, PlayerIndices opponentPlayerIndex, IReadOnlyList<TilePivot> deadtiles)
     {
         return _round.GetDiscard(opponentPlayerIndex).Contains(tile) || (
             tile.IsHonor
@@ -396,26 +396,26 @@ public class IaManagerPivot
     }
 
     // suji on the middle (least safe)
-    private bool IsInsiderSuji(TilePivot tile, int opponentPlayerIndex)
+    private bool IsInsiderSuji(TilePivot tile, PlayerIndices opponentPlayerIndex)
     {
         return GetSujisFromDiscard(tile, opponentPlayerIndex)
             .Any(_ => !MiddleNumbers.Contains(_.Number));
     }
 
     // suji on the edge (safer)
-    private bool IsOutsiderSuji(TilePivot tile, int opponentPlayerIndex)
+    private bool IsOutsiderSuji(TilePivot tile, PlayerIndices opponentPlayerIndex)
     {
         return GetSujisFromDiscard(tile, opponentPlayerIndex)
             .Any(_ => MiddleNumbers.Contains(_.Number));
     }
 
     // suji on both side
-    private bool IsDoubleInsiderSuji(TilePivot tile, int opponentPlayerIndex)
+    private bool IsDoubleInsiderSuji(TilePivot tile, PlayerIndices opponentPlayerIndex)
     {
         return GetSujisFromDiscard(tile, opponentPlayerIndex).Distinct().Count() > 1;
     }
 
-    private IEnumerable<TilePivot> GetSujisFromDiscard(TilePivot tile, int opponentPlayerIndex)
+    private IEnumerable<TilePivot> GetSujisFromDiscard(TilePivot tile, PlayerIndices opponentPlayerIndex)
     {
         return tile.IsHonor
             ? Enumerable.Empty<TilePivot>()
@@ -425,7 +425,7 @@ public class IaManagerPivot
     }
 
     // a family is over-represented in the opponent discard (at least 9 overal, and at least 3 distinct values)
-    private bool IsMaxedFamilyInDiscard(TilePivot tile, int opponentPlayerIndex)
+    private bool IsMaxedFamilyInDiscard(TilePivot tile, PlayerIndices opponentPlayerIndex)
     {
         return !tile.IsHonor && _round.GetDiscard(opponentPlayerIndex).Count(_ => _.Family == tile.Family) >= 9
             && _round.GetDiscard(opponentPlayerIndex).Where(_ => _.Family == tile.Family).Distinct().Count() >= 3;
@@ -448,7 +448,7 @@ public class IaManagerPivot
         foreach (var tile in discardableTiles)
         {
             tilesSafety.Add(tile, new List<TileSafety>(3));
-            foreach (var i in Enumerable.Range(0, 4).Where(i => i != _round.CurrentPlayerIndex))
+            foreach (var i in Enum.GetValues<PlayerIndices>().Where(i => i != _round.CurrentPlayerIndex))
             {
                 // stop the building of the hand is opponent is riichi or has 3 or more combinations visible
                 if (tenpaiOpponentIndexes.Contains(i))
@@ -486,9 +486,10 @@ public class IaManagerPivot
         return (tilesSafety.OrderBy(t => t.Value.Sum(s => (int)s)).Select(t => (t.Key, t.Value.Sum(s => (int)s))).ToList(), stopCurrentHand);
     }
 
-    private List<int> GetTenpaiOpponentIndexes(int playerIndex) => Enumerable.Range(0, 4).Where(i => i != playerIndex && PlayerIsCloseToWin(i)).ToList();
+    private List<PlayerIndices> GetTenpaiOpponentIndexes(PlayerIndices playerIndex)
+        => Enum.GetValues<PlayerIndices>().Where(i => i != playerIndex && PlayerIsCloseToWin(i)).ToList();
 
-    private bool PlayerIsCloseToWin(int i) => _round.IsRiichi(i) || _round.GetHand(i).DeclaredCombinations.Count > 2;
+    private bool PlayerIsCloseToWin(PlayerIndices i) => _round.IsRiichi(i) || _round.GetHand(i).DeclaredCombinations.Count > 2;
 
     #endregion Private methods
 

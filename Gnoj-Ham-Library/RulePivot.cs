@@ -95,5 +95,15 @@ public class RulePivot(InitialPointsRules initialPointsRule, EndOfGameRules endO
             && other.DiscardTip == DiscardTip;
     }
 
+    public override bool Equals(object? obj)
+    {
+        return obj != null && Equals(obj as RulePivot);
+    }
+
+    public override int GetHashCode()
+    {
+        return (UseNagashiMangan, InitialPointsRule, EndOfGameRule, UseRedDoras, DebugMode, DiscardTip).GetHashCode();
+    }
+
     #endregion IEquatable implementation
 }

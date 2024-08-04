@@ -10,7 +10,7 @@ public class CallNotifierEventArgs : EventArgs
     /// <summary>
     /// The player index.
     /// </summary>
-    public int PlayerIndex { get; internal init; }
+    public PlayerIndices PlayerIndex { get; internal init; }
 
     /// <summary>
     /// The type of call.
