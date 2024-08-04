@@ -900,12 +900,9 @@ public class RoundPivot
     /// <exception cref="ArgumentOutOfRangeException"><paramref name="playerIndex"/> should be between 0 and 3.</exception>
     public IReadOnlyList<TilePivot> GetDiscard(int playerIndex)
     {
-        if (playerIndex < 0 || playerIndex > 3)
-        {
-            throw new ArgumentOutOfRangeException(nameof(playerIndex), playerIndex, "Player index should be between 0 and 3.");
-        }
-
-        return _discards[playerIndex];
+        return playerIndex < 0 || playerIndex > 3
+            ? throw new ArgumentOutOfRangeException(nameof(playerIndex), playerIndex, "Player index should be between 0 and 3.")
+            : (IReadOnlyList<TilePivot>)_discards[playerIndex];
     }
 
     /// <summary>
@@ -1091,7 +1088,7 @@ public class RoundPivot
     #endregion Autoplay methods
 
     // Gets every tiles from every opponents virtual discards after the riichi call of the specified player.
-    private IReadOnlyList<TilePivot> GetTilesFromVirtualDiscardsAtRank(int riichiPlayerIndex, TilePivot exceptTile)
+    private List<TilePivot> GetTilesFromVirtualDiscardsAtRank(int riichiPlayerIndex, TilePivot exceptTile)
     {
         var fullList = new List<TilePivot>(20);
 
@@ -1144,7 +1141,7 @@ public class RoundPivot
         var historySinceLastTime = _playerIndexHistory.TakeWhile(i => i != playerIndex).ToList();
 
         var rank = 1;
-        for (var i = (historySinceLastTime.Count - 1); i >= 0; i--)
+        for (var i = historySinceLastTime.Count - 1; i >= 0; i--)
         {
             var nextPIndex = playerIndex.RelativePlayerIndex(rank);
             if (nextPIndex != historySinceLastTime[i])
@@ -1181,7 +1178,7 @@ public class RoundPivot
     }
 
     // Gets the concealed tile of the round from the point of view of a specified player.
-    private IReadOnlyList<TilePivot> GetConcealedTilesFromPlayerPointOfView(int playerIndex)
+    private List<TilePivot> GetConcealedTilesFromPlayerPointOfView(int playerIndex)
     {
         // Wall tiles.
         var tiles = new List<TilePivot>(_wallTiles);
@@ -1212,7 +1209,7 @@ public class RoundPivot
     }
 
     // Checks for players with nagashi mangan.
-    private IReadOnlyList<int> CheckForNagashiMangan()
+    private List<int> CheckForNagashiMangan()
     {
         var playerIndexList = new List<int>(4);
 
@@ -1234,7 +1231,7 @@ public class RoundPivot
     // Gets the count of dora for specified tile
     private int GetDoraCountInternal(TilePivot t, IReadOnlyList<TilePivot> doraIndicators)
     {
-        return doraIndicators.Take(VisibleDorasCount).Count(d => t.IsDoraNext(d));
+        return doraIndicators.Take(VisibleDorasCount).Count(t.IsDoraNext);
     }
 
     #endregion Private methods
@@ -1315,10 +1312,10 @@ public class RoundPivot
             // Wind turns if East is not tenpai.
             turnWind = notTenpaiPlayersIndex.Any(tpi => Game.GetPlayerCurrentWind(tpi) == Winds.East);
 
-            var points = ScoreTools.GetRyuukyokuPoints(tenpaiPlayersIndex.Count);
+            var (tenpai, nonTenpai) = ScoreTools.GetRyuukyokuPoints(tenpaiPlayersIndex.Count);
 
-            tenpaiPlayersIndex.ForEach(i => playerInfos.Add(new EndOfRoundInformationsPivot.PlayerInformationsPivot(i, 0, 0, _hands[i], points.tenpai, 0, 0, 0, points.tenpai)));
-            notTenpaiPlayersIndex.ForEach(i => playerInfos.Add(new EndOfRoundInformationsPivot.PlayerInformationsPivot(i, points.nonTenpai)));
+            tenpaiPlayersIndex.ForEach(i => playerInfos.Add(new EndOfRoundInformationsPivot.PlayerInformationsPivot(i, 0, 0, _hands[i], tenpai, 0, 0, 0, tenpai)));
+            notTenpaiPlayersIndex.ForEach(i => playerInfos.Add(new EndOfRoundInformationsPivot.PlayerInformationsPivot(i, nonTenpai)));
         }
         else
         {
@@ -1348,7 +1345,7 @@ public class RoundPivot
                 // in case of multiple rons; the winning player closest to east win the prize
                 var winnerHonba = honbaPoints;
                 if (ronPlayerIndex.HasValue && winners.Count > 1
-                    && Game.GetPlayerCurrentWind(pIndex) != winners.Min(w => Game.GetPlayerCurrentWind(w)))
+                    && Game.GetPlayerCurrentWind(pIndex) != winners.Min(Game.GetPlayerCurrentWind))
                 {
                     winnerHonba = 0;
                 }
@@ -1375,8 +1372,8 @@ public class RoundPivot
 
                 var isRiichi = phand.Yakus!.Contains(YakuPivot.Riichi) || phand.Yakus!.Contains(YakuPivot.DaburuRiichi);
 
-                var dorasCount = phand.AllTiles.Sum(t => GetDoraCount(t));
-                var uraDorasCount = isRiichi ? phand.AllTiles.Sum(t => GetUraDoraCount(t)) : 0;
+                var dorasCount = phand.AllTiles.Sum(GetDoraCount);
+                var uraDorasCount = isRiichi ? phand.AllTiles.Sum(GetUraDoraCount) : 0;
                 var redDorasCount = phand.AllTiles.Count(t => t.IsRedDora);
 
                 if (isRiichi)
@@ -1402,9 +1399,9 @@ public class RoundPivot
                     }
                 }
 
-                var finalScore = ScoreTools.GetPoints(fanCount, fuCount, !ronPlayerIndex.HasValue, Game.GetPlayerCurrentWind(pIndex));
+                var (east, notEast) = ScoreTools.GetPoints(fanCount, fuCount, !ronPlayerIndex.HasValue, Game.GetPlayerCurrentWind(pIndex));
 
-                var basePoints = finalScore.east + finalScore.notEast * 2;
+                var basePoints = east + (notEast * 2);
 
                 var riichiPart = Game.PendingRiichiCount * ScoreTools.RIICHI_COST;
 
@@ -1425,23 +1422,20 @@ public class RoundPivot
                     pIndex, fanCount, fuCount, phand, basePoints + riichiPart + winnerHonba,
                     dorasCount, uraDorasCount, redDorasCount, basePoints));
 
-                notEastLostCumul -= finalScore.notEast;
+                notEastLostCumul -= notEast;
 
                 // If there's is a liable player (only in a case of ron on other player than the one liable)...
                 if (liablePlayerId.HasValue)
                 {
-                    if (!liablePlayersLost.ContainsKey(liablePlayerId.Value))
-                    {
-                        liablePlayersLost.Add(liablePlayerId.Value, 0);
-                    }
+                    liablePlayersLost.TryAdd(liablePlayerId.Value, 0);
                     // ... he takes half of the points from the ron player for this hand.
-                    eastOrLoserLostCumul -= finalScore.east / 2;
-                    liablePlayersLost[liablePlayerId.Value] -= finalScore.east / 2;
+                    eastOrLoserLostCumul -= east / 2;
+                    liablePlayersLost[liablePlayerId.Value] -= east / 2;
                 }
                 else
                 {
                     // Otherwise, the ron player takes all.
-                    eastOrLoserLostCumul -= finalScore.east;
+                    eastOrLoserLostCumul -= east;
                 }
             }
 
@@ -1451,7 +1445,7 @@ public class RoundPivot
                 var pointsNotOnRonPlayer = 0;
                 foreach (var liablePlayerId in liablePlayersLost.Keys)
                 {
-                    pointsNotOnRonPlayer += (liablePlayerId != ronPlayerIndex!.Value ? liablePlayersLost[liablePlayerId] : 0);
+                    pointsNotOnRonPlayer += liablePlayerId != ronPlayerIndex!.Value ? liablePlayersLost[liablePlayerId] : 0;
                     if (playerInfos.Any(pi => pi.Index == liablePlayerId))
                     {
                         playerInfos.First(pi => pi.Index == liablePlayerId).AddPoints(liablePlayersLost[liablePlayerId]);
