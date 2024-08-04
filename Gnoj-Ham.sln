@@ -3,15 +3,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.10.35122.118
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gnoj-Ham", "Gnoj-Ham\Gnoj-Ham.csproj", "{87ADEF1A-F64A-4ED2-8AC7-88226C385BFE}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gnoj-HamUnitTests", "Gnoj-HamUnitTests\Gnoj-HamUnitTests.csproj", "{834D8D3D-8334-403E-A2C5-8E5416561B52}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gnoj-HamView", "Gnoj-HamView\Gnoj-HamView.csproj", "{5F4EE32A-296F-439B-AD09-B556506B9A33}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gnoj-Ham-Library", "Gnoj-Ham-Library\Gnoj-Ham-Library.csproj", "{1B909A17-E02B-432E-A872-242CB47B4C0B}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gnoj-Ham-Library-Tests", "Gnoj-Ham-Library-Tests\Gnoj-Ham-Library-Tests.csproj", "{AE2E9411-9F45-4644-9DC1-340CCBA16B03}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gnoj-Ham-View", "Gnoj-Ham-View\Gnoj-Ham-View.csproj", "{1BF32532-0CE5-44DB-98C2-8C5F35AF5FB9}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -19,18 +15,6 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{87ADEF1A-F64A-4ED2-8AC7-88226C385BFE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{87ADEF1A-F64A-4ED2-8AC7-88226C385BFE}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{87ADEF1A-F64A-4ED2-8AC7-88226C385BFE}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{87ADEF1A-F64A-4ED2-8AC7-88226C385BFE}.Release|Any CPU.Build.0 = Release|Any CPU
-		{834D8D3D-8334-403E-A2C5-8E5416561B52}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{834D8D3D-8334-403E-A2C5-8E5416561B52}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{834D8D3D-8334-403E-A2C5-8E5416561B52}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{834D8D3D-8334-403E-A2C5-8E5416561B52}.Release|Any CPU.Build.0 = Release|Any CPU
-		{5F4EE32A-296F-439B-AD09-B556506B9A33}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{5F4EE32A-296F-439B-AD09-B556506B9A33}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{5F4EE32A-296F-439B-AD09-B556506B9A33}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{5F4EE32A-296F-439B-AD09-B556506B9A33}.Release|Any CPU.Build.0 = Release|Any CPU
 		{1B909A17-E02B-432E-A872-242CB47B4C0B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{1B909A17-E02B-432E-A872-242CB47B4C0B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1B909A17-E02B-432E-A872-242CB47B4C0B}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -39,6 +23,10 @@ Global
 		{AE2E9411-9F45-4644-9DC1-340CCBA16B03}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{AE2E9411-9F45-4644-9DC1-340CCBA16B03}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{AE2E9411-9F45-4644-9DC1-340CCBA16B03}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1BF32532-0CE5-44DB-98C2-8C5F35AF5FB9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1BF32532-0CE5-44DB-98C2-8C5F35AF5FB9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1BF32532-0CE5-44DB-98C2-8C5F35AF5FB9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1BF32532-0CE5-44DB-98C2-8C5F35AF5FB9}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

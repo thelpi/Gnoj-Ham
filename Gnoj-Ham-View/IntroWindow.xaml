@@ -1,0 +1,121 @@
+﻿<Window x:Class="Gnoj_Ham_View.IntroWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d"
+        WindowStartupLocation="CenterScreen"
+        Background="Gainsboro"
+        Width="345"
+        Height="322"
+        Title="Gnoj-Hame - Nouvelle partie">
+    <!-- Fixed Width and Height:
+    Width should adjust the left of button Start with checkbox above.
+    Height should display the bottom line of first TabItem
+    -->
+    <DockPanel Margin="5">
+        <DockPanel DockPanel.Dock="Bottom" Margin="0, 10, 0, 0">
+            <Button DockPanel.Dock="Left" Width="75" Height="25" Content="Réinitialiser" Name="BtnReset" Click="BtnReset_Click" ToolTip="Réinitialise toutes les options à leur valeur par défaut." />
+            <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" HorizontalAlignment="Right">
+                <Button Width="75" Height="25" Content="Démarrer" Name="BtnStart" Click="BtnStart_Click" />
+                <Button Width="75" Height="25" Content="Quitter" Name="BtnQuit" Click="BtnQuit_Click" Margin="10, 0, 0, 0" />
+            </StackPanel>
+        </DockPanel>
+        <StackPanel Orientation="Vertical" DockPanel.Dock="Top">
+            <TabControl>
+                <TabItem Header="Options">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="150" />
+                            <ColumnDefinition Width="150" />
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="30" />
+                            <RowDefinition Height="30" />
+                            <RowDefinition Height="30" />
+                            <RowDefinition Height="30" />
+                            <RowDefinition Height="30" />
+                            <RowDefinition Height="30" />
+                        </Grid.RowDefinitions>
+                        <Label Grid.Column="0" Grid.Row="0" HorizontalContentAlignment="Right" VerticalContentAlignment="Center" Content="Nom du joueur" />
+                        <Label Grid.Column="0" Grid.Row="1" HorizontalContentAlignment="Right" VerticalContentAlignment="Center" Content="Chrono" />
+                        <Label Grid.Column="0" Grid.Row="2" HorizontalContentAlignment="Right" VerticalContentAlignment="Center" Content="Vitesse des adversaires" />
+                        <Label Grid.Column="0" Grid.Row="3" HorizontalContentAlignment="Right" VerticalContentAlignment="Center" Content="Sons" />
+                        <Label Grid.Column="0" Grid.Row="4" HorizontalContentAlignment="Right" VerticalContentAlignment="Center" Content="Victoire automatique" />
+                        <Label Grid.Column="0" Grid.Row="5" HorizontalContentAlignment="Right" VerticalContentAlignment="Center" Content="Assistance à la décision" />
+                        <TextBox Margin="5, 0, 0, 0" Grid.Column="1" Grid.Row="0" Name="TxtPlayerName" Height="25" VerticalContentAlignment="Center" />
+                        <ComboBox Margin="5, 0, 0, 0" Grid.Column="1" Grid.Row="1" Name="CbbChronoSpeed" Height="25" VerticalContentAlignment="Center" ToolTip="Temps maximal pour prendre une décision." />
+                        <ComboBox Margin="5, 0, 0, 0" Grid.Column="1" Grid.Row="2" Name="CbbCpuSpeed" Height="25" VerticalContentAlignment="Center" />
+                        <CheckBox Margin="5, 0, 0, 0" Grid.Column="1" Grid.Row="3" Name="ChkSounds" VerticalAlignment="Center" />
+                        <CheckBox Margin="5, 0, 0, 0" Grid.Column="1" Grid.Row="4" Name="ChkAutoTsumoRon" VerticalAlignment="Center" ToolTip="Les appels 'Ron' et 'Tsumo' sont réalisés automatiquement dés que possible." />
+                        <CheckBox Margin="5, 0, 0, 0" Grid.Column="1" Grid.Row="5" Name="ChkDiscardTip" VerticalAlignment="Center" ToolTip="Une assistance visuelle est fournie pour choisir la 'meilleure' décision à chaque action." />
+                    </Grid>
+                </TabItem>
+                <TabItem Header="Règles">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="27.198"/>
+                            <ColumnDefinition Width="122.802"/>
+                            <ColumnDefinition Width="49.279" />
+                            <ColumnDefinition Width="100.721"/>
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="30" />
+                            <RowDefinition Height="30" />
+                            <RowDefinition Height="30" />
+                            <RowDefinition Height="30" />
+                        </Grid.RowDefinitions>
+                        <Label Grid.Column="0" Grid.Row="0" HorizontalContentAlignment="Right" VerticalContentAlignment="Center" Content="Akadora" Grid.ColumnSpan="2" />
+                        <Label Grid.Column="0" Grid.Row="1" HorizontalContentAlignment="Right" VerticalContentAlignment="Center" Content="Points au départ" Grid.ColumnSpan="2" />
+                        <Label Grid.Column="0" Grid.Row="2" HorizontalContentAlignment="Right" VerticalContentAlignment="Center" Content="Nagashi mangan" Grid.ColumnSpan="2" />
+                        <Label Grid.Column="0" Grid.Row="3" HorizontalContentAlignment="Right" VerticalContentAlignment="Center" Content="Règles de fin de partie" Grid.ColumnSpan="2" />
+                        <CheckBox Margin="5,0,0,0" Grid.Column="2" Name="ChkUseRedDoras" VerticalAlignment="Center" Grid.ColumnSpan="2" />
+                        <ComboBox Margin="5,2,0,2" Grid.Column="2" Grid.Row="1" Name="CbbPointsRule" Height="25" VerticalContentAlignment="Center" Grid.ColumnSpan="2" />
+                        <CheckBox Margin="5,0,0,0" Grid.Column="2" Grid.Row="2" Name="ChkUseNagashiMangan" VerticalAlignment="Center" Grid.ColumnSpan="2" />
+                        <ComboBox Margin="5,2,0,2" Grid.Column="2" Grid.Row="3" Name="CbbEndOfGameRule" Height="25" VerticalContentAlignment="Center" Grid.ColumnSpan="2">
+                            <ComboBox.ToolTip>
+                                <TextBlock>
+                - Oorasu: la partie s'arrête après 'Sud 4' ; pas de banqueroute.<LineBreak/>
+                - Tobi: la partie s'arrête en cas de banqueroute, en plus de la règle 'Oorasu'.<LineBreak/>
+                - Enchousen: la partie continue si personne n'a dépassé 30.000 points à la fin de 'Sud 4' (uniquement si 25000 points au départ) ; la partie s'achève au premier joueur au dessus de 30000 points.
+                                </TextBlock>
+                            </ComboBox.ToolTip>
+                        </ComboBox>
+                    </Grid>
+                </TabItem>
+                <TabItem Name="DevelopmentTab" Header="Development">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="150" />
+                            <ColumnDefinition Width="150" />
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="30" />
+                            <RowDefinition Height="30" />
+                            <RowDefinition Height="30" />
+                        </Grid.RowDefinitions>
+                        <Label Grid.Column="0" Grid.Row="0" HorizontalContentAlignment="Right" VerticalContentAlignment="Center" Content="Debug mode" />
+                        <CheckBox Margin="5, 0, 0, 0" Grid.Column="1" Grid.Row="0" Name="ChkDebugMode" VerticalAlignment="Center" />
+                        <Label Grid.Column="0" Grid.Row="1" HorizontalContentAlignment="Right" VerticalContentAlignment="Center" Content="4 CPUs" />
+                        <CheckBox Margin="5, 0, 0, 0" Grid.Column="1" Grid.Row="1" Name="ChkFourCpus" VerticalAlignment="Center" />
+                        <Label Grid.Column="0" Grid.Row="2" HorizontalContentAlignment="Right" VerticalContentAlignment="Center" Content="Benchmark" />
+                        <CheckBox Margin="5, 0, 0, 0" Grid.Column="1" Grid.Row="2" Name="ChkBenchmark" VerticalAlignment="Center" />
+                    </Grid>
+                </TabItem>
+                <TabItem Header="Plus d'infos...">
+                    <StackPanel Orientation="Vertical">
+                        <TextBlock HorizontalAlignment="Center" Margin="0, 10, 0, 0">
+                            <Hyperlink Name="HlkPlayerStats" Click="HlkPlayerStats_Click">Statistiques du joueur</Hyperlink>
+                        </TextBlock>
+                        <TextBlock HorizontalAlignment="Center" Margin="0, 10, 0, 0">
+                            <Hyperlink Name="HlkYakus" Click="HlkYakus_Click">Règles et lexique</Hyperlink>
+                        </TextBlock>
+                        <TextBlock HorizontalAlignment="Center" Margin="0, 10, 0, 10">
+                            <Hyperlink Name="HlkAbout" Click="HlkAbout_Click">A propos de Gnoj-Ham</Hyperlink>
+                        </TextBlock>
+                    </StackPanel>
+                </TabItem>
+            </TabControl>
+        </StackPanel>
+    </DockPanel>
+</Window>
