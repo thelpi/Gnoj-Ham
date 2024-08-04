@@ -75,10 +75,8 @@ public class PlayerSavePivot
             if (File.Exists(FullFileName))
             {
                 // TODO decrypt
-                using (var stream = new FileStream(FullFileName, FileMode.Open, FileAccess.Read, FileShare.Read))
-                {
-                    save = JsonSerializer.Deserialize<PlayerSavePivot>(stream)!;
-                }
+                using var stream = new FileStream(FullFileName, FileMode.Open, FileAccess.Read, FileShare.Read);
+                save = JsonSerializer.Deserialize<PlayerSavePivot>(stream)!;
             }
         }
         catch (Exception ex)
@@ -93,10 +91,8 @@ public class PlayerSavePivot
     {
         try
         {
-            using (var stream = new FileStream(FullFileName, FileMode.Create, FileAccess.Write, FileShare.None))
-            {
-                JsonSerializer.Serialize(stream, this);
-            }
+            using var stream = new FileStream(FullFileName, FileMode.Create, FileAccess.Write, FileShare.None);
+            JsonSerializer.Serialize(stream, this);
         }
         catch (Exception ex)
         {

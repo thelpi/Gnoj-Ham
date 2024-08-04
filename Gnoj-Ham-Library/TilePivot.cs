@@ -126,21 +126,18 @@ public class TilePivot : IEquatable<TilePivot>, IComparable<TilePivot>
             return 1;
         }
 
-        switch (Family)
+        return Family switch
         {
-            case Families.Dragon:
-                return other.Family == Families.Dragon ? Dragon!.Value < other.Dragon!.Value ? -1 : (Dragon.Value == other.Dragon.Value ? 0 : 1) : 1;
-            case Families.Wind:
-                return other.Family == Families.Wind
-                    ? Wind!.Value < other.Wind!.Value ? -1 : (Wind.Value == other.Wind.Value ? 0 : 1)
-                    : other.Family == Families.Dragon ? -1 : 1;
-            default:
-                return other.Family == Family
-                    ? Number < other.Number
-                        ? -1
-                        : Number > other.Number ? 1 : IsRedDora && !other.IsRedDora ? -1 : !IsRedDora && other.IsRedDora ? 1 : 0
-                    : other.Family < Family ? 1 : -1;
-        }
+            Families.Dragon => other.Family == Families.Dragon ? Dragon!.Value < other.Dragon!.Value ? -1 : (Dragon.Value == other.Dragon.Value ? 0 : 1) : 1,
+            Families.Wind => other.Family == Families.Wind
+                                ? Wind!.Value < other.Wind!.Value ? -1 : (Wind.Value == other.Wind.Value ? 0 : 1)
+                                : other.Family == Families.Dragon ? -1 : 1,
+            _ => other.Family == Family
+                                ? Number < other.Number
+                                    ? -1
+                                    : Number > other.Number ? 1 : IsRedDora && !other.IsRedDora ? -1 : !IsRedDora && other.IsRedDora ? 1 : 0
+                                : other.Family < Family ? 1 : -1,
+        };
     }
 
     /// <summary>
@@ -151,7 +148,7 @@ public class TilePivot : IEquatable<TilePivot>, IComparable<TilePivot>
     /// <returns><c>True</c> if both instances are equal; <c>False</c> otherwise.</returns>
     public bool Equals(TilePivot? other)
     {
-        return !(other is null)
+        return other is not null
             && other._code == _code;
     }
 
@@ -272,15 +269,12 @@ public class TilePivot : IEquatable<TilePivot>, IComparable<TilePivot>
     /// <returns>The resource name.</returns>
     public string ToResourceName()
     {
-        switch (Family)
+        return Family switch
         {
-            case Families.Dragon:
-                return $"{Family.ToString().ToLowerInvariant()}_{Dragon!.Value.ToString().ToLowerInvariant()}";
-            case Families.Wind:
-                return $"{Family.ToString().ToLowerInvariant()}_{Wind!.Value.ToString().ToLowerInvariant()}";
-            default:
-                return $"{Family.ToString().ToLowerInvariant()}_{Number}" + (IsRedDora ? "_red" : string.Empty);
-        }
+            Families.Dragon => $"{Family.ToString().ToLowerInvariant()}_{Dragon!.Value.ToString().ToLowerInvariant()}",
+            Families.Wind => $"{Family.ToString().ToLowerInvariant()}_{Wind!.Value.ToString().ToLowerInvariant()}",
+            _ => $"{Family.ToString().ToLowerInvariant()}_{Number}" + (IsRedDora ? "_red" : string.Empty),
+        };
     }
 
     #endregion Public methods
@@ -300,21 +294,18 @@ public class TilePivot : IEquatable<TilePivot>, IComparable<TilePivot>
             return false;
         }
 
-        switch (Family)
+        return Family switch
         {
-            case Families.Dragon:
-                return other.Dragon!.Value == Dragons.Red
-                    ? Dragon!.Value == Dragons.White
-                    : other.Dragon.Value == Dragons.White ? Dragon!.Value == Dragons.Green : Dragon!.Value == Dragons.Red;
-            case Families.Wind:
-                return other.Wind!.Value == Winds.East
-                    ? Wind!.Value == Winds.South
-                    : other.Wind.Value == Winds.South
-                        ? Wind!.Value == Winds.West
-                        : other.Wind.Value == Winds.West ? Wind!.Value == Winds.North : Wind!.Value == Winds.East;
-            default:
-                return Number == (other.Number == 9 ? 1 : other.Number + 1);
-        }
+            Families.Dragon => other.Dragon!.Value == Dragons.Red
+                                ? Dragon!.Value == Dragons.White
+                                : other.Dragon.Value == Dragons.White ? Dragon!.Value == Dragons.Green : Dragon!.Value == Dragons.Red,
+            Families.Wind => other.Wind!.Value == Winds.East
+                                ? Wind!.Value == Winds.South
+                                : other.Wind.Value == Winds.South
+                                    ? Wind!.Value == Winds.West
+                                    : other.Wind.Value == Winds.West ? Wind!.Value == Winds.North : Wind!.Value == Winds.East,
+            _ => Number == (other.Number == 9 ? 1 : other.Number + 1),
+        };
     }
 
     /// <summary>

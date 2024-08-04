@@ -21,6 +21,7 @@ public class IaManagerPivot
 
     // indicates an honiisou (or chiniisou) in progress
     private Families? _itsuFamily;
+    private static readonly int[] MiddleNumbers = new[] { 4, 5, 6 };
 
     /// <summary>
     /// Constructor.
@@ -45,7 +46,7 @@ public class IaManagerPivot
         var concealedTiles = _round.GetHand(_round.CurrentPlayerIndex).ConcealedTiles;
 
         var discardableTiles = concealedTiles
-            .Where(t => _round.CanDiscard(t))
+            .Where(_round.CanDiscard)
             .Distinct()
             .ToList();
 
@@ -60,7 +61,7 @@ public class IaManagerPivot
         var (tilesSafety, stopCurrentHand) = ComputeTilesSafety(discardableTiles, deadTiles);
 
         // tenpai: let's go anyway...
-        tenpaiPotentialDiscards = tenpaiPotentialDiscards ?? _round.ExtractDiscardChoicesFromTenpai(_round.CurrentPlayerIndex);
+        tenpaiPotentialDiscards ??= _round.ExtractDiscardChoicesFromTenpai(_round.CurrentPlayerIndex);
         if (tenpaiPotentialDiscards.Count > 0)
         {
             return GetBestDiscardFromList(tenpaiPotentialDiscards, tilesSafety, stopCurrentHand);
@@ -68,7 +69,7 @@ public class IaManagerPivot
 
         if (stopCurrentHand)
         {
-            return tilesSafety.First().tile;
+            return tilesSafety[0].tile;
         }
 
         var tilesGroup =
@@ -118,7 +119,7 @@ public class IaManagerPivot
         var riichiTiles = _round.CanCallRiichi();
 
         if (riichiTiles.Count < 2)
-            return (riichiTiles.Count > 0 ? riichiTiles.First() : null, riichiTiles);
+            return (riichiTiles.Count > 0 ? riichiTiles[0] : null, riichiTiles);
 
         var deadTiles = _round.DeadTilesFromIndexPointOfView(_round.CurrentPlayerIndex);
 
@@ -251,7 +252,7 @@ public class IaManagerPivot
         IReadOnlyList<(TilePivot tile, int unsafePoints)> tilesSafety, bool playsSafe)
     {
         if (tenpaiPotentialDiscards.Count == 1)
-            return tenpaiPotentialDiscards.First();
+            return tenpaiPotentialDiscards[0];
 
         int safetyFunc(TilePivot t) => tilesSafety.First(_ => _.tile == t).unsafePoints;
         int dorasFunc(TilePivot t) => _round.GetDoraCount(t) + (t.IsRedDora ? 1 : 0);
@@ -272,7 +273,7 @@ public class IaManagerPivot
 
     private int PonDecisionInternal(int playerIndex)
     {
-        var tile = _round.GetDiscard(_round.PreviousPlayerIndex).Last();
+        var tile = _round.GetDiscard(_round.PreviousPlayerIndex)[_round.GetDiscard(_round.PreviousPlayerIndex).Count - 1];
 
         var hand = _round.GetHand(playerIndex);
 
@@ -301,7 +302,7 @@ public class IaManagerPivot
         }
 
         var dorasCount = hand.ConcealedTiles
-            .Sum(t => _round.GetDoraCount(t));
+            .Sum(_round.GetDoraCount);
         var redDorasCount = hand.ConcealedTiles.Count(t => t.IsRedDora);
 
         var hasValuablePair = hand.ConcealedTiles.GroupBy(_ => _)
@@ -311,7 +312,7 @@ public class IaManagerPivot
         var closeToHonitsuFamily = new Families?[] { Families.Bamboo, Families.Caracter, Families.Circle }
             .FirstOrDefault(f => hand.ConcealedTiles.Count(t => t.Family == f || t.IsHonor) > 9);
 
-        _itsuFamily = _itsuFamily ?? closeToHonitsuFamily;
+        _itsuFamily ??= closeToHonitsuFamily;
 
         return hasValuablePair
             || (dorasCount + redDorasCount) > 0
@@ -325,7 +326,7 @@ public class IaManagerPivot
     {
         // Rinshan kaihou possibility: call
         var tileToRemove = _round.GetHand(playerId).IsFullHand
-            ? kanPossibilities.First()
+            ? kanPossibilities[0]
             : null;
 
         var meIsTenpai = _round.IsTenpai(playerId, tileToRemove);
@@ -398,14 +399,14 @@ public class IaManagerPivot
     private bool IsInsiderSuji(TilePivot tile, int opponentPlayerIndex)
     {
         return GetSujisFromDiscard(tile, opponentPlayerIndex)
-            .Any(_ => !new[] { 4, 5, 6 }.Contains(_.Number));
+            .Any(_ => !MiddleNumbers.Contains(_.Number));
     }
 
     // suji on the edge (safer)
     private bool IsOutsiderSuji(TilePivot tile, int opponentPlayerIndex)
     {
         return GetSujisFromDiscard(tile, opponentPlayerIndex)
-            .Any(_ => new[] { 4, 5, 6 }.Contains(_.Number));
+            .Any(_ => MiddleNumbers.Contains(_.Number));
     }
 
     // suji on both side
@@ -485,7 +486,7 @@ public class IaManagerPivot
         return (tilesSafety.OrderBy(t => t.Value.Sum(s => (int)s)).Select(t => (t.Key, t.Value.Sum(s => (int)s))).ToList(), stopCurrentHand);
     }
 
-    private IReadOnlyList<int> GetTenpaiOpponentIndexes(int playerIndex) => Enumerable.Range(0, 4).Where(i => i != playerIndex && PlayerIsCloseToWin(i)).ToList();
+    private List<int> GetTenpaiOpponentIndexes(int playerIndex) => Enumerable.Range(0, 4).Where(i => i != playerIndex && PlayerIsCloseToWin(i)).ToList();
 
     private bool PlayerIsCloseToWin(int i) => _round.IsRiichi(i) || _round.GetHand(i).DeclaredCombinations.Count > 2;
 

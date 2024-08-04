@@ -644,7 +644,7 @@ namespace Gnoj_Ham_Library
                 return false;
             }
 
-            _hands[CurrentPlayerIndex].Discard(tile, _stealingInProgress);
+            _hands[CurrentPlayerIndex].Discard(tile);
 
             if (_stealingInProgress || _closedKanInProgress != null)
             {

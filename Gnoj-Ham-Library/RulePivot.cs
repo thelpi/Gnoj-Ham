@@ -6,7 +6,16 @@ namespace Gnoj_Ham_Library;
 /// <summary>
 /// Represents a set of rules.
 /// </summary>
-public class RulePivot : IEquatable<RulePivot>
+/// <remarks>
+/// Constructor.
+/// </remarks>
+/// <param name="initialPointsRule"><see cref="InitialPointsRule"/>.</param>
+/// <param name="endOfGameRule"><see cref="EndOfGameRule"/>.</param>
+/// <param name="useRedDoras"><see cref="UseRedDoras"/>.</param>
+/// <param name="useNagashiMangan"><see cref="UseNagashiMangan"/>.</param>
+/// <param name="debugMode"><see cref="DebugMode"/>.</param>
+/// <param name="discardTip"><see cref="DiscardTip"/>.</param>
+public class RulePivot(InitialPointsRules initialPointsRule, EndOfGameRules endOfGameRule, bool useRedDoras, bool useNagashiMangan, bool debugMode, bool discardTip) : IEquatable<RulePivot>
 {
     #region Static properties
 
@@ -20,10 +29,7 @@ public class RulePivot : IEquatable<RulePivot>
     {
         get
         {
-            if (_default == null)
-            {
-                _default = new RulePivot(InitialPointsRules.K25, EndOfGameRules.EnchousenAndTobi, true, true, false, false);
-            }
+            _default ??= new RulePivot(InitialPointsRules.K25, EndOfGameRules.EnchousenAndTobi, true, true, false, false);
 
             return _default;
         }
@@ -36,57 +42,34 @@ public class RulePivot : IEquatable<RulePivot>
     /// <summary>
     /// Initial points rule.
     /// </summary>
-    public InitialPointsRules InitialPointsRule { get; }
+    public InitialPointsRules InitialPointsRule { get; } = initialPointsRule;
 
     /// <summary>
     /// End of game rule.
     /// </summary>
-    public EndOfGameRules EndOfGameRule { get; }
+    public EndOfGameRules EndOfGameRule { get; } = endOfGameRule;
 
     /// <summary>
     /// Use of red doras.
     /// </summary>
-    public bool UseRedDoras { get; }
+    public bool UseRedDoras { get; } = useRedDoras;
 
     /// <summary>
     /// Use of <see cref="YakuPivot.NagashiMangan"/>.
     /// </summary>
-    public bool UseNagashiMangan { get; }
+    public bool UseNagashiMangan { get; } = useNagashiMangan;
 
     /// <summary>
     /// Use debug mode.
     /// </summary>
-    public bool DebugMode { get; }
+    public bool DebugMode { get; } = debugMode;
 
     /// <summary>
     /// Use discard tip.
     /// </summary>
-    public bool DiscardTip { get; }
+    public bool DiscardTip { get; } = discardTip;
 
     #endregion Embedded properties
-
-    #region Constructors
-
-    /// <summary>
-    /// Constructor.
-    /// </summary>
-    /// <param name="initialPointsRule"><see cref="InitialPointsRule"/>.</param>
-    /// <param name="endOfGameRule"><see cref="EndOfGameRule"/>.</param>
-    /// <param name="useRedDoras"><see cref="UseRedDoras"/>.</param>
-    /// <param name="useNagashiMangan"><see cref="UseNagashiMangan"/>.</param>
-    /// <param name="debugMode"><see cref="DebugMode"/>.</param>
-    /// <param name="discardTip"><see cref="DiscardTip"/>.</param>
-    public RulePivot(InitialPointsRules initialPointsRule, EndOfGameRules endOfGameRule, bool useRedDoras, bool useNagashiMangan, bool debugMode, bool discardTip)
-    {
-        InitialPointsRule = initialPointsRule;
-        EndOfGameRule = endOfGameRule;
-        UseRedDoras = useRedDoras;
-        UseNagashiMangan = useNagashiMangan;
-        DebugMode = debugMode;
-        DiscardTip = discardTip;
-    }
-
-    #endregion Constructors
 
     #region Public methods
 

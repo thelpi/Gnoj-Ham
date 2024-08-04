@@ -160,23 +160,23 @@ internal static class ScoreTools
     /// <param name="playerWind">The player wind.</param>
     internal static int GetFuCount(HandPivot hand, bool isTsumo, Winds dominantWind, Winds playerWind)
     {
-        if (hand.Yakus.Any(y => y == YakuPivot.Chiitoitsu))
+        if (hand.Yakus!.Any(y => y == YakuPivot.Chiitoitsu))
         {
             return CHIITOI_FU;
         }
 
         var fuCount =
-            hand.YakusCombinations.Count(c => c.IsSquare && c.HasTerminalOrHonor) * HONOR_KAN_FU
-            + hand.YakusCombinations.Count(c => c.IsSquare && !c.HasTerminalOrHonor) * REGULAR_KAN_FU
-            + hand.YakusCombinations.Count(c => c.IsBrelan && c.HasTerminalOrHonor) * HONOR_PON_FU
-            + hand.YakusCombinations.Count(c => c.IsBrelan && !c.HasTerminalOrHonor) * REGULAR_PON_FU;
+            hand.YakusCombinations!.Count(c => c.IsSquare && c.HasTerminalOrHonor) * HONOR_KAN_FU
+            + hand.YakusCombinations!.Count(c => c.IsSquare && !c.HasTerminalOrHonor) * REGULAR_KAN_FU
+            + hand.YakusCombinations!.Count(c => c.IsBrelan && c.HasTerminalOrHonor) * HONOR_PON_FU
+            + hand.YakusCombinations!.Count(c => c.IsBrelan && !c.HasTerminalOrHonor) * REGULAR_PON_FU;
 
-        if (isTsumo && !hand.Yakus.Any(y => y == YakuPivot.Pinfu))
+        if (isTsumo && !hand.Yakus!.Any(y => y == YakuPivot.Pinfu))
         {
             fuCount += TSUMO_FU;
         }
 
-        if (HandPivot.HandWithValuablePair(hand.YakusCombinations, dominantWind, playerWind))
+        if (HandPivot.HandWithValuablePair(hand.YakusCombinations!, dominantWind, playerWind))
         {
             fuCount += VALUABLE_PAIR_FU;
         }
@@ -186,7 +186,7 @@ internal static class ScoreTools
             fuCount += CLOSED_WAIT_FU;
         }
 
-        if (fuCount == 0 && !hand.Yakus.Any(y => y == YakuPivot.Pinfu))
+        if (fuCount == 0 && !hand.Yakus!.Any(y => y == YakuPivot.Pinfu))
         {
             fuCount += OPEN_PINFU_FU;
         }
@@ -225,7 +225,7 @@ internal static class ScoreTools
             // in case of several yakumans.
             if (fanCount > 13)
             {
-                basePoints += (basePoints * ((fanCount - 13) / 13));
+                basePoints += basePoints * ((fanCount - 13) / 13);
             }
             if (isTsumo)
             {

@@ -157,7 +157,7 @@ public class TileComboPivot : IEquatable<TileComboPivot>
     /// <returns><c>True</c> if both instances are equal; <c>False</c> otherwise.</returns>
     public bool Equals(TileComboPivot? other)
     {
-        return !(other is null) && _tiles.IsBijection(other.Tiles);
+        return other is not null && _tiles.IsBijection(other.Tiles);
     }
 
     /// <summary>

@@ -760,6 +760,13 @@ public class YakuPivot
     private const string MENZEN_TSUMO = "Menzen tsumo";
     private const string PINFU = "Pinfu";
     private const string IIPEIKOU = "Iipeikou";
+    private static readonly string[] ChuurenPoutouCombinations = new[]
+    {
+        "11112345678999", "11122345678999", "11123345678999",
+        "11123445678999", "11123455678999", "11123456678999",
+        "11123456778999", "11123456788999", "11123456789999"
+    };
+    private static readonly int[] GreenBambooNumbers = new[] { 2, 3, 4, 6, 8 };
 
     #endregion
 
@@ -820,8 +827,8 @@ public class YakuPivot
             else if (yaku == Ryuuiisou)
             {
                 addYaku = combinationsSequence.All(c =>
-                    (c.Family == Families.Bamboo && c.Tiles.All(t => new[] { 2, 3, 4, 6, 8 }.Contains(t.Number)))
-                    || (c.Family == Families.Dragon && c.Tiles.First().Dragon == Dragons.Green)
+                    (c.Family == Families.Bamboo && c.Tiles.All(t => GreenBambooNumbers.Contains(t.Number)))
+                    || (c.Family == Families.Dragon && c.Tiles[0].Dragon == Dragons.Green)
                 );
             }
             else if (yaku == Chinroutou)
@@ -834,12 +841,7 @@ public class YakuPivot
                     && combinationsSequence.Select(c => c.Family).Distinct().Count() == 1)
                 {
                     var numberPattern = string.Join(string.Empty, combinationsSequence.SelectMany(c => c.Tiles).Select(t => t.Number).OrderBy(i => i));
-                    addYaku = new[]
-                    {
-                        "11112345678999", "11122345678999", "11123345678999",
-                        "11123445678999", "11123455678999", "11123456678999",
-                        "11123456778999", "11123456788999", "11123456789999"
-                    }.Contains(numberPattern);
+                    addYaku = ChuurenPoutouCombinations.Contains(numberPattern);
                 }
             }
             else if (yaku == Suukantsu)
@@ -909,7 +911,7 @@ public class YakuPivot
                     c.IsBrelanOrSquare && (
                         c.Family == Families.Dragon || (
                             c.Family == Families.Wind && (
-                                c.Tiles.First().Wind == context.DominantWind || c.Tiles.First().Wind == context.PlayerWind
+                                c.Tiles[0].Wind == context.DominantWind || c.Tiles[0].Wind == context.PlayerWind
                             )
                         )
                     )
@@ -937,7 +939,7 @@ public class YakuPivot
                 addYaku = combinationsSequence.Count(c => c.IsSequence && c.IsConcealed) == 4
                     && !HandPivot.HandWithValuablePair(combinationsSequence, context.DominantWind, context.PlayerWind)
                     && combinationsSequence.Any(c => c.IsSequence && c.Tiles.Contains(context.LatestTile)
-                        && !context.LatestTile.TileIsEdgeWait(c) && !context.LatestTile.TileIsMiddleWait(c));
+                        && !context.LatestTile!.TileIsEdgeWait(c) && !context.LatestTile.TileIsMiddleWait(c));
             }
             else if (yaku == Iipeikou)
             {
@@ -966,7 +968,7 @@ public class YakuPivot
             {
                 addYaku = combinationsSequence
                             .Where(c => c.IsBrelanOrSquare && !c.IsHonor)
-                            .GroupBy(c => c.Tiles.First().Number)
+                            .GroupBy(c => c.Tiles[0].Number)
                             .FirstOrDefault(b => b.Count() >= 3)?
                             .Select(b => b.Family)?
                             .Distinct()?

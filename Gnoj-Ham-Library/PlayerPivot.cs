@@ -104,7 +104,7 @@ public class PlayerPivot
     {
         humanPlayerName = (humanPlayerName ?? string.Empty).Trim();
 
-        return humanPlayerName == string.Empty || humanPlayerName.ToUpperInvariant().StartsWith(CPU_NAME_PREFIX.ToUpperInvariant())
+        return humanPlayerName == string.Empty || humanPlayerName.StartsWith(CPU_NAME_PREFIX, StringComparison.InvariantCultureIgnoreCase)
             ? DEFAULT_HUMAN_NAME
             : humanPlayerName;
     }

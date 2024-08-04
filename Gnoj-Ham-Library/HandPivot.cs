@@ -81,7 +81,7 @@ public class HandPivot
     /// <param name="tiles">Initial list of <see cref="TilePivot"/> (13).</param>
     internal HandPivot(IReadOnlyList<TilePivot> tiles)
     {
-        LatestPick = tiles.Last();
+        LatestPick = tiles[tiles.Count - 1];
         _concealedTiles = tiles.OrderBy(t => t).ToList();
         _declaredCombinations = new List<TileComboPivot>(4);
     }
@@ -116,7 +116,7 @@ public class HandPivot
     {
         return combinations.Any(c => c.IsPair && (
             c.Family == Families.Dragon
-            || (c.Family == Families.Wind && (c.Tiles.First().Wind == dominantWind || c.Tiles.First().Wind == playerWind))
+            || (c.Family == Families.Wind && (c.Tiles[0].Wind == dominantWind || c.Tiles[0].Wind == playerWind))
         ));
     }
 
@@ -176,7 +176,7 @@ public class HandPivot
             return concealedTiles[0] == concealedTiles[1]
                 ? new List<List<TileComboPivot>>
                 {
-                    new List<TileComboPivot>(declaredCombinations)
+                    new(declaredCombinations)
                     {
                         new TileComboPivot(concealedTiles)
                     }
@@ -301,7 +301,7 @@ public class HandPivot
 
     // Assumes that all tiles are from the same family, and this family is caracter / circle / bamboo.
     // Also assumes that referenced tile is included in the list.
-    private static IReadOnlyList<TileComboPivot> GetCombinationsForTile(TilePivot tile, IEnumerable<TilePivot> tiles)
+    private static List<TileComboPivot> GetCombinationsForTile(TilePivot tile, IEnumerable<TilePivot> tiles)
     {
         var combinations = new List<TileComboPivot>(5);
 
@@ -633,8 +633,7 @@ public class HandPivot
     /// Tries to discard the specified tile.
     /// </summary>
     /// <param name="tile">The tile to discard; should obviously be contained in <see cref="_concealedTiles"/>.</param>
-    /// <param name="afterStealing">Optionnal; indicates if the discard is made after stealing a tile; the default value is <c>False</c>.</param>
-    internal void Discard(TilePivot tile, bool afterStealing = false)
+    internal void Discard(TilePivot tile)
     {
         _concealedTiles.Remove(tile);
     }
