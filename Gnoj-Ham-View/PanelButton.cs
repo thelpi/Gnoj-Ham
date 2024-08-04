@@ -11,12 +11,12 @@ internal class PanelButton
     /// The panel name without the player index.
     /// Alternatively, the full name of the button.
     /// </summary>
-    internal string PanelBaseName { get; private set; }
+    internal string PanelBaseName { get; }
     /// <summary>
     /// The index of the button inside the panel.
     /// <c>-1</c> to target a specified button.
     /// </summary>
-    internal int ChildrenButtonIndex { get; private set; }
+    internal int ChildrenButtonIndex { get; }
 
     /// <summary>
     /// Constructor.

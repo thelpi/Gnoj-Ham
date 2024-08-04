@@ -45,7 +45,7 @@ namespace Gnoj_Ham_Library
         /// </summary>
         /// <param name="tenpaiPotentialDiscards">Results of the call to <see cref="RoundPivot.CanCallRiichi"/> that has been made before; set <c>null</c> to force a recompute.</param>
         /// <returns>The tile to discard.</returns>
-        public TilePivot DiscardDecision(IReadOnlyList<TilePivot> tenpaiPotentialDiscards)
+        public TilePivot DiscardDecision(IReadOnlyList<TilePivot>? tenpaiPotentialDiscards)
         {
             var concealedTiles = _round.GetHand(_round.CurrentPlayerIndex).ConcealedTiles;
 
@@ -118,7 +118,7 @@ namespace Gnoj_Ham_Library
         /// Checks if the current CPU player can make a riichi call, and computes the decision to do so.
         /// </summary>
         /// <returns>A tuple with the tile to discard (<c>Null</c> if no decision made) and all the tiles 'discardable'.</returns>
-        public (TilePivot choice, IReadOnlyList<TilePivot> potentials) RiichiDecision()
+        public (TilePivot? choice, IReadOnlyList<TilePivot> potentials) RiichiDecision()
         {
             var riichiTiles = _round.CanCallRiichi();
 

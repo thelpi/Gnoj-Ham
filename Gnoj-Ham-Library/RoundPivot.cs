@@ -380,7 +380,7 @@
         /// <param name="playerIndex">The player index.</param>
         /// <param name="tileChoice">Optionnal; the tile choice, if the current player is <paramref name="playerIndex"/> and he has several possible tiles in its hand; default value is <c>Null</c>.</param>
         /// <returns>The tile picked as compensation; <c>Null</c> if failure.</returns>
-        public TilePivot CallKan(int playerIndex, TilePivot tileChoice = null)
+        public TilePivot CallKan(int playerIndex, TilePivot? tileChoice = null)
         {
             if (CanCallKan(playerIndex).Count == 0)
             {

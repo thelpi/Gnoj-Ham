@@ -1,6 +1,7 @@
 ﻿using System.Windows;
 
 namespace Gnoj_Ham_View;
+
 /// <summary>
 /// Interaction logic for App.xaml
 /// </summary>

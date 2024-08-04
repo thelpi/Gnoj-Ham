@@ -96,7 +96,7 @@ namespace Gnoj_Ham_Library
         /// <param name="tile">The <see cref="TilePivot"/> instance.</param>
         /// <param name="obj">Any <see cref="object"/>.</param>
         /// <returns><c>True</c> if instances are equal or both <c>Null</c>; <c>False</c> otherwise.</returns>
-        public static bool operator ==(TilePivot tile, object obj)
+        public static bool operator ==(TilePivot? tile, object? obj)
         {
             return tile is null ? obj is null : tile.Equals(obj);
         }
@@ -107,7 +107,7 @@ namespace Gnoj_Ham_Library
         /// <param name="tile">The <see cref="TilePivot"/> instance.</param>
         /// <param name="obj">Any <see cref="object"/>.</param>
         /// <returns><c>False</c> if instances are equal or both <c>Null</c>; <c>True</c> otherwise.</returns>
-        public static bool operator !=(TilePivot tile, object obj)
+        public static bool operator !=(TilePivot? tile, object? obj)
         {
             return !(tile == obj);
         }
@@ -151,7 +151,7 @@ namespace Gnoj_Ham_Library
         /// </summary>
         /// <param name="other">The second instance.</param>
         /// <returns><c>True</c> if both instances are equal; <c>False</c> otherwise.</returns>
-        public bool Equals(TilePivot other)
+        public bool Equals(TilePivot? other)
         {
             return !(other is null)
                 && other._code == _code;
@@ -172,7 +172,7 @@ namespace Gnoj_Ham_Library
         /// </summary>
         /// <param name="obj">Any <see cref="object"/>.</param>
         /// <returns><c>True</c> if both instances are equal; <c>False</c> otherwise.</returns>
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             return Equals(obj as TilePivot);
         }

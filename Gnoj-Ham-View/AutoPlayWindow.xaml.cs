@@ -10,17 +10,17 @@ namespace Gnoj_Ham_View;
 /// </summary>
 public partial class AutoPlayWindow : Window
 {
-    private GamePivot _game;
-    private BackgroundWorker _autoPlay;
+    private GamePivot? _game;
+    private readonly BackgroundWorker _autoPlay;
     private DateTime _timestamp;
     private int _currentGameIndex;
     private int _totalGamesCount;
-    private List<PermanentPlayerPivot> _permanentPlayers;
+    private IReadOnlyList<PermanentPlayerPivot>? _permanentPlayers;
 
-    private readonly Dictionary<string, (int count, double sum)> _times = new Dictionary<string, (int, double)>(50);
+    private readonly Dictionary<string, (int count, double sum)> _times = new(50);
     private readonly RulePivot _ruleset;
     private readonly bool _enableBenchmark;
-    private readonly CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
+    private readonly CancellationTokenSource _cancellationTokenSource = new();
     private readonly CancellationToken _cancellationToken;
 
     /// <summary>
@@ -32,6 +32,11 @@ public partial class AutoPlayWindow : Window
     {
         InitializeComponent();
 
+        _autoPlay = new BackgroundWorker
+        {
+            WorkerReportsProgress = true,
+            WorkerSupportsCancellation = false
+        };
         InitializeAutoPlayWorker();
 
         _ruleset = ruleset;
@@ -44,9 +49,7 @@ public partial class AutoPlayWindow : Window
         if (_enableBenchmark)
         {
             var elapsed = (DateTime.Now - _timestamp).TotalMilliseconds;
-            var currentEntry = _times.ContainsKey(name)
-                ? _times[name]
-                : (0, 0);
+            var currentEntry = _times.TryGetValue(name, out var value) ? value : (0, 0);
             _times[name] = (currentEntry.count + 1, currentEntry.sum + elapsed);
             _timestamp = DateTime.Now;
         }
@@ -63,7 +66,7 @@ public partial class AutoPlayWindow : Window
         _timestamp = DateTime.Now;
         if (newGame)
         {
-            _game = new GamePivot(_ruleset, _permanentPlayers, new Random());
+            _game = new GamePivot(_ruleset, _permanentPlayers!, new Random());
         }
         _autoPlay.RunWorkerAsync();
     }
@@ -71,22 +74,17 @@ public partial class AutoPlayWindow : Window
     // Initializes a background worker which orchestrates the CPU actions.
     private void InitializeAutoPlayWorker()
     {
-        _autoPlay = new BackgroundWorker
+        _autoPlay.DoWork += delegate (object? sender, DoWorkEventArgs evt)
         {
-            WorkerReportsProgress = true,
-            WorkerSupportsCancellation = false
+            var autoPlayer = new AutoPlayPivot(_game!, AddTimeEntry);
+            var (_, ronPlayerId, _) = autoPlayer.RunAutoPlay(_cancellationToken);
+            evt.Result = ronPlayerId;
         };
-        _autoPlay.DoWork += delegate (object sender, DoWorkEventArgs evt)
-        {
-            var autoPlayer = new AutoPlayPivot(_game, AddTimeEntry);
-            var autoResult = autoPlayer.RunAutoPlay(_cancellationToken);
-            evt.Result = autoResult.ronPlayerId;
-        };
-        _autoPlay.RunWorkerCompleted += delegate (object sender, RunWorkerCompletedEventArgs evt)
+        _autoPlay.RunWorkerCompleted += delegate (object? sender, RunWorkerCompletedEventArgs evt)
         {
             if (!_cancellationToken.IsCancellationRequested)
             {
-                var (endOfRoundInfo, _) = _game.NextRound((int?)evt.Result);
+                var (endOfRoundInfo, _) = _game!.NextRound((int?)evt.Result);
 
                 if (endOfRoundInfo.EndOfGame)
                 {
@@ -147,13 +145,13 @@ public partial class AutoPlayWindow : Window
 
         _currentGameIndex = 0;
         _times.Clear();
-        _permanentPlayers = new List<PermanentPlayerPivot>
-        {
+        _permanentPlayers =
+        [
             new PermanentPlayerPivot(),
             new PermanentPlayerPivot(),
             new PermanentPlayerPivot(),
             new PermanentPlayerPivot()
-        };
+        ];
 
         WaitingPanel.Visibility = Visibility.Visible;
         ActionPanel.Visibility = Visibility.Collapsed;

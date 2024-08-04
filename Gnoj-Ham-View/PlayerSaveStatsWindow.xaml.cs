@@ -50,7 +50,7 @@ public partial class PlayerSaveStatsWindow : Window
     {
         var percentValue = totalValue == 0
             ? 0
-            : (int)Math.Round((baseValue / (decimal)totalValue) * 100);
+            : (int)Math.Round(baseValue / (decimal)totalValue * 100);
 
         return $"{percentValue} %";
     }

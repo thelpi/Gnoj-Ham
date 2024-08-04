@@ -1,25 +1,24 @@
-﻿namespace Gnoj_Ham_View
+﻿namespace Gnoj_Ham_View;
+
+/// <summary>
+/// Represents tile rotation (depending on the player).
+/// </summary>
+public enum AnglePivot
 {
     /// <summary>
-    /// Represents tile rotation (depending on the player).
+    /// 0 degrees.
     /// </summary>
-    public enum AnglePivot
-    {
-        /// <summary>
-        /// 0 degrees.
-        /// </summary>
-        A0,
-        /// <summary>
-        /// 270 degrees.
-        /// </summary>
-        A270,
-        /// <summary>
-        /// 180 degrees.
-        /// </summary>
-        A180,
-        /// <summary>
-        /// 90 degrees.
-        /// </summary>
-        A90
-    }
+    A0,
+    /// <summary>
+    /// 270 degrees.
+    /// </summary>
+    A270,
+    /// <summary>
+    /// 180 degrees.
+    /// </summary>
+    A180,
+    /// <summary>
+    /// 90 degrees.
+    /// </summary>
+    A90
 }

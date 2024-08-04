@@ -19,7 +19,7 @@ public partial class RulesWindow : Window
         InitializeComponent();
 
         LstYakus.ItemsSource = YakuPivot.Yakus
-            .Except(new[] { YakuPivot.NagashiMangan })
+            .Except([YakuPivot.NagashiMangan])
             .OrderBy(x => x.ConcealedFanCount)
             .ThenBy(x => x.FanCount)
             .ThenBy(x => x.Name);
@@ -36,6 +36,6 @@ public partial class RulesWindow : Window
     {
         // never called, the related WPF content is disabled...
         var hlk = sender as Hyperlink;
-        Process.Start("explorer", hlk.NavigateUri.ToString());
+        Process.Start("explorer", hlk!.NavigateUri.ToString());
     }
 }
