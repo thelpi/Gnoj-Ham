@@ -289,11 +289,11 @@ namespace Gnoj_Ham_Library
                 }
 
                 var opponentWithKanTilePick = IaManager.KanDecision(false);
-                if (opponentWithKanTilePick != null)
+                if (opponentWithKanTilePick.HasValue)
                 {
                     var previousPlayerIndex = PreviousPlayerIndex;
-                    var compensationTile = OpponentBeginCallKan(opponentWithKanTilePick.Item1, opponentWithKanTilePick.Item2, false);
-                    kanInProgress = new Tuple<int, TilePivot, int?>(opponentWithKanTilePick.Item1, compensationTile, previousPlayerIndex);
+                    var compensationTile = OpponentBeginCallKan(opponentWithKanTilePick.Value.pIndex, opponentWithKanTilePick.Value.tile, false);
+                    kanInProgress = new Tuple<int, TilePivot, int?>(opponentWithKanTilePick.Value.pIndex, compensationTile, previousPlayerIndex);
                     continue;
                 }
 
@@ -311,9 +311,9 @@ namespace Gnoj_Ham_Library
                 }
 
                 var chiiTilePick = IaManager.ChiiDecision();
-                if (chiiTilePick != null)
+                if (chiiTilePick.HasValue)
                 {
-                    ChiiCall(chiiTilePick, sleepTime);
+                    ChiiCall(chiiTilePick.Value, sleepTime);
                     continue;
                 }
 
@@ -746,7 +746,7 @@ namespace Gnoj_Ham_Library
         /// <returns><c>True</c> if tenpai; <c>False</c> otherwise.</returns>
         /// <exception cref="ArgumentException">A tile to remove has to be specified in this context of hand.</exception>
         /// <exception cref="ArgumentException">A tile to remove can't be specified in this context of hand.</exception>
-        internal bool IsTenpai(int playerIndex, TilePivot tileToRemoveFromConcealed)
+        internal bool IsTenpai(int playerIndex, TilePivot? tileToRemoveFromConcealed)
         {
             var hand = _hands[playerIndex];
             if (hand.IsFullHand && (tileToRemoveFromConcealed == null || !hand.ConcealedTiles.Contains(tileToRemoveFromConcealed)))
@@ -981,7 +981,7 @@ namespace Gnoj_Ham_Library
             PickNotifier?.Invoke(new PickNotifierEventArgs());
         }
 
-        private void ChiiCall(Tuple<TilePivot, bool> chiiTilePick, int sleepTime)
+        private void ChiiCall((TilePivot, bool) chiiTilePick, int sleepTime)
         {
             TurnChangeNotifier?.Invoke(new TurnChangeNotifierEventArgs());
 
@@ -1047,9 +1047,9 @@ namespace Gnoj_Ham_Library
             }
 
             var opponentWithKanTilePick = IaManager.KanDecision(true);
-            if (opponentWithKanTilePick != null)
+            if (opponentWithKanTilePick.HasValue)
             {
-                var compensationTile = OpponentBeginCallKan(CurrentPlayerIndex, opponentWithKanTilePick.Item2, true);
+                var compensationTile = OpponentBeginCallKan(CurrentPlayerIndex, opponentWithKanTilePick.Value.tile, true);
                 kanInProgress = new Tuple<int, TilePivot, int?>(CurrentPlayerIndex, compensationTile, null);
                 return false;
             }
