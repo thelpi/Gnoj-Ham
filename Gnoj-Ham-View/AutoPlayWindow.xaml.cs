@@ -63,8 +63,7 @@ public partial class AutoPlayWindow : Window
     {
         _autoPlay.DoWork += delegate (object? sender, DoWorkEventArgs evt)
         {
-            var autoPlayer = new AutoPlayPivot(_game!);
-            var (_, ronPlayerId, _) = autoPlayer.RunAutoPlay(_cancellationToken);
+            var (_, ronPlayerId, _) = _game!.Round.RunAutoPlay(_cancellationToken);
             evt.Result = ronPlayerId;
         };
         _autoPlay.RunWorkerCompleted += delegate (object? sender, RunWorkerCompletedEventArgs evt)

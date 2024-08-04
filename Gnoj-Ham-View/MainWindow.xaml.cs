@@ -312,9 +312,7 @@ public partial class MainWindow : Window
         {
             var argumentsList = (evt.Argument as object[])!;
 
-            var autoPlay = new AutoPlayPivot(_game);
-
-            autoPlay.ReadyToCallNotifier += e =>
+            _game.Round.ReadyToCallNotifier += e =>
             {
                 Dispatcher.Invoke(() =>
                 {
@@ -364,7 +362,7 @@ public partial class MainWindow : Window
                     }
                 });
             };
-            autoPlay.PickNotifier += e =>
+            _game.Round.PickNotifier += e =>
             {
                 Dispatcher.Invoke(() =>
                 {
@@ -375,11 +373,11 @@ public partial class MainWindow : Window
                     SetWallsLength();
                 });
             };
-            autoPlay.DiscardTileNotifier += e =>
+            _game.Round.DiscardTileNotifier += e =>
             {
                 Dispatcher.Invoke(() => HighlightPreviousPlayerDiscard());
             };
-            autoPlay.HumanCallNotifier += e =>
+            _game.Round.HumanCallNotifier += e =>
             {
                 Button? autoButtonOnTimer = null;
                 Dispatcher.Invoke(() =>
@@ -412,20 +410,20 @@ public partial class MainWindow : Window
                 });
                 ActivateTimer(autoButtonOnTimer);
             };
-            autoPlay.CallNotifier += e =>
+            _game.Round.CallNotifier += e =>
             {
                 InvokeOverlay($"{e.Action}", e.PlayerIndex);
             };
-            autoPlay.RiichiChoicesNotifier += e =>
+            _game.Round.RiichiChoicesNotifier += e =>
             {
                 _riichiTiles = e.Tiles;
             };
-            autoPlay.TurnChangeNotifier += e =>
+            _game.Round.TurnChangeNotifier += e =>
             {
                 RefreshPlayerTurnStyle();
             };
 
-            evt.Result = autoPlay.RunAutoPlay(
+            evt.Result = _game.Round.RunAutoPlay(
                 _cancellationToken,
                 (bool)argumentsList[0],
                 (bool)argumentsList[1],

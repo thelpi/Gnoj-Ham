@@ -49,12 +49,10 @@ namespace Gnoj_Ham_Library_Tests
 
             var game = new GamePivot(RulePivot.Default, permanentPlayers, random);
 
-            var autoPlay = new AutoPlayPivot(game);
-
             IReadOnlyList<PlayerScorePivot>? scores = null;
             while (true)
             {
-                var result = autoPlay.RunAutoPlay(new System.Threading.CancellationToken());
+                var result = game.Round.RunAutoPlay(new CancellationToken());
                 var (endOfRoundInfo, _) = game.NextRound(result.ronPlayerId);
 
                 if (endOfRoundInfo.EndOfGame)
