@@ -1184,14 +1184,13 @@ public class RoundPivot
         var tiles = new List<TilePivot>(_wallTiles);
 
         // Concealed tiles from opponents.
-        Enumerable.Range(0, 4)
-            .Where(i => i != playerIndex)
-            .Select(i => _hands[i].ConcealedTiles)
-            .All(tList =>
+        for (var i = 0; i < 4; i++)
+        {
+            if (i != playerIndex)
             {
-                tiles.AddRange(tList);
-                return true;
-            });
+                tiles.AddRange(_hands[i].ConcealedTiles);
+            }
+        }
 
         // Compensation tiles.
         tiles.AddRange(_compensationTiles);
