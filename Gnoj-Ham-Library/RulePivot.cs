@@ -1,4 +1,5 @@
 ﻿using System;
+using Gnoj_Ham_Library.Enums;
 
 namespace Gnoj_Ham_Library
 {

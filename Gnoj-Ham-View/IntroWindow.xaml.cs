@@ -1,5 +1,6 @@
 ﻿using System.Windows;
 using Gnoj_Ham_Library;
+using Gnoj_Ham_Library.Enums;
 using Gnoj_Ham_View.Properties;
 
 namespace Gnoj_Ham_View;

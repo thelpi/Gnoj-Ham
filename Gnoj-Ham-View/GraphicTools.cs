@@ -7,6 +7,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 using Gnoj_Ham_Library;
+using Gnoj_Ham_Library.Enums;
 
 namespace Gnoj_Ham_View;
 

@@ -1,4 +1,6 @@
-﻿namespace Gnoj_Ham_Library.Events;
+﻿using Gnoj_Ham_Library.Enums;
+
+namespace Gnoj_Ham_Library.Events;
 
 /// <summary>
 /// Event triggered when the human can make an automatic call.

@@ -1,4 +1,6 @@
-﻿namespace Gnoj_Ham_Library
+﻿using Gnoj_Ham_Library.Enums;
+
+namespace Gnoj_Ham_Library
 {
     /// <summary>
     /// Represents the context when a "ron" or a "tsumo" is called.

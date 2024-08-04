@@ -1,4 +1,5 @@
 ﻿using Gnoj_Ham_Library;
+using Gnoj_Ham_Library.Enums;
 
 namespace Gnoj_Ham_Library_Tests
 {
