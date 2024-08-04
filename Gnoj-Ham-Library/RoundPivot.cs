@@ -1,4 +1,6 @@
-﻿namespace Gnoj_Ham_Library
+﻿using Gnoj_Ham_Library.Events;
+
+namespace Gnoj_Ham_Library
 {
     /// <summary>
     /// Represents a round in a game.
@@ -127,7 +129,7 @@
         /// <summary>
         /// Event triggered when a tile is picked.
         /// </summary>
-        public event Action<TileEventArgs> NotifyPick;
+        public event Action<PickTileEventArgs> NotifyPick;
 
         #endregion Events
 
@@ -196,7 +198,7 @@
             _wallTiles.Remove(tile);
             NotifyWallCount?.Invoke();
             _hands[CurrentPlayerIndex].Pick(tile);
-            NotifyPick?.Invoke(new TileEventArgs(CurrentPlayerIndex, tile));
+            NotifyPick?.Invoke(new PickTileEventArgs(CurrentPlayerIndex, tile));
             _waitForDiscard = true;
             return tile;
         }
@@ -813,7 +815,7 @@
             NotifyWallCount?.Invoke();
 
             _hands[CurrentPlayerIndex].Pick(compensationTile);
-            NotifyPick?.Invoke(new TileEventArgs(CurrentPlayerIndex, compensationTile));
+            NotifyPick?.Invoke(new PickTileEventArgs(CurrentPlayerIndex, compensationTile));
 
             if (isClosedKan)
             {

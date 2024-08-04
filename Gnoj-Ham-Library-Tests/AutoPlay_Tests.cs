@@ -51,7 +51,7 @@ namespace Gnoj_Ham_Library_Tests
 
             var autoPlay = new AutoPlayPivot(game);
 
-            IReadOnlyList<PlayerScorePivot> scores = null;
+            IReadOnlyList<PlayerScorePivot>? scores = null;
             while (true)
             {
                 var result = autoPlay.RunAutoPlay(new System.Threading.CancellationToken());

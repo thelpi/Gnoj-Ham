@@ -1,4 +1,4 @@
-﻿using Gnoj_Ham_Library.AutoPlayEvents;
+﻿using Gnoj_Ham_Library.Events;
 
 namespace Gnoj_Ham_Library
 {
@@ -363,7 +363,7 @@ namespace Gnoj_Ham_Library
             }
 
             var riichiTiles = _game.Round.CanCallRiichi();
-            RiichiChoicesNotifier?.Invoke(new RiichiChoicesNotifierEventArgs { Tiles = riichiTiles });
+            RiichiChoicesNotifier?.Invoke(new RiichiChoicesNotifierEventArgs(riichiTiles));
             if (riichiTiles.Count > 0)
             {
                 var adviseRiichi = _game.Ruleset.DiscardTip && _game.Round.IaManager.RiichiDecision().choice != null;

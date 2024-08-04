@@ -32,7 +32,7 @@ namespace Gnoj_Ham_Library_Tests
             var result = HandPivot.IsCompleteBasic(concealedTiles, new List<TileComboPivot>());
 
             Assert.NotNull(result);
-            Assert.Equal(1, result.Count);
+            Assert.Single(result);
             AssertFiveCombinationsIncludingOnePair(result[0]);
         }
 

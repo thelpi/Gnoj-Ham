@@ -6,6 +6,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
 using Gnoj_Ham_Library;
+using Gnoj_Ham_Library.Events;
 
 namespace Gnoj_Ham_View;
 
@@ -851,7 +852,7 @@ public partial class MainWindow : Window
     {
         LblWallTilesLeft.Foreground = Brushes.Black;
         _game.Round.NotifyWallCount += OnNotifyWallCount;
-        _game.Round.NotifyPick += delegate (TileEventArgs e)
+        _game.Round.NotifyPick += delegate (PickTileEventArgs e)
         {
             if (Properties.Settings.Default.PlaySounds)
             {
