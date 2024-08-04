@@ -92,14 +92,11 @@
                         <Grid.RowDefinitions>
                             <RowDefinition Height="30" />
                             <RowDefinition Height="30" />
-                            <RowDefinition Height="30" />
                         </Grid.RowDefinitions>
                         <Label Grid.Column="0" Grid.Row="0" HorizontalContentAlignment="Right" VerticalContentAlignment="Center" Content="Debug mode" />
                         <CheckBox Margin="5, 0, 0, 0" Grid.Column="1" Grid.Row="0" Name="ChkDebugMode" VerticalAlignment="Center" />
                         <Label Grid.Column="0" Grid.Row="1" HorizontalContentAlignment="Right" VerticalContentAlignment="Center" Content="4 CPUs" />
                         <CheckBox Margin="5, 0, 0, 0" Grid.Column="1" Grid.Row="1" Name="ChkFourCpus" VerticalAlignment="Center" />
-                        <Label Grid.Column="0" Grid.Row="2" HorizontalContentAlignment="Right" VerticalContentAlignment="Center" Content="Benchmark" />
-                        <CheckBox Margin="5, 0, 0, 0" Grid.Column="1" Grid.Row="2" Name="ChkBenchmark" VerticalAlignment="Center" />
                     </Grid>
                 </TabItem>
                 <TabItem Header="Plus d'infos...">

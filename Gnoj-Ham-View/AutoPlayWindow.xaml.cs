@@ -19,7 +19,6 @@ public partial class AutoPlayWindow : Window
 
     private readonly Dictionary<string, (int count, double sum)> _times = new(50);
     private readonly RulePivot _ruleset;
-    private readonly bool _enableBenchmark;
     private readonly CancellationTokenSource _cancellationTokenSource = new();
     private readonly CancellationToken _cancellationToken;
 
@@ -28,7 +27,7 @@ public partial class AutoPlayWindow : Window
     /// </summary>
     /// <param name="ruleset">Instance of <see cref="RulePivot"/>.</param>
     /// <param name="enableBenchmark">Enable benchmark.</param>
-    public AutoPlayWindow(RulePivot ruleset, bool enableBenchmark)
+    public AutoPlayWindow(RulePivot ruleset)
     {
         InitializeComponent();
 
@@ -40,19 +39,7 @@ public partial class AutoPlayWindow : Window
         InitializeAutoPlayWorker();
 
         _ruleset = ruleset;
-        _enableBenchmark = enableBenchmark;
         _cancellationToken = _cancellationTokenSource.Token;
-    }
-
-    private void AddTimeEntry(string name)
-    {
-        if (_enableBenchmark)
-        {
-            var elapsed = (DateTime.Now - _timestamp).TotalMilliseconds;
-            var currentEntry = _times.TryGetValue(name, out var value) ? value : (0, 0);
-            _times[name] = (currentEntry.count + 1, currentEntry.sum + elapsed);
-            _timestamp = DateTime.Now;
-        }
     }
 
     private void Window_Closing(object sender, CancelEventArgs e)
@@ -76,7 +63,7 @@ public partial class AutoPlayWindow : Window
     {
         _autoPlay.DoWork += delegate (object? sender, DoWorkEventArgs evt)
         {
-            var autoPlayer = new AutoPlayPivot(_game!, AddTimeEntry);
+            var autoPlayer = new AutoPlayPivot(_game!);
             var (_, ronPlayerId, _) = autoPlayer.RunAutoPlay(_cancellationToken);
             evt.Result = ronPlayerId;
         };
@@ -103,18 +90,6 @@ public partial class AutoPlayWindow : Window
                         WaitingPanel.Visibility = Visibility.Collapsed;
                         ActionPanel.Visibility = Visibility.Visible;
                         ScoresList.Visibility = Visibility.Visible;
-                        if (_enableBenchmark)
-                        {
-                            TxtResultsRaw.Visibility = Visibility.Visible;
-
-                            var sb = new StringBuilder();
-                            sb.AppendLine("Action\tCount\tSum (s)\tAverage (ms)");
-                            foreach (var r in _times.OrderByDescending(t => t.Value.sum).Select(t => t.Key))
-                            {
-                                sb.AppendLine($"{r}\t{_times[r].count}\t{Math.Floor(_times[r].sum / 1000)}\t{Math.Floor(_times[r].sum / _times[r].count)}");
-                            }
-                            TxtResultsRaw.AppendText(sb.ToString());
-                        }
                         WindowState = WindowState.Maximized;
                     }
                 }

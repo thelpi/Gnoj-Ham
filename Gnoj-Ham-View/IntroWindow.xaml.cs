@@ -48,7 +48,7 @@ public partial class IntroWindow : Window
 
         if (ChkFourCpus.IsChecked == true)
         {
-            new AutoPlayWindow(ruleset, ChkBenchmark.IsChecked == true).ShowDialog();
+            new AutoPlayWindow(ruleset).ShowDialog();
         }
         else
         {
@@ -87,7 +87,6 @@ public partial class IntroWindow : Window
         // Dvelopment tools
         ChkDebugMode.IsChecked = false;
         ChkFourCpus.IsChecked = false;
-        ChkBenchmark.IsChecked = true;
     }
 
     private void SaveConfiguration()
