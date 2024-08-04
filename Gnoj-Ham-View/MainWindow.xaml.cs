@@ -991,10 +991,10 @@ public partial class MainWindow : Window
             tileTuples.Reverse();
         }
 
-        foreach (var tileTuple in tileTuples)
+        foreach (var (tile, stolen) in tileTuples)
         {
-            panel.Children.Add(tileTuple.Item1.GenerateTileButton(null,
-                (AnglePivot)(tileTuple.Item2 ? pIndex.RelativePlayerIndex(1) : pIndex),
+            panel.Children.Add(tile.GenerateTileButton(null,
+                (AnglePivot)(stolen ? pIndex.RelativePlayerIndex(1) : pIndex),
                 combo.IsConcealedDisplay(i)));
             i++;
         }
