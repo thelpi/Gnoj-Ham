@@ -231,7 +231,7 @@ public class EndOfRoundInformationsPivot
             var results = new List<(TilePivot, bool, bool)>(14);
             foreach (var t in _hand.AllTiles)
             {
-                if (!ReferenceEquals(t, _hand.LatestPick))
+                if (!ReferenceEquals(t, _hand.LatestPick) || FanCount == 0)
                 {
                     var leander = _hand.DeclaredCombinations.Any(c => ReferenceEquals(c.OpenTile, t));
                     results.Add((t, leander, false));
@@ -239,7 +239,7 @@ public class EndOfRoundInformationsPivot
             }
 
             // Displays the latest pick in last, only if it's a winning hand
-            if (_hand.LatestPick != null && FanCount > 0)
+            if (FanCount > 0)
             {
                 results.Add((_hand.LatestPick, false, true));
             }

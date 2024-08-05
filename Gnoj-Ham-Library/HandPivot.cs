@@ -59,7 +59,7 @@ public class HandPivot
         get
         {
             var allTiles = _declaredCombinations.SelectMany(t => t.Tiles).Concat(_concealedTiles).ToList();
-            if (LatestPick != null && !allTiles.Any(t => ReferenceEquals(t, LatestPick)))
+            if (!allTiles.Any(t => ReferenceEquals(t, LatestPick)))
             {
                 allTiles.Add(LatestPick);
             }
