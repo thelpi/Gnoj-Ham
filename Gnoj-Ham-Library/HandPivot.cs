@@ -156,9 +156,9 @@ public class HandPivot
             return concealedTiles[0] == concealedTiles[1];
         }
 
-        var combinationsSequences = GetCombinationsSequences(concealedTiles, declaredCombinationsCount);
+        var combinationsSequences = GetCombinationsSequences(concealedTiles, declaredCombinationsCount, out var forceExit);
 
-        return combinationsSequences.Any(cs => CombinationSequenceIsValid(declaredCombinationsCount, cs));
+        return forceExit || combinationsSequences.Any(cs => CombinationSequenceIsValid(declaredCombinationsCount, cs));
     }
 
     private static bool CombinationSequenceIsValid(int declaredCombinationsCount, List<TileComboPivot> cs)
@@ -187,7 +187,7 @@ public class HandPivot
                 : new List<List<TileComboPivot>>();
         }
 
-        var combinationsSequences = GetCombinationsSequences(concealedTiles, -1);
+        var combinationsSequences = GetCombinationsSequences(concealedTiles, -1, out _);
 
         // Adds the declared combinations to each sequence of combinations.
         foreach (var combinationsSequence in combinationsSequences)
@@ -226,8 +226,11 @@ public class HandPivot
     // declaredCombinationsCount => -1 to not exit at first
     private static List<List<TileComboPivot>> GetCombinationsSequences(
         IReadOnlyList<TilePivot> concealedTiles,
-        int declaredCombinationsCount)
+        int declaredCombinationsCount,
+        out bool forceExit)
     {
+        forceExit = false;
+
         // bad approximation of size
         var combinationsSequences = new List<List<TileComboPivot>>(20);
 
@@ -254,7 +257,6 @@ public class HandPivot
             }
         }
 
-        bool forceExit = false;
         if (!isSingle && pairCount <= 1)
         {
             foreach (var familyGroup in familyGroups)
@@ -273,9 +275,28 @@ public class HandPivot
                         break;
                     default:
                         var temporaryCombinationsSequences = GetCombinationSequencesRecursive(familyGroup);
-                        // Cartesian product of existant sequences and temporary list.
-                        combinationsSequences = combinationsSequences.Count > 0 ?
-                            combinationsSequences.CartesianProduct(temporaryCombinationsSequences) : temporaryCombinationsSequences;
+                        if (combinationsSequences.Count > 0)
+                        {
+                            // Cartesian product of existant sequences and temporary list.
+                            var newCombinationsSequences = new List<List<TileComboPivot>>(combinationsSequences.Count * temporaryCombinationsSequences.Count);
+                            foreach (var cs in combinationsSequences)
+                            {
+                                foreach (var cs2 in temporaryCombinationsSequences)
+                                {
+                                    newCombinationsSequences.Add(new List<TileComboPivot>(cs.Concat(cs2)));
+                                    if (declaredCombinationsCount > -1 && CombinationSequenceIsValid(declaredCombinationsCount, newCombinationsSequences[^1]))
+                                    {
+                                        forceExit = true;
+                                        return newCombinationsSequences;
+                                    }
+                                }
+                            }
+                            combinationsSequences = newCombinationsSequences;
+                        }
+                        else
+                        {
+                            combinationsSequences = temporaryCombinationsSequences;
+                        }
                         break;
                 }
             }
@@ -304,7 +325,7 @@ public class HandPivot
             {
                 // Creates a new sequence of combinations, if empty at this point.
                 combinationsSequences.Add(combinations);
-                if (declaredCombinationsCount > -1 && CombinationSequenceIsValid(declaredCombinationsCount, combinationsSequences[combinationsSequences.Count - 1]))
+                if (declaredCombinationsCount > -1 && CombinationSequenceIsValid(declaredCombinationsCount, combinationsSequences[^1]))
                 {
                     return true;
                 }
@@ -320,7 +341,6 @@ public class HandPivot
                         return true;
                     }
                 }
-
             }
         }
 

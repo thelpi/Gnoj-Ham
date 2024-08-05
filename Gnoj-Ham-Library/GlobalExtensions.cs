@@ -24,26 +24,6 @@ public static class GlobalExtensions
     }
 
     /// <summary>
-    /// Extension; generates the cartesian product of two lists.
-    /// </summary>
-    /// <typeparam name="T">The underlying type of both list.</typeparam>
-    /// <param name="firstList">The first list.</param>
-    /// <param name="secondList">The second list.</param>
-    /// <returns>The cartesian product; empty list if at least one argument is <c>Null</c>.</returns>
-    /// <remarks>Keep the type 'List' here.</remarks>
-    internal static List<List<T>> CartesianProduct<T>(this List<List<T>>? firstList, List<List<T>>? secondList)
-    {
-        return firstList == null || secondList == null
-            ? new List<List<T>>()
-            : firstList.SelectMany(elem1 => secondList, (elem1, elem2) =>
-                                    {
-                                        var elemsJoin = new List<T>(elem1);
-                                        elemsJoin.AddRange(elem2);
-                                        return elemsJoin;
-                                    }).ToList();
-    }
-
-    /// <summary>
     /// Extension; checks if a list is a bijection of another list.
     /// </summary>
     /// <typeparam name="T">The underlying type in both lists; must implement <see cref="IEquatable{T}"/>.</typeparam>
