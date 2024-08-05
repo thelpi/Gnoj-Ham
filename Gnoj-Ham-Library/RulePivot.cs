@@ -6,17 +6,27 @@ namespace Gnoj_Ham_Library;
 /// <summary>
 /// Represents a set of rules.
 /// </summary>
-/// <remarks>
-/// Constructor.
-/// </remarks>
-/// <param name="initialPointsRule"><see cref="InitialPointsRule"/>.</param>
-/// <param name="endOfGameRule"><see cref="EndOfGameRule"/>.</param>
-/// <param name="useRedDoras"><see cref="UseRedDoras"/>.</param>
-/// <param name="useNagashiMangan"><see cref="UseNagashiMangan"/>.</param>
-/// <param name="debugMode"><see cref="DebugMode"/>.</param>
-/// <param name="discardTip"><see cref="DiscardTip"/>.</param>
-public class RulePivot(InitialPointsRules initialPointsRule, EndOfGameRules endOfGameRule, bool useRedDoras, bool useNagashiMangan, bool debugMode, bool discardTip) : IEquatable<RulePivot>
+public class RulePivot : IEquatable<RulePivot>
 {
+    /// <remarks>
+    /// Constructor.
+    /// </remarks>
+    /// <param name="initialPointsRule"><see cref="InitialPointsRule"/>.</param>
+    /// <param name="endOfGameRule"><see cref="EndOfGameRule"/>.</param>
+    /// <param name="useRedDoras"><see cref="UseRedDoras"/>.</param>
+    /// <param name="useNagashiMangan"><see cref="UseNagashiMangan"/>.</param>
+    /// <param name="debugMode"><see cref="DebugMode"/>.</param>
+    /// <param name="discardTip"><see cref="DiscardTip"/>.</param>
+    public RulePivot(InitialPointsRules initialPointsRule, EndOfGameRules endOfGameRule, bool useRedDoras, bool useNagashiMangan, bool debugMode, bool discardTip)
+    {
+        InitialPointsRule = initialPointsRule;
+        EndOfGameRule = endOfGameRule;
+        UseRedDoras = useRedDoras;
+        UseNagashiMangan = useNagashiMangan;
+        DebugMode = debugMode;
+        DiscardTip = discardTip;
+    }
+
     #region Static properties
 
     // do not use directly
@@ -42,32 +52,32 @@ public class RulePivot(InitialPointsRules initialPointsRule, EndOfGameRules endO
     /// <summary>
     /// Initial points rule.
     /// </summary>
-    public InitialPointsRules InitialPointsRule { get; } = initialPointsRule;
+    public InitialPointsRules InitialPointsRule { get; }
 
     /// <summary>
     /// End of game rule.
     /// </summary>
-    public EndOfGameRules EndOfGameRule { get; } = endOfGameRule;
+    public EndOfGameRules EndOfGameRule { get; }
 
     /// <summary>
     /// Use of red doras.
     /// </summary>
-    public bool UseRedDoras { get; } = useRedDoras;
+    public bool UseRedDoras { get; }
 
     /// <summary>
     /// Use of <see cref="YakuPivot.NagashiMangan"/>.
     /// </summary>
-    public bool UseNagashiMangan { get; } = useNagashiMangan;
+    public bool UseNagashiMangan { get; }
 
     /// <summary>
     /// Use debug mode.
     /// </summary>
-    public bool DebugMode { get; } = debugMode;
+    public bool DebugMode { get; }
 
     /// <summary>
     /// Use discard tip.
     /// </summary>
-    public bool DiscardTip { get; } = discardTip;
+    public bool DiscardTip { get; }
 
     #endregion Embedded properties
 

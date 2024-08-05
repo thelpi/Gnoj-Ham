@@ -13,7 +13,6 @@ public partial class AutoPlayWindow : Window
 {
     private GamePivot? _game;
     private readonly BackgroundWorker _autoPlay;
-    private DateTime _timestamp;
     private int _currentGameIndex;
     private int _totalGamesCount;
     private IReadOnlyList<PermanentPlayerPivot>? _permanentPlayers;
@@ -51,7 +50,6 @@ public partial class AutoPlayWindow : Window
     // Starts the background worker.
     private void RunAutoPlay(bool newGame)
     {
-        _timestamp = DateTime.Now;
         if (newGame)
         {
             _game = new GamePivot(_ruleset, _permanentPlayers!, new Random());
@@ -120,13 +118,13 @@ public partial class AutoPlayWindow : Window
 
         _currentGameIndex = 0;
         _times.Clear();
-        _permanentPlayers =
-        [
+        _permanentPlayers = new List<PermanentPlayerPivot>
+        {
             new PermanentPlayerPivot(),
             new PermanentPlayerPivot(),
             new PermanentPlayerPivot(),
             new PermanentPlayerPivot()
-        ];
+        };
 
         WaitingPanel.Visibility = Visibility.Visible;
         ActionPanel.Visibility = Visibility.Collapsed;

@@ -21,7 +21,7 @@ public class IaManagerPivot
 
     // indicates an honiisou (or chiniisou) in progress
     private Families? _itsuFamily;
-    private static readonly int[] MiddleNumbers = [4, 5, 6];
+    private static readonly int[] MiddleNumbers = new[] { 4, 5, 6 };
 
     /// <summary>
     /// Constructor.

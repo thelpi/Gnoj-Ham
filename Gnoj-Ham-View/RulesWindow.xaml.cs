@@ -19,7 +19,7 @@ public partial class RulesWindow : Window
         InitializeComponent();
 
         LstYakus.ItemsSource = YakuPivot.Yakus
-            .Except([YakuPivot.NagashiMangan])
+            .Except(new[] { YakuPivot.NagashiMangan })
             .OrderBy(x => x.ConcealedFanCount)
             .ThenBy(x => x.FanCount)
             .ThenBy(x => x.Name);

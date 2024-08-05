@@ -74,7 +74,7 @@ public class YakuPivot
         Description = description ?? string.Empty;
         FanCount = fanCount;
         ConcealedBonusFanCount = concealedBonusFanCount;
-        _upgrades = [.. upgrades];
+        _upgrades = upgrades.ToList();
         Example = example;
     }
 
@@ -95,8 +95,8 @@ public class YakuPivot
             {
                 var tiles = TilePivot.GetCompleteSet(false);
 
-                _yakus =
-                [
+                _yakus = new List<YakuPivot>
+                {
                     new YakuPivot(KOKUSHI_MUSOU, "Treize orphelins", 0, "Une tuile de chaque dragon, vent et terminal (1 et 9), dont une paire.", 13, new List<TilePivot>
                     {
                         tiles.First(x => x.Family == Families.Caracter && x.Number == 1),
@@ -472,7 +472,7 @@ public class YakuPivot
                         tiles.First(x => x.Family == Families.Caracter && x.Number == 5),
                         tiles.First(x => x.Family == Families.Caracter && x.Number == 5)
                     })
-                ];
+                };
                 _yakus.Add(new YakuPivot(HONIISOU, "Main semi-pure", 2, "La main contient une seule famille et des honneurs.", 1, new List<TilePivot>
                 {
                     tiles.First(x => x.Family == Families.Circle && x.Number == 1),

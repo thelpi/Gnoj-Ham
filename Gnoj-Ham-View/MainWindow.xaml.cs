@@ -463,7 +463,7 @@ public partial class MainWindow : Window
             MessageBox.Show($"Une erreur est survenue pendant la sauvegarde du fichier de statistiques du joueur.\n\nDétails de l'erreur :\n{error}", "Gnoj-Ham - Avertissement");
         }
 
-        new ScoreWindow([.. _game.Players], endOfRoundInfo).ShowDialog();
+        new ScoreWindow(_game.Players.ToList(), endOfRoundInfo).ShowDialog();
 
         if (endOfRoundInfo.EndOfGame)
         {
@@ -596,7 +596,7 @@ public partial class MainWindow : Window
 
             if (!_game.Round.IsHumanPlayer)
             {
-                Discard(_game.Round.IaManager.DiscardDecision([]));
+                Discard(_game.Round.IaManager.DiscardDecision(new List<TilePivot>()));
             }
         }
     }
@@ -628,7 +628,7 @@ public partial class MainWindow : Window
 
             if (isCpu)
             {
-                Discard(_game.Round.IaManager.DiscardDecision([]));
+                Discard(_game.Round.IaManager.DiscardDecision(new List<TilePivot>()));
             }
         }
     }
