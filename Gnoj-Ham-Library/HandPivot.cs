@@ -156,10 +156,13 @@ public class HandPivot
             return concealedTiles[0] == concealedTiles[1];
         }
 
-        var combinationsSequences = GetCombinationsSequences(concealedTiles);
+        var combinationsSequences = GetCombinationsSequences(concealedTiles, declaredCombinationsCount);
 
-        return combinationsSequences.Any(cs => cs.Count == 5 - declaredCombinationsCount && cs.Count(c => c.IsPair) == 1);
+        return combinationsSequences.Any(cs => CombinationSequenceIsValid(declaredCombinationsCount, cs));
     }
+
+    private static bool CombinationSequenceIsValid(int declaredCombinationsCount, List<TileComboPivot> cs)
+        => cs.Count == 5 - declaredCombinationsCount && cs.Count(c => c.IsPair) == 1;
 
     /// <summary>
     /// Checks if the specified tiles form a complete hand (four combinations of three tiles and a pair).
@@ -184,7 +187,7 @@ public class HandPivot
                 : new List<List<TileComboPivot>>();
         }
 
-        var combinationsSequences = GetCombinationsSequences(concealedTiles);
+        var combinationsSequences = GetCombinationsSequences(concealedTiles, -1);
 
         // Adds the declared combinations to each sequence of combinations.
         foreach (var combinationsSequence in combinationsSequences)
@@ -196,7 +199,7 @@ public class HandPivot
         // - Doesn't contain exactly 5 combinations.
         // - Doesn't contain a pair.
         // - Contains more than one pair.
-        combinationsSequences.RemoveAll(cs => cs.Count != 5 || cs.Count(c => c.IsPair) != 1);
+        combinationsSequences.RemoveAll(cs => !CombinationSequenceIsValid(0, cs));
 
         // Filters duplicates sequences
         combinationsSequences.RemoveAll(cs1 =>
@@ -220,7 +223,10 @@ public class HandPivot
     }
 
     // Gets every possible combinations from the given list of tiles
-    private static List<List<TileComboPivot>> GetCombinationsSequences(IReadOnlyList<TilePivot> concealedTiles)
+    // declaredCombinationsCount => -1 to not exit at first
+    private static List<List<TileComboPivot>> GetCombinationsSequences(
+        IReadOnlyList<TilePivot> concealedTiles,
+        int declaredCombinationsCount)
     {
         // bad approximation of size
         var combinationsSequences = new List<List<TileComboPivot>>(20);
@@ -248,6 +254,7 @@ public class HandPivot
             }
         }
 
+        bool forceExit = false;
         if (!isSingle && pairCount <= 1)
         {
             foreach (var familyGroup in familyGroups)
@@ -255,10 +262,14 @@ public class HandPivot
                 switch (familyGroup.Key)
                 {
                     case Families.Dragon:
-                        CheckHonorsForCombinations(familyGroup, k => k.Dragon!.Value, combinationsSequences);
+                        forceExit = CheckHonorsForCombinations(familyGroup, k => k.Dragon!.Value, combinationsSequences, declaredCombinationsCount);
+                        if (forceExit)
+                            return combinationsSequences;
                         break;
                     case Families.Wind:
-                        CheckHonorsForCombinations(familyGroup, t => t.Wind!.Value, combinationsSequences);
+                        forceExit = CheckHonorsForCombinations(familyGroup, t => t.Wind!.Value, combinationsSequences, declaredCombinationsCount);
+                        if (forceExit)
+                            return combinationsSequences;
                         break;
                     default:
                         var temporaryCombinationsSequences = GetCombinationSequencesRecursive(familyGroup);
@@ -274,8 +285,11 @@ public class HandPivot
     }
 
     // Builds combinations (pairs and brelans) from dragon family or wind family.
-    private static void CheckHonorsForCombinations<T>(IEnumerable<TilePivot> familyGroup,
-        Func<TilePivot, T> groupKeyFunc, List<List<TileComboPivot>> combinationsSequences)
+    private static bool CheckHonorsForCombinations<T>(
+        IEnumerable<TilePivot> familyGroup,
+        Func<TilePivot, T> groupKeyFunc, 
+        List<List<TileComboPivot>> combinationsSequences,
+        int declaredCombinationsCount)
     {
         var combinations =
             familyGroup
@@ -290,13 +304,27 @@ public class HandPivot
             {
                 // Creates a new sequence of combinations, if empty at this point.
                 combinationsSequences.Add(combinations);
+                if (declaredCombinationsCount > -1 && CombinationSequenceIsValid(declaredCombinationsCount, combinationsSequences[combinationsSequences.Count - 1]))
+                {
+                    return true;
+                }
             }
             else
             {
                 // Adds the list of combinations to each existant sequence.
-                combinationsSequences.ForEach(cs => cs.AddRange(combinations));
+                foreach (var cs in combinationsSequences)
+                {
+                    cs.AddRange(combinations);
+                    if (declaredCombinationsCount > -1 && CombinationSequenceIsValid(declaredCombinationsCount, cs))
+                    {
+                        return true;
+                    }
+                }
+
             }
         }
+
+        return false;
     }
 
     // Assumes that all tiles are from the same family, and this family is caracter / circle / bamboo.
