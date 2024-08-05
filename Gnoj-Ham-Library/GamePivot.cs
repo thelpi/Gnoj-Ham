@@ -99,18 +99,13 @@ public class GamePivot
     /// <summary>
     /// Constructor.
     /// </summary>
-    /// <param name="humanPlayerName">The name of the human player; other players will be <see cref="PlayerPivot.IsCpu"/>.</param>
+    /// <param name="humanPlayers">Collection of human players; other players will be <see cref="PlayerPivot.IsCpu"/>.</param>
     /// <param name="ruleset">Ruleset for the game.</param>
     /// <param name="save">Player save stats.</param>
     /// <param name="random">Randomizer instance.</param>
     /// <exception cref="ArgumentNullException"><paramref name="save"/> is <c>Null</c> while ruleset is default.</exception>
-    /// <exception cref="ArgumentNullException"><paramref name="ruleset"/> is <c>Null</c>.</exception>
-    /// <exception cref="ArgumentNullException"><paramref name="random"/> is <c>Null</c>.</exception>
-    public GamePivot(string humanPlayerName, RulePivot ruleset, PlayerSavePivot save, Random random)
+    public GamePivot(IDictionary<PlayerIndices, string?> humanPlayers, RulePivot ruleset, PlayerSavePivot? save, Random random)
     {
-        _ = ruleset ?? throw new ArgumentNullException(nameof(ruleset));
-        _ = random ?? throw new ArgumentNullException(nameof(random));
-
         if (ruleset.AreDefaultRules() && save == null)
         {
             throw new ArgumentNullException(nameof(save));
@@ -119,7 +114,7 @@ public class GamePivot
         _save = save;
 
         Ruleset = ruleset;
-        Players = PlayerPivot.GetFourPlayers(humanPlayerName, Ruleset.InitialPointsRule, random);
+        Players = PlayerPivot.GetFourPlayers(humanPlayers, Ruleset.InitialPointsRule, random);
         DominantWind = Winds.East;
         EastIndexTurnCount = 1;
         EastIndex = FirstEastIndex;
@@ -135,16 +130,9 @@ public class GamePivot
     /// <param name="ruleset">Ruleset for the game.</param>
     /// <param name="permanentPlayers">Four permanent players.</param>
     /// <param name="random">Randomizer instance.</param>
-    /// <exception cref="ArgumentNullException"><paramref name="ruleset"/> is <c>Null</c>.</exception>
-    /// <exception cref="ArgumentNullException"><paramref name="permanentPlayers"/> is <c>Null</c>.</exception>
-    /// <exception cref="ArgumentNullException"><paramref name="random"/> is <c>Null</c>.</exception>
     /// <exception cref="ArgumentException">Four players are required.</exception>
     public GamePivot(RulePivot ruleset, IReadOnlyList<PermanentPlayerPivot> permanentPlayers, Random random)
     {
-        _ = ruleset ?? throw new ArgumentNullException(nameof(ruleset));
-        _ = random ?? throw new ArgumentNullException(nameof(random));
-        _ = permanentPlayers ?? throw new ArgumentNullException(nameof(permanentPlayers));
-
         if (permanentPlayers.Count != 4)
         {
             throw new ArgumentException("Four players are required.", nameof(permanentPlayers));

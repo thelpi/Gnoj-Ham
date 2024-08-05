@@ -42,7 +42,7 @@ public partial class MainWindow : Window
         _cancellationToken = _cancellationTokenSource.Token;
         LblPlayerP0.Content = playerName;
 
-        _game = new GamePivot(playerName, ruleset, save, new Random());
+        _game = new GamePivot(new Dictionary<PlayerIndices, string?> { { PlayerIndices.Zero, playerName } }, ruleset, save, new Random());
         _tickSound = new System.Media.SoundPlayer(Properties.Resources.tick);
 
         _overlayStoryboard = (FindResource("StbHideOverlay") as Storyboard)!;

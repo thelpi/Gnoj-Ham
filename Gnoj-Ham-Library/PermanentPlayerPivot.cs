@@ -59,7 +59,6 @@ public class PermanentPlayerPivot
     /// Add a score sheet for on game.
     /// </summary>
     /// <param name="score"></param>
-    /// <exception cref="ArgumentNullException"><paramref name="score"/> is <c>Null</c>.</exception>
     internal void AddGameScore(PlayerScorePivot score)
     {
         _scores.Add(score);

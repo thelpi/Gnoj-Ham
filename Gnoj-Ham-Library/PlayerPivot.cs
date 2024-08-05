@@ -56,13 +56,16 @@ public class PlayerPivot
     /// <summary>
     /// Generates a list of four <see cref="PlayerPivot"/> to start a game.
     /// </summary>
-    /// <param name="humanPlayerName">The name of the human player; other players will be <see cref="IsCpu"/>.</param>
+    /// <param name="humanPlayers">Collection of human players; other players will be <see cref="IsCpu"/>.</param>
     /// <param name="initialPointsRulePivot">Rule for initial points count.</param>
     /// <param name="random">Randomizer instance.</param>
     /// <returns>List of four <see cref="PlayerPivot"/>, not sorted.</returns>
-    internal static IReadOnlyList<PlayerPivot> GetFourPlayers(string? humanPlayerName, InitialPointsRules initialPointsRulePivot, Random random)
+    internal static IReadOnlyList<PlayerPivot> GetFourPlayers(
+        IDictionary<PlayerIndices, string?> humanPlayers,
+        InitialPointsRules initialPointsRulePivot,
+        Random random)
     {
-        humanPlayerName = CheckName(humanPlayerName);
+        CheckName(humanPlayers);
 
         var eastIndex = (PlayerIndices)random.Next(0, 4);
 
@@ -70,10 +73,10 @@ public class PlayerPivot
         foreach (var i in Enum.GetValues<PlayerIndices>())
         {
             players.Add(new PlayerPivot(
-                i == GamePivot.HUMAN_INDEX ? humanPlayerName : $"{CPU_NAME_PREFIX}{i}",
+                humanPlayers.ContainsKey(i) ? humanPlayers[i]! : $"{CPU_NAME_PREFIX}{i}",
                 GetWindFromIndex(eastIndex, i),
                 initialPointsRulePivot,
-                i != GamePivot.HUMAN_INDEX,
+                !humanPlayers.ContainsKey(i),
                 null
             ));
         }
@@ -100,12 +103,15 @@ public class PlayerPivot
     private static Winds GetWindFromIndex(PlayerIndices eastIndex, PlayerIndices i)
         => i == eastIndex ? Winds.East : (i > eastIndex ? (Winds)(i - eastIndex) : (Winds)(4 - (int)eastIndex + i));
 
-    private static string CheckName(string? humanPlayerName)
+    private static void CheckName(IDictionary<PlayerIndices, string?> humanPlayers)
     {
-        humanPlayerName = (humanPlayerName ?? string.Empty).Trim();
-
-        return humanPlayerName == string.Empty || humanPlayerName.StartsWith(CPU_NAME_PREFIX, StringComparison.InvariantCultureIgnoreCase)
-            ? DEFAULT_HUMAN_NAME
-            : humanPlayerName;
+        for (var i =  0; i < humanPlayers.Count; i++)
+        {
+            var key = humanPlayers.ElementAt(i).Key;
+            var name = (humanPlayers[key] ?? string.Empty).Trim();
+            humanPlayers[key] = name == string.Empty || name.StartsWith(CPU_NAME_PREFIX, StringComparison.InvariantCultureIgnoreCase)
+                ? $"{DEFAULT_HUMAN_NAME}-{i}"
+                : name;
+        }
     }
 }

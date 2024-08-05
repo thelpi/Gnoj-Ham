@@ -286,10 +286,9 @@ public class TilePivot : IEquatable<TilePivot>, IComparable<TilePivot>
     /// </summary>
     /// <param name="other">The previous tile.</param>
     /// <returns><c>True</c> if dora; <c>False</c> otherwise.</returns>
-    /// <exception cref="ArgumentNullException"><paramref name="other"/> is <c>Null</c>.</exception>
     internal bool IsDoraNext(TilePivot other)
     {
-        if (other.Family != Family || other == this)
+        if (other.Family != Family)
         {
             return false;
         }
