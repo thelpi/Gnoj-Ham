@@ -27,7 +27,12 @@ public partial class App : Application
         }
         catch (Exception ex)
         {
-            Clipboard.SetText($"{ex.Message}\r\n\r\n{ex.StackTrace}");
+            var localEx = ex;
+            while (localEx.InnerException != null)
+            {
+                localEx = localEx.InnerException;
+            }
+            Clipboard.SetText($"{localEx.Message}\r\n\r\n{localEx.StackTrace}");
             MessageBox.Show("Une erreur technique est survenue, entrainant l'arrêt de l'application.\r\nLes détails de l'erreur ont été copiées dans le presse-papier.\r\nMerci d'avance des les transmettre à l'équipe technique.", "Gnoj-Ham - Erreur");
             Environment.Exit(0);
         }
