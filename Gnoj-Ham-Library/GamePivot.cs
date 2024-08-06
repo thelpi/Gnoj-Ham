@@ -7,16 +7,7 @@ namespace Gnoj_Ham_Library;
 /// </summary>
 public class GamePivot
 {
-    #region Constants
-
-    /// <summary>
-    /// Number of tiles in a wall.
-    /// </summary>
-    public const int WALL_TILES_COUNT = 17;
-
-    #endregion Constants
-
-    #region Embedded properties
+    #region Properties
 
     private readonly PlayerSavePivot? _save;
     private readonly Random _random;
@@ -63,10 +54,6 @@ public class GamePivot
     /// </summary>
     public RulePivot Ruleset { get; }
 
-    #endregion Embedded properties
-
-    #region Inferred properties
-
     /// <summary>
     /// Honba count before scoring.
     /// </summary>
@@ -91,9 +78,7 @@ public class GamePivot
     /// </summary>
     internal bool CpuVs => Players.All(_ => _.IsCpu);
 
-    #endregion
-
-    #region Constructors
+    #endregion Embedded properties
 
     /// <summary>
     /// Constructor.
@@ -109,7 +94,7 @@ public class GamePivot
         {
             throw new ArgumentNullException(nameof(save));
         }
-        
+
         _save = save;
 
         Ruleset = ruleset;
@@ -160,8 +145,6 @@ public class GamePivot
         Round = new RoundPivot(this, EastIndex, random);
     }
 
-    #endregion Constructors
-
     #region Public methods
 
     /// <summary>
@@ -180,16 +163,6 @@ public class GamePivot
         }
 
         return playersOrdered;
-    }
-
-    /// <summary>
-    /// Adds a pending riichi.
-    /// </summary>
-    /// <param name="playerIndex">The player index.</param>
-    internal void AddPendingRiichi(PlayerIndices playerIndex)
-    {
-        PendingRiichiCount++;
-        Players[(int)playerIndex].AddPoints(-ScoreTools.RIICHI_COST);
     }
 
     /// <summary>
@@ -300,8 +273,6 @@ public class GamePivot
         return (endOfRoundInformations, error);
     }
 
-
-
     /// <summary>
     /// Gets the current <see cref="Winds"/> of the specified player.
     /// </summary>
@@ -325,6 +296,18 @@ public class GamePivot
         return Winds.East;
     }
 
+    #endregion Public methods
+
+    /// <summary>
+    /// Adds a pending riichi.
+    /// </summary>
+    /// <param name="playerIndex">The player index.</param>
+    internal void AddPendingRiichi(PlayerIndices playerIndex)
+    {
+        PendingRiichiCount++;
+        Players[(int)playerIndex].AddPoints(-ScoreTools.RIICHI_COST);
+    }
+
     /// <summary>
     /// Gets the player index for the specified wind.
     /// </summary>
@@ -334,10 +317,6 @@ public class GamePivot
     {
         return Enum.GetValues<PlayerIndices>().First(i => GetPlayerCurrentWind(i) == wind);
     }
-
-    #endregion Public methods
-
-    #region Private methods
 
     // At the end of the game, manage the remaining pending riichi.
     private void ClearPendingRiichi()
@@ -357,6 +336,4 @@ public class GamePivot
             }
         }
     }
-
-    #endregion Private methods
 }

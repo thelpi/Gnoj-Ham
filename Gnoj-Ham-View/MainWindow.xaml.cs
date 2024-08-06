@@ -1161,7 +1161,7 @@ public partial class MainWindow : Window
         var tilesExpectedCoeff = 3;
         foreach (var iWall in wallIndexes)
         {
-            var tilesCountForThisWall = Math.Max(0, Math.Min(GamePivot.WALL_TILES_COUNT, wallTiles - (GamePivot.WALL_TILES_COUNT * tilesExpectedCoeff)));
+            var tilesCountForThisWall = Math.Max(0, Math.Min(_game.Round.FullTilesList.Count / 8, wallTiles - (_game.Round.FullTilesList.Count / 8 * tilesExpectedCoeff)));
 
             var wallPanel = this.FindName<StackPanel>("PnlWall", (PlayerIndices)iWall);
 

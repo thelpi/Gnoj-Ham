@@ -27,6 +27,11 @@ public class RoundPivot
     private readonly List<TilePivot> _fullTilesList;
 
     /// <summary>
+    /// All tiles.
+    /// </summary>
+    public IReadOnlyList<TilePivot> FullTilesList => _fullTilesList;
+
+    /// <summary>
     /// History of the latest players to play.
     /// First on the list is the latest to play.
     /// The list is cleared when a jump (ie a call) is made.
