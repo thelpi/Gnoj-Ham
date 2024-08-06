@@ -6,7 +6,7 @@
 public enum PlayerIndices
 {
     /// <summary>
-    /// Zero (human player)
+    /// Zero
     /// </summary>
     Zero,
     /// <summary>
