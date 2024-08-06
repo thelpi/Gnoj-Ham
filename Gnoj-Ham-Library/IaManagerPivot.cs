@@ -142,7 +142,7 @@ public class IaManagerPivot
 
         foreach (var i in Enum.GetValues<PlayerIndices>())
         {
-            if ((i != GamePivot.HUMAN_INDEX || _round.Game.CpuVs) && _round.CanCallRon(i))
+            if ((!_round.Game.HumanIndices.Contains(i) || _round.Game.CpuVs) && _round.CanCallRon(i))
             {
                 if (ronCalled || callers.Count > 0)
                 {
@@ -165,15 +165,15 @@ public class IaManagerPivot
     /// <param name="kanPossibilities">The first tile of every possible Kan at the moment.</param>
     /// <param name="concealedKan"><c>True</c> if the context is a concealed Kan.</param>
     /// <returns><c>True</c> if Kan is advised.</returns>
-    public bool KanDecisionAdvice(IReadOnlyList<TilePivot> kanPossibilities, bool concealedKan)
-        => KanDecisionInternal(GamePivot.HUMAN_INDEX, kanPossibilities, concealedKan) != null;
+    public bool KanDecisionAdvice(PlayerIndices pIndex, IReadOnlyList<TilePivot> kanPossibilities, bool concealedKan)
+        => KanDecisionInternal(pIndex, kanPossibilities, concealedKan) != null;
 
     /// <summary>
     /// Computes an advice for the human player to call a Pon or not; assumes the Pon is possible.
     /// </summary>
     /// <returns><c>True</c> if Pon is advised.</returns>
-    public bool PonDecisionAdvice()
-        => PonDecisionInternal(GamePivot.HUMAN_INDEX).HasValue;
+    public bool PonDecisionAdvice(PlayerIndices pIndex)
+        => PonDecisionInternal(pIndex).HasValue;
 
     /// <summary>
     /// Computes an advice for the human player to call a Chii or not; assumes the Chii is possible.

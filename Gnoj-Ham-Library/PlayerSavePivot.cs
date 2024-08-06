@@ -116,7 +116,7 @@ public class PlayerSavePivot
         bool isRon, bool humanIsRiichi, bool humanIsConcealed, int scoreIndexPosition, int meScore)
     {
         var now = DateTime.Now;
-        var pHand = endOfRoundInformations.PlayersInfo?.FirstOrDefault(_ => _.Index == GamePivot.HUMAN_INDEX);
+        var pHand = endOfRoundInformations.PlayersInfo?.FirstOrDefault(_ => !_.IsCpu);
 
         if (!InProgressGame)
         {

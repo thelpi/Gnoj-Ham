@@ -91,12 +91,12 @@ public class RoundPivot
     /// <summary>
     /// Inferred; indicates if the current player is the human player.
     /// </summary>
-    public bool IsHumanPlayer => CurrentPlayerIndex == GamePivot.HUMAN_INDEX && !Game.CpuVs;
+    public bool IsHumanPlayer => Game.HumanIndices.Contains(CurrentPlayerIndex) && !Game.CpuVs;
 
     /// <summary>
     /// Inferred; indicates if the previous player is the human player.
     /// </summary>
-    public bool PreviousIsHumanPlayer => PreviousPlayerIndex == GamePivot.HUMAN_INDEX && !Game.CpuVs;
+    public bool PreviousIsHumanPlayer => Game.HumanIndices.Contains(PreviousPlayerIndex) && !Game.CpuVs;
 
     /// <summary>
     /// Inferred; indicates the index of the player before <see cref="CurrentPlayerIndex"/>.
@@ -217,55 +217,67 @@ public class RoundPivot
     /// Starts and runs the auto player.
     /// </summary>
     /// <param name="cancellationToken">Cancellation token.</param>
-    /// <param name="declinedHumanCall">Indicates that a potential call has been suggested to the human player and has been declined..</param>
-    /// <param name="humanRonPending">Indicates that the human player has called 'Ron', but the same call by opponents has to be checked too.</param>
-    /// <param name="autoCallMahjong">When enabled, if the human player can call 'Tsumo' or 'Ron', the call is automatically made.</param>
+    /// <returns>Instance of <see cref="AutoPlayResultPivot"/>.</returns>>
+    public AutoPlayResultPivot RunAutoPlay(CancellationToken cancellationToken)
+        => RunAutoPlay(cancellationToken, new List<PlayerIndices>(), new List<PlayerIndices>(), new List<PlayerIndices>(), 0);
+
+    /// <summary>
+    /// Starts and runs the auto player.
+    /// </summary>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <param name="declinedHumanCalls">Indicates that a potential call has been suggested to the human player and has been declined..</param>
+    /// <param name="humanRonPendings">Indicates that the human player has called 'Ron', but the same call by opponents has to be checked too.</param>
+    /// <param name="autoCallMahjongs">When enabled, if the human player can call 'Tsumo' or 'Ron', the call is automatically made.</param>
     /// <param name="sleepTime">The time to wait after any action (call or discard).</param>
-    /// <returns>A tuple that includes:
-    /// <list type="bullet">
-    /// <item>endOfRound: indicates if the round is over; otherwise, the control is given back to the human player.</item>
-    /// <item>ronPlayerId: indicates, if one or several calls 'Ron' has been made, the player index who lost in that situation.</item>
-    /// <item>humanAction: indicates a decision to automatically apply when the control is given back to human player.</item>
-    /// </list>
-    /// </returns>
-    public (bool endOfRound, PlayerIndices? ronPlayerId, CallTypes? humanAction) RunAutoPlay(
+    /// <returns>Instance of <see cref="AutoPlayResultPivot"/>.</returns>>
+    public AutoPlayResultPivot RunAutoPlay(
         CancellationToken cancellationToken,
-        bool declinedHumanCall = false,
-        bool humanRonPending = false,
-        bool autoCallMahjong = false,
-        int sleepTime = 0)
+        IReadOnlyList<PlayerIndices> declinedHumanCalls,
+        IReadOnlyList<PlayerIndices> humanRonPendings,
+        IReadOnlyList<PlayerIndices> autoCallMahjongs,
+        int sleepTime)
     {
         (PlayerIndices, TilePivot?, PlayerIndices?)? kanInProgress = null;
-        (bool endOfRound, PlayerIndices? ronPlayerId, CallTypes? humanAction) result = default;
+        var result = new AutoPlayResultPivot();
         var isFirstTurn = true;
         while (!cancellationToken.IsCancellationRequested)
         {
             if (!isFirstTurn)
-                declinedHumanCall = false;
+            {
+                declinedHumanCalls = new List<PlayerIndices>();
+            }
             isFirstTurn = false;
 
-            if (!Game.CpuVs && !declinedHumanCall && !humanRonPending && CanCallRon(GamePivot.HUMAN_INDEX))
+            foreach (var pi in Game.HumanIndices)
             {
-                HumanCallNotifier?.Invoke(new HumanCallNotifierEventArgs { Call = CallTypes.Ron });
-                if (autoCallMahjong)
+                if (!declinedHumanCalls.Contains(pi) && !humanRonPendings.Contains(pi) && CanCallRon(pi))
                 {
-                    result = (result.endOfRound, result.ronPlayerId, CallTypes.Ron);
+                    HumanCallNotifier?.Invoke(new HumanCallNotifierEventArgs { Call = CallTypes.Ron });
+                    if (autoCallMahjongs.Contains(pi))
+                    {
+                        result.AddHumanCall(pi, CallTypes.Ron);
+                    }
+                    else
+                    {
+                        DiscardTileNotifier?.Invoke(new DiscardTileNotifierEventArgs());
+                    }
                 }
-                else
-                {
-                    DiscardTileNotifier?.Invoke(new DiscardTileNotifierEventArgs());
-                }
-                break;
             }
 
-            if (CheckOpponensRonCall(humanRonPending))
+            if (result.HumanCalls.Count > 0)
             {
-                result = (true, kanInProgress.HasValue ? kanInProgress.Value.Item1 : PreviousPlayerIndex, result.humanAction);
+                return result;
+            }
+
+            if (CheckOpponensRonCall(humanRonPendings.Count > 0))
+            {
+                result.EndOfRound = true;
+                result.RonPlayerId = kanInProgress.HasValue ? kanInProgress.Value.Item1 : PreviousPlayerIndex;
                 if (kanInProgress.HasValue)
                 {
                     UndoPickCompensationTile();
                 }
-                break;
+                return result;
             }
 
             if (kanInProgress.HasValue)
@@ -273,13 +285,16 @@ public class RoundPivot
                 ReadyToCallNotifier?.Invoke(new ReadyToCallNotifierEventArgs { Call = CallTypes.Kan, PotentialPreviousPlayerIndex = kanInProgress.Value.Item3 });
             }
 
-            if (!Game.CpuVs && !declinedHumanCall && CanCallPonOrKan(GamePivot.HUMAN_INDEX, out var isSelfKan))
+            foreach (var pi in Game.HumanIndices)
             {
-                if (!isSelfKan)
+                if (!declinedHumanCalls.Contains(pi) && CanCallPonOrKan(pi, out var isSelfKan))
                 {
-                    DiscardTileNotifier?.Invoke(new DiscardTileNotifierEventArgs());
+                    if (!isSelfKan)
+                    {
+                        DiscardTileNotifier?.Invoke(new DiscardTileNotifierEventArgs());
+                    }
+                    return result;
                 }
-                break;
             }
 
             var opponentWithKanTilePick = IaManager.KanDecision(false);
@@ -298,10 +313,10 @@ public class RoundPivot
                 continue;
             }
 
-            if (!declinedHumanCall && IsHumanPlayer && CanCallChii().Count > 0)
+            if (IsHumanPlayer && !declinedHumanCalls.Contains(CurrentPlayerIndex) && CanCallChii().Count > 0)
             {
                 DiscardTileNotifier?.Invoke(new DiscardTileNotifierEventArgs());
-                break;
+                return result;
             }
 
             var chiiTilePick = IaManager.ChiiDecision();
@@ -315,28 +330,32 @@ public class RoundPivot
             {
                 if (OpponentAfterPick(ref kanInProgress, sleepTime))
                 {
-                    result = (true, result.ronPlayerId, result.humanAction);
-                    break;
+                    result.EndOfRound = true;
+                    return result;
                 }
                 continue;
             }
 
             if (IsWallExhaustion)
             {
-                result = (true, result.ronPlayerId, result.humanAction);
-                break;
+                result.EndOfRound = true;
+                return result;
             }
 
             AutoPick();
             if (IsHumanPlayer)
             {
-                result = (result.endOfRound, result.ronPlayerId, HumanAutoPlay(autoCallMahjong, sleepTime));
-                break;
+                var call = HumanAutoPlay(autoCallMahjongs.Contains(CurrentPlayerIndex), sleepTime);
+                if (call.HasValue)
+                {
+                    result.AddHumanCall(CurrentPlayerIndex, call.Value);
+                }
+                return result;
             }
             else if (OpponentAfterPick(ref kanInProgress, sleepTime))
             {
-                result = (true, result.ronPlayerId, result.humanAction);
-                break;
+                result.EndOfRound = true;
+                return result;
             }
         }
 
@@ -758,13 +777,14 @@ public class RoundPivot
     }
 
     /// <summary>
-    /// Checks if the human player can auto-discard.
+    /// Checks if the current human player can auto-discard.
     /// </summary>
     /// <returns><c>True</c> if he can; <c>False</c> otherwise.</returns>
     public bool HumanCanAutoDiscard()
     {
-        return IsRiichi(GamePivot.HUMAN_INDEX)
-            && (Game.CpuVs || CanCallKan(GamePivot.HUMAN_INDEX).Count == 0)
+        return Game.HumanIndices.Contains(CurrentPlayerIndex)
+            && IsRiichi(CurrentPlayerIndex)
+            && CanCallKan(CurrentPlayerIndex).Count == 0
             && _waitForDiscard;
     }
 
@@ -808,7 +828,7 @@ public class RoundPivot
     {
         foreach (var i in Enum.GetValues<PlayerIndices>())
         {
-            if (i != GamePivot.HUMAN_INDEX || Game.CpuVs)
+            if (!Game.HumanIndices.Contains(i))
             {
                 var kanTiles = CanCallKanWithChoices(i, concealed);
                 if (kanTiles.Count > 0)
@@ -851,7 +871,7 @@ public class RoundPivot
     {
         var opponentsIndex = Enum.GetValues<PlayerIndices>().Where(i =>
         {
-            return (i != GamePivot.HUMAN_INDEX || Game.CpuVs) && CanCallPon(i);
+            return !Game.HumanIndices.Contains(i) && CanCallPon(i);
         }).ToList();
 
         return opponentsIndex.Count > 0 ? opponentsIndex[0] : null;
@@ -970,7 +990,7 @@ public class RoundPivot
 
         // Note : this value is stored here because the call to "CallPon" makes it change.
         var previousPlayerIndex = PreviousPlayerIndex;
-        var isCpu = playerIndex != GamePivot.HUMAN_INDEX || Game.CpuVs;
+        var isCpu = !Game.HumanIndices.Contains(playerIndex);
 
         var callPon = CallPon(playerIndex);
         if (callPon)
@@ -1304,8 +1324,10 @@ public class RoundPivot
 
             var (tenpai, nonTenpai) = ScoreTools.GetRyuukyokuPoints(tenpaiPlayersIndex.Count);
 
-            tenpaiPlayersIndex.ForEach(i => playerInfos.Add(new EndOfRoundInformationsPivot.PlayerInformationsPivot(i, 0, 0, _hands[(int)i], tenpai, 0, 0, 0, tenpai)));
-            notTenpaiPlayersIndex.ForEach(i => playerInfos.Add(new EndOfRoundInformationsPivot.PlayerInformationsPivot(i, nonTenpai)));
+            tenpaiPlayersIndex.ForEach(i =>
+                playerInfos.Add(new EndOfRoundInformationsPivot.PlayerInformationsPivot(i, Game.HumanIndices.Contains(i), 0, 0, _hands[(int)i], tenpai, 0, 0, 0, tenpai)));
+            notTenpaiPlayersIndex.ForEach(i =>
+                playerInfos.Add(new EndOfRoundInformationsPivot.PlayerInformationsPivot(i, Game.HumanIndices.Contains(i), nonTenpai)));
         }
         else
         {
@@ -1409,7 +1431,7 @@ public class RoundPivot
                 }
 
                 playerInfos.Add(new EndOfRoundInformationsPivot.PlayerInformationsPivot(
-                    pIndex, fanCount, fuCount, phand, basePoints + riichiPart + winnerHonba,
+                    pIndex, Game.HumanIndices.Contains(pIndex), fanCount, fuCount, phand, basePoints + riichiPart + winnerHonba,
                     dorasCount, uraDorasCount, redDorasCount, basePoints));
 
                 notEastLostCumul -= notEast;
@@ -1443,7 +1465,7 @@ public class RoundPivot
                     else
                     {
                         playerInfos.Add(new EndOfRoundInformationsPivot.PlayerInformationsPivot(
-                            liablePlayerId, liablePlayersLost[liablePlayerId] - honbaPoints));
+                            liablePlayerId, Game.HumanIndices.Contains(liablePlayerId), liablePlayersLost[liablePlayerId] - honbaPoints));
                     }
                 }
                 if (playerInfos.Any(pi => pi.Index == ronPlayerIndex!.Value))
@@ -1453,12 +1475,13 @@ public class RoundPivot
                 else
                 {
                     playerInfos.Add(new EndOfRoundInformationsPivot.PlayerInformationsPivot(
-                        ronPlayerIndex!.Value, eastOrLoserLostCumul - pointsNotOnRonPlayer));
+                        ronPlayerIndex!.Value, Game.HumanIndices.Contains(ronPlayerIndex.Value), eastOrLoserLostCumul - pointsNotOnRonPlayer));
                 }
             }
             else if (ronPlayerIndex.HasValue)
             {
-                playerInfos.Add(new EndOfRoundInformationsPivot.PlayerInformationsPivot(ronPlayerIndex.Value, eastOrLoserLostCumul - honbaPoints));
+                playerInfos.Add(new EndOfRoundInformationsPivot.PlayerInformationsPivot(
+                    ronPlayerIndex.Value, Game.HumanIndices.Contains(ronPlayerIndex.Value), eastOrLoserLostCumul - honbaPoints));
             }
             else
             {
@@ -1466,7 +1489,8 @@ public class RoundPivot
                 {
                     if (!winners.Contains(pIndex))
                     {
-                        playerInfos.Add(new EndOfRoundInformationsPivot.PlayerInformationsPivot(pIndex, (Game.GetPlayerCurrentWind(pIndex) == Winds.East ? eastOrLoserLostCumul : notEastLostCumul) - (honbaPoints / 3)));
+                        playerInfos.Add(new EndOfRoundInformationsPivot.PlayerInformationsPivot(
+                            pIndex, Game.HumanIndices.Contains(pIndex), (Game.GetPlayerCurrentWind(pIndex) == Winds.East ? eastOrLoserLostCumul : notEastLostCumul) - (honbaPoints / 3)));
                     }
                 }
             }

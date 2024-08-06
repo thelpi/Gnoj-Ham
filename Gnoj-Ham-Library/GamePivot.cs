@@ -10,11 +10,6 @@ public class GamePivot
     #region Constants
 
     /// <summary>
-    /// Index of the human player in <see cref="Players"/>.
-    /// </summary>
-    public const PlayerIndices HUMAN_INDEX = PlayerIndices.Zero;
-
-    /// <summary>
     /// Number of tiles in a wall.
     /// </summary>
     public const int WALL_TILES_COUNT = 17;
@@ -30,6 +25,10 @@ public class GamePivot
     /// List of players.
     /// </summary>
     public IReadOnlyList<PlayerPivot> Players { get; }
+    /// <summary>
+    /// Collection of indices from <see cref="Players"/> used by human players.
+    /// </summary>
+    public IReadOnlyList<PlayerIndices> HumanIndices { get; }
     /// <summary>
     /// Current dominant wind.
     /// </summary>
@@ -106,7 +105,7 @@ public class GamePivot
     /// <exception cref="ArgumentNullException"><paramref name="save"/> is <c>Null</c> while ruleset is default.</exception>
     public GamePivot(IDictionary<PlayerIndices, string?> humanPlayers, RulePivot ruleset, PlayerSavePivot? save, Random random)
     {
-        if (ruleset.AreDefaultRules() && save == null)
+        if (ruleset.AreDefaultRules() && humanPlayers.Count == 1 && save == null)
         {
             throw new ArgumentNullException(nameof(save));
         }
@@ -120,6 +119,16 @@ public class GamePivot
         EastIndex = FirstEastIndex;
         EastRank = 1;
         _random = random;
+
+        var humanIndices = new List<PlayerIndices>(4);
+        for (var i = 0; i < Players.Count; i++)
+        {
+            if (!Players[i].IsCpu)
+            {
+                humanIndices.Add((PlayerIndices)i);
+            }
+        }
+        HumanIndices = humanIndices;
 
         Round = new RoundPivot(this, EastIndex, random);
     }
@@ -145,6 +154,8 @@ public class GamePivot
         EastIndex = FirstEastIndex;
         EastRank = 1;
         _random = random;
+
+        HumanIndices = new List<PlayerIndices>(4);
 
         Round = new RoundPivot(this, EastIndex, random);
     }
@@ -192,8 +203,8 @@ public class GamePivot
         var endOfRoundInformations = Round.EndOfRound(ronPlayerIndex);
 
         // used for stats
-        var humanIsRiichi = Round.IsRiichi(HUMAN_INDEX);
-        var humanIsConcealed = Round.GetHand(HUMAN_INDEX).IsConcealed;
+        var humanIsRiichi = HumanIndices.Count == 1 && Round.IsRiichi(HumanIndices[0]);
+        var humanIsConcealed = HumanIndices.Count == 1 && Round.GetHand(HumanIndices[0]).IsConcealed;
 
         if (!endOfRoundInformations.Ryuukyoku)
         {
@@ -275,18 +286,15 @@ public class GamePivot
 
     Exit:
         string? error = null;
-        if (Ruleset.AreDefaultRules())
+        if (Ruleset.AreDefaultRules() && HumanIndices.Count == 1)
         {
-            var humanPlayer = Players.FirstOrDefault(_ => !_.IsCpu);
-            if (humanPlayer != null)
-            {
-                error = _save!.UpdateAndSave(endOfRoundInformations,
-                    ronPlayerIndex.HasValue,
-                    humanIsRiichi,
-                    humanIsConcealed,
-                    Players.OrderByDescending(_ => _.Points).ToList().IndexOf(humanPlayer),
-                    humanPlayer.Points);
-            }
+            var humanPlayer = Players[(int)HumanIndices[0]];
+            error = _save!.UpdateAndSave(endOfRoundInformations,
+                ronPlayerIndex.HasValue,
+                humanIsRiichi,
+                humanIsConcealed,
+                Players.OrderByDescending(_ => _.Points).ToList().IndexOf(humanPlayer),
+                humanPlayer.Points);
         }
 
         return (endOfRoundInformations, error);

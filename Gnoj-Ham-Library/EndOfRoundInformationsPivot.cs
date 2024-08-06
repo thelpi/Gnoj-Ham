@@ -126,21 +126,25 @@ public class EndOfRoundInformationsPivot
         private readonly HandPivot? _hand;
 
         /// <summary>
+        /// Indicates if CPU.
+        /// </summary>
+        public bool IsCpu { get; }
+        /// <summary>
         /// Index in <see cref="GamePivot.Players"/>.
         /// </summary>
-        public PlayerIndices Index { get; private set; }
+        public PlayerIndices Index { get; }
         /// <summary>
         /// Fan count.
         /// </summary>
-        public int FanCount { get; private set; }
+        public int FanCount { get; }
         /// <summary>
         /// Fu count.
         /// </summary>
-        public int FuCount { get; private set; }
+        public int FuCount { get; }
         /// <summary>
         /// The points gain from the hand itself (zero or positive).
         /// </summary>
-        public int HandPointsGain { get; private set; }
+        public int HandPointsGain { get; }
         /// <summary>
         /// Points gain for this round (might be negative).
         /// </summary>
@@ -148,15 +152,15 @@ public class EndOfRoundInformationsPivot
         /// <summary>
         /// Dora count.
         /// </summary>
-        public int DoraCount { get; private set; }
+        public int DoraCount { get; }
         /// <summary>
         /// Ura-dora count.
         /// </summary>
-        public int UraDoraCount { get; private set; }
+        public int UraDoraCount { get; }
         /// <summary>
         /// Red dora count.
         /// </summary>
-        public int RedDoraCount { get; private set; }
+        public int RedDoraCount { get; }
 
         #endregion Embedded properties
 
@@ -180,6 +184,7 @@ public class EndOfRoundInformationsPivot
         /// Constructor when winning.
         /// </summary>
         /// <param name="index">The <see cref="Index"/> value.</param>
+        /// <param name="isCpu">The <see cref="IsCpu"/> value.</param>
         /// <param name="fanCount">The <see cref="FanCount"/> value.</param>
         /// <param name="fuCount">The <see cref="FuCount"/> value.</param>
         /// <param name="hand">The <see cref="_hand"/> value.</param>
@@ -188,10 +193,11 @@ public class EndOfRoundInformationsPivot
         /// <param name="uraDoraCount">The <see cref="UraDoraCount"/> value.</param>
         /// <param name="redDoraCount">The <see cref="RedDoraCount"/> value.</param>
         /// <param name="handPointsGain">The <see cref="HandPointsGain"/> value.</param>
-        internal PlayerInformationsPivot(PlayerIndices index, int fanCount, int fuCount, HandPivot? hand,
+        internal PlayerInformationsPivot(PlayerIndices index, bool isCpu, int fanCount, int fuCount, HandPivot? hand,
             int pointsGain, int doraCount, int uraDoraCount, int redDoraCount, int handPointsGain)
         {
             Index = index;
+            IsCpu = isCpu;
             FanCount = fanCount;
             FuCount = fuCount;
             PointsGain = pointsGain;
@@ -206,9 +212,10 @@ public class EndOfRoundInformationsPivot
         /// Constructor when losing or neutral.
         /// </summary>
         /// <param name="index">The <see cref="Index"/> value.</param>
+        /// <param name="isCpu">The <see cref="IsCpu"/> value.</param>
         /// <param name="pointsGain">The <see cref="PointsGain"/> value.</param>
-        internal PlayerInformationsPivot(PlayerIndices index, int pointsGain)
-            : this(index, 0, 0, null, pointsGain, 0, 0, 0, 0) { }
+        internal PlayerInformationsPivot(PlayerIndices index, bool isCpu, int pointsGain)
+            : this(index, isCpu, 0, 0, null, pointsGain, 0, 0, 0, 0) { }
 
         #endregion Constructors
 

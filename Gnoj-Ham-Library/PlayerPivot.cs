@@ -73,7 +73,7 @@ public class PlayerPivot
         foreach (var i in Enum.GetValues<PlayerIndices>())
         {
             players.Add(new PlayerPivot(
-                humanPlayers.ContainsKey(i) ? humanPlayers[i]! : $"{CPU_NAME_PREFIX}{i}",
+                humanPlayers.TryGetValue(i, out var value) ? value! : $"{CPU_NAME_PREFIX}{i}",
                 GetWindFromIndex(eastIndex, i),
                 initialPointsRulePivot,
                 !humanPlayers.ContainsKey(i),

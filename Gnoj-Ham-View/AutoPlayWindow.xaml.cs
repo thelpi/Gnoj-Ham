@@ -1,5 +1,4 @@
 ﻿using System.ComponentModel;
-using System.Text;
 using System.Windows;
 using Gnoj_Ham_Library;
 using Gnoj_Ham_Library.Enums;
@@ -62,8 +61,8 @@ public partial class AutoPlayWindow : Window
     {
         _autoPlay.DoWork += delegate (object? sender, DoWorkEventArgs evt)
         {
-            var (_, ronPlayerId, _) = _game!.Round.RunAutoPlay(_cancellationToken);
-            evt.Result = ronPlayerId;
+            var result = _game!.Round.RunAutoPlay(_cancellationToken);
+            evt.Result = result.RonPlayerId;
         };
         _autoPlay.RunWorkerCompleted += delegate (object? sender, RunWorkerCompletedEventArgs evt)
         {
@@ -120,10 +119,10 @@ public partial class AutoPlayWindow : Window
         _times.Clear();
         _permanentPlayers = new List<PermanentPlayerPivot>
         {
-            new PermanentPlayerPivot(),
-            new PermanentPlayerPivot(),
-            new PermanentPlayerPivot(),
-            new PermanentPlayerPivot()
+            new(),
+            new(),
+            new(),
+            new()
         };
 
         WaitingPanel.Visibility = Visibility.Visible;
