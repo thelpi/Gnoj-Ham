@@ -330,7 +330,7 @@ public partial class MainWindow : Window
                             }
                             break;
                         case CallTypes.Pon:
-                            var isCpu = !_game.HumanIndices.Contains(e.PlayerIndex);
+                            var isCpu = e.PlayerIndex != PlayerIndices.Zero;
                             FillHandPanel(e.PlayerIndex);
                             FillCombinationStack(e.PlayerIndex);
                             FillDiscardPanel(e.PreviousPlayerIndex);
@@ -426,15 +426,15 @@ public partial class MainWindow : Window
 
             var declineds = new List<PlayerIndices>();
             if ((bool)argumentsList[0])
-                declineds.Add(_game.HumanIndices[0]);
+                declineds.Add(PlayerIndices.Zero);
 
             var ronPendings = new List<PlayerIndices>();
             if ((bool)argumentsList[1])
-                ronPendings.Add(_game.HumanIndices[0]);
+                ronPendings.Add(PlayerIndices.Zero);
 
             var auto = new List<PlayerIndices>();
             if (Properties.Settings.Default.AutoCallMahjong)
-                auto.Add(_game.HumanIndices[0]);
+                auto.Add(PlayerIndices.Zero);
 
             evt.Result = _game.Round.RunAutoPlay(
                 _cancellationToken,
@@ -621,7 +621,7 @@ public partial class MainWindow : Window
 
         // Note : this value is stored here because the call to "CallPon" makes it change.
         var previousPlayerIndex = _game.Round.PreviousPlayerIndex;
-        var isCpu = !_game.HumanIndices.Contains(playerIndex);
+        var isCpu = playerIndex != PlayerIndices.Zero;
 
         if (_game.Round.CallPon(playerIndex))
         {
@@ -834,7 +834,7 @@ public partial class MainWindow : Window
     // Clears and refills the hand panel of the specified player index.
     private void FillHandPanel(PlayerIndices pIndex, TilePivot? pickTile = null)
     {
-        var isHuman = _game.HumanIndices.Contains(pIndex);
+        var isHuman = pIndex == PlayerIndices.Zero;
 
         var panel = this.FindPanel("StpHandP", pIndex);
 
