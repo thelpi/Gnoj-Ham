@@ -26,21 +26,15 @@ public class PlayerPivot
     public int Points { get; private set; }
 
     /// <summary>
-    /// Indicates if the player is managed by the CPU.
-    /// </summary>
-    public bool IsCpu { get; }
-
-    /// <summary>
     /// Permanent player the current instance is based upon.
     /// </summary>
     public PermanentPlayerPivot? PermanentPlayer { get; }
 
-    private PlayerPivot(string name, Winds initialWind, InitialPointsRules initialPointsRulePivot, bool isCpu, PermanentPlayerPivot? permanentPlayer)
+    private PlayerPivot(string name, Winds initialWind, InitialPointsRules initialPointsRulePivot, PermanentPlayerPivot? permanentPlayer)
     {
         Name = name;
         InitialWind = initialWind;
         Points = initialPointsRulePivot.GetInitialPointsFromRule();
-        IsCpu = isCpu;
         PermanentPlayer = permanentPlayer;
     }
 
@@ -76,7 +70,6 @@ public class PlayerPivot
                 humanPlayers.TryGetValue(i, out var value) ? value! : $"{CPU_NAME_PREFIX}{i}",
                 GetWindFromIndex(eastIndex, i),
                 initialPointsRulePivot,
-                !humanPlayers.ContainsKey(i),
                 null
             ));
         }
@@ -96,7 +89,7 @@ public class PlayerPivot
         var eastIndex = (PlayerIndices)random.Next(0, 4);
 
         return permanentPlayers
-            .Select((p, i) => new PlayerPivot($"{CPU_NAME_PREFIX}{i}", GetWindFromIndex(eastIndex, (PlayerIndices)i), initialPointsRulePivot, true, p))
+            .Select((p, i) => new PlayerPivot($"{CPU_NAME_PREFIX}{i}", GetWindFromIndex(eastIndex, (PlayerIndices)i), initialPointsRulePivot, p))
             .ToList();
     }
 

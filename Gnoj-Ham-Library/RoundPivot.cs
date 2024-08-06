@@ -96,12 +96,12 @@ public class RoundPivot
     /// <summary>
     /// Inferred; indicates if the current player is the human player.
     /// </summary>
-    public bool IsHumanPlayer => Game.HumanIndices.Contains(CurrentPlayerIndex) && !Game.CpuVs;
+    public bool IsHumanPlayer => Game.IsHuman(CurrentPlayerIndex);
 
     /// <summary>
     /// Inferred; indicates if the previous player is the human player.
     /// </summary>
-    public bool PreviousIsHumanPlayer => Game.HumanIndices.Contains(PreviousPlayerIndex) && !Game.CpuVs;
+    public bool PreviousIsHumanPlayer => Game.IsHuman(PreviousPlayerIndex);
 
     /// <summary>
     /// Inferred; indicates the index of the player before <see cref="CurrentPlayerIndex"/>.
@@ -787,7 +787,7 @@ public class RoundPivot
     /// <returns><c>True</c> if he can; <c>False</c> otherwise.</returns>
     public bool HumanCanAutoDiscard()
     {
-        return Game.HumanIndices.Contains(CurrentPlayerIndex)
+        return Game.IsHuman(CurrentPlayerIndex)
             && IsRiichi(CurrentPlayerIndex)
             && CanCallKan(CurrentPlayerIndex).Count == 0
             && _waitForDiscard;
@@ -833,7 +833,7 @@ public class RoundPivot
     {
         foreach (var i in Enum.GetValues<PlayerIndices>())
         {
-            if (!Game.HumanIndices.Contains(i))
+            if (Game.IsCpu(i))
             {
                 var kanTiles = CanCallKanWithChoices(i, concealed);
                 if (kanTiles.Count > 0)
@@ -876,7 +876,7 @@ public class RoundPivot
     {
         var opponentsIndex = Enum.GetValues<PlayerIndices>().Where(i =>
         {
-            return !Game.HumanIndices.Contains(i) && CanCallPon(i);
+            return Game.IsCpu(i) && CanCallPon(i);
         }).ToList();
 
         return opponentsIndex.Count > 0 ? opponentsIndex[0] : null;
@@ -995,7 +995,7 @@ public class RoundPivot
 
         // Note : this value is stored here because the call to "CallPon" makes it change.
         var previousPlayerIndex = PreviousPlayerIndex;
-        var isCpu = !Game.HumanIndices.Contains(playerIndex);
+        var isCpu = Game.IsCpu(playerIndex);
 
         var callPon = CallPon(playerIndex);
         if (callPon)
@@ -1330,9 +1330,9 @@ public class RoundPivot
             var (tenpai, nonTenpai) = ScoreTools.GetRyuukyokuPoints(tenpaiPlayersIndex.Count);
 
             tenpaiPlayersIndex.ForEach(i =>
-                playerInfos.Add(new EndOfRoundInformationsPivot.PlayerInformationsPivot(i, Game.HumanIndices.Contains(i), 0, 0, _hands[(int)i], tenpai, 0, 0, 0, tenpai)));
+                playerInfos.Add(new EndOfRoundInformationsPivot.PlayerInformationsPivot(i, Game.IsHuman(i), 0, 0, _hands[(int)i], tenpai, 0, 0, 0, tenpai)));
             notTenpaiPlayersIndex.ForEach(i =>
-                playerInfos.Add(new EndOfRoundInformationsPivot.PlayerInformationsPivot(i, Game.HumanIndices.Contains(i), nonTenpai)));
+                playerInfos.Add(new EndOfRoundInformationsPivot.PlayerInformationsPivot(i, Game.IsHuman(i), nonTenpai)));
         }
         else
         {
@@ -1436,7 +1436,7 @@ public class RoundPivot
                 }
 
                 playerInfos.Add(new EndOfRoundInformationsPivot.PlayerInformationsPivot(
-                    pIndex, Game.HumanIndices.Contains(pIndex), fanCount, fuCount, phand, basePoints + riichiPart + winnerHonba,
+                    pIndex, Game.IsHuman(pIndex), fanCount, fuCount, phand, basePoints + riichiPart + winnerHonba,
                     dorasCount, uraDorasCount, redDorasCount, basePoints));
 
                 notEastLostCumul -= notEast;
@@ -1470,7 +1470,7 @@ public class RoundPivot
                     else
                     {
                         playerInfos.Add(new EndOfRoundInformationsPivot.PlayerInformationsPivot(
-                            liablePlayerId, Game.HumanIndices.Contains(liablePlayerId), liablePlayersLost[liablePlayerId] - honbaPoints));
+                            liablePlayerId, Game.IsHuman(liablePlayerId), liablePlayersLost[liablePlayerId] - honbaPoints));
                     }
                 }
                 if (playerInfos.Any(pi => pi.Index == ronPlayerIndex!.Value))
@@ -1480,13 +1480,13 @@ public class RoundPivot
                 else
                 {
                     playerInfos.Add(new EndOfRoundInformationsPivot.PlayerInformationsPivot(
-                        ronPlayerIndex!.Value, Game.HumanIndices.Contains(ronPlayerIndex.Value), eastOrLoserLostCumul - pointsNotOnRonPlayer));
+                        ronPlayerIndex!.Value, Game.IsHuman(ronPlayerIndex.Value), eastOrLoserLostCumul - pointsNotOnRonPlayer));
                 }
             }
             else if (ronPlayerIndex.HasValue)
             {
                 playerInfos.Add(new EndOfRoundInformationsPivot.PlayerInformationsPivot(
-                    ronPlayerIndex.Value, Game.HumanIndices.Contains(ronPlayerIndex.Value), eastOrLoserLostCumul - honbaPoints));
+                    ronPlayerIndex.Value, Game.IsHuman(ronPlayerIndex.Value), eastOrLoserLostCumul - honbaPoints));
             }
             else
             {
@@ -1495,7 +1495,7 @@ public class RoundPivot
                     if (!winners.Contains(pIndex))
                     {
                         playerInfos.Add(new EndOfRoundInformationsPivot.PlayerInformationsPivot(
-                            pIndex, Game.HumanIndices.Contains(pIndex), (Game.GetPlayerCurrentWind(pIndex) == Winds.East ? eastOrLoserLostCumul : notEastLostCumul) - (honbaPoints / 3)));
+                            pIndex, Game.IsHuman(pIndex), (Game.GetPlayerCurrentWind(pIndex) == Winds.East ? eastOrLoserLostCumul : notEastLostCumul) - (honbaPoints / 3)));
                     }
                 }
             }

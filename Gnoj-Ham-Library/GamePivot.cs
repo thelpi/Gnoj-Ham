@@ -76,7 +76,7 @@ public class GamePivot
     /// <summary>
     /// Inferred; indicates the game is between CPU only.
     /// </summary>
-    internal bool CpuVs => Players.All(_ => _.IsCpu);
+    internal bool CpuVs => HumanIndices.Count == 0;
 
     #endregion Embedded properties
 
@@ -105,15 +105,7 @@ public class GamePivot
         EastRank = 1;
         _random = random;
 
-        var humanIndices = new List<PlayerIndices>(4);
-        for (var i = 0; i < Players.Count; i++)
-        {
-            if (!Players[i].IsCpu)
-            {
-                humanIndices.Add((PlayerIndices)i);
-            }
-        }
-        HumanIndices = humanIndices;
+        HumanIndices = humanPlayers.Select(hp => hp.Key).ToList();
 
         Round = new RoundPivot(this, EastIndex, random);
     }
@@ -175,9 +167,9 @@ public class GamePivot
     {
         var endOfRoundInformations = Round.EndOfRound(ronPlayerIndex);
 
-        // used for stats
-        var humanIsRiichi = HumanIndices.Count == 1 && Round.IsRiichi(HumanIndices[0]);
-        var humanIsConcealed = HumanIndices.Count == 1 && Round.GetHand(HumanIndices[0]).IsConcealed;
+        // used for stats ONLY, when one player ONLY
+        var humanIsRiichi = IsSingleHuman() && Round.IsRiichi(HumanIndices[0]);
+        var humanIsConcealed = IsSingleHuman() && Round.GetHand(HumanIndices[0]).IsConcealed;
 
         if (!endOfRoundInformations.Ryuukyoku)
         {
@@ -259,7 +251,7 @@ public class GamePivot
 
     Exit:
         string? error = null;
-        if (Ruleset.AreDefaultRules() && HumanIndices.Count == 1)
+        if (Ruleset.AreDefaultRules() && IsSingleHuman())
         {
             var humanPlayer = Players[(int)HumanIndices[0]];
             error = _save!.UpdateAndSave(endOfRoundInformations,
@@ -295,6 +287,29 @@ public class GamePivot
 
         return Winds.East;
     }
+
+    /// <summary>
+    /// Indicates if the current index is an human player.
+    /// </summary>
+    /// <param name="i">The player index.</param>
+    /// <returns><c>True</c> if human; <c>False</c> otherwise.</returns>
+    public bool IsHuman(PlayerIndices i)
+        => HumanIndices.Contains(i);
+
+    /// <summary>
+    /// Indicates if the current index is not an human player.
+    /// </summary>
+    /// <param name="i">The player index.</param>
+    /// <returns><c>False</c> if human; <c>True</c> otherwise.</returns>
+    public bool IsCpu(PlayerIndices i)
+        => !IsHuman(i);
+
+    /// <summary>
+    /// Indicates if the game contains exactly one human player.
+    /// </summary>
+    /// <returns><c>True</c> if one human player; <c>False</c> otherwise.</returns>
+    public bool IsSingleHuman()
+        => HumanIndices.Count == 1;
 
     #endregion Public methods
 

@@ -142,7 +142,7 @@ public class IaManagerPivot
 
         foreach (var i in Enum.GetValues<PlayerIndices>())
         {
-            if ((!_round.Game.HumanIndices.Contains(i) || _round.Game.CpuVs) && _round.CanCallRon(i))
+            if (_round.Game.IsCpu(i) && _round.CanCallRon(i))
             {
                 if (ronCalled || callers.Count > 0)
                 {
