@@ -1,4 +1,5 @@
 ﻿using Gnoj_Ham_Library.Enums;
+using Gnoj_Ham_Library.Events;
 
 namespace Gnoj_Ham_Library;
 
@@ -73,12 +74,33 @@ public class GamePivot
     /// </summary>
     internal PlayerIndices FirstEastIndex => (PlayerIndices)Players.Select((p, i) => (p, i)).First(pi => pi.p.InitialWind == Winds.East).i;
 
-    /// <summary>
-    /// Inferred; indicates the game is between CPU only.
-    /// </summary>
-    internal bool CpuVs => HumanIndices.Count == 0;
-
     #endregion Embedded properties
+
+    /// <summary>
+    /// Constructor.
+    /// </summary>
+    /// <param name="humanPlayers">Collection of human players; other players will be <see cref="PlayerPivot.IsCpu"/>.</param>
+    /// <param name="ruleset">Ruleset for the game.</param>
+    /// <param name="save">Player save stats.</param>
+    /// <param name="random">Randomizer instance.</param>
+    /// <param name="callbackBaseUrl">Callback base URL.</param>
+    /// <exception cref="ArgumentNullException"><paramref name="save"/> is <c>Null</c> while ruleset is default.</exception>
+    public GamePivot(IDictionary<PlayerIndices, string?> humanPlayers, RulePivot ruleset, Random random, string callbackBaseUrl)
+    {
+        // TODO: check the parameter URL
+
+        Ruleset = ruleset;
+        Players = PlayerPivot.GetFourPlayers(humanPlayers, Ruleset.InitialPointsRule, random);
+        DominantWind = Winds.East;
+        EastIndexTurnCount = 1;
+        EastIndex = FirstEastIndex;
+        EastRank = 1;
+        _random = random;
+
+        HumanIndices = humanPlayers.Select(hp => hp.Key).ToList();
+
+        Round = new RoundPivot(this, EastIndex, random, () => new CallBackPivot(callbackBaseUrl));
+    }
 
     /// <summary>
     /// Constructor.
@@ -107,7 +129,7 @@ public class GamePivot
 
         HumanIndices = humanPlayers.Select(hp => hp.Key).ToList();
 
-        Round = new RoundPivot(this, EastIndex, random);
+        Round = new RoundPivot(this, EastIndex, random, () => null);
     }
 
     /// <summary>
@@ -134,7 +156,7 @@ public class GamePivot
 
         HumanIndices = new List<PlayerIndices>(4);
 
-        Round = new RoundPivot(this, EastIndex, random);
+        Round = new RoundPivot(this, EastIndex, random, () => null);
     }
 
     #region Public methods
@@ -247,7 +269,7 @@ public class GamePivot
             EastIndexTurnCount++;
         }
 
-        Round = new RoundPivot(this, EastIndex, _random);
+        Round = new RoundPivot(this, EastIndex, _random, Round.CallbackManagerCtor);
 
     Exit:
         string? error = null;

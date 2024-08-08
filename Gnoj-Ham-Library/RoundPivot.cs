@@ -89,6 +89,8 @@ public class RoundPivot
     /// </summary>
     public PlayerIndices WallOpeningIndex { get; }
 
+    internal Func<CallBackPivot?> CallbackManagerCtor { get; }
+
     #endregion Embedded properties
 
     #region Inferred properties
@@ -182,9 +184,10 @@ public class RoundPivot
     /// <param name="game">The <see cref="Game"/> value.</param>
     /// <param name="firstPlayerIndex">The initial <see cref="CurrentPlayerIndex"/> value.</param>
     /// <param name="random">Randomizer instance.</param>
-    internal RoundPivot(GamePivot game, PlayerIndices firstPlayerIndex, Random random)
+    internal RoundPivot(GamePivot game, PlayerIndices firstPlayerIndex, Random random, Func<CallBackPivot?> callbackManagerCtor)
     {
         Game = game;
+        CallbackManagerCtor = callbackManagerCtor;
 
         WallOpeningIndex = (PlayerIndices)random.Next(0, 4);
 
@@ -212,6 +215,21 @@ public class RoundPivot
         _waitForDiscard = false;
         _playerIndexHistory = new List<PlayerIndices>(10);
         IaManager = new IaManagerPivot(this);
+
+        var callbackManager = CallbackManagerCtor();
+        if (callbackManager != null)
+        {
+            // TODO: move URL into event
+            CallNotifier += e => callbackManager.Notify("CallNotifier", new { e.PlayerIndex, e.Action });
+            DiscardTileNotifier += e => callbackManager.Notify("DiscardTileNotifier", null);
+            NotifyPick += e => callbackManager.Notify("NotifyPick", new { e.PlayerIndex, Tile = e.Tile.ToJsonObject() });
+            HumanCallNotifier += e => callbackManager.Notify("HumanCallNotifier", new { e.Call, e.RiichiAdvised });
+            NotifyWallCount += () => callbackManager.Notify("NotifyWallCount", null);
+            PickNotifier += e => callbackManager.Notify("PickNotifier", null);
+            ReadyToCallNotifier += e => callbackManager.Notify("ReadyToCallNotifier", new { e.PlayerIndex, e.PreviousPlayerIndex, e.Call, e.PotentialPreviousPlayerIndex });
+            RiichiChoicesNotifier += e => callbackManager.Notify("RiichiChoicesNotifier", new { Tiles = e.Tiles.Select(t => t.ToJsonObject()).ToList() });
+            TurnChangeNotifier += e => callbackManager.Notify("TurnChangeNotifier", null);
+        }
     }
 
     #endregion Constructors

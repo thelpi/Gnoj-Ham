@@ -281,6 +281,11 @@ public class TilePivot : IEquatable<TilePivot>, IComparable<TilePivot>
 
     #region Internal methods
 
+    internal object ToJsonObject()
+    {
+
+    }
+
     /// <summary>
     /// Checks if this instance is dora when compared to another tile.
     /// </summary>
