@@ -457,10 +457,10 @@ public partial class MainWindow : Window
                 else
                 {
                     // TODO
-                    var button = result.HumanCalls.ContainsKey(_humanPlayerIndex)
-                        ? (result.HumanCalls[_humanPlayerIndex] == CallTypes.NoCall
+                    var button = result.HumanCall.HasValue
+                        ? (result.HumanCall.Value.call == CallTypes.NoCall
                             ? new PanelButton("StpPickP", 0)
-                            : new PanelButton($"Btn{result.HumanCalls[_humanPlayerIndex]}", -1))
+                            : new PanelButton($"Btn{result.HumanCall.Value.call}", -1))
                         : null;
                     RaiseButtonClickEvent(button);
                 }

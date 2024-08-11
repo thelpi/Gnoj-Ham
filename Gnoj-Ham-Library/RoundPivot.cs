@@ -247,12 +247,14 @@ public class RoundPivot
         var isFirstTurn = true;
         while (!cancellationToken.IsCancellationRequested)
         {
+            // 0 - after one loop, there is no human decline remaining
             if (!isFirstTurn)
             {
                 declinedHumanCalls = new List<PlayerIndices>();
             }
             isFirstTurn = false;
 
+            // 1 - checks if one human (we have not checked yet) can call "ron"; the loop ends if it's the case
             foreach (var pi in Game.HumanIndices)
             {
                 if (!declinedHumanCalls.Contains(pi) && !humanRonPendings.Contains(pi) && CanCallRon(pi))
@@ -260,20 +262,19 @@ public class RoundPivot
                     HumanCallNotifier?.Invoke(new HumanCallNotifierEventArgs { Call = CallTypes.Ron });
                     if (autoCallMahjongs.Contains(pi))
                     {
-                        result.AddHumanCall(pi, CallTypes.Ron);
+                        result.HumanCall = (pi, CallTypes.Ron);
                     }
                     else
                     {
                         DiscardTileNotifier?.Invoke(new DiscardTileNotifierEventArgs());
                     }
+                    return result;
                 }
             }
 
-            if (result.HumanCalls.Count > 0)
-            {
-                return result;
-            }
-
+            // 2 - this code runs after every human ron check has been made
+            // TODO: should the backend store human ron pendings, to free the UI from this responsability?
+            // the loop ends, with the "EndOfRound" marker, if any "ron" call is made
             if (CheckOpponensRonCall(humanRonPendings.Count > 0))
             {
                 result.EndOfRound = true;
@@ -285,11 +286,16 @@ public class RoundPivot
                 return result;
             }
 
+            // 3 - notify the UI of the kan
+            // it's done here (and not right after the kan) to not display new dora too soon
+            // TODO: it's probably not perfect
             if (kanInProgress.HasValue)
             {
                 ReadyToCallNotifier?.Invoke(new ReadyToCallNotifierEventArgs { Call = CallTypes.Kan, PotentialPreviousPlayerIndex = kanInProgress.Value.Item3 });
             }
 
+            // 4 - checks "pon" and "kan" calls for human players, except if declined
+            // note: it's impossible to have more than one
             foreach (var pi in Game.HumanIndices)
             {
                 if (!declinedHumanCalls.Contains(pi) && CanCallPonOrKan(pi, out var isSelfKan))
@@ -302,6 +308,8 @@ public class RoundPivot
                 }
             }
 
+            // 5 - "kan" call from non-human players
+            // the loop starts over
             var opponentWithKanTilePick = IaManager.KanDecision(false);
             if (opponentWithKanTilePick.HasValue)
             {
@@ -311,6 +319,8 @@ public class RoundPivot
                 continue;
             }
 
+            // 6 - "pon" call from non-human players
+            // the loop starts over
             var opponentPlayerId = IaManager.PonDecision();
             if (opponentPlayerId.HasValue)
             {
@@ -318,12 +328,16 @@ public class RoundPivot
                 continue;
             }
 
+            // 7 - checks "chii" call for current player (human)
+            // exits the loop to let the UI suggests the call
             if (IsHumanPlayer && !declinedHumanCalls.Contains(CurrentPlayerIndex) && CanCallChii().Count > 0)
             {
                 DiscardTileNotifier?.Invoke(new DiscardTileNotifierEventArgs());
                 return result;
             }
 
+            // 8 - checks "chii" call for current player (non-human)
+            // the loop starts over
             var chiiTilePick = IaManager.ChiiDecision();
             if (chiiTilePick.HasValue)
             {
@@ -331,6 +345,12 @@ public class RoundPivot
                 continue;
             }
 
+            // 9 - there is a "kan" call in progress by non-human player
+            // several things can happen:
+            // - tsumo from the caller (ends the loop)
+            // - another "kan" call
+            // - nothing special : checks "riichi" call and discard
+            // note: in any case the loop starts over
             if (kanInProgress != null)
             {
                 if (OpponentAfterPick(ref kanInProgress, sleepTime))
@@ -341,19 +361,29 @@ public class RoundPivot
                 continue;
             }
 
+            // 10 - no more tiles to work with
+            // ends the loop
             if (IsWallExhaustion)
             {
                 result.EndOfRound = true;
                 return result;
             }
 
+            // 11 - the current player picks a tile
             AutoPick();
+
+            // 12 - consequence of a pick:
+            // - for human player:
+            //      - checks for tsumo (auto or manual)
+            //      - checks for riichi
+            //      - checks for auto discard
+            // - for non human player, checks for tsumo, kan and riichi
             if (IsHumanPlayer)
             {
                 var call = HumanAutoPlay(autoCallMahjongs.Contains(CurrentPlayerIndex), sleepTime);
                 if (call.HasValue)
                 {
-                    result.AddHumanCall(CurrentPlayerIndex, call.Value);
+                    result.HumanCall = (CurrentPlayerIndex, call.Value);
                 }
                 return result;
             }

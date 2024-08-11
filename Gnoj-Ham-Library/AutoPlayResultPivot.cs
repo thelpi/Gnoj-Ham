@@ -4,8 +4,6 @@ namespace Gnoj_Ham_Library;
 
 public class AutoPlayResultPivot
 {
-    private readonly Dictionary<PlayerIndices, CallTypes> _humanCalls = new();
-
     /// <summary>
     /// Indicates if the round is over; otherwise, the control is given back to the UI.
     /// </summary>
@@ -17,17 +15,7 @@ public class AutoPlayResultPivot
     public PlayerIndices? RonPlayerId { get; internal set; }
 
     /// <summary>
-    /// Indicates decisions to automatically apply when the control is given back to the UI.
+    /// Indicates decision to automatically apply when the control is given back to the UI.
     /// </summary>
-    public IReadOnlyDictionary<PlayerIndices, CallTypes> HumanCalls => _humanCalls;
-
-    /// <summary>
-    /// Inserts a human call.
-    /// </summary>
-    /// <param name="playerIndex">Involved player index.</param>
-    /// <param name="call">Call type.</param>
-    internal void AddHumanCall(PlayerIndices playerIndex, CallTypes call)
-    {
-        _humanCalls[playerIndex] = call;
-    }
+    public (PlayerIndices playerIndex, CallTypes call)? HumanCall { get; internal set; }
 }
