@@ -73,11 +73,6 @@ public class GamePivot
     /// </summary>
     internal PlayerIndices FirstEastIndex => (PlayerIndices)Players.Select((p, i) => (p, i)).First(pi => pi.p.InitialWind == Winds.East).i;
 
-    /// <summary>
-    /// Inferred; indicates the game is between CPU only.
-    /// </summary>
-    internal bool CpuVs => HumanIndices.Count == 0;
-
     #endregion Embedded properties
 
     /// <summary>
