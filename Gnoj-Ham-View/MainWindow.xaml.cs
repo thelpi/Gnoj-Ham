@@ -41,6 +41,14 @@ public partial class MainWindow : Window
     {
         InitializeComponent();
 
+        BtnChii.Collapse();
+        BtnPon.Collapse();
+        BtnKan.Collapse();
+        BtnTsumo.Collapse();
+        BtnRiichi.Collapse();
+        BtnRon.Collapse();
+        BtnSkipCall.Collapse();
+
         _cancellationToken = _cancellationTokenSource.Token;
         this.FindControl("LblPlayerP", _humanPlayerIndex).Content = playerName;
 
@@ -391,21 +399,21 @@ public partial class MainWindow : Window
                     else
                     {
                         GrdOverlayCanCall.Visibility = Visibility.Visible;
-                        BtnSkipCall.Visibility = Visibility.Visible;
+                        BtnSkipCall.MakeVisible(_humanPlayerIndex);
                         switch (e.Call)
                         {
                             case CallTypes.Riichi:
-                                BtnRiichi.Visibility = Visibility.Visible;
+                                BtnRiichi.MakeVisible(_humanPlayerIndex);
                                 if (e.RiichiAdvised)
                                     BtnRiichi.Foreground = Brushes.DarkMagenta;
                                 else
                                     BtnSkipCall.Foreground = Brushes.DarkMagenta;
                                 break;
                             case CallTypes.Ron:
-                                BtnRon.Visibility = Visibility.Visible;
+                                BtnRon.MakeVisible(_humanPlayerIndex);
                                 break;
                             case CallTypes.Tsumo:
-                                BtnTsumo.Visibility = Visibility.Visible;
+                                BtnTsumo.MakeVisible(_humanPlayerIndex);
                                 break;
                         }
                     }
@@ -694,8 +702,8 @@ public partial class MainWindow : Window
             if (_game.Round.CanCallTsumo(true))
             {
                 GrdOverlayCanCall.Visibility = Visibility.Visible;
-                BtnTsumo.Visibility = Visibility.Visible;
-                BtnSkipCall.Visibility = Visibility.Visible;
+                BtnTsumo.MakeVisible(_humanPlayerIndex);
+                BtnSkipCall.MakeVisible(_humanPlayerIndex);
                 if (Properties.Settings.Default.AutoCallMahjong)
                 {
                     BtnTsumo.RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent));
@@ -712,8 +720,8 @@ public partial class MainWindow : Window
                 {
                     var riichiDecision = _game.Ruleset.DiscardTip && _game.Round.IaManager.RiichiDecision().choice != null;
 
-                    BtnRiichi.Visibility = Visibility.Visible;
-                    BtnSkipCall.Visibility = Visibility.Visible;
+                    BtnRiichi.MakeVisible(_humanPlayerIndex);
+                    BtnSkipCall.MakeVisible(_humanPlayerIndex);
                     GrdOverlayCanCall.Visibility = Visibility.Visible;
 
                     if (riichiDecision)
@@ -1026,13 +1034,13 @@ public partial class MainWindow : Window
     private void SetActionButtonsVisibility(bool preDiscard = false, bool cpuPlay = false, bool skippedInnerKan = false)
     {
         // Default behavior.
-        BtnChii.Visibility = Visibility.Collapsed;
-        BtnPon.Visibility = Visibility.Collapsed;
-        BtnKan.Visibility = Visibility.Collapsed;
-        BtnTsumo.Visibility = Visibility.Collapsed;
-        BtnRiichi.Visibility = Visibility.Collapsed;
-        BtnRon.Visibility = Visibility.Collapsed;
-        BtnSkipCall.Visibility = Visibility.Collapsed;
+        BtnChii.Collapse();
+        BtnPon.Collapse();
+        BtnKan.Collapse();
+        BtnTsumo.Collapse();
+        BtnRiichi.Collapse();
+        BtnRon.Collapse();
+        BtnSkipCall.Collapse();
         GrdOverlayCanCall.Visibility = Visibility.Collapsed;
 
         BtnChii.Foreground = Brushes.Black;
@@ -1054,7 +1062,7 @@ public partial class MainWindow : Window
                 var kanPossibilities = _game.Round.CanCallKan(_humanPlayerIndex);
                 if (kanPossibilities.Count > 0)
                 {
-                    BtnKan.Visibility = Visibility.Visible;
+                    BtnKan.MakeVisible(_humanPlayerIndex);
                     if (_game.Ruleset.DiscardTip)
                     {
                         needAdvice = true;
@@ -1077,7 +1085,7 @@ public partial class MainWindow : Window
                 var chiiPossibilities = _game.Round.CanCallChii();
                 if (chiiPossibilities.Count > 0)
                 {
-                    BtnChii.Visibility = Visibility.Visible;
+                    BtnChii.MakeVisible(_humanPlayerIndex);
                     if (_game.Ruleset.DiscardTip)
                     {
                         needAdvice = true;
@@ -1092,7 +1100,7 @@ public partial class MainWindow : Window
 
             if (_game.Round.CanCallPon(_humanPlayerIndex))
             {
-                BtnPon.Visibility = Visibility.Visible;
+                BtnPon.MakeVisible(_humanPlayerIndex);
                 if (_game.Ruleset.DiscardTip)
                 {
                     needAdvice = true;
@@ -1107,7 +1115,7 @@ public partial class MainWindow : Window
             var kanPossibilities = _game.Round.CanCallKan(_humanPlayerIndex);
             if (kanPossibilities.Count > 0)
             {
-                BtnKan.Visibility = Visibility.Visible;
+                BtnKan.MakeVisible(_humanPlayerIndex);
                 if (_game.Ruleset.DiscardTip)
                 {
                     needAdvice = true;
@@ -1129,7 +1137,7 @@ public partial class MainWindow : Window
             || BtnPon.Visibility == Visibility.Visible
             || BtnKan.Visibility == Visibility.Visible)
         {
-            BtnSkipCall.Visibility = Visibility.Visible;
+            BtnSkipCall.MakeVisible(_humanPlayerIndex);
             GrdOverlayCanCall.Visibility = Visibility.Visible;
             ActivateTimer(null);
         }

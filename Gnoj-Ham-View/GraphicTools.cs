@@ -61,6 +61,64 @@ internal static class GraphicTools
     }
 
     /// <summary>
+    /// Applies a style to a label to show a gain or lost.
+    /// </summary>
+    /// <param name="control">The control.</param>
+    /// <param name="gainOrLostValue">The gain or lost value.</param>
+    internal static void ApplyGainAndLostStyle(this ContentControl control, int gainOrLostValue)
+    {
+        control.Content = gainOrLostValue;
+        if (gainOrLostValue > 0)
+        {
+            control.Content = $"+{gainOrLostValue}";
+            control.Foreground = System.Windows.Media.Brushes.ForestGreen;
+        }
+        else if (gainOrLostValue < 0)
+        {
+            control.Foreground = System.Windows.Media.Brushes.Red;
+        }
+    }
+
+    /// <summary>
+    /// Extension; retrieves a <see cref="FrameworkElement"/> from a <see cref="Window"/> by its name and the player index.
+    /// </summary>
+    /// <typeparam name="T">Subtype of <see cref="FrameworkElement"/>.</typeparam>
+    /// <param name="window">The window.</param>
+    /// <param name="nameWithoutIndex">The element name without the player index.</param>
+    /// <param name="playerIndex">The player index.</param>
+    /// <returns>The element.</returns>
+    internal static T FindName<T>(this Window window, string nameWithoutIndex, PlayerIndices playerIndex) where T : FrameworkElement
+    {
+        return (window.FindName(string.Concat(nameWithoutIndex, (int)playerIndex)) as T)!;
+    }
+
+    /// <summary>
+    /// Extension; retrieves a <see cref="ContentControl"/> from a <see cref="Window"/> by its name and the player index.
+    /// </summary>
+    /// <param name="window">The window.</param>
+    /// <param name="nameWithoutIndex">The control name without the player index.</param>
+    /// <param name="playerIndex">The player index.</param>
+    /// <returns>The control.</returns>
+    internal static ContentControl FindControl(this Window window, string nameWithoutIndex, PlayerIndices playerIndex)
+    {
+        return window.FindName<ContentControl>(nameWithoutIndex, playerIndex);
+    }
+
+    /// <summary>
+    /// Extension; retrieves a <see cref="Panel"/> from a <see cref="Window"/> by its name and the player index.
+    /// </summary>
+    /// <param name="window">The window.</param>
+    /// <param name="nameWithoutIndex">The panel name without the player index.</param>
+    /// <param name="playerIndex">The player index.</param>
+    /// <returns>The panel.</returns>
+    internal static Panel FindPanel(this Window window, string nameWithoutIndex, PlayerIndices playerIndex)
+    {
+        return window.FindName<Panel>(nameWithoutIndex, playerIndex);
+    }
+
+    #region Enum converters
+
+    /// <summary>
     /// Gets a japanese caracter which represents the specified wind.
     /// </summary>
     /// <param name="wind">The wind to display.</param>
@@ -119,62 +177,6 @@ internal static class GraphicTools
     }
 
     /// <summary>
-    /// Applies a style to a label to show a gain or lost.
-    /// </summary>
-    /// <param name="control">The control.</param>
-    /// <param name="gainOrLostValue">The gain or lost value.</param>
-    internal static void ApplyGainAndLostStyle(this ContentControl control, int gainOrLostValue)
-    {
-        control.Content = gainOrLostValue;
-        if (gainOrLostValue > 0)
-        {
-            control.Content = $"+{gainOrLostValue}";
-            control.Foreground = System.Windows.Media.Brushes.ForestGreen;
-        }
-        else if (gainOrLostValue < 0)
-        {
-            control.Foreground = System.Windows.Media.Brushes.Red;
-        }
-    }
-
-    /// <summary>
-    /// Extension; retrieves a <see cref="FrameworkElement"/> from a <see cref="Window"/> by its name and the player index.
-    /// </summary>
-    /// <typeparam name="T">Subtype of <see cref="FrameworkElement"/>.</typeparam>
-    /// <param name="window">The window.</param>
-    /// <param name="nameWithoutIndex">The element name without the player index.</param>
-    /// <param name="playerIndex">The player index.</param>
-    /// <returns>The element.</returns>
-    internal static T FindName<T>(this Window window, string nameWithoutIndex, PlayerIndices playerIndex) where T : FrameworkElement
-    {
-        return (window.FindName(string.Concat(nameWithoutIndex, (int)playerIndex)) as T)!;
-    }
-
-    /// <summary>
-    /// Extension; retrieves a <see cref="ContentControl"/> from a <see cref="Window"/> by its name and the player index.
-    /// </summary>
-    /// <param name="window">The window.</param>
-    /// <param name="nameWithoutIndex">The control name without the player index.</param>
-    /// <param name="playerIndex">The player index.</param>
-    /// <returns>The control.</returns>
-    internal static ContentControl FindControl(this Window window, string nameWithoutIndex, PlayerIndices playerIndex)
-    {
-        return window.FindName<ContentControl>(nameWithoutIndex, playerIndex);
-    }
-
-    /// <summary>
-    /// Extension; retrieves a <see cref="Panel"/> from a <see cref="Window"/> by its name and the player index.
-    /// </summary>
-    /// <param name="window">The window.</param>
-    /// <param name="nameWithoutIndex">The panel name without the player index.</param>
-    /// <param name="playerIndex">The player index.</param>
-    /// <returns>The panel.</returns>
-    internal static Panel FindPanel(this Window window, string nameWithoutIndex, PlayerIndices playerIndex)
-    {
-        return window.FindName<Panel>(nameWithoutIndex, playerIndex);
-    }
-
-    /// <summary>
     /// Overriden; provides a textual representation of the instance.
     /// </summary>
     /// <returns>Textual representation of the instance.</returns>
@@ -187,8 +189,6 @@ internal static class GraphicTools
             _ => $"{tile.Family.DisplayName()}\r\n{tile.Number}" + (tile.IsRedDora ? "\r\nRouge" : string.Empty),
         };
     }
-
-    #region Enum converters
 
     /// <summary>
     /// Transforms the enumeration <see cref="CpuSpeedPivot"/> into a list of <see cref="string"/> (with matching index).
