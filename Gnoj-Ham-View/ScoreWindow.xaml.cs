@@ -19,9 +19,9 @@ public partial class ScoreWindow : Window
     {
         InitializeComponent();
 
-        GrdDorasAndInfos.RowDefinitions[0].Height = new GridLength(GraphicTools.TILE_HEIGHT + GraphicTools.DEFAULT_TILE_MARGIN);
-        GrdDorasAndInfos.RowDefinitions[1].Height = new GridLength(GraphicTools.TILE_HEIGHT + GraphicTools.DEFAULT_TILE_MARGIN);
-        GrdDorasAndInfos.ColumnDefinitions[1].Width = new GridLength((GraphicTools.TILE_WIDTH * 5) + GraphicTools.DEFAULT_TILE_MARGIN);
+        GrdDorasAndInfos.RowDefinitions[0].Height = new GridLength(TileButton.TILE_HEIGHT + TileButton.DEFAULT_TILE_MARGIN);
+        GrdDorasAndInfos.RowDefinitions[1].Height = new GridLength(TileButton.TILE_HEIGHT + TileButton.DEFAULT_TILE_MARGIN);
+        GrdDorasAndInfos.ColumnDefinitions[1].Width = new GridLength((TileButton.TILE_WIDTH * 5) + TileButton.DEFAULT_TILE_MARGIN);
 
         LblHonba.Content = endOfRoundInformations.HonbaCount;
         LblPendingRiichi.Content = endOfRoundInformations.PendingRiichiCount;

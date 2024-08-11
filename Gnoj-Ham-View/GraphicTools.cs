@@ -1,9 +1,5 @@
-﻿using System.Drawing;
-using System.IO;
-using System.Windows;
+﻿using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 using Gnoj_Ham_Library;
 using Gnoj_Ham_Library.Enums;
@@ -16,64 +12,9 @@ namespace Gnoj_Ham_View;
 internal static class GraphicTools
 {
     /// <summary>
-    /// Tile width.
-    /// </summary>
-    internal const int TILE_WIDTH = 45;
-    /// <summary>
-    /// Tile height.
-    /// </summary>
-    internal const int TILE_HEIGHT = 60;
-    /// <summary>
-    /// Default margin.
-    /// </summary>
-    internal const int DEFAULT_TILE_MARGIN = 10;
-    /// <summary>
     /// The table size (width and height).
     /// </summary>
     internal const int EXPECTED_TABLE_SIZE = 920;
-    /// <summary>
-    /// Tile concealed resource name.
-    /// </summary>
-    internal const string CONCEALED_TILE_RSC_NAME = "concealed";
-
-    /// <summary>
-    /// Extension; generates a button which represents a tile.
-    /// </summary>
-    /// <param name="tile">The tile to display.</param>
-    /// <param name="handler">Optionnal; event on click on the button; default value is <c>Null</c>.</param>
-    /// <param name="angle">Optionnal; rotation angle; default is <c>0°</c>.</param>
-    /// <param name="concealed">Optionnal; set <c>True</c> to display a concealed tile; default is <c>False</c>.</param>
-    /// <param name="rate">Optionnal; applies a rate on the size of the tile; default is <c>1</c>.</param>
-    /// <returns>A button representing the tile.</returns>
-    internal static Button GenerateTileButton(this TilePivot? tile, RoutedEventHandler? handler = null, AnglePivot angle = AnglePivot.A0, bool concealed = false, double rate = 1)
-    {
-        if (!concealed && tile == null)
-            throw new ArgumentNullException(nameof(tile));
-
-        var rscName = concealed ? CONCEALED_TILE_RSC_NAME : tile!.ToResourceName();
-
-        var tileBitmap = Properties.Resources.ResourceManager.GetObject(rscName) as byte[];
-
-        var button = new Button
-        {
-            Height = angle == AnglePivot.A0 || angle == AnglePivot.A180 ? (TILE_HEIGHT * rate) : (TILE_WIDTH * rate),
-            Width = angle == AnglePivot.A0 || angle == AnglePivot.A180 ? (TILE_WIDTH * rate) : (TILE_HEIGHT * rate),
-            Content = new System.Windows.Controls.Image
-            {
-                Source = tileBitmap!.ToBitmapImage(),
-                LayoutTransform = new RotateTransform(Convert.ToDouble(angle.ToString().Replace("A", string.Empty)))
-            },
-            Tag = tile,
-            ToolTip = concealed ? null : tile!.TileDisplay()
-        };
-
-        if (handler != null)
-        {
-            button.Click += handler;
-        }
-
-        return button;
-    }
 
     /// <summary>
     /// Extension; resets a panel filled with dora tiles.
@@ -88,7 +29,7 @@ internal static class GraphicTools
         var concealedCount = 5 - visibleCount;
         for (var i = 4; i >= 0; i--)
         {
-            panel.Children.Add(tiles.ElementAt(i).GenerateTileButton(concealed: 5 - concealedCount <= i, rate: 0.8));
+            panel.Children.Add(new TileButton(tiles.ElementAt(i), concealed: 5 - concealedCount <= i, rate: 0.8));
         }
     }
 
@@ -117,23 +58,6 @@ internal static class GraphicTools
         }
 
         return boxPanel;
-    }
-
-    /// <summary>
-    /// Extension; transfoms a <see cref="Bitmap"/> to a <see cref="BitmapImage"/>.
-    /// </summary>
-    /// <param name="bitmap">The <see cref="Bitmap"/> to transform.</param>
-    /// <returns>The converted <see cref="BitmapImage"/>.</returns>
-    private static BitmapImage ToBitmapImage(this byte[] bitmap)
-    {
-        var bitmapImage = new BitmapImage();
-        bitmapImage.BeginInit();
-        bitmapImage.StreamSource = new MemoryStream(bitmap);
-        bitmapImage.CacheOption = BitmapCacheOption.OnLoad;
-        bitmapImage.EndInit();
-        bitmapImage.Freeze();
-
-        return bitmapImage;
     }
 
     /// <summary>
@@ -532,12 +456,12 @@ internal static class GraphicTools
         var handPanel = new StackPanel
         {
             Orientation = Orientation.Horizontal,
-            Height = TILE_HEIGHT + (0.5 * DEFAULT_TILE_MARGIN),
+            Height = TileButton.TILE_HEIGHT + (0.5 * TileButton.DEFAULT_TILE_MARGIN),
             HorizontalAlignment = HorizontalAlignment.Center
         };
         foreach (var (tile, leaned, apart) in p.GetFullHandForDisplay())
         {
-            var b = GenerateTileButton(tile, null, leaned ? AnglePivot.A90 : AnglePivot.A0, false);
+            var b = new TileButton(tile, null, leaned ? AnglePivot.A90 : AnglePivot.A0, false);
             if (apart)
             {
                 b.Margin = new Thickness(5, 0, 0, 0);

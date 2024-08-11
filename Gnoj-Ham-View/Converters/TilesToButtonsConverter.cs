@@ -15,7 +15,7 @@ internal class TilesToButtonsConverter : IValueConverter
         if (parameter != null)
             double.TryParse(parameter.ToString(), out rate);
 
-        return ((IEnumerable<TilePivot>)value).Select(x => GraphicTools.GenerateTileButton(x, rate: rate));
+        return ((IEnumerable<TilePivot>)value).Select(x => new TileButton(x, rate: rate));
     }
 
     public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
