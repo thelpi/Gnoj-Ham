@@ -180,7 +180,7 @@ public class IaManagerPivot
     /// </summary>
     /// <param name="chiiPossibilities">See the result of the method <see cref="RoundPivot.CanCallChii"/>.</param>
     /// <returns><c>True</c> if Chii is advised.</returns>
-    public bool ChiiDecisionAdvice(Dictionary<TilePivot, bool> chiiPossibilities)
+    public bool ChiiDecisionAdvice(IReadOnlyList<TilePivot> chiiPossibilities)
         => ChiiDecisionInternal(chiiPossibilities) != null;
 
     #endregion Public methods
@@ -235,12 +235,10 @@ public class IaManagerPivot
     /// Checks if the current CPU player can make a chii call, and computes the decision to do so.
     /// </summary>
     /// <returns>
-    /// If the decision is made, a tuple :
-    /// - The first item indicates the first tile to use, in the sequence order, in the concealed hand of the player.
-    /// - The second item indicates if this tile represents the first number in the sequence (<c>True</c>) or the second (<c>False</c>).
+    /// If the decision is made, the first tile to use, in the sequence order, in the concealed hand of the player.
     /// <c>Null</c> otherwise.
     /// </returns>
-    internal (TilePivot tile, bool isFirst)? ChiiDecision()
+    internal TilePivot? ChiiDecision()
     {
         var chiiTiles = _round.OpponentsCanCallChii();
         return chiiTiles.Count > 0 ? ChiiDecisionInternal(chiiTiles) : null;
@@ -351,7 +349,7 @@ public class IaManagerPivot
         return null;
     }
 
-    private (TilePivot tile, bool isFirst)? ChiiDecisionInternal(Dictionary<TilePivot, bool> chiiTiles)
+    private TilePivot? ChiiDecisionInternal(IReadOnlyList<TilePivot> chiiTiles)
     {
         // Proceeds to chii if :
         // - The hand is already open (we assume it's open for a good reason)
@@ -362,13 +360,13 @@ public class IaManagerPivot
 
         if (_round.GetHand(_round.CurrentPlayerIndex).IsConcealed
             || tenpaiOppenentIndexes.Count > 0
-            || (_itsuFamily.HasValue && _itsuFamily != chiiTiles.Keys.First().Family))
+            || (_itsuFamily.HasValue && _itsuFamily != chiiTiles[0].Family))
         {
             return null;
         }
 
-        (TilePivot tile, bool isFirst)? tileChoice = null;
-        foreach (var tileKey in chiiTiles.Keys)
+        TilePivot? tileChoice = null;
+        foreach (var tileKey in chiiTiles)
         {
             var m2 = _round.GetHand(_round.CurrentPlayerIndex).ConcealedTiles.Any(t => t.Family == tileKey.Family && t.Number == tileKey.Number - 2);
             var m1 = _round.GetHand(_round.CurrentPlayerIndex).ConcealedTiles.Any(t => t.Family == tileKey.Family && t.Number == tileKey.Number - 1);
@@ -378,7 +376,7 @@ public class IaManagerPivot
 
             if (!((m2 && m1 && m0) || (m1 && m0 && p1) || (m0 && p1 && p2)))
             {
-                tileChoice = (tileKey, chiiTiles[tileKey]);
+                tileChoice = tileKey;
             }
         }
 

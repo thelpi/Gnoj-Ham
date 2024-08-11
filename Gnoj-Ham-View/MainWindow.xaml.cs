@@ -93,7 +93,7 @@ public partial class MainWindow : Window
         if (IsCurrentlyClickable())
         {
             _waitForDecision = false;
-            var tag = (Tuple<TilePivot, bool>)(sender as Button)!.Tag;
+            var tag = (TilePivot)(sender as Button)!.Tag;
             ChiiCall(tag);
         }
     }
@@ -122,7 +122,7 @@ public partial class MainWindow : Window
         {
             var tileChoices = _game.Round.CanCallChii();
 
-            if (tileChoices.Keys.Count > 0)
+            if (tileChoices.Count > 0)
             {
                 RaiseButtonClickEvent(RestrictDiscardWithTilesSelection(tileChoices, BtnChiiChoice_Click));
                 SuggestDiscard();
@@ -139,7 +139,7 @@ public partial class MainWindow : Window
             {
                 if (_game.Round.IsHumanPlayer)
                 {
-                    RaiseButtonClickEvent(RestrictDiscardWithTilesSelection(kanTiles.ToDictionary(t => t, t => false), BtnKanChoice_Click));
+                    RaiseButtonClickEvent(RestrictDiscardWithTilesSelection(kanTiles, BtnKanChoice_Click));
                 }
                 else
                 {
@@ -514,7 +514,7 @@ public partial class MainWindow : Window
     }
 
     // Restrict possible discards on the specified selection of tiles.
-    private PanelButton? RestrictDiscardWithTilesSelection(IDictionary<TilePivot, bool> tileChoices, RoutedEventHandler handler)
+    private PanelButton? RestrictDiscardWithTilesSelection(IReadOnlyList<TilePivot> tileChoices, RoutedEventHandler handler)
     {
         PanelButton? result = null;
 
@@ -526,8 +526,8 @@ public partial class MainWindow : Window
             buttons.Add((this.FindPanel("StpPickP", _humanPlayerIndex).Children[0] as Button)!);
         }
 
-        var clickableButtons = new List<Button>(tileChoices.Keys.Count);
-        foreach (var tileKey in tileChoices.Keys)
+        var clickableButtons = new List<Button>(tileChoices.Count);
+        foreach (var tileKey in tileChoices)
         {
             // Changes the event of every buttons concerned by the call...
             var buttonClickable = buttons
@@ -538,7 +538,7 @@ public partial class MainWindow : Window
             buttonClickable.Click -= BtnDiscard_Click;
             if (handler == BtnChiiChoice_Click)
             {
-                buttonClickable.Tag = new Tuple<TilePivot, bool>(tileKey, tileChoices[tileKey]);
+                buttonClickable.Tag = tileKey;
             }
             SetHighlight(buttonClickable);
             clickableButtons.Add(buttonClickable);
@@ -590,10 +590,10 @@ public partial class MainWindow : Window
     }
 
     // Chii call action (human or CPU).
-    private void ChiiCall(Tuple<TilePivot, bool> chiiTilePick)
+    private void ChiiCall(TilePivot chiiTilePick)
     {
         RefreshPlayerTurnStyle();
-        if (_game.Round.CallChii(chiiTilePick.Item2 ? chiiTilePick.Item1.Number - 1 : chiiTilePick.Item1.Number))
+        if (_game.Round.CallChii(chiiTilePick))
         {
             InvokeOverlay("Chii", _game.Round.CurrentPlayerIndex);
 
@@ -1275,7 +1275,7 @@ public partial class MainWindow : Window
     private void TriggerRiichiChoiceAfterOverlayStoryboard(object? sender, EventArgs e)
     {
         _overlayStoryboard.Completed -= TriggerRiichiChoiceAfterOverlayStoryboard;
-        RaiseButtonClickEvent(RestrictDiscardWithTilesSelection(_riichiTiles!.ToDictionary(t => t, t => false), BtnRiichiChoice_Click));
+        RaiseButtonClickEvent(RestrictDiscardWithTilesSelection(_riichiTiles!, BtnRiichiChoice_Click));
     }
 
     // Handler to trigger a human ron at the end of the overlay storyboard animation.

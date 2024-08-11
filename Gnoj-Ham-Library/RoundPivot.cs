@@ -339,9 +339,9 @@ public class RoundPivot
             // 8 - checks "chii" call for current player (non-human)
             // the loop starts over
             var chiiTilePick = IaManager.ChiiDecision();
-            if (chiiTilePick.HasValue)
+            if (chiiTilePick != null)
             {
-                ChiiCall(chiiTilePick.Value, sleepTime);
+                ChiiCall(chiiTilePick, sleepTime);
                 continue;
             }
 
@@ -419,22 +419,20 @@ public class RoundPivot
     /// Checks if calling chii is allowed for the specified player.
     /// </summary>
     /// <returns>
-    /// A dictionnary, where each <see cref="KeyValuePair{TilePivot, Boolean}"/> is an indication of the chii which can be made:
-    /// - The key is the first tile (ie the lowest number) of <see cref="HandPivot.ConcealedTiles"/> to use in the sequence.
-    /// - The value indicates if the key is used as lowest number in the sequence (<c>False</c>) or second (<c>True</c>, ie the tile stolen is the lowest number).
+    /// the first tile (ie the lowest number) of <see cref="HandPivot.ConcealedTiles"/> to use in the sequence.
     /// The list is empty if calling chii is impossible.
     /// </returns>
-    public Dictionary<TilePivot, bool> CanCallChii()
+    public IReadOnlyList<TilePivot> CanCallChii()
     {
         if (_wallTiles.Count == 0 || _discards[(int)PreviousPlayerIndex].Count == 0 || _waitForDiscard || IsRiichi(CurrentPlayerIndex))
         {
-            return new Dictionary<TilePivot, bool>();
+            return new List<TilePivot>();
         }
 
         var tile = _discards[(int)PreviousPlayerIndex].Last();
         if (tile.IsHonor)
         {
-            return new Dictionary<TilePivot, bool>();
+            return new List<TilePivot>();
         }
 
         var potentialTiles =
@@ -449,18 +447,18 @@ public class RoundPivot
         var tileRelativePositionBonus1 = potentialTiles.FirstOrDefault(t => t.Number == tile.Number + 1);
         var tileRelativePositionBonus2 = potentialTiles.FirstOrDefault(t => t.Number == tile.Number + 2);
 
-        var tilesFromConcealedHandWithRelativePosition = new Dictionary<TilePivot, bool>();
+        var tilesFromConcealedHandWithRelativePosition = new List<TilePivot>(3);
         if (tileRelativePositionMinus2 != null && tileRelativePositionMinus1 != null)
         {
-            tilesFromConcealedHandWithRelativePosition.Add(tileRelativePositionMinus2, false);
+            tilesFromConcealedHandWithRelativePosition.Add(tileRelativePositionMinus2);
         }
         if (tileRelativePositionMinus1 != null && tileRelativePositionBonus1 != null)
         {
-            tilesFromConcealedHandWithRelativePosition.Add(tileRelativePositionMinus1, false);
+            tilesFromConcealedHandWithRelativePosition.Add(tileRelativePositionMinus1);
         }
         if (tileRelativePositionBonus1 != null && tileRelativePositionBonus2 != null)
         {
-            tilesFromConcealedHandWithRelativePosition.Add(tileRelativePositionBonus1, true);
+            tilesFromConcealedHandWithRelativePosition.Add(tileRelativePositionBonus1);
         }
 
         return tilesFromConcealedHandWithRelativePosition;
@@ -547,17 +545,19 @@ public class RoundPivot
     /// </summary>
     /// <param name="startNumber">The number indicating the beginning of the sequence.</param>
     /// <returns><c>True</c> if success; <c>False</c> if failure.</returns>
-    public bool CallChii(int startNumber)
+    public bool CallChii(TilePivot pickInSequence)
     {
-        if (CanCallChii().Keys.Count == 0)
+        if (CanCallChii().Count == 0)
         {
             return false;
         }
 
+        var stolenTile = _discards[(int)PreviousPlayerIndex].Last();
+
         _hands[(int)CurrentPlayerIndex].DeclareChii(
-            _discards[(int)PreviousPlayerIndex].Last(),
+            stolenTile,
             Game.GetPlayerCurrentWind(PreviousPlayerIndex),
-            startNumber
+            Math.Min(pickInSequence.Number, stolenTile.Number)
         );
         _discards[(int)PreviousPlayerIndex].RemoveAt(_discards[(int)PreviousPlayerIndex].Count - 1);
         _stealingInProgress = true;
@@ -916,7 +916,7 @@ public class RoundPivot
     /// Checks if a chii call can be made by any opponent of the human player.
     /// </summary>
     /// <returns>Same type of return than the method <see cref="CanCallChii()"/>, for the opponent who can call chii.</returns>
-    internal Dictionary<TilePivot, bool> OpponentsCanCallChii()
+    internal IReadOnlyList<TilePivot> OpponentsCanCallChii()
     {
         if (!IsHumanPlayer)
         {
@@ -927,7 +927,7 @@ public class RoundPivot
             }
         }
 
-        return new Dictionary<TilePivot, bool>();
+        return new List<TilePivot>();
     }
 
     /// <summary>
@@ -1000,11 +1000,11 @@ public class RoundPivot
         PickNotifier?.Invoke(new PickNotifierEventArgs());
     }
 
-    private void ChiiCall((TilePivot, bool) chiiTilePick, int sleepTime)
+    private void ChiiCall(TilePivot chiiTilePick, int sleepTime)
     {
         TurnChangeNotifier?.Invoke(new TurnChangeNotifierEventArgs());
 
-        var callChii = CallChii(chiiTilePick.Item2 ? chiiTilePick.Item1.Number - 1 : chiiTilePick.Item1.Number);
+        var callChii = CallChii(chiiTilePick);
         if (callChii)
         {
             CallNotifier?.Invoke(new CallNotifierEventArgs { Action = CallTypes.Chii, PlayerIndex = CurrentPlayerIndex });
