@@ -83,7 +83,7 @@ public class GamePivot
     /// <param name="save">Player save stats.</param>
     /// <param name="random">Randomizer instance.</param>
     /// <exception cref="ArgumentNullException"><paramref name="save"/> is <c>Null</c> while ruleset is default.</exception>
-    public GamePivot(IDictionary<PlayerIndices, string?> humanPlayers, RulePivot ruleset, PlayerSavePivot? save, Random random)
+    public GamePivot(IDictionary<PlayerIndices, string> humanPlayers, RulePivot ruleset, PlayerSavePivot? save, Random random)
     {
         if (ruleset.AreDefaultRules() && humanPlayers.Count == 1 && save == null)
         {

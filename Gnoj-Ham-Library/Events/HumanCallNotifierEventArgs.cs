@@ -16,4 +16,9 @@ public class HumanCallNotifierEventArgs : EventArgs
     /// In case of 'Riichi' call, indicates if the call is advised (if the advice feature is eanbled).
     /// </summary>
     public bool RiichiAdvised { get; internal init; }
+
+    /// <summary>
+    /// Player index.
+    /// </summary>
+    public PlayerIndices PlayerIndices { get; internal init; }
 }

@@ -55,7 +55,7 @@ public class PlayerPivot
     /// <param name="random">Randomizer instance.</param>
     /// <returns>List of four <see cref="PlayerPivot"/>, not sorted.</returns>
     internal static IReadOnlyList<PlayerPivot> GetFourPlayers(
-        IDictionary<PlayerIndices, string?> humanPlayers,
+        IDictionary<PlayerIndices, string> humanPlayers,
         InitialPointsRules initialPointsRulePivot,
         Random random)
     {
@@ -96,12 +96,12 @@ public class PlayerPivot
     private static Winds GetWindFromIndex(PlayerIndices eastIndex, PlayerIndices i)
         => i == eastIndex ? Winds.East : (i > eastIndex ? (Winds)(i - eastIndex) : (Winds)(4 - (int)eastIndex + i));
 
-    private static void CheckName(IDictionary<PlayerIndices, string?> humanPlayers)
+    private static void CheckName(IDictionary<PlayerIndices, string> humanPlayers)
     {
         for (var i =  0; i < humanPlayers.Count; i++)
         {
             var key = humanPlayers.ElementAt(i).Key;
-            var name = (humanPlayers[key] ?? string.Empty).Trim();
+            var name = humanPlayers[key].Trim();
             humanPlayers[key] = name == string.Empty || name.StartsWith(CPU_NAME_PREFIX, StringComparison.InvariantCultureIgnoreCase)
                 ? $"{DEFAULT_HUMAN_NAME}-{i}"
                 : name;

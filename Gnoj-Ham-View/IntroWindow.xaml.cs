@@ -53,7 +53,7 @@ public partial class IntroWindow : Window
         }
         else
         {
-            new MainWindow(TxtPlayerName.Text, ruleset, save).ShowDialog();
+            new MainWindow(new Dictionary<PlayerIndices, string> { { PlayerIndices.Zero, "Zero" }, { PlayerIndices.Two, "Two" }, { PlayerIndices.Three, "Three" } }, ruleset, save).ShowDialog();
         }
 
         // The configuration might be updated in-game.

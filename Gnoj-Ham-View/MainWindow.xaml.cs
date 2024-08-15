@@ -28,16 +28,16 @@ public partial class MainWindow : Window
     private IReadOnlyList<TilePivot>? _riichiTiles;
     private readonly CancellationTokenSource _cancellationTokenSource = new();
     private readonly CancellationToken _cancellationToken;
-
-    private const PlayerIndices _humanPlayerIndex = PlayerIndices.Zero;
+    // list of human players that called "Ron" and the call is pending
+    private readonly List<PlayerIndices> _playerIndicesRon = new();
 
     /// <summary>
     /// Constructor.
     /// </summary>
-    /// <param name="playerName">Human player name.</param>
+    /// <param name="players">Human players.</param>
     /// <param name="ruleset">The ruleset.</param>
     /// <param name="save">Player save file.</param>
-    public MainWindow(string playerName, RulePivot ruleset, PlayerSavePivot save)
+    public MainWindow(Dictionary<PlayerIndices, string> players, RulePivot ruleset, PlayerSavePivot save)
     {
         InitializeComponent();
 
@@ -50,10 +50,14 @@ public partial class MainWindow : Window
         BtnSkipCall.Collapse();
 
         _cancellationToken = _cancellationTokenSource.Token;
-        this.FindControl("LblPlayerP", _humanPlayerIndex).Content = playerName;
-
-        _game = new GamePivot(new Dictionary<PlayerIndices, string?> { { _humanPlayerIndex, playerName } }, ruleset, save, new Random());
+        
+        _game = new GamePivot(players, ruleset, save, new Random());
         _tickSound = new System.Media.SoundPlayer(Properties.Resources.tick);
+
+        foreach (var ip in players.Keys)
+        {
+            this.FindControl("LblPlayerP", ip).Content = players[ip];
+        }
 
         _overlayStoryboard = (FindResource("StbHideOverlay") as Storyboard)!;
         Storyboard.SetTarget(_overlayStoryboard, GrdOverlayCall);
@@ -118,7 +122,7 @@ public partial class MainWindow : Window
     {
         if (IsCurrentlyClickable())
         {
-            PonCall(_humanPlayerIndex);
+            PonCall(BtnPon.PlayerIndex);
             SuggestDiscard();
         }
     }
@@ -141,7 +145,7 @@ public partial class MainWindow : Window
     {
         if (IsCurrentlyClickable())
         {
-            var kanTiles = _game.Round.CanCallKan(_humanPlayerIndex);
+            var kanTiles = _game.Round.CanCallKan(BtnKan.PlayerIndex);
             if (kanTiles.Count > 0)
             {
                 if (_game.Round.IsHumanPlayer)
@@ -173,6 +177,12 @@ public partial class MainWindow : Window
             return;
         }
 
+        // TODO
+        SkipCallInnerProcess(BtnSkipCall.PlayerIndex);
+    }
+
+    private void SkipCallInnerProcess(PlayerIndices playerIndex)
+    {
         _timer?.Stop();
 
         if (BtnPon.Visibility == Visibility.Visible
@@ -193,21 +203,22 @@ public partial class MainWindow : Window
                 }
                 else
                 {
-                    ActivateTimer(this.FindPanel("StpPickP", _humanPlayerIndex).Children[0] as Button);
+                    ActivateTimer(this.FindPanel("StpPickP", playerIndex).Children[0] as Button, playerIndex);
                 }
             }
             else
             {
-                RunAutoPlay(skipCurrentAction: true);
+                // TODO:definitely doesn't work
+                RunAutoPlay(new List<PlayerIndices> { playerIndex }, new List<PlayerIndices>());
             }
         }
-        else if (this.FindPanel("StpPickP", _humanPlayerIndex).Children.Count > 0)
+        else if (this.FindPanel("StpPickP", playerIndex).Children.Count > 0)
         {
             if (BtnRiichi.Visibility == Visibility.Visible)
             {
                 SetActionButtonsVisibility();
                 SuggestDiscard();
-                ActivateTimer(this.FindPanel("StpPickP", _humanPlayerIndex).Children[0] as Button);
+                ActivateTimer(this.FindPanel("StpPickP", playerIndex).Children[0] as Button, playerIndex);
             }
             else
             {
@@ -220,8 +231,9 @@ public partial class MainWindow : Window
     {
         if (IsCurrentlyClickable())
         {
+            _playerIndicesRon.Add(BtnRon.PlayerIndex);
             _overlayStoryboard.Completed += TriggerHumanRonAfterOverlayStoryboard;
-            InvokeOverlay("Ron", _humanPlayerIndex);
+            InvokeOverlay("Ron", BtnRon.PlayerIndex);
         }
     }
 
@@ -230,7 +242,7 @@ public partial class MainWindow : Window
         if (IsCurrentlyClickable())
         {
             _overlayStoryboard.Completed += TriggerNewRoundAfterOverlayStoryboard;
-            InvokeOverlay("Tsumo", _humanPlayerIndex);
+            InvokeOverlay("Tsumo", BtnTsumo.PlayerIndex);
         }
     }
 
@@ -239,13 +251,13 @@ public partial class MainWindow : Window
         if (IsCurrentlyClickable())
         {
             _overlayStoryboard.Completed += TriggerRiichiChoiceAfterOverlayStoryboard;
-            InvokeOverlay("Riichi", _humanPlayerIndex);
+            InvokeOverlay("Riichi", BtnRiichi.PlayerIndex);
         }
     }
 
     private void BtnSkipCall_Click(object sender, RoutedEventArgs e)
     {
-        Grid_MouseDoubleClick(null, null);
+        SkipCallInnerProcess(BtnSkipCall.PlayerIndex);
     }
 
     private void BtnNewGame_Click(object sender, RoutedEventArgs e)
@@ -335,18 +347,18 @@ public partial class MainWindow : Window
                             SetActionButtonsVisibility(cpuPlay: !_game.Round.IsHumanPlayer);
                             if (_game.Round.IsHumanPlayer)
                             {
-                                ActivateTimer(GetFirstAvailableDiscardButton());
+                                ActivateTimer(GetFirstAvailableDiscardButton(_game.Round.CurrentPlayerIndex), _game.Round.CurrentPlayerIndex);
                             }
                             break;
                         case CallTypes.Pon:
-                            var isCpu = e.PlayerIndex != _humanPlayerIndex;
+                            var isCpu = _game.IsCpu(e.PlayerIndex);
                             FillHandPanel(e.PlayerIndex);
                             FillCombinationStack(e.PlayerIndex);
                             FillDiscardPanel(e.PreviousPlayerIndex);
                             SetActionButtonsVisibility(cpuPlay: isCpu);
                             if (!isCpu)
                             {
-                                ActivateTimer(GetFirstAvailableDiscardButton());
+                                ActivateTimer(GetFirstAvailableDiscardButton(e.PlayerIndex), e.PlayerIndex);
                             }
                             break;
                         case CallTypes.Riichi:
@@ -394,31 +406,31 @@ public partial class MainWindow : Window
                 {
                     if (e.Call == CallTypes.NoCall)
                     {
-                        autoButtonOnTimer = this.FindPanel("StpPickP", _humanPlayerIndex).Children[0] as Button;
+                        autoButtonOnTimer = this.FindPanel("StpPickP", e.PlayerIndices).Children[0] as Button;
                     }
                     else
                     {
                         GrdOverlayCanCall.Visibility = Visibility.Visible;
-                        BtnSkipCall.MakeVisible(_humanPlayerIndex);
+                        BtnSkipCall.MakeVisible(e.PlayerIndices);
                         switch (e.Call)
                         {
                             case CallTypes.Riichi:
-                                BtnRiichi.MakeVisible(_humanPlayerIndex);
+                                BtnRiichi.MakeVisible(e.PlayerIndices);
                                 if (e.RiichiAdvised)
                                     BtnRiichi.Foreground = Brushes.DarkMagenta;
                                 else
                                     BtnSkipCall.Foreground = Brushes.DarkMagenta;
                                 break;
                             case CallTypes.Ron:
-                                BtnRon.MakeVisible(_humanPlayerIndex);
+                                BtnRon.MakeVisible(e.PlayerIndices);
                                 break;
                             case CallTypes.Tsumo:
-                                BtnTsumo.MakeVisible(_humanPlayerIndex);
+                                BtnTsumo.MakeVisible(e.PlayerIndices);
                                 break;
                         }
                     }
                 });
-                ActivateTimer(autoButtonOnTimer);
+                ActivateTimer(autoButtonOnTimer, e.PlayerIndices);
             };
             _game.Round.CallNotifier += e =>
             {
@@ -433,17 +445,12 @@ public partial class MainWindow : Window
                 RefreshPlayerTurnStyle();
             };
 
-            var declineds = new List<PlayerIndices>();
-            if ((bool)argumentsList[0])
-                declineds.Add(_humanPlayerIndex);
-
-            var ronPendings = new List<PlayerIndices>();
-            if ((bool)argumentsList[1])
-                ronPendings.Add(_humanPlayerIndex);
-
-            var auto = new List<PlayerIndices>();
-            if (Properties.Settings.Default.AutoCallMahjong)
-                auto.Add(_humanPlayerIndex);
+            var declineds = (IReadOnlyList<PlayerIndices>)argumentsList[0];
+            var ronPendings = (IReadOnlyList<PlayerIndices>)argumentsList[1];
+            // TODO: config
+            var auto = Properties.Settings.Default.AutoCallMahjong
+                ? Enum.GetValues<PlayerIndices>().ToList()
+                : new List<PlayerIndices>();
 
             evt.Result = _game.Round.RunAutoPlay(
                 _cancellationToken,
@@ -480,6 +487,8 @@ public partial class MainWindow : Window
     {
         var (endOfRoundInfo, error) = _game.NextRound(ronPlayerIndex);
 
+        _playerIndicesRon.Clear();
+
         if (!string.IsNullOrWhiteSpace(error))
         {
             MessageBox.Show($"Une erreur est survenue pendant la sauvegarde du fichier de statistiques du joueur.\n\nDétails de l'erreur :\n{error}", "Gnoj-Ham - Avertissement");
@@ -500,13 +509,17 @@ public partial class MainWindow : Window
     }
 
     // Starts the background worker.
-    private void RunAutoPlay(bool skipCurrentAction = false, bool humanRonPending = false)
+    private void RunAutoPlay(IReadOnlyList<PlayerIndices> playerIndicesSkipped, IReadOnlyList<PlayerIndices> playerIndicesRon)
     {
         if (!_autoPlay.IsBusy)
         {
-            _autoPlay.RunWorkerAsync(new object[] { skipCurrentAction, humanRonPending });
+            _autoPlay.RunWorkerAsync(new object[] { playerIndicesSkipped, playerIndicesRon });
         }
     }
+
+    // Starts the background worker.
+    private void RunAutoPlay()
+        => RunAutoPlay(new List<PlayerIndices>(), new List<PlayerIndices>());
 
     // Checks ron call for every players.
     private bool CheckOpponensRonCall(bool humanRonPending)
@@ -527,10 +540,10 @@ public partial class MainWindow : Window
 
         SetActionButtonsVisibility();
 
-        var buttons = this.FindPanel("StpHandP", _humanPlayerIndex).Children.OfType<TileButton>().ToList();
-        if (this.FindPanel("StpPickP", _humanPlayerIndex).Children.Count > 0)
+        var buttons = this.FindPanel("StpHandP", _game.Round.CurrentPlayerIndex).Children.OfType<TileButton>().ToList();
+        if (this.FindPanel("StpPickP", _game.Round.CurrentPlayerIndex).Children.Count > 0)
         {
-            buttons.Add((this.FindPanel("StpPickP", _humanPlayerIndex).Children[0] as TileButton)!);
+            buttons.Add((this.FindPanel("StpPickP", _game.Round.CurrentPlayerIndex).Children[0] as TileButton)!);
         }
 
         var clickableButtons = new List<TileButton>(tileChoices.Count);
@@ -560,7 +573,7 @@ public partial class MainWindow : Window
         if (clickableButtons.Count == 1)
         {
             // Only one possibility : initiates the auto-discard.
-            var buttonIndexInHandPanel = this.FindPanel("StpHandP", _humanPlayerIndex).Children.IndexOf(clickableButtons[0]);
+            var buttonIndexInHandPanel = this.FindPanel("StpHandP", _game.Round.CurrentPlayerIndex).Children.IndexOf(clickableButtons[0]);
             result = buttonIndexInHandPanel >= 0
                 ? new PanelButton("StpHandP", buttonIndexInHandPanel)
                 : new PanelButton("StpPickP", 0);
@@ -568,20 +581,15 @@ public partial class MainWindow : Window
         else
         {
             _waitForDecision = true;
-            ActivateTimer(clickableButtons[0]);
+            ActivateTimer(clickableButtons[0], _game.Round.CurrentPlayerIndex);
         }
 
         return result;
     }
 
-    // Discard action (human or CPU).
+    // Discard action (human).
     private void Discard(TilePivot tile)
     {
-        if (!_game.Round.IsHumanPlayer)
-        {
-            Thread.Sleep(((CpuSpeedPivot)Properties.Settings.Default.CpuSpeed).ParseSpeed());
-        }
-
         if (_game.Round.Discard(tile))
         {
             Dispatcher.Invoke(() =>
@@ -590,15 +598,11 @@ public partial class MainWindow : Window
                 FillDiscardPanel(_game.Round.PreviousPlayerIndex);
                 SetActionButtonsVisibility(cpuPlay: !_game.Round.PreviousIsHumanPlayer);
             });
-
-            if (_game.Round.PreviousIsHumanPlayer)
-            {
-                RunAutoPlay();
-            }
+            RunAutoPlay();
         }
     }
 
-    // Chii call action (human or CPU).
+    // Chii call action (human).
     private void ChiiCall(TilePivot chiiTilePick)
     {
         RefreshPlayerTurnStyle();
@@ -612,28 +616,18 @@ public partial class MainWindow : Window
                 FillCombinationStack(_game.Round.CurrentPlayerIndex);
                 FillDiscardPanel(_game.Round.PreviousPlayerIndex);
                 SetActionButtonsVisibility(cpuPlay: !_game.Round.IsHumanPlayer);
-                if (_game.Round.IsHumanPlayer)
-                {
-                    ActivateTimer(GetFirstAvailableDiscardButton());
-                }
+                ActivateTimer(GetFirstAvailableDiscardButton(_game.Round.CurrentPlayerIndex), _game.Round.CurrentPlayerIndex);
             });
-
-            if (!_game.Round.IsHumanPlayer)
-            {
-                Discard(_game.Round.IaManager.DiscardDecision(new List<TilePivot>()));
-            }
         }
     }
 
-    // Pon call action (human or CPU).
+    // Pon call action (human).
     private void PonCall(PlayerIndices playerIndex)
     {
         RefreshPlayerTurnStyle();
 
         // Note : this value is stored here because the call to "CallPon" makes it change.
         var previousPlayerIndex = _game.Round.PreviousPlayerIndex;
-        var isCpu = playerIndex != _humanPlayerIndex;
-
         if (_game.Round.CallPon(playerIndex))
         {
             InvokeOverlay("Pon", playerIndex);
@@ -643,29 +637,15 @@ public partial class MainWindow : Window
                 FillHandPanel(playerIndex);
                 FillCombinationStack(playerIndex);
                 FillDiscardPanel(previousPlayerIndex);
-                SetActionButtonsVisibility(cpuPlay: isCpu);
-                if (!isCpu)
-                {
-                    ActivateTimer(GetFirstAvailableDiscardButton());
-                }
+                SetActionButtonsVisibility(cpuPlay: false);
+                ActivateTimer(GetFirstAvailableDiscardButton(playerIndex), playerIndex);
             });
-
-            if (isCpu)
-            {
-                Discard(_game.Round.IaManager.DiscardDecision(new List<TilePivot>()));
-            }
         }
     }
 
-    // Riichi call action (human or CPU).
+    // Riichi call action (human).
     private void CallRiichi(TilePivot tile)
     {
-        if (!_game.Round.IsHumanPlayer)
-        {
-            InvokeOverlay("Riichi", _game.Round.CurrentPlayerIndex);
-            Thread.Sleep(((CpuSpeedPivot)Properties.Settings.Default.CpuSpeed).ParseSpeed());
-        }
-
         if (_game.Round.CallRiichi(tile))
         {
             Dispatcher.Invoke(() =>
@@ -675,11 +655,7 @@ public partial class MainWindow : Window
                 SetActionButtonsVisibility(cpuPlay: !_game.Round.PreviousIsHumanPlayer);
                 this.FindName<Image>("RiichiStickP", _game.Round.PreviousPlayerIndex).Visibility = Visibility.Visible;
             });
-
-            if (_game.Round.PreviousIsHumanPlayer)
-            {
-                RunAutoPlay();
-            }
+            RunAutoPlay();
         }
     }
 
@@ -688,8 +664,9 @@ public partial class MainWindow : Window
     {
         RefreshPlayerTurnStyle();
 
-        _game.Round.CallKan(_humanPlayerIndex, tile);
-        InvokeOverlay("Kan", _humanPlayerIndex);
+        _game.Round.CallKan(BtnKan.PlayerIndex, tile);
+        InvokeOverlay("Kan", BtnKan.PlayerIndex);
+        // TODO: check other human
         if (CheckOpponensRonCall(false))
         {
             _game.Round.UndoPickCompensationTile();
@@ -702,15 +679,15 @@ public partial class MainWindow : Window
             if (_game.Round.CanCallTsumo(true))
             {
                 GrdOverlayCanCall.Visibility = Visibility.Visible;
-                BtnTsumo.MakeVisible(_humanPlayerIndex);
-                BtnSkipCall.MakeVisible(_humanPlayerIndex);
+                BtnTsumo.MakeVisible(BtnKan.PlayerIndex);
+                BtnSkipCall.MakeVisible(BtnKan.PlayerIndex);
                 if (Properties.Settings.Default.AutoCallMahjong)
                 {
                     BtnTsumo.RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent));
                 }
                 else
                 {
-                    ActivateTimer(null);
+                    ActivateTimer(null, BtnKan.PlayerIndex);
                 }
             }
             else
@@ -720,8 +697,8 @@ public partial class MainWindow : Window
                 {
                     var riichiDecision = _game.Ruleset.DiscardTip && _game.Round.IaManager.RiichiDecision().choice != null;
 
-                    BtnRiichi.MakeVisible(_humanPlayerIndex);
-                    BtnSkipCall.MakeVisible(_humanPlayerIndex);
+                    BtnRiichi.MakeVisible(BtnKan.PlayerIndex);
+                    BtnSkipCall.MakeVisible(BtnKan.PlayerIndex);
                     GrdOverlayCanCall.Visibility = Visibility.Visible;
 
                     if (riichiDecision)
@@ -729,7 +706,7 @@ public partial class MainWindow : Window
                     else
                         BtnSkipCall.Foreground = Brushes.DarkMagenta;
 
-                    ActivateTimer(null);
+                    ActivateTimer(null, BtnKan.PlayerIndex);
                 }
                 else if (_game.Round.HumanCanAutoDiscard())
                 {
@@ -774,9 +751,9 @@ public partial class MainWindow : Window
     }
 
     // Gets the first button for a discardable tile.
-    private TileButton GetFirstAvailableDiscardButton()
+    private TileButton GetFirstAvailableDiscardButton(PlayerIndices playerIndex)
     {
-        return this.FindPanel("StpHandP", _humanPlayerIndex)
+        return this.FindPanel("StpHandP", playerIndex)
             .Children
             .OfType<TileButton>()
             .First(b => _game.Round.CanDiscard(b.Tile!));
@@ -845,7 +822,7 @@ public partial class MainWindow : Window
     // Clears and refills the hand panel of the specified player index.
     private void FillHandPanel(PlayerIndices pIndex, TilePivot? pickTile = null)
     {
-        var isHuman = pIndex == _humanPlayerIndex;
+        var isHuman = _game.IsHuman(pIndex);
 
         var panel = this.FindPanel("StpHandP", pIndex);
 
@@ -1059,14 +1036,14 @@ public partial class MainWindow : Window
 
             if (!skippedInnerKan)
             {
-                var kanPossibilities = _game.Round.CanCallKan(_humanPlayerIndex);
+                var kanPossibilities = _game.Round.CanCallKan(_game.Round.CurrentPlayerIndex);
                 if (kanPossibilities.Count > 0)
                 {
-                    BtnKan.MakeVisible(_humanPlayerIndex);
+                    BtnKan.MakeVisible(_game.Round.CurrentPlayerIndex);
                     if (_game.Ruleset.DiscardTip)
                     {
                         needAdvice = true;
-                        if (_game.Round.IaManager.KanDecisionAdvice(_humanPlayerIndex, kanPossibilities, true))
+                        if (_game.Round.IaManager.KanDecisionAdvice(_game.Round.CurrentPlayerIndex, kanPossibilities, true))
                         {
                             BtnKan.Foreground = Brushes.DarkMagenta;
                             advised = true;
@@ -1085,7 +1062,7 @@ public partial class MainWindow : Window
                 var chiiPossibilities = _game.Round.CanCallChii();
                 if (chiiPossibilities.Count > 0)
                 {
-                    BtnChii.MakeVisible(_humanPlayerIndex);
+                    BtnChii.MakeVisible(_game.Round.CurrentPlayerIndex);
                     if (_game.Ruleset.DiscardTip)
                     {
                         needAdvice = true;
@@ -1098,33 +1075,42 @@ public partial class MainWindow : Window
                 }
             }
 
-            if (_game.Round.CanCallPon(_humanPlayerIndex))
+            var canBreak = false;
+            foreach (var pi in _game.HumanIndices)
             {
-                BtnPon.MakeVisible(_humanPlayerIndex);
-                if (_game.Ruleset.DiscardTip)
+                if (_game.Round.CanCallPon(pi))
                 {
-                    needAdvice = true;
-                    if (_game.Round.IaManager.PonDecisionAdvice(_humanPlayerIndex))
+                    canBreak = true;
+                    BtnPon.MakeVisible(pi);
+                    if (_game.Ruleset.DiscardTip)
                     {
-                        BtnPon.Foreground = Brushes.DarkMagenta;
-                        advised = true;
+                        needAdvice = true;
+                        if (_game.Round.IaManager.PonDecisionAdvice(pi))
+                        {
+                            BtnPon.Foreground = Brushes.DarkMagenta;
+                            advised = true;
+                        }
                     }
                 }
-            }
 
-            var kanPossibilities = _game.Round.CanCallKan(_humanPlayerIndex);
-            if (kanPossibilities.Count > 0)
-            {
-                BtnKan.MakeVisible(_humanPlayerIndex);
-                if (_game.Ruleset.DiscardTip)
+                var kanPossibilities = _game.Round.CanCallKan(pi);
+                if (kanPossibilities.Count > 0)
                 {
-                    needAdvice = true;
-                    if (_game.Round.IaManager.KanDecisionAdvice(_humanPlayerIndex, kanPossibilities, false))
+                    canBreak = true;
+                    BtnKan.MakeVisible(pi);
+                    if (_game.Ruleset.DiscardTip)
                     {
-                        BtnKan.Foreground = Brushes.DarkMagenta;
-                        advised = true;
+                        needAdvice = true;
+                        if (_game.Round.IaManager.KanDecisionAdvice(pi, kanPossibilities, false))
+                        {
+                            BtnKan.Foreground = Brushes.DarkMagenta;
+                            advised = true;
+                        }
                     }
                 }
+
+                if (canBreak)
+                    break;
             }
         }
 
@@ -1137,9 +1123,11 @@ public partial class MainWindow : Window
             || BtnPon.Visibility == Visibility.Visible
             || BtnKan.Visibility == Visibility.Visible)
         {
-            BtnSkipCall.MakeVisible(_humanPlayerIndex);
+            var pi = new[] { BtnChii, BtnPon, BtnKan }.First(x => x.Visibility == Visibility.Visible).PlayerIndex;
+
+            BtnSkipCall.MakeVisible(pi);
             GrdOverlayCanCall.Visibility = Visibility.Visible;
-            ActivateTimer(null);
+            ActivateTimer(null, pi);
         }
     }
 
@@ -1198,8 +1186,9 @@ public partial class MainWindow : Window
     {
         if (pButton != null)
         {
-            var btn = (pButton.ChildrenButtonIndex < 0 ? FindName(pButton.PanelBaseName) :
-                this.FindPanel(pButton.PanelBaseName, _humanPlayerIndex).Children[pButton.ChildrenButtonIndex]) as Button;
+            var btn = (pButton.ChildrenButtonIndex < 0
+                ? FindName(pButton.PanelBaseName)
+                : this.FindPanel(pButton.PanelBaseName, _game.Round.CurrentPlayerIndex).Children[pButton.ChildrenButtonIndex]) as Button;
             btn!.RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent));
         }
         else
@@ -1222,7 +1211,7 @@ public partial class MainWindow : Window
     }
 
     // Activates the human decision timer and binds its event to a button click.
-    private void ActivateTimer(Button? buttonToClick)
+    private void ActivateTimer(Button? buttonToClick, PlayerIndices playerIndices)
     {
         if (_timer != null)
         {
@@ -1236,7 +1225,7 @@ public partial class MainWindow : Window
                 {
                     if (buttonToClick == null)
                     {
-                        Grid_MouseDoubleClick(null, null);
+                        SkipCallInnerProcess(playerIndices);
                     }
                     else
                     {
@@ -1292,7 +1281,7 @@ public partial class MainWindow : Window
     private void TriggerHumanRonAfterOverlayStoryboard(object? sender, EventArgs e)
     {
         _overlayStoryboard.Completed -= TriggerHumanRonAfterOverlayStoryboard;
-        RunAutoPlay(humanRonPending: true);
+        RunAutoPlay(new List<PlayerIndices>(), _playerIndicesRon);
     }
 
     // Binds graphic elements with current configuration.
@@ -1311,16 +1300,11 @@ public partial class MainWindow : Window
     // Suggest a discard by changing the skin of a button
     private void SuggestDiscard()
     {
-        if (!_game.Ruleset.DiscardTip)
-        {
-            return;
-        }
-
-        if (_game.Round.IsHumanPlayer && _game.Round.GetHand(_humanPlayerIndex).IsFullHand)
+        if (_game.Ruleset.DiscardTip && _game.Round.GetHand(_game.Round.CurrentPlayerIndex).IsFullHand)
         {
             var discardChoice = _game.Round.IaManager.DiscardDecision(null);
-            var button = this.FindPanel("StpHandP", _humanPlayerIndex).Children.OfType<TileButton>()
-                .Concat(this.FindPanel("StpPickP", _humanPlayerIndex).Children.OfType<TileButton>())
+            var button = this.FindPanel("StpHandP", _game.Round.CurrentPlayerIndex).Children.OfType<TileButton>()
+                .Concat(this.FindPanel("StpPickP", _game.Round.CurrentPlayerIndex).Children.OfType<TileButton>())
                 .FirstOrDefault(x => x.Tile == discardChoice);
             if (button != null)
             {

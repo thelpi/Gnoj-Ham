@@ -259,7 +259,7 @@ public class RoundPivot
             {
                 if (!declinedHumanCalls.Contains(pi) && !humanRonPendings.Contains(pi) && CanCallRon(pi))
                 {
-                    HumanCallNotifier?.Invoke(new HumanCallNotifierEventArgs { Call = CallTypes.Ron });
+                    HumanCallNotifier?.Invoke(new HumanCallNotifierEventArgs { Call = CallTypes.Ron, PlayerIndices = pi });
                     if (autoCallMahjongs.Contains(pi))
                     {
                         result.HumanCall = (pi, CallTypes.Ron);
@@ -1105,7 +1105,7 @@ public class RoundPivot
     {
         if (CanCallTsumo(false))
         {
-            HumanCallNotifier?.Invoke(new HumanCallNotifierEventArgs { Call = CallTypes.Tsumo });
+            HumanCallNotifier?.Invoke(new HumanCallNotifierEventArgs { Call = CallTypes.Tsumo, PlayerIndices = CurrentPlayerIndex });
             return autoCallMahjong ? CallTypes.Tsumo : default(CallTypes?);
         }
 
@@ -1114,7 +1114,7 @@ public class RoundPivot
         if (riichiTiles.Count > 0)
         {
             var adviseRiichi = Game.Ruleset.DiscardTip && IaManager.RiichiDecision().choice != null;
-            HumanCallNotifier?.Invoke(new HumanCallNotifierEventArgs { Call = CallTypes.Riichi, RiichiAdvised = adviseRiichi });
+            HumanCallNotifier?.Invoke(new HumanCallNotifierEventArgs { Call = CallTypes.Riichi, RiichiAdvised = adviseRiichi, PlayerIndices = CurrentPlayerIndex });
             return null;
         }
         else if (HumanCanAutoDiscard())
@@ -1125,7 +1125,7 @@ public class RoundPivot
         }
         else
         {
-            HumanCallNotifier?.Invoke(new HumanCallNotifierEventArgs { Call = CallTypes.NoCall });
+            HumanCallNotifier?.Invoke(new HumanCallNotifierEventArgs { Call = CallTypes.NoCall, PlayerIndices = CurrentPlayerIndex });
         }
 
         return null;

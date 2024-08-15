@@ -8,7 +8,7 @@ namespace Gnoj_Ham_View;
 /// </summary>
 public partial class CallButton : Button
 {
-    public PlayerIndices? PlayerIndex { get; private set; }
+    public PlayerIndices PlayerIndex { get; private set; }
 
     public new System.Windows.Visibility Visibility { get; private set; }
 
@@ -28,6 +28,5 @@ public partial class CallButton : Button
     {
         Visibility = System.Windows.Visibility.Collapsed;
         base.Visibility = System.Windows.Visibility.Collapsed;
-        PlayerIndex = null;
     }
 }
