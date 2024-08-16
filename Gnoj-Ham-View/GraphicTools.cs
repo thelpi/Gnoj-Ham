@@ -29,7 +29,7 @@ internal static class GraphicTools
         var concealedCount = 5 - visibleCount;
         for (var i = 4; i >= 0; i--)
         {
-            panel.Children.Add(new TileButton(tiles.ElementAt(i), concealed: 5 - concealedCount <= i, rate: 0.8));
+            panel.Children.Add(new TileButton(tiles[i], concealed: 5 - concealedCount <= i, rate: 0.8));
         }
     }
 
@@ -186,6 +186,40 @@ internal static class GraphicTools
             Families.Wind => $"{tile.Family.DisplayName()}\r\n{tile.Wind!.Value.DisplayName()}",
             _ => $"{tile.Family.DisplayName()}\r\n{tile.Number}" + (tile.IsRedDora ? "\r\nRouge" : string.Empty),
         };
+    }
+
+    /// <summary>
+    /// Creates a panel for a <see cref="TileComboPivot"/>
+    /// </summary>
+    /// <param name="combo"></param>
+    /// <param name="pIndex"></param>
+    /// <param name="playerWind"></param>
+    /// <returns></returns>
+    internal static StackPanel CreateCombinationPanel(this TileComboPivot combo, PlayerIndices pIndex, Winds playerWind)
+    {
+        var panel = new StackPanel
+        {
+            Orientation = pIndex == PlayerIndices.Zero || pIndex == PlayerIndices.Two
+                ? Orientation.Horizontal
+                : Orientation.Vertical
+        };
+
+        var i = 0;
+        var tileTuples = combo.GetSortedTilesForDisplay(playerWind).AsEnumerable();
+        if (pIndex > PlayerIndices.Zero && pIndex < PlayerIndices.Three)
+        {
+            tileTuples = tileTuples.Reverse();
+        }
+
+        foreach (var (tile, stolen) in tileTuples)
+        {
+            panel.Children.Add(new TileButton(tile, null,
+                (AnglePivot)(stolen ? pIndex.RelativePlayerIndex(1) : pIndex),
+                combo.IsConcealedDisplay(i)));
+            i++;
+        }
+
+        return panel;
     }
 
     #region Enum converters

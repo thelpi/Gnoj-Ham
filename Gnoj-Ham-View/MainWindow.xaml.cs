@@ -17,6 +17,19 @@ namespace Gnoj_Ham_View;
 public partial class MainWindow : Window
 {
     private const string WINDOW_TITLE = "Gnoj-Ham";
+    public const string StyleHighlightTileResourceName = "StyleHighlightTile";
+
+    private string PickPanel => StpPickP0.Name[..^1];
+    private string HandPanel => StpHandP0.Name[..^1];
+    private string WallPanel => PnlWall0.Name[..^1];
+    private string CombosPanel => StpCombosP0.Name[..^1];
+    private string PlayerLabel => LblPlayerP0.Name[..^1];
+    private string WindLabel => LblWindP0.Name[..^1];
+    private string[] DiscardPanels => new[] { StpDiscard1P0.Name[..^1], StpDiscard2P0.Name[..^1], StpDiscard3P0.Name[..^1] };
+    private string PlayerPanel => StpPlayerP0.Name[..^1];
+    private string NameLabel => LblNameP0.Name[..^1];
+    private string PointsLabel => LblPointsP0.Name[..^1];
+    private string RiichiStickImage => RiichiStickP0.Name[..^1];
 
     private readonly GamePivot _game;
     private readonly System.Media.SoundPlayer _tickSound;
@@ -42,7 +55,7 @@ public partial class MainWindow : Window
         InitializeComponent();
 
         _cancellationToken = _cancellationTokenSource.Token;
-        this.FindControl("LblPlayerP", _humanPlayerIndex).Content = playerName;
+        this.FindControl(PlayerLabel, _humanPlayerIndex).Content = playerName;
 
         _game = new GamePivot(new Dictionary<PlayerIndices, string?> { { _humanPlayerIndex, playerName } }, ruleset, save, new Random());
         _tickSound = new System.Media.SoundPlayer(Properties.Resources.tick);
@@ -172,7 +185,10 @@ public partial class MainWindow : Window
             || BtnKan.Visibility == Visibility.Visible
             || BtnRon.Visibility == Visibility.Visible)
         {
-            CancelDiscardHighlight();
+            // TODO: lazy
+            // Cancels the Highlighting of the previous player discard
+            FillDiscardPanel(_game.Round.PreviousPlayerIndex);
+
             if (BtnKan.Visibility == Visibility.Visible && _game.Round.IsHumanPlayer)
             {
                 RefreshPlayerTurnStyle();
@@ -181,11 +197,11 @@ public partial class MainWindow : Window
                 {
                     // Not a real CPU sleep: the auto-discard by human player is considered as such
                     Thread.Sleep(((CpuSpeedPivot)Properties.Settings.Default.CpuSpeed).ParseSpeed());
-                    RaiseButtonClickEvent(new PanelButton("StpPickP", 0));
+                    RaiseButtonClickEvent(new PanelButton(PickPanel, 0));
                 }
                 else
                 {
-                    ActivateTimer(this.FindPanel("StpPickP", _humanPlayerIndex).Children[0] as Button);
+                    ActivateTimer(this.FindPanel(PickPanel, _humanPlayerIndex).Children[0] as Button);
                 }
             }
             else
@@ -193,17 +209,17 @@ public partial class MainWindow : Window
                 RunAutoPlay(skipCurrentAction: true);
             }
         }
-        else if (this.FindPanel("StpPickP", _humanPlayerIndex).Children.Count > 0)
+        else if (this.FindPanel(PickPanel, _humanPlayerIndex).Children.Count > 0)
         {
             if (BtnRiichi.Visibility == Visibility.Visible)
             {
                 SetActionButtonsVisibility();
                 SuggestDiscard();
-                ActivateTimer(this.FindPanel("StpPickP", _humanPlayerIndex).Children[0] as Button);
+                ActivateTimer(this.FindPanel(PickPanel, _humanPlayerIndex).Children[0] as Button);
             }
             else
             {
-                RaiseButtonClickEvent(new PanelButton("StpPickP", 0));
+                RaiseButtonClickEvent(new PanelButton(PickPanel, 0));
             }
         }
     }
@@ -377,7 +393,14 @@ public partial class MainWindow : Window
             };
             _game.Round.DiscardTileNotifier += e =>
             {
-                Dispatcher.Invoke(() => HighlightPreviousPlayerDiscard());
+                Dispatcher.Invoke(() =>
+                {
+                    var highlightButton = FillDiscardPanel(_game.Round.PreviousPlayerIndex);
+                    if (highlightButton != null)
+                    {
+                        SetHighlight(highlightButton);
+                    }
+                });
             };
             _game.Round.HumanCallNotifier += e =>
             {
@@ -386,7 +409,7 @@ public partial class MainWindow : Window
                 {
                     if (e.Call == CallTypes.NoCall)
                     {
-                        autoButtonOnTimer = this.FindPanel("StpPickP", _humanPlayerIndex).Children[0] as Button;
+                        autoButtonOnTimer = this.FindPanel(PickPanel, _humanPlayerIndex).Children[0] as Button;
                     }
                     else
                     {
@@ -458,7 +481,7 @@ public partial class MainWindow : Window
                     // TODO
                     var button = result.HumanCall.HasValue
                         ? (result.HumanCall.Value.call == CallTypes.NoCall
-                            ? new PanelButton("StpPickP", 0)
+                            ? new PanelButton(PickPanel, 0)
                             : new PanelButton($"Btn{result.HumanCall.Value.call}", -1))
                         : null;
                     RaiseButtonClickEvent(button);
@@ -519,10 +542,10 @@ public partial class MainWindow : Window
 
         SetActionButtonsVisibility();
 
-        var buttons = this.FindPanel("StpHandP", _humanPlayerIndex).Children.OfType<TileButton>().ToList();
-        if (this.FindPanel("StpPickP", _humanPlayerIndex).Children.Count > 0)
+        var buttons = this.FindPanel(HandPanel, _humanPlayerIndex).Children.OfType<TileButton>().ToList();
+        if (this.FindPanel(PickPanel, _humanPlayerIndex).Children.Count > 0)
         {
-            buttons.Add((this.FindPanel("StpPickP", _humanPlayerIndex).Children[0] as TileButton)!);
+            buttons.Add((this.FindPanel(PickPanel, _humanPlayerIndex).Children[0] as TileButton)!);
         }
 
         var clickableButtons = new List<TileButton>(tileChoices.Count);
@@ -552,10 +575,10 @@ public partial class MainWindow : Window
         if (clickableButtons.Count == 1)
         {
             // Only one possibility : initiates the auto-discard.
-            var buttonIndexInHandPanel = this.FindPanel("StpHandP", _humanPlayerIndex).Children.IndexOf(clickableButtons[0]);
+            var buttonIndexInHandPanel = this.FindPanel(HandPanel, _humanPlayerIndex).Children.IndexOf(clickableButtons[0]);
             result = buttonIndexInHandPanel >= 0
-                ? new PanelButton("StpHandP", buttonIndexInHandPanel)
-                : new PanelButton("StpPickP", 0);
+                ? new PanelButton(HandPanel, buttonIndexInHandPanel)
+                : new PanelButton(PickPanel, 0);
         }
         else
         {
@@ -727,7 +750,7 @@ public partial class MainWindow : Window
                 {
                     // Auto discard if riichi and the compensation tile is not interesting
                     // Never tested!
-                    RaiseButtonClickEvent(new PanelButton("StpPickP", 0));
+                    RaiseButtonClickEvent(new PanelButton(PickPanel, 0));
                 }
             }
         }
@@ -768,7 +791,7 @@ public partial class MainWindow : Window
     // Gets the first button for a discardable tile.
     private TileButton GetFirstAvailableDiscardButton()
     {
-        return this.FindPanel("StpHandP", _humanPlayerIndex)
+        return this.FindPanel(HandPanel, _humanPlayerIndex)
             .Children
             .OfType<TileButton>()
             .First(b => _game.Round.CanDiscard(b.Tile!));
@@ -821,7 +844,7 @@ public partial class MainWindow : Window
         {
             for (var j = 1; j <= 3; j++)
             {
-                var panel = this.FindPanel($"StpDiscard{j}P", i);
+                var panel = this.FindPanel(DiscardPanels[j], i);
                 if (i == PlayerIndices.Zero || i == PlayerIndices.Two)
                 {
                     panel.Height = TileButton.TILE_HEIGHT;
@@ -839,23 +862,25 @@ public partial class MainWindow : Window
     {
         var isHuman = pIndex == _humanPlayerIndex;
 
-        var panel = this.FindPanel("StpHandP", pIndex);
+        var panel = this.FindPanel(HandPanel, pIndex);
 
-        this.FindPanel("StpPickP", pIndex).Children.Clear();
+        this.FindPanel(PickPanel, pIndex).Children.Clear();
 
         panel.Children.Clear();
         foreach (var tile in _game.Round.GetHand(pIndex).ConcealedTiles)
         {
             if (pickTile == null || !ReferenceEquals(pickTile, tile))
             {
-                panel.Children.Add(new TileButton(tile, isHuman && !_game.Round.IsRiichi(pIndex) ?
-                    BtnDiscard_Click : null, (AnglePivot)pIndex, !isHuman && !_game.Ruleset.DebugMode));
+                RoutedEventHandler? handler = isHuman && !_game.Round.IsRiichi(pIndex)
+                    ? BtnDiscard_Click
+                    : null;
+                panel.Children.Add(new TileButton(tile, handler, (AnglePivot)pIndex, !isHuman && !_game.Ruleset.DebugMode));
             }
         }
 
         if (pickTile != null)
         {
-            this.FindPanel("StpPickP", pIndex).Children.Add(
+            this.FindPanel(PickPanel, pIndex).Children.Add(
                 new TileButton(
                     pickTile,
                     _game.Round.IsHumanPlayer ? BtnDiscard_Click : null,
@@ -890,23 +915,26 @@ public partial class MainWindow : Window
         OnNotifyWallCount();
 
         StpDoras.SetDorasPanel(_game.Round.DoraIndicatorTiles, _game.Round.VisibleDorasCount);
+        
+        // TODO: exract tooltip content in resource
         LblDominantWind.Content = _game.DominantWind.ToWindDisplay();
         LblDominantWind.ToolTip = $"Vent dominant : {_game.DominantWind.DisplayName()}";
         LblEastTurnCount.Content = $"{_game.EastRank}";
         LblEastTurnCount.ToolTip = $"N° de tour en {_game.DominantWind.DisplayName()}";
+        
         TxtHonba.Text = _game.HonbaCount.ToString();
         TxtPendingRiichi.Text = _game.PendingRiichiCount.ToString();
 
         foreach (var pIndex in Enum.GetValues<PlayerIndices>())
         {
-            this.FindPanel("StpCombosP", pIndex).Children.Clear();
+            this.FindPanel(CombosPanel, pIndex).Children.Clear();
             FillHandPanel(pIndex);
             FillDiscardPanel(pIndex);
-            this.FindName<Panel>("StpPlayerP", pIndex).ToolTip = _game.GetPlayerCurrentWind(pIndex).DisplayName();
-            this.FindControl("LblWindP", pIndex).Content = _game.GetPlayerCurrentWind(pIndex).ToWindDisplay();
-            this.FindControl("LblNameP", pIndex).Content = _game.Players.ElementAt((int)pIndex).Name;
-            this.FindControl("LblPointsP", pIndex).Content = $"{_game.Players.ElementAt((int)pIndex).Points / 1000}k";
-            this.FindName<Image>("RiichiStickP", pIndex).Visibility = Visibility.Hidden;
+            this.FindName<Panel>(PlayerPanel, pIndex).ToolTip = _game.GetPlayerCurrentWind(pIndex).DisplayName();
+            this.FindControl(WindLabel, pIndex).Content = _game.GetPlayerCurrentWind(pIndex).ToWindDisplay();
+            this.FindControl(NameLabel, pIndex).Content = _game.Players[(int)pIndex].Name;
+            this.FindControl(PointsLabel, pIndex).Content = $"{_game.Players[(int)pIndex].Points / 1000}k";
+            this.FindName<Image>(RiichiStickImage, pIndex).Visibility = Visibility.Hidden;
         }
 
         RefreshPlayerTurnStyle();
@@ -922,8 +950,9 @@ public partial class MainWindow : Window
         {
             foreach (var pIndex in Enum.GetValues<PlayerIndices>())
             {
-                this.FindName<Label>("LblPlayerP", pIndex).Foreground = pIndex == _game.Round.CurrentPlayerIndex ? Brushes.OrangeRed : Brushes.White;
-                this.FindName<Label>("LblWindP", pIndex).Foreground = pIndex == _game.Round.CurrentPlayerIndex ? Brushes.OrangeRed : Brushes.White;
+                var brush = pIndex == _game.Round.CurrentPlayerIndex ? Brushes.OrangeRed : Brushes.White;
+                this.FindName<Label>(PlayerLabel, pIndex).Foreground = brush;
+                this.FindName<Label>(WindLabel, pIndex).Foreground = brush;
             }
         });
     }
@@ -933,7 +962,7 @@ public partial class MainWindow : Window
     {
         for (var r = 1; r <= 3; r++)
         {
-            this.FindPanel($"StpDiscard{r}P", pIndex).Children.Clear();
+            this.FindPanel(DiscardPanels[r], pIndex).Children.Clear();
         }
 
         var reversed = pIndex == PlayerIndices.One || pIndex == PlayerIndices.Two;
@@ -943,20 +972,19 @@ public partial class MainWindow : Window
         foreach (var tile in _game.Round.GetDiscard(pIndex))
         {
             var r = i < 6 ? 1 : (i < 12 ? 2 : 3);
-            var panel = this.FindPanel($"StpDiscard{r}P", pIndex);
+            var panel = this.FindPanel(DiscardPanels[r], pIndex);
             var angle = (AnglePivot)pIndex;
             if (_game.Round.IsRiichiRank(pIndex, i))
             {
                 angle = (AnglePivot)pIndex.RelativePlayerIndex(1);
             }
+            lastButton = new TileButton(tile, angle: angle);
             if (reversed)
             {
-                lastButton = new TileButton(tile, angle: angle);
                 panel.Children.Insert(0, lastButton);
             }
             else
             {
-                lastButton = new TileButton(tile, angle: angle);
                 panel.Children.Add(lastButton);
             }
             i++;
@@ -965,61 +993,16 @@ public partial class MainWindow : Window
         return lastButton;
     }
 
-    // Highlights the last tile of the previous player discard (to show it's available for a call)
-    private void HighlightPreviousPlayerDiscard()
-    {
-        var highlightButton = FillDiscardPanel(_game.Round.PreviousPlayerIndex);
-        if (highlightButton != null)
-        {
-            SetHighlight(highlightButton);
-        }
-    }
-
-    // Cancels the Highlighting of the previous player discard
-    private void CancelDiscardHighlight()
-    {
-        // TODO: lazy
-        FillDiscardPanel(_game.Round.PreviousPlayerIndex);
-    }
-
     // Adds to the player stack its last combination.
     private void FillCombinationStack(PlayerIndices pIndex)
     {
-        var panel = this.FindPanel("StpCombosP", pIndex);
+        var panel = this.FindPanel(CombosPanel, pIndex);
 
         panel.Children.Clear();
         foreach (var combo in _game.Round.GetHand(pIndex).DeclaredCombinations)
         {
-            panel.Children.Add(CreateCombinationPanel(pIndex, combo));
+            panel.Children.Add(combo.CreateCombinationPanel(pIndex, _game.GetPlayerCurrentWind(pIndex)));
         }
-    }
-
-    // Creates a panel for the specified combination.
-    private StackPanel CreateCombinationPanel(PlayerIndices pIndex, TileComboPivot combo)
-    {
-        var panel = new StackPanel
-        {
-            Orientation = pIndex == PlayerIndices.Zero || pIndex == PlayerIndices.Two ? Orientation.Horizontal : Orientation.Vertical
-        };
-
-        var pWind = _game.GetPlayerCurrentWind(pIndex);
-
-        var i = 0;
-        var tileTuples = combo.GetSortedTilesForDisplay(pWind).AsEnumerable();
-        if (pIndex > PlayerIndices.Zero && pIndex < PlayerIndices.Three)
-        {
-            tileTuples = tileTuples.Reverse();
-        }
-
-        foreach (var (tile, stolen) in tileTuples)
-        {
-            panel.Children.Add(new TileButton(tile, null,
-                (AnglePivot)(stolen ? pIndex.RelativePlayerIndex(1) : pIndex),
-                combo.IsConcealedDisplay(i)));
-            i++;
-        }
-
-        return panel;
     }
 
     // Sets the Visibility property of every action buttons
@@ -1138,7 +1121,7 @@ public partial class MainWindow : Window
     // Highlights a tile
     private void SetHighlight(Button buttonClickable)
     {
-        buttonClickable.Style = FindResource("StyleHighlightTile") as Style;
+        buttonClickable.Style = FindResource(StyleHighlightTileResourceName) as Style;
         (buttonClickable.Content as Image)!.Opacity = 0.8;
     }
 
@@ -1167,7 +1150,7 @@ public partial class MainWindow : Window
         {
             var tilesCountForThisWall = Math.Max(0, Math.Min(_game.Round.FullTilesList.Count / 8, wallTiles - (_game.Round.FullTilesList.Count / 8 * tilesExpectedCoeff)));
 
-            var wallPanel = this.FindName<StackPanel>("PnlWall", (PlayerIndices)iWall);
+            var wallPanel = this.FindName<StackPanel>(WallPanel, (PlayerIndices)iWall);
 
             // TODO: lazy, walls are always rebuilt
             wallPanel.Children.Clear();
@@ -1190,9 +1173,10 @@ public partial class MainWindow : Window
     {
         if (pButton != null)
         {
-            var btn = (pButton.ChildrenButtonIndex < 0 ? FindName(pButton.PanelBaseName) :
-                this.FindPanel(pButton.PanelBaseName, _humanPlayerIndex).Children[pButton.ChildrenButtonIndex]) as Button;
-            btn!.RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent));
+            var buttonObject = pButton.ChildrenButtonIndex < 0
+                    ? FindName(pButton.PanelBaseName)
+                    : this.FindPanel(pButton.PanelBaseName, _humanPlayerIndex).Children[pButton.ChildrenButtonIndex];
+            (buttonObject as Button)!.RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent));
         }
         else
         {
@@ -1311,8 +1295,9 @@ public partial class MainWindow : Window
         if (_game.Round.IsHumanPlayer && _game.Round.GetHand(_humanPlayerIndex).IsFullHand)
         {
             var discardChoice = _game.Round.IaManager.DiscardDecision(null);
-            var button = this.FindPanel("StpHandP", _humanPlayerIndex).Children.OfType<TileButton>()
-                .Concat(this.FindPanel("StpPickP", _humanPlayerIndex).Children.OfType<TileButton>())
+
+            var button = this.FindPanel(HandPanel, _humanPlayerIndex).Children.OfType<TileButton>()
+                .Concat(this.FindPanel(PickPanel, _humanPlayerIndex).Children.OfType<TileButton>())
                 .FirstOrDefault(x => x.Tile == discardChoice);
             if (button != null)
             {
