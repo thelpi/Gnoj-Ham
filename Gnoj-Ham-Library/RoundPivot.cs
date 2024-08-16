@@ -709,7 +709,7 @@ public class RoundPivot
             || IsRiichi(CurrentPlayerIndex)
             || !_hands[(int)CurrentPlayerIndex].IsConcealed
             || _wallTiles.Count < 4
-            || Game.Players.ElementAt((int)CurrentPlayerIndex).Points < ScoreTools.RIICHI_COST)
+            || Game.Players[(int)CurrentPlayerIndex].Points < ScoreTools.RIICHI_COST)
         {
             return new List<TilePivot>();
         }
@@ -1535,7 +1535,7 @@ public class RoundPivot
 
         foreach (var p in playerInfos)
         {
-            Game.Players.ElementAt((int)p.Index).AddPoints(p.PointsGain);
+            Game.Players[(int)p.Index].AddPoints(p.PointsGain);
         }
 
         return new EndOfRoundInformationsPivot(ryuukyoku, turnWind, displayUraDoraTiles, playerInfos, Game.HonbaCountBeforeScoring,
