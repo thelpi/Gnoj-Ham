@@ -407,7 +407,7 @@ public class RoundPivot
             return;
         }
 
-        var tile = _wallTiles.First();
+        var tile = _wallTiles[0];
         _wallTiles.Remove(tile);
         NotifyWallCount?.Invoke();
         _hands[(int)CurrentPlayerIndex].Pick(tile);
@@ -1158,7 +1158,7 @@ public class RoundPivot
     // Picks a compensation tile (after a kan call) for the current player.
     private TilePivot PickCompensationTile(bool isClosedKan)
     {
-        var compensationTile = _compensationTiles.First();
+        var compensationTile = _compensationTiles[0];
         _compensationTiles.RemoveAt(0);
 
         _deadTreasureTiles.Add(_wallTiles.Last());
@@ -1292,16 +1292,19 @@ public class RoundPivot
     {
         var distinctTilesFromOverallConcealed = GetConcealedTilesFromPlayerPointOfView(playerIndex).Distinct().ToList();
 
-        var tilesToSub = _hands[(int)playerIndex].ConcealedTiles
+        var hand = _hands[(int)playerIndex];
+
+        var tilesToSub = hand.ConcealedTiles
+            .Where(tt => hand.CanDiscardTile(tt, _stealingInProgress))
             .Distinct()
             .ToList();
 
         var subPossibilities = new List<TilePivot>(tilesToSub.Count);
         foreach (var tileToSub in tilesToSub)
         {
-            var tempListConcealed = new List<TilePivot>(_hands[(int)playerIndex].ConcealedTiles);
+            var tempListConcealed = new List<TilePivot>(hand.ConcealedTiles);
             tempListConcealed.Remove(tileToSub);
-            if (HandPivot.IsTenpai(tempListConcealed, _hands[(int)playerIndex].DeclaredCombinations, distinctTilesFromOverallConcealed))
+            if (HandPivot.IsTenpai(tempListConcealed, hand.DeclaredCombinations, distinctTilesFromOverallConcealed))
             {
                 subPossibilities.Add(tileToSub);
             }
@@ -1314,7 +1317,7 @@ public class RoundPivot
             TilePivot? subTile = null;
             if (tile.IsRedDora)
             {
-                subTile = _hands[(int)playerIndex].ConcealedTiles.FirstOrDefault(t => t == tile && !t.IsRedDora);
+                subTile = hand.ConcealedTiles.FirstOrDefault(t => t == tile && !t.IsRedDora);
             }
 
             if (!realSubPossibilities.Contains(subTile ?? tile))

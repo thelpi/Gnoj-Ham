@@ -53,7 +53,7 @@ public class IaManagerPivot
         // there's no choice
         if (discardableTiles.Count == 1)
         {
-            return discardableTiles.First();
+            return discardableTiles[0];
         }
 
         var deadTiles = _round.DeadTilesFromIndexPointOfView(_round.CurrentPlayerIndex);
