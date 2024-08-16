@@ -429,7 +429,7 @@ public class RoundPivot
             return new List<TilePivot>();
         }
 
-        var tile = _discards[(int)PreviousPlayerIndex].Last();
+        var tile = _discards[(int)PreviousPlayerIndex][^1];
         if (tile.IsHonor)
         {
             return new List<TilePivot>();
@@ -475,7 +475,7 @@ public class RoundPivot
             && PreviousPlayerIndex != playerIndex
             && _discards[(int)PreviousPlayerIndex].Count != 0
             && !_waitForDiscard && !IsRiichi(playerIndex)
-            && _hands[(int)playerIndex].ConcealedTiles.Where(t => t == _discards[(int)PreviousPlayerIndex].Last()).Count() >= 2;
+            && _hands[(int)playerIndex].ConcealedTiles.Where(t => t == _discards[(int)PreviousPlayerIndex][^1]).Count() >= 2;
     }
 
     /// <summary>
@@ -530,7 +530,7 @@ public class RoundPivot
                 return new List<TilePivot>();
             }
 
-            var referenceTileFromDiscard = _discards[(int)PreviousPlayerIndex].Last();
+            var referenceTileFromDiscard = _discards[(int)PreviousPlayerIndex][^1];
             return _hands[(int)playerIndex].ConcealedTiles.Where(t => t == referenceTileFromDiscard).Count() >= 3
                 ? new List<TilePivot>
                 {
@@ -552,7 +552,7 @@ public class RoundPivot
             return false;
         }
 
-        var stolenTile = _discards[(int)PreviousPlayerIndex].Last();
+        var stolenTile = _discards[(int)PreviousPlayerIndex][^1];
 
         _hands[(int)CurrentPlayerIndex].DeclareChii(
             stolenTile,
@@ -578,7 +578,7 @@ public class RoundPivot
         }
 
         _hands[(int)playerIndex].DeclarePon(
-            _discards[(int)PreviousPlayerIndex].Last(),
+            _discards[(int)PreviousPlayerIndex][^1],
             Game.GetPlayerCurrentWind(PreviousPlayerIndex)
         );
         _discards[(int)PreviousPlayerIndex].RemoveAt(_discards[(int)PreviousPlayerIndex].Count - 1);
@@ -628,7 +628,7 @@ public class RoundPivot
         else
         {
             _hands[(int)playerIndex].DeclareKan(
-                _discards[(int)PreviousPlayerIndex].Last(),
+                _discards[(int)PreviousPlayerIndex][^1],
                 Game.GetPlayerCurrentWind(PreviousPlayerIndex),
                 null
             );
@@ -836,7 +836,7 @@ public class RoundPivot
 
         _compensationTiles.Insert(0, compensationTile);
 
-        _wallTiles.Add(_deadTreasureTiles.Last());
+        _wallTiles.Add(_deadTreasureTiles[^1]);
         _deadTreasureTiles.RemoveAt(_deadTreasureTiles.Count - 1);
 
         // We could remove the compensation tile from the CurrentPlayerIndex hand, but it's not very useful in this context.
@@ -1161,7 +1161,7 @@ public class RoundPivot
         var compensationTile = _compensationTiles[0];
         _compensationTiles.RemoveAt(0);
 
-        _deadTreasureTiles.Add(_wallTiles.Last());
+        _deadTreasureTiles.Add(_wallTiles[^1]);
 
         _wallTiles.RemoveAt(_wallTiles.Count - 1);
         NotifyWallCount?.Invoke();
@@ -1219,7 +1219,7 @@ public class RoundPivot
     {
         return IsRiichi(playerIndex)
             && _discards[(int)playerIndex].Count > 0
-            && ReferenceEquals(_discards[(int)playerIndex].Last(), _riichis[(int)playerIndex]!.Tile)
+            && ReferenceEquals(_discards[(int)playerIndex][^1], _riichis[(int)playerIndex]!.Tile)
             && IsUninterruptedHistory(playerIndex);
     }
 
@@ -1403,7 +1403,7 @@ public class RoundPivot
                 // In case of ron, fix the "LatestPick" property of the winning hand
                 if (ronPlayerIndex.HasValue)
                 {
-                    phand.SetFromRon(_discards[(int)ronPlayerIndex.Value].Last());
+                    phand.SetFromRon(_discards[(int)ronPlayerIndex.Value][^1]);
                 }
 
                 PlayerIndices? liablePlayerId = null;

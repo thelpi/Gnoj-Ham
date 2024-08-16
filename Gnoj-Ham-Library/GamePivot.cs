@@ -338,7 +338,7 @@ public class GamePivot
             if (PendingRiichiCount * ScoreTools.RIICHI_COST % everyWinner.Count != 0)
             {
                 // This is ugly...
-                everyWinner.Remove(everyWinner.Last());
+                everyWinner.Remove(everyWinner[^1]);
             }
             foreach (var w in everyWinner)
             {

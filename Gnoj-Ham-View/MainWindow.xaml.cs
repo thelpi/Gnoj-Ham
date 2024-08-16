@@ -1191,7 +1191,7 @@ public partial class MainWindow : Window
     // Apply the CPU speed stored in configuration to the storyboard managing the overlay visibility.
     private void ApplyConfigurationToOverlayStoryboard()
     {
-        (_overlayStoryboard.Children.Last() as ObjectAnimationUsingKeyFrames)!.KeyFrames[1].KeyTime =
+        (_overlayStoryboard.Children[^1] as ObjectAnimationUsingKeyFrames)!.KeyFrames[1].KeyTime =
             KeyTime.FromTimeSpan(new TimeSpan(0, 0, 0, 0, CpuSpeedPivot.S500.ParseSpeed()));
     }
 

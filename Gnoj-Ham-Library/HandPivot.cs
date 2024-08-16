@@ -653,7 +653,7 @@ public class HandPivot
     {
         if (afterStealing)
         {
-            var lastCombination = _declaredCombinations.Last();
+            var lastCombination = _declaredCombinations[^1];
             var stolenTile = lastCombination.OpenTile;
             if (stolenTile == tile)
             {
