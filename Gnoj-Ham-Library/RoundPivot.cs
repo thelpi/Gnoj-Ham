@@ -798,16 +798,6 @@ public class RoundPivot
         return _hands[(int)playerIndex];
     }
 
-    /// <summary>
-    /// Gets CPU players who can and does call 'Ron'.
-    /// </summary>
-    /// <param name="humanRonCalled">Indicates if the human player has clled 'Ron' too.</param>
-    /// <returns>CPU players who calls 'Ron'.</returns>
-    public IReadOnlyList<PlayerIndices> CheckForCpuRon(bool humanRonCalled)
-    {
-        return Enum.GetValues<PlayerIndices>().Where(i => IaManager.RonDecision(i, humanRonCalled)).ToList();
-    }
-
     #endregion Public methods
 
     #region Private methods
@@ -816,7 +806,7 @@ public class RoundPivot
 
     private bool CheckOpponensRonCall(bool humanRonPending)
     {
-        var opponentsCallRon = CheckForCpuRon(humanRonPending);
+        var opponentsCallRon = IaManager.RonDecision(humanRonPending);
         foreach (var opponentPlayerIndex in opponentsCallRon)
         {
             CallNotifier?.Invoke(new CallNotifierEventArgs { Action = CallTypes.Ron, PlayerIndex = opponentPlayerIndex });
@@ -1212,28 +1202,6 @@ public class RoundPivot
     }
 
     /// <summary>
-    /// Checks if a kan call can be made by any opponent of the human player.
-    /// </summary>
-    /// <param name="concealed"><c>True</c> to check only concealed kan (or from a previous pon); <c>False</c> to check the opposite; <c>Null</c> for both.</param>
-    /// <returns>The player index who can make the kan call, and the possible tiles; <c>Null</c> is none.</returns>
-    internal (PlayerIndices, IReadOnlyList<TilePivot>)? OpponentsCanCallKan(bool? concealed)
-    {
-        foreach (var i in Enum.GetValues<PlayerIndices>())
-        {
-            if (Game.IsCpu(i))
-            {
-                var kanTiles = CanCallKanWithChoices(i, concealed);
-                if (kanTiles.Count > 0)
-                {
-                    return (i, kanTiles);
-                }
-            }
-        }
-
-        return null;
-    }
-
-    /// <summary>
     /// Similar to <see cref="CanCallKan(int)"/> but with the list of possible tiles depending on <paramref name="concealed"/>.
     /// </summary>
     /// <param name="playerId">The player index.</param>
@@ -1253,38 +1221,6 @@ public class RoundPivot
         }
 
         return tiles;
-    }
-
-    /// <summary>
-    /// Checks if a pon call can be made by any opponent of the human player.
-    /// </summary>
-    /// <returns>The player index who can make the pon call; <c>-1</c> is none.</returns>
-    internal PlayerIndices? OpponentsCanCallPon()
-    {
-        var opponentsIndex = Enum.GetValues<PlayerIndices>().Where(i =>
-        {
-            return Game.IsCpu(i) && CanCallPon(i);
-        }).ToList();
-
-        return opponentsIndex.Count > 0 ? opponentsIndex[0] : null;
-    }
-
-    /// <summary>
-    /// Checks if a chii call can be made by any opponent of the human player.
-    /// </summary>
-    /// <returns>Same type of return than the method <see cref="CanCallChii()"/>, for the opponent who can call chii.</returns>
-    internal IReadOnlyList<TilePivot> OpponentsCanCallChii()
-    {
-        if (!IsHumanPlayer)
-        {
-            var chiiTiles = CanCallChii();
-            if (chiiTiles.Count > 0)
-            {
-                return chiiTiles;
-            }
-        }
-
-        return new List<TilePivot>();
     }
 
     /// <summary>

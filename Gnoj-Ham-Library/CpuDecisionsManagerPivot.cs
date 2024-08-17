@@ -113,15 +113,9 @@ public class CpuDecisionsManagerPivot : ICpuDecisionsManagerPivot
     }
 
     /// <inheritdoc />
-    public bool RonDecision(PlayerIndices playerIndex, bool humanRonCalled)
+    public IReadOnlyList<PlayerIndices> RonDecision(bool humanRonCalled)
     {
-        if (_round.Game.IsCpu(playerIndex) && _round.CanCallRon(playerIndex))
-        {
-            // TODO: implements other rules.
-            return true;
-        }
-
-        return false;
+        return Enum.GetValues<PlayerIndices>().Where(i => _round.Game.IsCpu(i) && _round.CanCallRon(i)).ToList();
     }
 
     /// <inheritdoc />
@@ -139,34 +133,50 @@ public class CpuDecisionsManagerPivot : ICpuDecisionsManagerPivot
     /// <inheritdoc />
     public PlayerIndices? PonDecision()
     {
-        var opponentPlayerId = _round.OpponentsCanCallPon();
-        if (opponentPlayerId.HasValue)
+        PlayerIndices? ponPlayerIndex = null;
+        foreach (var i in Enum.GetValues<PlayerIndices>())
         {
-            opponentPlayerId = PonDecisionInternal(opponentPlayerId.Value);
+            if (_round.Game.IsCpu(i) && _round.CanCallPon(i))
+            {
+                ponPlayerIndex = PonDecisionInternal(i);
+                break;
+            }
         }
 
-        return opponentPlayerId;
+        return ponPlayerIndex;
     }
 
     /// <inheritdoc />
     public bool TsumoDecision(bool isKanCompensation)
     {
+        // so far, never refuses a tsumo
         return _round.CanCallTsumo(isKanCompensation);
     }
 
     /// <inheritdoc />
     public (PlayerIndices pIndex, TilePivot tile)? KanDecision(bool checkConcealedOnly)
     {
-        var opponentPlayerIdWithTiles = _round.OpponentsCanCallKan(checkConcealedOnly);
-        return opponentPlayerIdWithTiles.HasValue
-            ? KanDecisionInternal(opponentPlayerIdWithTiles.Value.Item1, opponentPlayerIdWithTiles.Value.Item2, checkConcealedOnly)
-            : null;
+        (PlayerIndices pIndex, TilePivot tile)? callData = null;
+        foreach (var i in Enum.GetValues<PlayerIndices>())
+        {
+            if (_round.Game.IsCpu(i))
+            {
+                var kanTiles = _round.CanCallKanWithChoices(i, checkConcealedOnly);
+                if (kanTiles.Count > 0)
+                {
+                    callData = KanDecisionInternal(i, kanTiles, checkConcealedOnly);
+                    break;
+                }
+            }
+        }
+
+        return callData;
     }
 
     /// <inheritdoc />
     public TilePivot? ChiiDecision()
     {
-        var chiiTiles = _round.OpponentsCanCallChii();
+        var chiiTiles = _round.CanCallChii();
         return chiiTiles.Count > 0 ? ChiiDecisionInternal(chiiTiles) : null;
     }
 

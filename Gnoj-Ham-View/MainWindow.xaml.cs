@@ -638,7 +638,7 @@ public partial class MainWindow : Window
         _game.Round.CallKan(_humanPlayerIndex, tile);
         InvokeOverlay(CallTypes.Kan, _humanPlayerIndex);
 
-        var opponentsCallRon = _game.Round.CheckForCpuRon(false);
+        var opponentsCallRon = _game.Round.IaManager.RonDecision(false);
         if (opponentsCallRon.Count > 0)
         {
             foreach (var opponentPlayerIndex in opponentsCallRon)
