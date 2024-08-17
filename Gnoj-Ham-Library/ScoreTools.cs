@@ -124,7 +124,7 @@ internal static class ScoreTools
         return countTenpai == 1
             ? (TENPAI_BASE_POINTS * (4 - countTenpai), -TENPAI_BASE_POINTS)
             : countTenpai == 2
-                ? (TENPAI_BASE_POINTS + TENPAI_BASE_POINTS / countTenpai, -(TENPAI_BASE_POINTS + TENPAI_BASE_POINTS / countTenpai))
+                ? (TENPAI_BASE_POINTS + (TENPAI_BASE_POINTS / countTenpai), -(TENPAI_BASE_POINTS + (TENPAI_BASE_POINTS / countTenpai)))
                 : countTenpai == 3 ? (TENPAI_BASE_POINTS, countTenpai * -TENPAI_BASE_POINTS) : (0, 0);
     }
 
@@ -166,10 +166,10 @@ internal static class ScoreTools
         }
 
         var fuCount =
-            hand.YakusCombinations!.Count(c => c.IsSquare && c.HasTerminalOrHonor) * HONOR_KAN_FU
-            + hand.YakusCombinations!.Count(c => c.IsSquare && !c.HasTerminalOrHonor) * REGULAR_KAN_FU
-            + hand.YakusCombinations!.Count(c => c.IsBrelan && c.HasTerminalOrHonor) * HONOR_PON_FU
-            + hand.YakusCombinations!.Count(c => c.IsBrelan && !c.HasTerminalOrHonor) * REGULAR_PON_FU;
+            (hand.YakusCombinations!.Count(c => c.IsSquare && c.HasTerminalOrHonor) * HONOR_KAN_FU)
+            + (hand.YakusCombinations!.Count(c => c.IsSquare && !c.HasTerminalOrHonor) * REGULAR_KAN_FU)
+            + (hand.YakusCombinations!.Count(c => c.IsBrelan && c.HasTerminalOrHonor) * HONOR_PON_FU)
+            + (hand.YakusCombinations!.Count(c => c.IsBrelan && !c.HasTerminalOrHonor) * REGULAR_PON_FU);
 
         if (isTsumo && !hand.Yakus!.Any(y => y == YakuPivot.Pinfu))
         {

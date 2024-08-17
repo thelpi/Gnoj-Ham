@@ -112,7 +112,7 @@ public class RulePivot : IEquatable<RulePivot>
 
     public override int GetHashCode()
     {
-        return (UseNagashiMangan, InitialPointsRule, EndOfGameRule, UseRedDoras, DebugMode, DiscardTip).GetHashCode();
+        return HashCode.Combine(UseNagashiMangan, InitialPointsRule, EndOfGameRule, UseRedDoras, DebugMode, DiscardTip);
     }
 
     #endregion IEquatable implementation
