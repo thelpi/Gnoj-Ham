@@ -1,6 +1,6 @@
 ﻿using Gnoj_Ham_Library.Enums;
 
-namespace Gnoj_Ham_Library.Abstractions;
+namespace Gnoj_Ham_Library;
 
 /// <summary>
 /// Interface for CPU decisions.
