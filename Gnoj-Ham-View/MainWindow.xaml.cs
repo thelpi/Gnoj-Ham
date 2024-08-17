@@ -638,7 +638,7 @@ public partial class MainWindow : Window
         _game.Round.CallKan(_humanPlayerIndex, tile);
         InvokeOverlay(CallTypes.Kan, _humanPlayerIndex);
 
-        var opponentsCallRon = _game.Round.IaManager.RonDecision(false);
+        var opponentsCallRon = _game.Round.CheckForCpuRon(false);
         if (opponentsCallRon.Count > 0)
         {
             foreach (var opponentPlayerIndex in opponentsCallRon)
@@ -681,7 +681,7 @@ public partial class MainWindow : Window
                 _riichiTiles = _game.Round.CanCallRiichi();
                 if (_riichiTiles.Count > 0)
                 {
-                    var riichiDecision = _game.Ruleset.DiscardTip && _game.Round.IaManager.RiichiDecision().choice != null;
+                    var riichiDecision = _game.Ruleset.DiscardTip && _game.Round.IaManager.RiichiDecision() != null;
 
                     BtnRiichi.Visibility = Visibility.Visible;
                     BtnSkipCall.Visibility = Visibility.Visible;
@@ -1227,7 +1227,7 @@ public partial class MainWindow : Window
 
         if (_game.Round.IsHumanPlayer && _game.Round.GetHand(_humanPlayerIndex).IsFullHand)
         {
-            var discardChoice = _game.Round.IaManager.DiscardDecision(null);
+            var discardChoice = _game.Round.IaManager.DiscardDecision();
 
             var button = this.FindPanel(HandPanel, _humanPlayerIndex).Children.OfType<TileButton>()
                 .Concat(this.FindPanel(PickPanel, _humanPlayerIndex).Children.OfType<TileButton>())

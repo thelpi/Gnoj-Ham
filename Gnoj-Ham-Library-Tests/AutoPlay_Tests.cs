@@ -6,9 +6,9 @@ public class AutoPlay_Tests
 {
     private readonly Dictionary<int, (string pName, int points)[]> _expected = new()
     {
-        { 1000, new[] { ("CPU_0", 42900), ("CPU_1", 26300), ("CPU_3", 18100), ("CPU_2", 12700) } },
-        { 666, new[] { ("CPU_0", 63900), ("CPU_1", 15400), ("CPU_3", 12300), ("CPU_2", 8400) } },
-        { 999999, new[] { ("CPU_1", 32300), ("CPU_0", 25400), ("CPU_2", 23900), ("CPU_3", 18400) } }
+        { 1000, new[] { ("CPU_1", 47700), ("CPU_0", 28000), ("CPU_3", 20000), ("CPU_2", 4300) } },
+        { 666, new[] { ("CPU_0", 49000), ("CPU_1", 28500), ("CPU_3", 13000), ("CPU_2", 9500) } },
+        { 999999, new[] { ("CPU_1", 41600), ("CPU_2", 27900), ("CPU_3", 23000), ("CPU_0", 7500) } }
     };
 
     [Theory]

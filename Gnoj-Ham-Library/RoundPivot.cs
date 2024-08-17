@@ -392,24 +392,6 @@ public class RoundPivot
     }
 
     /// <summary>
-    /// Tries to pick the next tile from the wall.
-    /// </summary>
-    internal void Pick()
-    {
-        if (_wallTiles.Count == 0 || _waitForDiscard)
-        {
-            return;
-        }
-
-        var tile = _wallTiles[0];
-        _wallTiles.Remove(tile);
-        NotifyWallCount?.Invoke();
-        _hands[(int)CurrentPlayerIndex].Pick(tile);
-        NotifyPick?.Invoke(new PickTileEventArgs(CurrentPlayerIndex, tile));
-        _waitForDiscard = true;
-    }
-
-    /// <summary>
     /// Checks if calling chii is allowed for the specified player.
     /// </summary>
     /// <returns>
@@ -733,58 +715,6 @@ public class RoundPivot
     }
 
     /// <summary>
-    /// Checks if the hand of the specified player is ready for calling ron.
-    /// </summary>
-    /// <param name="playerIndex">The player index.</param>
-    /// <returns><c>True</c> if calling ron is possible; <c>False</c> otherwise.</returns>
-    internal bool CanCallRon(PlayerIndices playerIndex)
-    {
-        var tile = _waitForDiscard ? null : _discards[(int)PreviousPlayerIndex].LastOrDefault();
-        var forKokushiOnly = false;
-        var isChanka = false;
-        if (CurrentPlayerIndex != playerIndex)
-        {
-            if (_closedKanInProgress != null)
-            {
-                tile = _closedKanInProgress;
-                forKokushiOnly = true;
-                isChanka = true;
-            }
-            else if (_openedKanInProgress != null)
-            {
-                tile = _openedKanInProgress;
-                isChanka = true;
-            }
-        }
-
-        if (tile == null)
-        {
-            return false;
-        }
-
-        SetYakus(playerIndex, tile, forKokushiOnly ? DrawTypes.OpponentKanCallConcealed : (isChanka ? DrawTypes.OpponentKanCallOpen : DrawTypes.OpponentDiscard));
-
-        return _hands[(int)playerIndex].IsComplete
-            && !_hands[(int)playerIndex].CancelYakusIfFuriten(_discards[(int)playerIndex], GetTilesFromVirtualDiscardsAtRank(playerIndex, tile))
-            && !_hands[(int)playerIndex].CancelYakusIfTemporaryFuriten(this, playerIndex);
-    }
-
-    /// <summary>
-    /// Checks if the hand of the specified player is tenpai.
-    /// </summary>
-    /// <param name="playerIndex">The player index.</param>
-    /// <param name="tileToRemoveFromConcealed">A tile to remove from the hand first; only if <see cref="HandPivot.IsFullHand"/> is <c>True</c> for this hand.</param>
-    /// <returns><c>True</c> if tenpai; <c>False</c> otherwise.</returns>
-    internal bool IsTenpai(PlayerIndices playerIndex, TilePivot? tileToRemoveFromConcealed)
-    {
-        var hand = _hands[(int)playerIndex];
-
-        // TODO : there're (maybe) specific rules about it:
-        // for instance, what if I have a single wait on tile "4 circle" but every tiles "4 circle" are already in my hand ?
-        return hand.IsTenpai(_fullTilesList, tileToRemoveFromConcealed);
-    }
-
-    /// <summary>
     /// Checks if the specified player is riichi.
     /// </summary>
     /// <param name="playerIndex">Player index.</param>
@@ -837,94 +767,6 @@ public class RoundPivot
     }
 
     /// <summary>
-    /// Checks if a priority call can be made by the specified player.
-    /// </summary>
-    /// <param name="playerIndex">Player index.</param>
-    /// <param name="isSelfKan">If the method returns <c>True</c>, this indicates a self kan if <c>True</c>.</param>
-    /// <returns><c>True</c> if call available; <c>False otherwise</c>.</returns>
-    internal bool CanCallPonOrKan(PlayerIndices playerIndex, out bool isSelfKan)
-    {
-        isSelfKan = _waitForDiscard;
-        return CanCallKan(playerIndex).Count > 0 || CanCallPon(playerIndex);
-    }
-
-    /// <summary>
-    /// Checks if a kan call can be made by any opponent of the human player.
-    /// </summary>
-    /// <param name="concealed"><c>True</c> to check only concealed kan (or from a previous pon); <c>False</c> to check the opposite; <c>Null</c> for both.</param>
-    /// <returns>The player index who can make the kan call, and the possible tiles; <c>Null</c> is none.</returns>
-    internal (PlayerIndices, IReadOnlyList<TilePivot>)? OpponentsCanCallKan(bool? concealed)
-    {
-        foreach (var i in Enum.GetValues<PlayerIndices>())
-        {
-            if (Game.IsCpu(i))
-            {
-                var kanTiles = CanCallKanWithChoices(i, concealed);
-                if (kanTiles.Count > 0)
-                {
-                    return (i, kanTiles);
-                }
-            }
-        }
-
-        return null;
-    }
-
-    /// <summary>
-    /// Similar to <see cref="CanCallKan(int)"/> but with the list of possible tiles depending on <paramref name="concealed"/>.
-    /// </summary>
-    /// <param name="playerId">The player index.</param>
-    /// <param name="concealed"><c>True</c> to check only concealed kan (or from a previous pon); <c>False</c> to check the opposite; <c>Null</c> for both.</param>
-    /// <returns>List of possible tiles.</returns>
-    internal IReadOnlyList<TilePivot> CanCallKanWithChoices(PlayerIndices playerId, bool? concealed)
-    {
-        var tiles = CanCallKan(playerId);
-        if (concealed == true)
-        {
-            tiles = tiles.Where(t => _hands[(int)playerId].ConcealedTiles.Count(ct => t == ct) == 4
-                || _hands[(int)playerId].DeclaredCombinations.Any(ct => ct.IsBrelan && t == ct.OpenTile)).ToList();
-        }
-        else if (concealed == false)
-        {
-            tiles = tiles.Where(t => _hands[(int)playerId].ConcealedTiles.Count(ct => t == ct) == 3).ToList();
-        }
-
-        return tiles;
-    }
-
-    /// <summary>
-    /// Checks if a pon call can be made by any opponent of the human player.
-    /// </summary>
-    /// <returns>The player index who can make the pon call; <c>-1</c> is none.</returns>
-    internal PlayerIndices? OpponentsCanCallPon()
-    {
-        var opponentsIndex = Enum.GetValues<PlayerIndices>().Where(i =>
-        {
-            return Game.IsCpu(i) && CanCallPon(i);
-        }).ToList();
-
-        return opponentsIndex.Count > 0 ? opponentsIndex[0] : null;
-    }
-
-    /// <summary>
-    /// Checks if a chii call can be made by any opponent of the human player.
-    /// </summary>
-    /// <returns>Same type of return than the method <see cref="CanCallChii()"/>, for the opponent who can call chii.</returns>
-    internal IReadOnlyList<TilePivot> OpponentsCanCallChii()
-    {
-        if (!IsHumanPlayer)
-        {
-            var chiiTiles = CanCallChii();
-            if (chiiTiles.Count > 0)
-            {
-                return chiiTiles;
-            }
-        }
-
-        return new List<TilePivot>();
-    }
-
-    /// <summary>
     /// Checks if the specified tile is allowed for discard for the current player.
     /// </summary>
     /// <param name="tile">The tile to check.</param>
@@ -956,6 +798,16 @@ public class RoundPivot
         return _hands[(int)playerIndex];
     }
 
+    /// <summary>
+    /// Gets CPU players who can and does call 'Ron'.
+    /// </summary>
+    /// <param name="humanRonCalled">Indicates if the human player has clled 'Ron' too.</param>
+    /// <returns>CPU players who calls 'Ron'.</returns>
+    public IReadOnlyList<PlayerIndices> CheckForCpuRon(bool humanRonCalled)
+    {
+        return Enum.GetValues<PlayerIndices>().Where(i => IaManager.RonDecision(i, humanRonCalled)).ToList();
+    }
+
     #endregion Public methods
 
     #region Private methods
@@ -964,7 +816,7 @@ public class RoundPivot
 
     private bool CheckOpponensRonCall(bool humanRonPending)
     {
-        var opponentsCallRon = IaManager.RonDecision(humanRonPending);
+        var opponentsCallRon = CheckForCpuRon(humanRonPending);
         foreach (var opponentPlayerIndex in opponentsCallRon)
         {
             CallNotifier?.Invoke(new CallNotifierEventArgs { Action = CallTypes.Ron, PlayerIndex = opponentPlayerIndex });
@@ -1007,7 +859,7 @@ public class RoundPivot
 
             if (!IsHumanPlayer)
             {
-                var discardDecision = IaManager.DiscardDecision(new List<TilePivot>());
+                var discardDecision = IaManager.DiscardDecision();
                 Discard(discardDecision, sleepTime);
             }
         }
@@ -1030,7 +882,7 @@ public class RoundPivot
 
             if (isCpu)
             {
-                var discardDecision = IaManager.DiscardDecision(new List<TilePivot>());
+                var discardDecision = IaManager.DiscardDecision();
                 Discard(discardDecision, sleepTime);
             }
         }
@@ -1069,14 +921,14 @@ public class RoundPivot
 
         kanInProgress = null;
 
-        var (riichiTile, riichiTiles) = IaManager.RiichiDecision();
+        var riichiTile = IaManager.RiichiDecision();
         if (riichiTile != null)
         {
             CallRiichi(riichiTile, sleepTime);
             return false;
         }
 
-        Discard(IaManager.DiscardDecision(riichiTiles), sleepTime);
+        Discard(IaManager.DiscardDecision(), sleepTime);
         return false;
     }
 
@@ -1107,7 +959,7 @@ public class RoundPivot
         RiichiChoicesNotifier?.Invoke(new RiichiChoicesNotifierEventArgs(riichiTiles));
         if (riichiTiles.Count > 0)
         {
-            var adviseRiichi = Game.Ruleset.DiscardTip && IaManager.RiichiDecision().choice != null;
+            var adviseRiichi = Game.Ruleset.DiscardTip && IaManager.RiichiDecision() != null;
             HumanCallNotifier?.Invoke(new HumanCallNotifierEventArgs { Call = CallTypes.Riichi, RiichiAdvised = adviseRiichi });
             return null;
         }
@@ -1276,6 +1128,164 @@ public class RoundPivot
     #endregion Private methods
 
     #region Internal methods
+
+    /// <summary>
+    /// Tries to pick the next tile from the wall.
+    /// </summary>
+    internal void Pick()
+    {
+        if (_wallTiles.Count == 0 || _waitForDiscard)
+        {
+            return;
+        }
+
+        var tile = _wallTiles[0];
+        _wallTiles.Remove(tile);
+        NotifyWallCount?.Invoke();
+        _hands[(int)CurrentPlayerIndex].Pick(tile);
+        NotifyPick?.Invoke(new PickTileEventArgs(CurrentPlayerIndex, tile));
+        _waitForDiscard = true;
+    }
+
+    /// <summary>
+    /// Checks if the hand of the specified player is ready for calling ron.
+    /// </summary>
+    /// <param name="playerIndex">The player index.</param>
+    /// <returns><c>True</c> if calling ron is possible; <c>False</c> otherwise.</returns>
+    internal bool CanCallRon(PlayerIndices playerIndex)
+    {
+        var tile = _waitForDiscard ? null : _discards[(int)PreviousPlayerIndex].LastOrDefault();
+        var forKokushiOnly = false;
+        var isChanka = false;
+        if (CurrentPlayerIndex != playerIndex)
+        {
+            if (_closedKanInProgress != null)
+            {
+                tile = _closedKanInProgress;
+                forKokushiOnly = true;
+                isChanka = true;
+            }
+            else if (_openedKanInProgress != null)
+            {
+                tile = _openedKanInProgress;
+                isChanka = true;
+            }
+        }
+
+        if (tile == null)
+        {
+            return false;
+        }
+
+        SetYakus(playerIndex, tile, forKokushiOnly ? DrawTypes.OpponentKanCallConcealed : (isChanka ? DrawTypes.OpponentKanCallOpen : DrawTypes.OpponentDiscard));
+
+        return _hands[(int)playerIndex].IsComplete
+            && !_hands[(int)playerIndex].CancelYakusIfFuriten(_discards[(int)playerIndex], GetTilesFromVirtualDiscardsAtRank(playerIndex, tile))
+            && !_hands[(int)playerIndex].CancelYakusIfTemporaryFuriten(this, playerIndex);
+    }
+
+    /// <summary>
+    /// Checks if the hand of the specified player is tenpai.
+    /// </summary>
+    /// <param name="playerIndex">The player index.</param>
+    /// <param name="tileToRemoveFromConcealed">A tile to remove from the hand first; only if <see cref="HandPivot.IsFullHand"/> is <c>True</c> for this hand.</param>
+    /// <returns><c>True</c> if tenpai; <c>False</c> otherwise.</returns>
+    internal bool IsTenpai(PlayerIndices playerIndex, TilePivot? tileToRemoveFromConcealed)
+    {
+        var hand = _hands[(int)playerIndex];
+
+        // TODO : there're (maybe) specific rules about it:
+        // for instance, what if I have a single wait on tile "4 circle" but every tiles "4 circle" are already in my hand ?
+        return hand.IsTenpai(_fullTilesList, tileToRemoveFromConcealed);
+    }
+
+    /// <summary>
+    /// Checks if a priority call can be made by the specified player.
+    /// </summary>
+    /// <param name="playerIndex">Player index.</param>
+    /// <param name="isSelfKan">If the method returns <c>True</c>, this indicates a self kan if <c>True</c>.</param>
+    /// <returns><c>True</c> if call available; <c>False otherwise</c>.</returns>
+    internal bool CanCallPonOrKan(PlayerIndices playerIndex, out bool isSelfKan)
+    {
+        isSelfKan = _waitForDiscard;
+        return CanCallKan(playerIndex).Count > 0 || CanCallPon(playerIndex);
+    }
+
+    /// <summary>
+    /// Checks if a kan call can be made by any opponent of the human player.
+    /// </summary>
+    /// <param name="concealed"><c>True</c> to check only concealed kan (or from a previous pon); <c>False</c> to check the opposite; <c>Null</c> for both.</param>
+    /// <returns>The player index who can make the kan call, and the possible tiles; <c>Null</c> is none.</returns>
+    internal (PlayerIndices, IReadOnlyList<TilePivot>)? OpponentsCanCallKan(bool? concealed)
+    {
+        foreach (var i in Enum.GetValues<PlayerIndices>())
+        {
+            if (Game.IsCpu(i))
+            {
+                var kanTiles = CanCallKanWithChoices(i, concealed);
+                if (kanTiles.Count > 0)
+                {
+                    return (i, kanTiles);
+                }
+            }
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// Similar to <see cref="CanCallKan(int)"/> but with the list of possible tiles depending on <paramref name="concealed"/>.
+    /// </summary>
+    /// <param name="playerId">The player index.</param>
+    /// <param name="concealed"><c>True</c> to check only concealed kan (or from a previous pon); <c>False</c> to check the opposite; <c>Null</c> for both.</param>
+    /// <returns>List of possible tiles.</returns>
+    internal IReadOnlyList<TilePivot> CanCallKanWithChoices(PlayerIndices playerId, bool? concealed)
+    {
+        var tiles = CanCallKan(playerId);
+        if (concealed == true)
+        {
+            tiles = tiles.Where(t => _hands[(int)playerId].ConcealedTiles.Count(ct => t == ct) == 4
+                || _hands[(int)playerId].DeclaredCombinations.Any(ct => ct.IsBrelan && t == ct.OpenTile)).ToList();
+        }
+        else if (concealed == false)
+        {
+            tiles = tiles.Where(t => _hands[(int)playerId].ConcealedTiles.Count(ct => t == ct) == 3).ToList();
+        }
+
+        return tiles;
+    }
+
+    /// <summary>
+    /// Checks if a pon call can be made by any opponent of the human player.
+    /// </summary>
+    /// <returns>The player index who can make the pon call; <c>-1</c> is none.</returns>
+    internal PlayerIndices? OpponentsCanCallPon()
+    {
+        var opponentsIndex = Enum.GetValues<PlayerIndices>().Where(i =>
+        {
+            return Game.IsCpu(i) && CanCallPon(i);
+        }).ToList();
+
+        return opponentsIndex.Count > 0 ? opponentsIndex[0] : null;
+    }
+
+    /// <summary>
+    /// Checks if a chii call can be made by any opponent of the human player.
+    /// </summary>
+    /// <returns>Same type of return than the method <see cref="CanCallChii()"/>, for the opponent who can call chii.</returns>
+    internal IReadOnlyList<TilePivot> OpponentsCanCallChii()
+    {
+        if (!IsHumanPlayer)
+        {
+            var chiiTiles = CanCallChii();
+            if (chiiTiles.Count > 0)
+            {
+                return chiiTiles;
+            }
+        }
+
+        return new List<TilePivot>();
+    }
 
     /// <summary>
     /// Checks if the hand of the specified player is tenpai and list tiles which can be discarded.

@@ -26,7 +26,7 @@ public class CpuDecisionsManagerPivot : ICpuDecisionsManagerPivot
     // TODO: public methods should verify parameters
 
     /// <inheritdoc />
-    public TilePivot DiscardDecision(IReadOnlyList<TilePivot>? tenpaiPotentialDiscards)
+    public TilePivot DiscardDecision()
     {
         var concealedTiles = _round.GetHand(_round.CurrentPlayerIndex).ConcealedTiles;
 
@@ -46,7 +46,7 @@ public class CpuDecisionsManagerPivot : ICpuDecisionsManagerPivot
         var (tilesSafety, stopCurrentHand) = ComputeTilesSafety(discardableTiles, deadTiles);
 
         // tenpai: let's go anyway...
-        tenpaiPotentialDiscards ??= _round.ExtractDiscardChoicesFromTenpai(_round.CurrentPlayerIndex);
+        var tenpaiPotentialDiscards = _round.ExtractDiscardChoicesFromTenpai(_round.CurrentPlayerIndex);
         if (tenpaiPotentialDiscards.Count > 0)
         {
             return GetBestDiscardFromList(tenpaiPotentialDiscards, tilesSafety, stopCurrentHand);
@@ -96,12 +96,12 @@ public class CpuDecisionsManagerPivot : ICpuDecisionsManagerPivot
     }
 
     /// <inheritdoc />
-    public (TilePivot? choice, IReadOnlyList<TilePivot> potentials) RiichiDecision()
+    public TilePivot? RiichiDecision()
     {
         var riichiTiles = _round.CanCallRiichi();
 
         if (riichiTiles.Count < 2)
-            return (riichiTiles.Count > 0 ? riichiTiles[0] : null, riichiTiles);
+            return riichiTiles.Count > 0 ? riichiTiles[0] : null;
 
         var deadTiles = _round.DeadTilesFromIndexPointOfView(_round.CurrentPlayerIndex);
 
@@ -109,31 +109,19 @@ public class CpuDecisionsManagerPivot : ICpuDecisionsManagerPivot
 
         var tileSelected = GetBestDiscardFromList(riichiTiles, tilesSafety, stopCurrentHand);
 
-        return (tileSelected, riichiTiles);
+        return tileSelected;
     }
 
     /// <inheritdoc />
-    public IReadOnlyList<PlayerIndices> RonDecision(bool ronCalled)
+    public bool RonDecision(PlayerIndices playerIndex, bool humanRonCalled)
     {
-        var callers = new List<PlayerIndices>(4);
-
-        foreach (var i in Enum.GetValues<PlayerIndices>())
+        if (_round.Game.IsCpu(playerIndex) && _round.CanCallRon(playerIndex))
         {
-            if (_round.Game.IsCpu(i) && _round.CanCallRon(i))
-            {
-                if (ronCalled || callers.Count > 0)
-                {
-                    callers.Add(i);
-                }
-                else
-                {
-                    // Same code as the "if" statement : expected for now.
-                    callers.Add(i);
-                }
-            }
+            // TODO: implements other rules.
+            return true;
         }
 
-        return callers;
+        return false;
     }
 
     /// <inheritdoc />

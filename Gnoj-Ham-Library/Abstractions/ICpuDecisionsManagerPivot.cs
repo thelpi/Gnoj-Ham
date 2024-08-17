@@ -8,25 +8,24 @@ namespace Gnoj_Ham_Library.Abstractions;
 public interface ICpuDecisionsManagerPivot
 {
     /// <summary>
-    /// Computes the discard decision of the current CPU player.
+    /// 
     /// </summary>
-    /// <param name="tenpaiPotentialDiscards">Results of the call to <see cref="RoundPivot.CanCallRiichi"/> that has been made before; set <c>null</c> to force a recompute.</param>
-    /// <returns>The tile to discard.</returns>
-    TilePivot DiscardDecision(IReadOnlyList<TilePivot>? tenpaiPotentialDiscards);
+    /// <returns></returns>
+    TilePivot DiscardDecision();
 
     /// <summary>
-    /// Checks if the current CPU player can make a riichi call, and computes the decision to do so.
+    /// Checks if the current player can call 'Riichi' and computes the decision to do so.
     /// </summary>
-    /// <returns>A tuple with the tile to discard (<c>Null</c> if no decision made) and all the tiles 'discardable'.</returns>
-    (TilePivot? choice, IReadOnlyList<TilePivot> potentials) RiichiDecision();
+    /// <returns>The tile to discard if 'Riichi' is called; <c>Null</c> otherwise.</returns>
+    TilePivot? RiichiDecision();
 
     /// <summary>
-    /// Checks for CPU players who can make a ron call, and computes the decision to call it.
+    /// Checks if the specified player can call 'Ron' and computes the decision to do so.
     /// </summary>
-    /// <remarks>If any player, including human, calls ron, every players who can call ron will do.</remarks>
-    /// <param name="ronCalled">Indicates if the human player has already made a ron call.</param>
-    /// <returns>List of player index, other than human player, who decide to call ron.</returns>
-    IReadOnlyList<PlayerIndices> RonDecision(bool ronCalled);
+    /// <param name="playerIndex">Player index.</param>
+    /// <param name="humanRonCalled">Indicates if the human player has also made a 'Ron' call.</param>
+    /// <returns><c>True</c> if 'Ron' called; <c>False</c> otherwise, or if <paramref name="playerIndex"/> is human.</returns>
+    bool RonDecision(PlayerIndices playerIndex, bool humanRonCalled);
 
     /// <summary>
     /// Computes an advice for the human player to call a Kan or not; assumes the Kan is possible.
