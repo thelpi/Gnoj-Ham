@@ -1,4 +1,5 @@
-﻿using Gnoj_Ham_Library.Enums;
+﻿using Gnoj_Ham_Library.Abstractions;
+using Gnoj_Ham_Library.Enums;
 using Gnoj_Ham_Library.Events;
 
 namespace Gnoj_Ham_Library;
@@ -77,7 +78,7 @@ public class RoundPivot
     /// <summary>
     /// IA manager.
     /// </summary>
-    public IaManagerPivot IaManager { get; }
+    public ICpuDecisionsManagerPivot IaManager { get; }
 
     /// <summary>
     /// The game in which this instance happens.
@@ -211,7 +212,7 @@ public class RoundPivot
         _openedKanInProgress = null;
         _waitForDiscard = false;
         _playerIndexHistory = new List<PlayerIndices>(10);
-        IaManager = new IaManagerPivot(this);
+        IaManager = new CpuDecisionsManagerPivot(this);
     }
 
     #endregion Constructors
