@@ -224,22 +224,22 @@ public class RoundPivot
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>Instance of <see cref="AutoPlayResultPivot"/>.</returns>>
     public AutoPlayResultPivot RunAutoPlay(CancellationToken cancellationToken)
-        => RunAutoPlay(cancellationToken, new List<PlayerIndices>(), new List<PlayerIndices>(), new List<PlayerIndices>(), 0);
+        => RunAutoPlay(cancellationToken, false, false, false, 0);
 
     /// <summary>
     /// Starts and runs the auto player.
     /// </summary>
     /// <param name="cancellationToken">Cancellation token.</param>
-    /// <param name="declinedHumanCalls">Indicates that a potential call has been suggested to the human player and has been declined..</param>
-    /// <param name="humanRonPendings">Indicates that the human player has called 'Ron', but the same call by opponents has to be checked too.</param>
-    /// <param name="autoCallMahjongs">When enabled, if the human player can call 'Tsumo' or 'Ron', the call is automatically made.</param>
+    /// <param name="declinedHumanCall">Indicates that a potential call has been suggested to the human player and has been declined..</param>
+    /// <param name="humanRonPending">Indicates that the human player has called 'Ron', but the same call by opponents has to be checked too.</param>
+    /// <param name="autoCallMahjong">When enabled, if the human player can call 'Tsumo' or 'Ron', the call is automatically made.</param>
     /// <param name="sleepTime">The time to wait after any action (call or discard).</param>
     /// <returns>Instance of <see cref="AutoPlayResultPivot"/>.</returns>>
     public AutoPlayResultPivot RunAutoPlay(
         CancellationToken cancellationToken,
-        IReadOnlyList<PlayerIndices> declinedHumanCalls,
-        IReadOnlyList<PlayerIndices> humanRonPendings,
-        IReadOnlyList<PlayerIndices> autoCallMahjongs,
+        bool declinedHumanCall,
+        bool humanRonPending,
+        bool autoCallMahjong,
         int sleepTime)
     {
         (PlayerIndices, TilePivot?, PlayerIndices?)? kanInProgress = null;
@@ -250,32 +250,29 @@ public class RoundPivot
             // 0 - after one loop, there is no human decline remaining
             if (!isFirstTurn)
             {
-                declinedHumanCalls = new List<PlayerIndices>();
+                declinedHumanCall = false;
             }
             isFirstTurn = false;
 
-            // 1 - checks if one human (we have not checked yet) can call "ron"; the loop ends if it's the case
-            foreach (var pi in Game.HumanIndices)
+            // 1 - checks if human (we have not checked yet) can call "ron"; the loop ends if it's the case
+            if (Game.HumanPlayerIndex.HasValue && !declinedHumanCall && !humanRonPending && CanCallRon(Game.HumanPlayerIndex.Value))
             {
-                if (!declinedHumanCalls.Contains(pi) && !humanRonPendings.Contains(pi) && CanCallRon(pi))
+                HumanCallNotifier?.Invoke(new HumanCallNotifierEventArgs { Call = CallTypes.Ron });
+                if (autoCallMahjong)
                 {
-                    HumanCallNotifier?.Invoke(new HumanCallNotifierEventArgs { Call = CallTypes.Ron });
-                    if (autoCallMahjongs.Contains(pi))
-                    {
-                        result.HumanCall = (pi, CallTypes.Ron);
-                    }
-                    else
-                    {
-                        DiscardTileNotifier?.Invoke(new DiscardTileNotifierEventArgs());
-                    }
-                    return result;
+                    result.HumanCall = (Game.HumanPlayerIndex.Value, CallTypes.Ron);
                 }
+                else
+                {
+                    DiscardTileNotifier?.Invoke(new DiscardTileNotifierEventArgs());
+                }
+                return result;
             }
 
             // 2 - this code runs after every human ron check has been made
             // TODO: should the backend store human ron pendings, to free the UI from this responsability?
             // the loop ends, with the "EndOfRound" marker, if any "ron" call is made
-            if (CheckOpponensRonCall(humanRonPendings.Count > 0))
+            if (CheckOpponensRonCall(humanRonPending))
             {
                 result.EndOfRound = true;
                 result.RonPlayerId = kanInProgress.HasValue ? kanInProgress.Value.Item1 : PreviousPlayerIndex;
@@ -294,18 +291,14 @@ public class RoundPivot
                 ReadyToCallNotifier?.Invoke(new ReadyToCallNotifierEventArgs { Call = CallTypes.Kan, PotentialPreviousPlayerIndex = kanInProgress.Value.Item3 });
             }
 
-            // 4 - checks "pon" and "kan" calls for human players, except if declined
-            // note: it's impossible to have more than one
-            foreach (var pi in Game.HumanIndices)
+            // 4 - checks "pon" and "kan" calls for human player, except if declined
+            if (Game.HumanPlayerIndex.HasValue && !declinedHumanCall && CanCallPonOrKan(Game.HumanPlayerIndex.Value, out var isSelfKan))
             {
-                if (!declinedHumanCalls.Contains(pi) && CanCallPonOrKan(pi, out var isSelfKan))
+                if (!isSelfKan)
                 {
-                    if (!isSelfKan)
-                    {
-                        DiscardTileNotifier?.Invoke(new DiscardTileNotifierEventArgs());
-                    }
-                    return result;
+                    DiscardTileNotifier?.Invoke(new DiscardTileNotifierEventArgs());
                 }
+                return result;
             }
 
             // 5 - "kan" call from non-human players
@@ -330,7 +323,7 @@ public class RoundPivot
 
             // 7 - checks "chii" call for current player (human)
             // exits the loop to let the UI suggests the call
-            if (IsHumanPlayer && !declinedHumanCalls.Contains(CurrentPlayerIndex) && CanCallChii().Count > 0)
+            if (IsHumanPlayer && !declinedHumanCall && CanCallChii().Count > 0)
             {
                 DiscardTileNotifier?.Invoke(new DiscardTileNotifierEventArgs());
                 return result;
@@ -380,7 +373,7 @@ public class RoundPivot
             // - for non human player, checks for tsumo, kan and riichi
             if (IsHumanPlayer)
             {
-                var call = HumanAutoPlay(autoCallMahjongs.Contains(CurrentPlayerIndex), sleepTime);
+                var call = HumanAutoPlay(autoCallMahjong, sleepTime);
                 if (call.HasValue)
                 {
                     result.HumanCall = (CurrentPlayerIndex, call.Value);

@@ -13,13 +13,13 @@ public class GamePivot
     private readonly Random _random;
 
     /// <summary>
+    /// Human player index (if any).
+    /// </summary>
+    public PlayerIndices? HumanPlayerIndex { get; }
+    /// <summary>
     /// List of players.
     /// </summary>
     public IReadOnlyList<PlayerPivot> Players { get; }
-    /// <summary>
-    /// Collection of indices from <see cref="Players"/> used by human players.
-    /// </summary>
-    public IReadOnlyList<PlayerIndices> HumanIndices { get; }
     /// <summary>
     /// Current dominant wind.
     /// </summary>
@@ -53,7 +53,6 @@ public class GamePivot
     /// The ruleset for the game.
     /// </summary>
     public RulePivot Ruleset { get; }
-
     /// <summary>
     /// Honba count before scoring.
     /// </summary>
@@ -66,41 +65,38 @@ public class GamePivot
     /// Inferred; get players sorted by their ranking.
     /// </summary>
     internal IReadOnlyList<PlayerPivot> PlayersRanked => Players.OrderByDescending(p => p.Points).ThenBy(p => (int)p.InitialWind).ToList();
-
-    // TODO: gross
     /// <summary>
     /// Inferred; gets the player index which was the first <see cref="Winds.East"/>.
     /// </summary>
-    internal PlayerIndices FirstEastIndex => (PlayerIndices)Players.Select((p, i) => (p, i)).First(pi => pi.p.InitialWind == Winds.East).i;
+    internal PlayerIndices FirstEastIndex => (PlayerIndices)Players.Select((p, i) => (p, i)).First(pi => pi.p.InitialWind == Winds.East).i; // TODO: gross
 
-    #endregion Embedded properties
+    #endregion Properties
 
     /// <summary>
     /// Constructor.
     /// </summary>
-    /// <param name="humanPlayers">Collection of human players; other players will be <see cref="PlayerPivot.IsCpu"/>.</param>
+    /// <param name="humanPlayerName">Human player name.</param>
     /// <param name="ruleset">Ruleset for the game.</param>
     /// <param name="save">Player save stats.</param>
     /// <param name="random">Randomizer instance.</param>
     /// <exception cref="ArgumentNullException"><paramref name="save"/> is <c>Null</c> while ruleset is default.</exception>
-    public GamePivot(IDictionary<PlayerIndices, string?> humanPlayers, RulePivot ruleset, PlayerSavePivot? save, Random random)
+    public GamePivot(string humanPlayerName, RulePivot ruleset, PlayerSavePivot? save, Random random)
     {
-        if (ruleset.AreDefaultRules() && humanPlayers.Count == 1 && save == null)
+        if (ruleset.AreDefaultRules() && save == null)
         {
             throw new ArgumentNullException(nameof(save));
         }
 
         _save = save;
 
+        HumanPlayerIndex = PlayerIndices.Zero;
         Ruleset = ruleset;
-        Players = PlayerPivot.GetFourPlayers(humanPlayers, Ruleset.InitialPointsRule, random);
+        Players = PlayerPivot.GetFourPlayers((HumanPlayerIndex.Value, humanPlayerName), Ruleset.InitialPointsRule, random);
         DominantWind = Winds.East;
         EastIndexTurnCount = 1;
         EastIndex = FirstEastIndex;
         EastRank = 1;
         _random = random;
-
-        HumanIndices = humanPlayers.Select(hp => hp.Key).ToList();
 
         Round = new RoundPivot(this, EastIndex, random);
     }
@@ -126,8 +122,6 @@ public class GamePivot
         EastIndex = FirstEastIndex;
         EastRank = 1;
         _random = random;
-
-        HumanIndices = new List<PlayerIndices>(4);
 
         Round = new RoundPivot(this, EastIndex, random);
     }
@@ -163,8 +157,8 @@ public class GamePivot
         var endOfRoundInformations = Round.EndOfRound(ronPlayerIndex);
 
         // used for stats ONLY, when one player ONLY
-        var humanIsRiichi = IsSingleHuman() && Round.IsRiichi(HumanIndices[0]);
-        var humanIsConcealed = IsSingleHuman() && Round.GetHand(HumanIndices[0]).IsConcealed;
+        var humanIsRiichi = HumanPlayerIndex.HasValue && Round.IsRiichi(HumanPlayerIndex.Value);
+        var humanIsConcealed = HumanPlayerIndex.HasValue && Round.GetHand(HumanPlayerIndex.Value).IsConcealed;
 
         if (!endOfRoundInformations.Ryuukyoku)
         {
@@ -246,9 +240,9 @@ public class GamePivot
 
     Exit:
         string? error = null;
-        if (Ruleset.AreDefaultRules() && IsSingleHuman())
+        if (Ruleset.AreDefaultRules() && HumanPlayerIndex.HasValue)
         {
-            var humanPlayer = Players[(int)HumanIndices[0]];
+            var humanPlayer = Players[(int)HumanPlayerIndex.Value];
             error = _save!.UpdateAndSave(endOfRoundInformations,
                 ronPlayerIndex.HasValue,
                 humanIsRiichi,
@@ -289,7 +283,7 @@ public class GamePivot
     /// <param name="i">The player index.</param>
     /// <returns><c>True</c> if human; <c>False</c> otherwise.</returns>
     public bool IsHuman(PlayerIndices i)
-        => HumanIndices.Contains(i);
+        => i == HumanPlayerIndex;
 
     /// <summary>
     /// Indicates if the current index is not an human player.
@@ -298,13 +292,6 @@ public class GamePivot
     /// <returns><c>False</c> if human; <c>True</c> otherwise.</returns>
     public bool IsCpu(PlayerIndices i)
         => !IsHuman(i);
-
-    /// <summary>
-    /// Indicates if the game contains exactly one human player.
-    /// </summary>
-    /// <returns><c>True</c> if one human player; <c>False</c> otherwise.</returns>
-    public bool IsSingleHuman()
-        => HumanIndices.Count == 1;
 
     #endregion Public methods
 

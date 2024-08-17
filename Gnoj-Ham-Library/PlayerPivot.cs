@@ -50,16 +50,18 @@ public class PlayerPivot
     /// <summary>
     /// Generates a list of four <see cref="PlayerPivot"/> to start a game.
     /// </summary>
-    /// <param name="humanPlayers">Collection of human players; other players will be <see cref="IsCpu"/>.</param>
+    /// <param name="humanPlayer">Human player name and index.</param>
     /// <param name="initialPointsRulePivot">Rule for initial points count.</param>
     /// <param name="random">Randomizer instance.</param>
     /// <returns>List of four <see cref="PlayerPivot"/>, not sorted.</returns>
     internal static IReadOnlyList<PlayerPivot> GetFourPlayers(
-        IDictionary<PlayerIndices, string?> humanPlayers,
+        (PlayerIndices index, string name) humanPlayer,
         InitialPointsRules initialPointsRulePivot,
         Random random)
     {
-        CheckName(humanPlayers);
+        var humanPlayerName = string.IsNullOrWhiteSpace(humanPlayer.name)
+            ? DEFAULT_HUMAN_NAME
+            : humanPlayer.name.Trim();
 
         var eastIndex = (PlayerIndices)random.Next(0, 4);
 
@@ -67,7 +69,7 @@ public class PlayerPivot
         foreach (var i in Enum.GetValues<PlayerIndices>())
         {
             players.Add(new PlayerPivot(
-                humanPlayers.TryGetValue(i, out var value) ? value! : $"{CPU_NAME_PREFIX}{i}",
+                i == humanPlayer.index ? humanPlayerName : $"{CPU_NAME_PREFIX}{i}",
                 GetWindFromIndex(eastIndex, i),
                 initialPointsRulePivot,
                 null
@@ -84,7 +86,10 @@ public class PlayerPivot
     /// <param name="initialPointsRulePivot">Rule for initial points count.</param>
     /// <param name="random">Randomizer instance.</param>
     /// <returns>Four players generated.</returns>
-    internal static IReadOnlyList<PlayerPivot> GetFourPlayersFromPermanent(IReadOnlyList<PermanentPlayerPivot> permanentPlayers, InitialPointsRules initialPointsRulePivot, Random random)
+    internal static IReadOnlyList<PlayerPivot> GetFourPlayersFromPermanent(
+        IReadOnlyList<PermanentPlayerPivot> permanentPlayers,
+        InitialPointsRules initialPointsRulePivot,
+        Random random)
     {
         var eastIndex = (PlayerIndices)random.Next(0, 4);
 
@@ -94,17 +99,7 @@ public class PlayerPivot
     }
 
     private static Winds GetWindFromIndex(PlayerIndices eastIndex, PlayerIndices i)
-        => i == eastIndex ? Winds.East : (i > eastIndex ? (Winds)(i - eastIndex) : (Winds)(4 - (int)eastIndex + i));
-
-    private static void CheckName(IDictionary<PlayerIndices, string?> humanPlayers)
-    {
-        for (var i =  0; i < humanPlayers.Count; i++)
-        {
-            var key = humanPlayers.ElementAt(i).Key;
-            var name = (humanPlayers[key] ?? string.Empty).Trim();
-            humanPlayers[key] = name == string.Empty || name.StartsWith(CPU_NAME_PREFIX, StringComparison.InvariantCultureIgnoreCase)
-                ? $"{DEFAULT_HUMAN_NAME}-{i}"
-                : name;
-        }
-    }
+        => i == eastIndex
+            ? Winds.East
+            : (i > eastIndex ? (Winds)(i - eastIndex) : (Winds)(4 - (int)eastIndex + i));
 }

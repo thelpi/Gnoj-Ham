@@ -59,7 +59,7 @@ public partial class MainWindow : Window
         _cancellationToken = _cancellationTokenSource.Token;
         this.FindControl(PlayerLabel, _humanPlayerIndex).Content = playerName;
 
-        _game = new GamePivot(new Dictionary<PlayerIndices, string?> { { _humanPlayerIndex, playerName } }, ruleset, save, new Random());
+        _game = new GamePivot(playerName, ruleset, save, new Random());
         _tickSound = new System.Media.SoundPlayer(Properties.Resources.tick);
 
         _overlayStoryboard = (FindResource(OverlayStoryboardResourceName) as Storyboard)!;
@@ -515,23 +515,11 @@ public partial class MainWindow : Window
                 RefreshPlayerTurnStyle();
             };
 
-            var declineds = new List<PlayerIndices>(1);
-            if ((bool)argumentsList[0])
-                declineds.Add(_humanPlayerIndex);
-
-            var ronPendings = new List<PlayerIndices>(1);
-            if ((bool)argumentsList[1])
-                ronPendings.Add(_humanPlayerIndex);
-
-            var auto = new List<PlayerIndices>(1);
-            if (Properties.Settings.Default.AutoCallMahjong)
-                auto.Add(_humanPlayerIndex);
-
             evt.Result = _game.Round.RunAutoPlay(
                 _cancellationToken,
-                declineds,
-                ronPendings,
-                auto,
+                (bool)argumentsList[0],
+                (bool)argumentsList[1],
+                Properties.Settings.Default.AutoCallMahjong,
                 ((CpuSpeedPivot)Properties.Settings.Default.CpuSpeed).ParseSpeed());
         };
         _autoPlay.RunWorkerCompleted += delegate (object? sender, RunWorkerCompletedEventArgs evt)
