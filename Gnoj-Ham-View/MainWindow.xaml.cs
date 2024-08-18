@@ -202,7 +202,6 @@ public partial class MainWindow : Window
                 {
                     HumanKanCallProcess(null, _game.Round.PreviousPlayerIndex);
                 }
-                SuggestDiscard();
             }
         }
     }
@@ -395,7 +394,7 @@ public partial class MainWindow : Window
     {
         _autoPlay.DoWork += delegate (object? sender, DoWorkEventArgs evt)
         {
-            var argumentsList = (evt.Argument as object[])!;
+            var argumentsList = (evt.Argument as object?[])!;
 
             _game.Round.ReadyToCallNotifier += e =>
             {
@@ -517,9 +516,10 @@ public partial class MainWindow : Window
 
             evt.Result = _game.Round.RunAutoPlay(
                 _cancellationToken,
-                (bool)argumentsList[0],
-                (bool)argumentsList[1],
+                Convert.ToBoolean(argumentsList[0]),
+                Convert.ToBoolean(argumentsList[1]),
                 Properties.Settings.Default.AutoCallMahjong,
+                ((TilePivot, PlayerIndices?)?)argumentsList[2],
                 ((CpuSpeedPivot)Properties.Settings.Default.CpuSpeed).ParseSpeed());
         };
         _autoPlay.RunWorkerCompleted += delegate (object? sender, RunWorkerCompletedEventArgs evt)
@@ -570,11 +570,11 @@ public partial class MainWindow : Window
     }
 
     // Starts the background worker.
-    private void RunAutoPlay(bool skipCurrentAction = false, bool humanRonPending = false)
+    private void RunAutoPlay(bool skipCurrentAction = false, bool humanRonPending = false, (TilePivot compensationTile, PlayerIndices? previousPlayerIndex)? humanKanCompensation = null)
     {
         if (!_autoPlay.IsBusy)
         {
-            _autoPlay.RunWorkerAsync(new object[] { skipCurrentAction, humanRonPending });
+            _autoPlay.RunWorkerAsync(new object?[] { skipCurrentAction, humanRonPending, humanKanCompensation });
         }
     }
 
@@ -635,68 +635,10 @@ public partial class MainWindow : Window
     {
         RefreshPlayerTurnStyle();
 
-        _game.Round.CallKan(_humanPlayerIndex, tile);
+        var compensationTile = _game.Round.CallKan(_humanPlayerIndex, tile);
         InvokeOverlay(CallTypes.Kan, _humanPlayerIndex);
 
-        var anyRonCall = _game.Round.CheckOpponensRonCall(false);
-        if (anyRonCall)
-        {
-            _game.Round.UndoPickCompensationTile();
-            NewRound(_game.Round.CurrentPlayerIndex);
-        }
-        else
-        {
-            Dispatcher.Invoke(() =>
-            {
-                if (previousPlayerIndex.HasValue)
-                {
-                    FillDiscardPanel(previousPlayerIndex.Value);
-                }
-                FillCombinationStack(_game.Round.CurrentPlayerIndex);
-                SetActionButtonsVisibility(cpuPlay: !_game.Round.IsHumanPlayer, preDiscard: _game.Round.IsHumanPlayer);
-                StpDoras.SetDorasPanel(_game.Round.DoraIndicatorTiles, _game.Round.VisibleDorasCount);
-            });
-
-            if (_game.Round.CanCallTsumo(true))
-            {
-                GrdOverlayCanCall.Visibility = Visibility.Visible;
-                BtnTsumo.Visibility = Visibility.Visible;
-                BtnSkipCall.Visibility = Visibility.Visible;
-                if (Properties.Settings.Default.AutoCallMahjong)
-                {
-                    BtnTsumo.RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent));
-                }
-                else
-                {
-                    ActivateTimer(null);
-                }
-            }
-            else
-            {
-                _riichiTiles = _game.Round.CanCallRiichi();
-                if (_riichiTiles.Count > 0)
-                {
-                    var riichiDecision = _game.Ruleset.DiscardTip && _game.Round.Advisor!.RiichiDecision() != null;
-
-                    BtnRiichi.Visibility = Visibility.Visible;
-                    BtnSkipCall.Visibility = Visibility.Visible;
-                    GrdOverlayCanCall.Visibility = Visibility.Visible;
-
-                    if (riichiDecision)
-                        BtnRiichi.Foreground = Brushes.DarkMagenta;
-                    else
-                        BtnSkipCall.Foreground = Brushes.DarkMagenta;
-
-                    ActivateTimer(null);
-                }
-                else if (_game.Round.HumanCanAutoDiscard())
-                {
-                    // Auto discard if riichi and the compensation tile is not interesting
-                    // Never tested!
-                    RaiseButtonClickEvent(new PanelButton(PickPanel, 0));
-                }
-            }
-        }
+        RunAutoPlay(humanKanCompensation: (compensationTile!, previousPlayerIndex));
     }
 
     #endregion General orchestration

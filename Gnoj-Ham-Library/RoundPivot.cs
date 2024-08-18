@@ -231,7 +231,7 @@ public class RoundPivot
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>Instance of <see cref="AutoPlayResultPivot"/>.</returns>>
     public AutoPlayResultPivot RunAutoPlay(CancellationToken cancellationToken)
-        => RunAutoPlay(cancellationToken, false, false, false, 0);
+        => RunAutoPlay(cancellationToken, false, false, false, null, 0);
 
     /// <summary>
     /// Starts and runs the auto player.
@@ -247,9 +247,15 @@ public class RoundPivot
         bool declinedHumanCall,
         bool humanRonPending,
         bool autoCallMahjong,
+        (TilePivot compensationTile, PlayerIndices? previousPlayerIndex)? humanKanCompensation,
         int sleepTime)
     {
         (PlayerIndices, TilePivot?, PlayerIndices?)? kanInProgress = null;
+        if (humanKanCompensation.HasValue)
+        {
+            kanInProgress = (Game.HumanPlayerIndex!.Value, humanKanCompensation.Value.compensationTile, humanKanCompensation.Value.previousPlayerIndex);
+        }
+
         var result = new AutoPlayResultPivot();
         var isFirstTurn = true;
         while (!cancellationToken.IsCancellationRequested)
@@ -262,7 +268,8 @@ public class RoundPivot
             isFirstTurn = false;
 
             // 1 - checks if human (we have not checked yet) can call "ron"; the loop ends if it's the case
-            if (Game.HumanPlayerIndex.HasValue && !declinedHumanCall && !humanRonPending && CanCallRon(Game.HumanPlayerIndex.Value))
+            // does not check Ron if we come in with a human kan in progress
+            if (Game.HumanPlayerIndex.HasValue && !humanKanCompensation.HasValue && !declinedHumanCall && !humanRonPending && CanCallRon(Game.HumanPlayerIndex.Value))
             {
                 HumanCallNotifier?.Invoke(new HumanCallNotifierEventArgs { Call = CallTypes.Ron });
                 if (autoCallMahjong)
@@ -297,96 +304,100 @@ public class RoundPivot
                 ReadyToCallNotifier?.Invoke(new ReadyToCallNotifierEventArgs { Call = CallTypes.Kan, PotentialPreviousPlayerIndex = kanInProgress.Value.Item3 });
             }
 
-            // 4 - checks "pon" and "kan" calls for human player, except if declined
-            if (Game.HumanPlayerIndex.HasValue && !declinedHumanCall && CanCallPonOrKan(Game.HumanPlayerIndex.Value, out var isSelfKan))
+            // 3bis - if we start the loop with a human kan in progress, go to 12
+            if (!humanKanCompensation.HasValue)
             {
-                if (!isSelfKan)
+                // 4 - checks "pon" and "kan" calls for human player, except if declined
+                if (Game.HumanPlayerIndex.HasValue && !declinedHumanCall && CanCallPonOrKan(Game.HumanPlayerIndex.Value, out var isSelfKan))
+                {
+                    if (!isSelfKan)
+                    {
+                        DiscardTileNotifier?.Invoke(new DiscardTileNotifierEventArgs());
+                    }
+                    return result;
+                }
+
+                // 5 - "kan" call from non-human players
+                // the loop starts over
+                var kanExit = false;
+                foreach (var pi in Enum.GetValues<PlayerIndices>().Where(Game.IsCpu))
+                {
+                    var (_, kanDecision) = _cpuManagers[pi].KanDecision(pi, false);
+                    if (kanDecision != null)
+                    {
+                        var previousPlayerIndex = PreviousPlayerIndex;
+                        var compensationTile = OpponentBeginCallKan(pi, kanDecision, false);
+                        kanInProgress = (pi, compensationTile, previousPlayerIndex);
+                        kanExit = true;
+                        break;
+                    }
+                }
+                if (kanExit)
+                {
+                    continue;
+                }
+
+                // 6 - "pon" call from non-human players
+                // the loop starts over
+                var ponExit = false;
+                foreach (var pi in Enum.GetValues<PlayerIndices>().Where(Game.IsCpu))
+                {
+                    if (_cpuManagers[pi].PonDecision(pi))
+                    {
+                        PonCall(pi, sleepTime);
+                        ponExit = true;
+                        break;
+                    }
+                }
+                if (ponExit)
+                {
+                    continue;
+                }
+
+                // 7 - checks "chii" call for current player (human)
+                // exits the loop to let the UI suggests the call
+                if (IsHumanPlayer && !declinedHumanCall && CanCallChii().Count > 0)
                 {
                     DiscardTileNotifier?.Invoke(new DiscardTileNotifierEventArgs());
+                    return result;
                 }
-                return result;
-            }
 
-            // 5 - "kan" call from non-human players
-            // the loop starts over
-            var kanExit = false;
-            foreach (var pi in Enum.GetValues<PlayerIndices>().Where(Game.IsCpu))
-            {
-                var (_, kanDecision) = _cpuManagers[pi].KanDecision(pi, false);
-                if (kanDecision != null)
+                // 8 - checks "chii" call for current player (non-human)
+                // the loop starts over
+                var (_, chiiTilePick) = _cpuManagers[CurrentPlayerIndex].ChiiDecision();
+                if (chiiTilePick != null)
                 {
-                    var previousPlayerIndex = PreviousPlayerIndex;
-                    var compensationTile = OpponentBeginCallKan(pi, kanDecision, false);
-                    kanInProgress = (pi, compensationTile, previousPlayerIndex);
-                    kanExit = true;
-                    break;
+                    ChiiCall(chiiTilePick, sleepTime);
+                    continue;
                 }
-            }
-            if (kanExit)
-            {
-                continue;
-            }
 
-            // 6 - "pon" call from non-human players
-            // the loop starts over
-            var ponExit = false;
-            foreach (var pi in Enum.GetValues<PlayerIndices>().Where(Game.IsCpu))
-            {
-                if (_cpuManagers[pi].PonDecision(pi))
+                // 9 - there is a "kan" call in progress by non-human player
+                // several things can happen:
+                // - tsumo from the caller (ends the loop)
+                // - another "kan" call
+                // - nothing special : checks "riichi" call and discard
+                // note: in any case the loop starts over
+                if (kanInProgress != null)
                 {
-                    PonCall(pi, sleepTime);
-                    ponExit = true;
-                    break;
+                    if (OpponentAfterPick(ref kanInProgress, sleepTime))
+                    {
+                        result.EndOfRound = true;
+                        return result;
+                    }
+                    continue;
                 }
-            }
-            if (ponExit)
-            {
-                continue;
-            }
 
-            // 7 - checks "chii" call for current player (human)
-            // exits the loop to let the UI suggests the call
-            if (IsHumanPlayer && !declinedHumanCall && CanCallChii().Count > 0)
-            {
-                DiscardTileNotifier?.Invoke(new DiscardTileNotifierEventArgs());
-                return result;
-            }
-
-            // 8 - checks "chii" call for current player (non-human)
-            // the loop starts over
-            var (_, chiiTilePick) = _cpuManagers[CurrentPlayerIndex].ChiiDecision();
-            if (chiiTilePick != null)
-            {
-                ChiiCall(chiiTilePick, sleepTime);
-                continue;
-            }
-
-            // 9 - there is a "kan" call in progress by non-human player
-            // several things can happen:
-            // - tsumo from the caller (ends the loop)
-            // - another "kan" call
-            // - nothing special : checks "riichi" call and discard
-            // note: in any case the loop starts over
-            if (kanInProgress != null)
-            {
-                if (OpponentAfterPick(ref kanInProgress, sleepTime))
+                // 10 - no more tiles to work with
+                // ends the loop
+                if (IsWallExhaustion)
                 {
                     result.EndOfRound = true;
                     return result;
                 }
-                continue;
-            }
 
-            // 10 - no more tiles to work with
-            // ends the loop
-            if (IsWallExhaustion)
-            {
-                result.EndOfRound = true;
-                return result;
+                // 11 - the current player picks a tile
+                AutoPick();
             }
-
-            // 11 - the current player picks a tile
-            AutoPick();
 
             // 12 - consequence of a pick:
             // - for human player:
@@ -698,45 +709,6 @@ public class RoundPivot
     }
 
     /// <summary>
-    /// Checks if the current player can call riichi.
-    /// </summary>
-    /// <returns>Tiles the player can discard; empty list if riichi is impossible.</returns>
-    public IReadOnlyList<TilePivot> CanCallRiichi()
-    {
-        if (!_waitForDiscard
-            || IsRiichi(CurrentPlayerIndex)
-            || !_hands[(int)CurrentPlayerIndex].IsConcealed
-            || _wallTiles.Count < 4
-            || Game.Players[(int)CurrentPlayerIndex].Points < ScoreTools.RIICHI_COST)
-        {
-            return new List<TilePivot>();
-        }
-
-        // TODO: if already 3 riichi calls, what to do ?
-
-        return ExtractDiscardChoicesFromTenpai(CurrentPlayerIndex);
-    }
-
-    /// <summary>
-    /// Checks if the hand of the current player is ready for calling tsumo.
-    /// </summary>
-    /// <param name="isKanCompensation"><c>True</c> if the latest pick comes from a kan compensation.</param>
-    /// <returns><c>True</c> if ready for tsumo; <c>False</c> otherwise.</returns>
-    public bool CanCallTsumo(bool isKanCompensation)
-    {
-        if (!_waitForDiscard)
-        {
-            return false;
-        }
-
-        SetYakus(CurrentPlayerIndex,
-            _hands[(int)CurrentPlayerIndex].LatestPick,
-            isKanCompensation ? DrawTypes.Compensation : DrawTypes.Wall);
-
-        return _hands[(int)CurrentPlayerIndex].IsComplete;
-    }
-
-    /// <summary>
     /// Checks if the specified player is riichi.
     /// </summary>
     /// <param name="playerIndex">Player index.</param>
@@ -767,25 +739,6 @@ public class RoundPivot
             && IsRiichi(CurrentPlayerIndex)
             && CanCallKan(CurrentPlayerIndex).Count == 0
             && _waitForDiscard;
-    }
-
-    /// <summary>
-    /// Undoes the pick of a compensation tile after a kan.
-    /// </summary>
-    public void UndoPickCompensationTile()
-    {
-        var compensationTile = _closedKanInProgress ?? _openedKanInProgress;
-        if (compensationTile == null)
-        {
-            return;
-        }
-
-        _compensationTiles.Insert(0, compensationTile);
-
-        _wallTiles.Add(_deadTreasureTiles[^1]);
-        _deadTreasureTiles.RemoveAt(_deadTreasureTiles.Count - 1);
-
-        // We could remove the compensation tile from the CurrentPlayerIndex hand, but it's not very useful in this context.
     }
 
     /// <summary>
@@ -820,350 +773,47 @@ public class RoundPivot
         return _hands[(int)playerIndex];
     }
 
-    public bool CheckOpponensRonCall(bool humanRonPending)
-    {
-        var atLeastOneRon = humanRonPending;
-        // TODO: very marginally, the order of players can impact decision
-        foreach (var pi in Enum.GetValues<PlayerIndices>().Where(Game.IsCpu))
-        {
-            var ronCalled = _cpuManagers[pi].RonDecision(pi, atLeastOneRon);
-            if (ronCalled)
-            {
-                atLeastOneRon = true;
-                CallNotifier?.Invoke(new CallNotifierEventArgs { Action = CallTypes.Ron, PlayerIndex = pi });
-            }
-        }
-
-        return atLeastOneRon;
-    }
-
     #endregion Public methods
-
-    #region Private methods
-
-    #region Autoplay methods
-
-    private TilePivot? OpponentBeginCallKan(PlayerIndices playerId, TilePivot kanTilePick, bool concealedKan)
-    {
-        TurnChangeNotifier?.Invoke(new TurnChangeNotifierEventArgs());
-
-        var compensationTile = CallKan(playerId, concealedKan ? kanTilePick : null);
-        if (compensationTile != null)
-        {
-            CallNotifier?.Invoke(new CallNotifierEventArgs { PlayerIndex = playerId, Action = CallTypes.Kan });
-        }
-        return compensationTile;
-    }
-
-    private void AutoPick()
-    {
-        TurnChangeNotifier?.Invoke(new TurnChangeNotifierEventArgs());
-
-        Pick();
-
-        PickNotifier?.Invoke(new PickNotifierEventArgs());
-    }
-
-    private void ChiiCall(TilePivot chiiTilePick, int sleepTime)
-    {
-        TurnChangeNotifier?.Invoke(new TurnChangeNotifierEventArgs());
-
-        var callChii = CallChii(chiiTilePick);
-        if (callChii)
-        {
-            CallNotifier?.Invoke(new CallNotifierEventArgs { Action = CallTypes.Chii, PlayerIndex = CurrentPlayerIndex });
-
-            ReadyToCallNotifier?.Invoke(new ReadyToCallNotifierEventArgs { Call = CallTypes.Chii });
-
-            if (!IsHumanPlayer)
-            {
-                var discardDecision = _cpuManagers[CurrentPlayerIndex].DiscardDecision();
-                Discard(discardDecision, sleepTime);
-            }
-        }
-    }
-
-    private void PonCall(PlayerIndices playerIndex, int sleepTime)
-    {
-        TurnChangeNotifier?.Invoke(new TurnChangeNotifierEventArgs());
-
-        // Note : this value is stored here because the call to "CallPon" makes it change.
-        var previousPlayerIndex = PreviousPlayerIndex;
-        var isCpu = Game.IsCpu(playerIndex);
-
-        var callPon = CallPon(playerIndex);
-        if (callPon)
-        {
-            CallNotifier?.Invoke(new CallNotifierEventArgs { PlayerIndex = playerIndex, Action = CallTypes.Pon });
-
-            ReadyToCallNotifier?.Invoke(new ReadyToCallNotifierEventArgs { Call = CallTypes.Pon, PreviousPlayerIndex = previousPlayerIndex, PlayerIndex = playerIndex });
-
-            if (isCpu)
-            {
-                var discardDecision = _cpuManagers[CurrentPlayerIndex].DiscardDecision();
-                Discard(discardDecision, sleepTime);
-            }
-        }
-    }
-
-    private void Discard(TilePivot tile, int sleepTime)
-    {
-        if (!IsHumanPlayer)
-        {
-            Thread.Sleep(sleepTime);
-        }
-
-        var hasDiscard = Discard(tile);
-        if (hasDiscard)
-        {
-            ReadyToCallNotifier?.Invoke(new ReadyToCallNotifierEventArgs { Call = CallTypes.NoCall });
-        }
-    }
-
-    private bool OpponentAfterPick(ref (PlayerIndices, TilePivot?, PlayerIndices?)? kanInProgress, int sleepTime)
-    {
-        var tsumoDecision = _cpuManagers[CurrentPlayerIndex].TsumoDecision(kanInProgress != null);
-        if (tsumoDecision)
-        {
-            CallNotifier?.Invoke(new CallNotifierEventArgs { Action = CallTypes.Tsumo, PlayerIndex = CurrentPlayerIndex });
-            return true;
-        }
-
-        var (_, kanTile) = _cpuManagers[CurrentPlayerIndex].KanDecision(CurrentPlayerIndex, true);
-        if (kanTile != null)
-        {
-            var compensationTile = OpponentBeginCallKan(CurrentPlayerIndex, kanTile, true);
-            kanInProgress = (CurrentPlayerIndex, compensationTile, null);
-            return false;
-        }
-
-        kanInProgress = null;
-
-        var riichiTile = _cpuManagers[CurrentPlayerIndex].RiichiDecision();
-        if (riichiTile != null)
-        {
-            CallRiichi(riichiTile, sleepTime);
-            return false;
-        }
-
-        Discard(_cpuManagers[CurrentPlayerIndex].DiscardDecision(), sleepTime);
-        return false;
-    }
-
-    private void CallRiichi(TilePivot tile, int sleepTime)
-    {
-        if (!IsHumanPlayer)
-        {
-            CallNotifier?.Invoke(new CallNotifierEventArgs { PlayerIndex = CurrentPlayerIndex, Action = CallTypes.Riichi });
-            Thread.Sleep(sleepTime);
-        }
-
-        var callRiichi = CallRiichi(tile);
-        if (callRiichi)
-        {
-            ReadyToCallNotifier?.Invoke(new ReadyToCallNotifierEventArgs { Call = CallTypes.Riichi });
-        }
-    }
-
-    private CallTypes? HumanAutoPlay(bool autoCallMahjong, int sleepTime)
-    {
-        if (CanCallTsumo(false))
-        {
-            HumanCallNotifier?.Invoke(new HumanCallNotifierEventArgs { Call = CallTypes.Tsumo });
-            return autoCallMahjong ? CallTypes.Tsumo : default(CallTypes?);
-        }
-
-        var riichiTiles = CanCallRiichi();
-        RiichiChoicesNotifier?.Invoke(new RiichiChoicesNotifierEventArgs(riichiTiles));
-        if (riichiTiles.Count > 0)
-        {
-            // TODO: move to view!
-            var adviseRiichi = Game.Ruleset.DiscardTip && _cpuManagers[CurrentPlayerIndex].RiichiDecision() != null;
-            HumanCallNotifier?.Invoke(new HumanCallNotifierEventArgs { Call = CallTypes.Riichi, RiichiAdvised = adviseRiichi });
-            return null;
-        }
-        else if (HumanCanAutoDiscard())
-        {
-            // Not a real CPU sleep: the auto-discard by human player is considered as such
-            Thread.Sleep(sleepTime);
-            return CallTypes.NoCall;
-        }
-        else
-        {
-            HumanCallNotifier?.Invoke(new HumanCallNotifierEventArgs { Call = CallTypes.NoCall });
-        }
-
-        return null;
-    }
-
-    #endregion Autoplay methods
-
-    // Gets every tiles from every opponents virtual discards after the riichi call of the specified player.
-    private List<TilePivot> GetTilesFromVirtualDiscardsAtRank(PlayerIndices riichiPlayerIndex, TilePivot exceptTile)
-    {
-        var fullList = new List<TilePivot>(20);
-
-        if (_riichis[(int)riichiPlayerIndex] == null)
-        {
-            return fullList;
-        }
-
-        foreach (var i in Enum.GetValues<PlayerIndices>())
-        {
-            if (i != riichiPlayerIndex)
-            {
-                var opponentRank = _riichis[(int)riichiPlayerIndex]!.OpponentsVirtualDiscardRank[i];
-                fullList.AddRange(_virtualDiscards[(int)i].Skip(opponentRank));
-            }
-        }
-
-        return fullList.Where(t => !ReferenceEquals(t, exceptTile)).ToList();
-    }
-
-    // Picks a compensation tile (after a kan call) for the current player.
-    private TilePivot PickCompensationTile(bool isClosedKan)
-    {
-        var compensationTile = _compensationTiles[0];
-        _compensationTiles.RemoveAt(0);
-
-        _deadTreasureTiles.Add(_wallTiles[^1]);
-
-        _wallTiles.RemoveAt(_wallTiles.Count - 1);
-        NotifyWallCount?.Invoke();
-
-        _hands[(int)CurrentPlayerIndex].Pick(compensationTile);
-        NotifyPick?.Invoke(new PickTileEventArgs(CurrentPlayerIndex, compensationTile));
-
-        if (isClosedKan)
-        {
-            _closedKanInProgress = compensationTile;
-        }
-        else
-        {
-            _openedKanInProgress = compensationTile;
-        }
-
-        return compensationTile;
-    }
-
-    // Checks there's no call interruption since the latest move of the specified player.
-    private bool IsUninterruptedHistory(PlayerIndices playerIndex)
-    {
-        var historySinceLastTime = _playerIndexHistory.TakeWhile(i => i != playerIndex).ToList();
-
-        var rank = 1;
-        for (var i = historySinceLastTime.Count - 1; i >= 0; i--)
-        {
-            var nextPIndex = playerIndex.RelativePlayerIndex(rank);
-            if (nextPIndex != historySinceLastTime[i])
-            {
-                return false;
-            }
-            rank++;
-        }
-
-        return true;
-    }
-
-    // Creates the context and calls "SetYakus" for the specified player.
-    private void SetYakus(PlayerIndices playerIndex, TilePivot tile, DrawTypes drawType)
-    {
-        _hands[(int)playerIndex].SetYakus(new WinContextPivot(
-            latestTile: tile,
-            drawType: drawType,
-            dominantWind: Game.DominantWind,
-            playerWind: Game.GetPlayerCurrentWind(playerIndex),
-            isFirstOrLast: IsWallExhaustion ? (bool?)null : (_discards[(int)playerIndex].Count == 0 && IsUninterruptedHistory(playerIndex)),
-            isRiichi: IsRiichi(playerIndex) ? (_riichis[(int)playerIndex]!.IsDaburu ? (bool?)null : true) : false,
-            isIppatsu: IsIppatsu(playerIndex)
-        ));
-    }
-
-    // Checks if the specified player is ippatsu.
-    private bool IsIppatsu(PlayerIndices playerIndex)
-    {
-        return IsRiichi(playerIndex)
-            && _discards[(int)playerIndex].Count > 0
-            && ReferenceEquals(_discards[(int)playerIndex][^1], _riichis[(int)playerIndex]!.Tile)
-            && IsUninterruptedHistory(playerIndex);
-    }
-
-    // Gets the concealed tile of the round from the point of view of a specified player.
-    private List<TilePivot> GetConcealedTilesFromPlayerPointOfView(PlayerIndices playerIndex)
-    {
-        // Wall tiles.
-        var tiles = new List<TilePivot>(_wallTiles);
-
-        // Concealed tiles from opponents.
-        foreach (var i in Enum.GetValues<PlayerIndices>())
-        {
-            if (i != playerIndex)
-            {
-                tiles.AddRange(_hands[(int)i].ConcealedTiles);
-            }
-        }
-
-        // Compensation tiles.
-        tiles.AddRange(_compensationTiles);
-
-        // Dead treasure tiles.
-        tiles.AddRange(_deadTreasureTiles);
-
-        // Ura-dora tiles.
-        tiles.AddRange(_uraDoraIndicatorTiles);
-
-        // Dora tiles except when visible.
-        tiles.AddRange(_doraIndicatorTiles.Skip(1 + (4 - _compensationTiles.Count)));
-
-        return tiles;
-    }
-
-    // Checks for players with nagashi mangan.
-    private List<PlayerIndices> CheckForNagashiMangan()
-    {
-        var playerIndexList = new List<PlayerIndices>(4);
-
-        foreach (var i in Enum.GetValues<PlayerIndices>())
-        {
-            var fullTerminalsOrHonors = _discards[(int)i].All(t => t.IsHonorOrTerminal);
-            var noPlayerStealing = _hands[(int)i].IsConcealed;
-            var noOpponentStealing = !_hands.Where(h => _hands.IndexOf(h) != (int)i).Any(h => h.DeclaredCombinations.Any(c => c.StolenFrom == Game.GetPlayerCurrentWind(i)));
-            if (fullTerminalsOrHonors && noPlayerStealing && noOpponentStealing)
-            {
-                _hands[(int)i].SetYakus(new WinContextPivot());
-                playerIndexList.Add(i);
-            }
-        }
-
-        return playerIndexList;
-    }
-
-    // Gets the count of dora for specified tile
-    private int GetDoraCountInternal(TilePivot t, IReadOnlyList<TilePivot> doraIndicators)
-    {
-        return doraIndicators.Take(VisibleDorasCount).Count(t.IsDoraNext);
-    }
-
-    #endregion Private methods
 
     #region Internal methods
 
     /// <summary>
-    /// Tries to pick the next tile from the wall.
+    /// Checks if the hand of the current player is ready for calling tsumo.
     /// </summary>
-    internal void Pick()
+    /// <param name="isKanCompensation"><c>True</c> if the latest pick comes from a kan compensation.</param>
+    /// <returns><c>True</c> if ready for tsumo; <c>False</c> otherwise.</returns>
+    internal bool CanCallTsumo(bool isKanCompensation)
     {
-        if (_wallTiles.Count == 0 || _waitForDiscard)
+        if (!_waitForDiscard)
         {
-            return;
+            return false;
         }
 
-        var tile = _wallTiles[0];
-        _wallTiles.Remove(tile);
-        NotifyWallCount?.Invoke();
-        _hands[(int)CurrentPlayerIndex].Pick(tile);
-        NotifyPick?.Invoke(new PickTileEventArgs(CurrentPlayerIndex, tile));
-        _waitForDiscard = true;
+        SetYakus(CurrentPlayerIndex,
+            _hands[(int)CurrentPlayerIndex].LatestPick,
+            isKanCompensation ? DrawTypes.Compensation : DrawTypes.Wall);
+
+        return _hands[(int)CurrentPlayerIndex].IsComplete;
+    }
+
+    /// <summary>
+    /// Checks if the current player can call riichi.
+    /// </summary>
+    /// <returns>Tiles the player can discard; empty list if riichi is impossible.</returns>
+    internal IReadOnlyList<TilePivot> CanCallRiichi()
+    {
+        if (!_waitForDiscard
+            || IsRiichi(CurrentPlayerIndex)
+            || !_hands[(int)CurrentPlayerIndex].IsConcealed
+            || _wallTiles.Count < 4
+            || Game.Players[(int)CurrentPlayerIndex].Points < ScoreTools.RIICHI_COST)
+        {
+            return new List<TilePivot>();
+        }
+
+        // TODO: if already 3 riichi calls, what to do ?
+
+        return ExtractDiscardChoicesFromTenpai(CurrentPlayerIndex);
     }
 
     /// <summary>
@@ -1216,18 +866,6 @@ public class RoundPivot
         // TODO : there're (maybe) specific rules about it:
         // for instance, what if I have a single wait on tile "4 circle" but every tiles "4 circle" are already in my hand ?
         return hand.IsTenpai(_fullTilesList, tileToRemoveFromConcealed);
-    }
-
-    /// <summary>
-    /// Checks if a priority call can be made by the specified player.
-    /// </summary>
-    /// <param name="playerIndex">Player index.</param>
-    /// <param name="isSelfKan">If the method returns <c>True</c>, this indicates a self kan if <c>True</c>.</param>
-    /// <returns><c>True</c> if call available; <c>False otherwise</c>.</returns>
-    internal bool CanCallPonOrKan(PlayerIndices playerIndex, out bool isSelfKan)
-    {
-        isSelfKan = _waitForDiscard;
-        return CanCallKan(playerIndex).Count > 0 || CanCallPon(playerIndex);
     }
 
     /// <summary>
@@ -1524,11 +1162,375 @@ public class RoundPivot
         return _fullTilesList.Except(GetConcealedTilesFromPlayerPointOfView(playerIndex)).ToList();
     }
 
-    // Gets dora count if the specvified tile is a dora
+    /// <summary>
+    /// Gets dora count if the specified tile is a dora.
+    /// </summary>
+    /// <param name="t">The dora tile.</param>
+    /// <returns>Dora count.</returns>
     internal int GetDoraCount(TilePivot t) => GetDoraCountInternal(t, DoraIndicatorTiles);
 
-    // Gets dora count if the specvified tile is an uradora
-    internal int GetUraDoraCount(TilePivot t) => GetDoraCountInternal(t, UraDoraIndicatorTiles);
-
     #endregion Internal methods
+
+    #region Private methods
+
+    // Checks if a priority call can be made by the specified player.
+    private bool CanCallPonOrKan(PlayerIndices playerIndex, out bool isSelfKan)
+    {
+        isSelfKan = _waitForDiscard;
+        return CanCallKan(playerIndex).Count > 0 || CanCallPon(playerIndex);
+    }
+
+    // Tries to pick the next tile from the wall.
+    private void Pick()
+    {
+        if (_wallTiles.Count == 0 || _waitForDiscard)
+        {
+            return;
+        }
+
+        var tile = _wallTiles[0];
+        _wallTiles.Remove(tile);
+        NotifyWallCount?.Invoke();
+        _hands[(int)CurrentPlayerIndex].Pick(tile);
+        NotifyPick?.Invoke(new PickTileEventArgs(CurrentPlayerIndex, tile));
+        _waitForDiscard = true;
+    }
+
+    private bool CheckOpponensRonCall(bool humanRonPending)
+    {
+        var atLeastOneRon = humanRonPending;
+        // TODO: very marginally, the order of players can impact decision
+        foreach (var pi in Enum.GetValues<PlayerIndices>().Where(Game.IsCpu))
+        {
+            var ronCalled = _cpuManagers[pi].RonDecision(pi, atLeastOneRon);
+            if (ronCalled)
+            {
+                atLeastOneRon = true;
+                CallNotifier?.Invoke(new CallNotifierEventArgs { Action = CallTypes.Ron, PlayerIndex = pi });
+            }
+        }
+
+        return atLeastOneRon;
+    }
+
+    private TilePivot? OpponentBeginCallKan(PlayerIndices playerId, TilePivot kanTilePick, bool concealedKan)
+    {
+        TurnChangeNotifier?.Invoke(new TurnChangeNotifierEventArgs());
+
+        var compensationTile = CallKan(playerId, concealedKan ? kanTilePick : null);
+        if (compensationTile != null)
+        {
+            CallNotifier?.Invoke(new CallNotifierEventArgs { PlayerIndex = playerId, Action = CallTypes.Kan });
+        }
+        return compensationTile;
+    }
+
+    private void AutoPick()
+    {
+        TurnChangeNotifier?.Invoke(new TurnChangeNotifierEventArgs());
+
+        Pick();
+
+        PickNotifier?.Invoke(new PickNotifierEventArgs());
+    }
+
+    private void ChiiCall(TilePivot chiiTilePick, int sleepTime)
+    {
+        TurnChangeNotifier?.Invoke(new TurnChangeNotifierEventArgs());
+
+        var callChii = CallChii(chiiTilePick);
+        if (callChii)
+        {
+            CallNotifier?.Invoke(new CallNotifierEventArgs { Action = CallTypes.Chii, PlayerIndex = CurrentPlayerIndex });
+
+            ReadyToCallNotifier?.Invoke(new ReadyToCallNotifierEventArgs { Call = CallTypes.Chii });
+
+            if (!IsHumanPlayer)
+            {
+                var discardDecision = _cpuManagers[CurrentPlayerIndex].DiscardDecision();
+                Discard(discardDecision, sleepTime);
+            }
+        }
+    }
+
+    private void PonCall(PlayerIndices playerIndex, int sleepTime)
+    {
+        TurnChangeNotifier?.Invoke(new TurnChangeNotifierEventArgs());
+
+        // Note : this value is stored here because the call to "CallPon" makes it change.
+        var previousPlayerIndex = PreviousPlayerIndex;
+        var isCpu = Game.IsCpu(playerIndex);
+
+        var callPon = CallPon(playerIndex);
+        if (callPon)
+        {
+            CallNotifier?.Invoke(new CallNotifierEventArgs { PlayerIndex = playerIndex, Action = CallTypes.Pon });
+
+            ReadyToCallNotifier?.Invoke(new ReadyToCallNotifierEventArgs { Call = CallTypes.Pon, PreviousPlayerIndex = previousPlayerIndex, PlayerIndex = playerIndex });
+
+            if (isCpu)
+            {
+                var discardDecision = _cpuManagers[CurrentPlayerIndex].DiscardDecision();
+                Discard(discardDecision, sleepTime);
+            }
+        }
+    }
+
+    private void Discard(TilePivot tile, int sleepTime)
+    {
+        if (!IsHumanPlayer)
+        {
+            Thread.Sleep(sleepTime);
+        }
+
+        var hasDiscard = Discard(tile);
+        if (hasDiscard)
+        {
+            ReadyToCallNotifier?.Invoke(new ReadyToCallNotifierEventArgs { Call = CallTypes.NoCall });
+        }
+    }
+
+    private bool OpponentAfterPick(ref (PlayerIndices, TilePivot?, PlayerIndices?)? kanInProgress, int sleepTime)
+    {
+        var tsumoDecision = _cpuManagers[CurrentPlayerIndex].TsumoDecision(kanInProgress != null);
+        if (tsumoDecision)
+        {
+            CallNotifier?.Invoke(new CallNotifierEventArgs { Action = CallTypes.Tsumo, PlayerIndex = CurrentPlayerIndex });
+            return true;
+        }
+
+        var (_, kanTile) = _cpuManagers[CurrentPlayerIndex].KanDecision(CurrentPlayerIndex, true);
+        if (kanTile != null)
+        {
+            var compensationTile = OpponentBeginCallKan(CurrentPlayerIndex, kanTile, true);
+            kanInProgress = (CurrentPlayerIndex, compensationTile, null);
+            return false;
+        }
+
+        kanInProgress = null;
+
+        var riichiTile = _cpuManagers[CurrentPlayerIndex].RiichiDecision();
+        if (riichiTile != null)
+        {
+            CallRiichi(riichiTile, sleepTime);
+            return false;
+        }
+
+        Discard(_cpuManagers[CurrentPlayerIndex].DiscardDecision(), sleepTime);
+        return false;
+    }
+
+    private void CallRiichi(TilePivot tile, int sleepTime)
+    {
+        if (!IsHumanPlayer)
+        {
+            CallNotifier?.Invoke(new CallNotifierEventArgs { PlayerIndex = CurrentPlayerIndex, Action = CallTypes.Riichi });
+            Thread.Sleep(sleepTime);
+        }
+
+        var callRiichi = CallRiichi(tile);
+        if (callRiichi)
+        {
+            ReadyToCallNotifier?.Invoke(new ReadyToCallNotifierEventArgs { Call = CallTypes.Riichi });
+        }
+    }
+
+    private CallTypes? HumanAutoPlay(bool autoCallMahjong, int sleepTime)
+    {
+        if (CanCallTsumo(false))
+        {
+            HumanCallNotifier?.Invoke(new HumanCallNotifierEventArgs { Call = CallTypes.Tsumo });
+            return autoCallMahjong ? CallTypes.Tsumo : default(CallTypes?);
+        }
+
+        var riichiTiles = CanCallRiichi();
+        RiichiChoicesNotifier?.Invoke(new RiichiChoicesNotifierEventArgs(riichiTiles));
+        if (riichiTiles.Count > 0)
+        {
+            // TODO: move to view!
+            var adviseRiichi = Game.Ruleset.DiscardTip && _cpuManagers[CurrentPlayerIndex].RiichiDecision() != null;
+            HumanCallNotifier?.Invoke(new HumanCallNotifierEventArgs { Call = CallTypes.Riichi, RiichiAdvised = adviseRiichi });
+            return null;
+        }
+        else if (HumanCanAutoDiscard())
+        {
+            // Not a real CPU sleep: the auto-discard by human player is considered as such
+            Thread.Sleep(sleepTime);
+            return CallTypes.NoCall;
+        }
+        else
+        {
+            HumanCallNotifier?.Invoke(new HumanCallNotifierEventArgs { Call = CallTypes.NoCall });
+        }
+
+        return null;
+    }
+
+    // Undoes the pick of a compensation tile after a kan.
+    private void UndoPickCompensationTile()
+    {
+        var compensationTile = _closedKanInProgress ?? _openedKanInProgress;
+        if (compensationTile == null)
+        {
+            return;
+        }
+
+        _compensationTiles.Insert(0, compensationTile);
+
+        _wallTiles.Add(_deadTreasureTiles[^1]);
+        _deadTreasureTiles.RemoveAt(_deadTreasureTiles.Count - 1);
+
+        // We could remove the compensation tile from the CurrentPlayerIndex hand, but it's not very useful in this context.
+    }
+
+    // Gets every tiles from every opponents virtual discards after the riichi call of the specified player.
+    private List<TilePivot> GetTilesFromVirtualDiscardsAtRank(PlayerIndices riichiPlayerIndex, TilePivot exceptTile)
+    {
+        var fullList = new List<TilePivot>(20);
+
+        if (_riichis[(int)riichiPlayerIndex] == null)
+        {
+            return fullList;
+        }
+
+        foreach (var i in Enum.GetValues<PlayerIndices>())
+        {
+            if (i != riichiPlayerIndex)
+            {
+                var opponentRank = _riichis[(int)riichiPlayerIndex]!.OpponentsVirtualDiscardRank[i];
+                fullList.AddRange(_virtualDiscards[(int)i].Skip(opponentRank));
+            }
+        }
+
+        return fullList.Where(t => !ReferenceEquals(t, exceptTile)).ToList();
+    }
+
+    // Picks a compensation tile (after a kan call) for the current player.
+    private TilePivot PickCompensationTile(bool isClosedKan)
+    {
+        var compensationTile = _compensationTiles[0];
+        _compensationTiles.RemoveAt(0);
+
+        _deadTreasureTiles.Add(_wallTiles[^1]);
+
+        _wallTiles.RemoveAt(_wallTiles.Count - 1);
+        NotifyWallCount?.Invoke();
+
+        _hands[(int)CurrentPlayerIndex].Pick(compensationTile);
+        NotifyPick?.Invoke(new PickTileEventArgs(CurrentPlayerIndex, compensationTile));
+
+        if (isClosedKan)
+        {
+            _closedKanInProgress = compensationTile;
+        }
+        else
+        {
+            _openedKanInProgress = compensationTile;
+        }
+
+        return compensationTile;
+    }
+
+    // Checks there's no call interruption since the latest move of the specified player.
+    private bool IsUninterruptedHistory(PlayerIndices playerIndex)
+    {
+        var historySinceLastTime = _playerIndexHistory.TakeWhile(i => i != playerIndex).ToList();
+
+        var rank = 1;
+        for (var i = historySinceLastTime.Count - 1; i >= 0; i--)
+        {
+            var nextPIndex = playerIndex.RelativePlayerIndex(rank);
+            if (nextPIndex != historySinceLastTime[i])
+            {
+                return false;
+            }
+            rank++;
+        }
+
+        return true;
+    }
+
+    // Creates the context and calls "SetYakus" for the specified player.
+    private void SetYakus(PlayerIndices playerIndex, TilePivot tile, DrawTypes drawType)
+    {
+        _hands[(int)playerIndex].SetYakus(new WinContextPivot(
+            latestTile: tile,
+            drawType: drawType,
+            dominantWind: Game.DominantWind,
+            playerWind: Game.GetPlayerCurrentWind(playerIndex),
+            isFirstOrLast: IsWallExhaustion ? (bool?)null : (_discards[(int)playerIndex].Count == 0 && IsUninterruptedHistory(playerIndex)),
+            isRiichi: IsRiichi(playerIndex) ? (_riichis[(int)playerIndex]!.IsDaburu ? (bool?)null : true) : false,
+            isIppatsu: IsIppatsu(playerIndex)
+        ));
+    }
+
+    // Checks if the specified player is ippatsu.
+    private bool IsIppatsu(PlayerIndices playerIndex)
+    {
+        return IsRiichi(playerIndex)
+            && _discards[(int)playerIndex].Count > 0
+            && ReferenceEquals(_discards[(int)playerIndex][^1], _riichis[(int)playerIndex]!.Tile)
+            && IsUninterruptedHistory(playerIndex);
+    }
+
+    // Gets the concealed tile of the round from the point of view of a specified player.
+    private List<TilePivot> GetConcealedTilesFromPlayerPointOfView(PlayerIndices playerIndex)
+    {
+        // Wall tiles.
+        var tiles = new List<TilePivot>(_wallTiles);
+
+        // Concealed tiles from opponents.
+        foreach (var i in Enum.GetValues<PlayerIndices>())
+        {
+            if (i != playerIndex)
+            {
+                tiles.AddRange(_hands[(int)i].ConcealedTiles);
+            }
+        }
+
+        // Compensation tiles.
+        tiles.AddRange(_compensationTiles);
+
+        // Dead treasure tiles.
+        tiles.AddRange(_deadTreasureTiles);
+
+        // Ura-dora tiles.
+        tiles.AddRange(_uraDoraIndicatorTiles);
+
+        // Dora tiles except when visible.
+        tiles.AddRange(_doraIndicatorTiles.Skip(1 + (4 - _compensationTiles.Count)));
+
+        return tiles;
+    }
+
+    // Checks for players with nagashi mangan.
+    private List<PlayerIndices> CheckForNagashiMangan()
+    {
+        var playerIndexList = new List<PlayerIndices>(4);
+
+        foreach (var i in Enum.GetValues<PlayerIndices>())
+        {
+            var fullTerminalsOrHonors = _discards[(int)i].All(t => t.IsHonorOrTerminal);
+            var noPlayerStealing = _hands[(int)i].IsConcealed;
+            var noOpponentStealing = !_hands.Where(h => _hands.IndexOf(h) != (int)i).Any(h => h.DeclaredCombinations.Any(c => c.StolenFrom == Game.GetPlayerCurrentWind(i)));
+            if (fullTerminalsOrHonors && noPlayerStealing && noOpponentStealing)
+            {
+                _hands[(int)i].SetYakus(new WinContextPivot());
+                playerIndexList.Add(i);
+            }
+        }
+
+        return playerIndexList;
+    }
+
+    // Gets the count of dora for specified tile
+    private int GetDoraCountInternal(TilePivot t, IReadOnlyList<TilePivot> doraIndicators)
+    {
+        return doraIndicators.Take(VisibleDorasCount).Count(t.IsDoraNext);
+    }
+
+    // Gets dora count if the specified tile is an uradora
+    private int GetUraDoraCount(TilePivot t) => GetDoraCountInternal(t, UraDoraIndicatorTiles);
+
+    #endregion Private methods
 }
