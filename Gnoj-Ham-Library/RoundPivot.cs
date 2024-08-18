@@ -807,7 +807,7 @@ public class RoundPivot
     {
         var atLeastOneRon = humanRonPending;
         // TODO: very marginally, the order of players can impact decision
-        foreach (var pi in Enum.GetValues<PlayerIndices>())
+        foreach (var pi in Enum.GetValues<PlayerIndices>().Where(Game.IsCpu))
         {
             var ronCalled = IaManager.RonDecision(pi, atLeastOneRon);
             if (ronCalled)
