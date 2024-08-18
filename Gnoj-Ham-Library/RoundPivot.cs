@@ -77,7 +77,12 @@ public class RoundPivot
     /// <summary>
     /// IA manager.
     /// </summary>
-    public ICpuDecisionsManagerPivot IaManager { get; }
+    public CpuManagerBasePivot IaManager { get; }
+
+    /// <summary>
+    /// Advisor.
+    /// </summary>
+    public CpuManagerBasePivot Advisor { get; }
 
     /// <summary>
     /// The game in which this instance happens.
@@ -211,7 +216,8 @@ public class RoundPivot
         _openedKanInProgress = null;
         _waitForDiscard = false;
         _playerIndexHistory = new List<PlayerIndices>(10);
-        IaManager = new CpuDecisionsManagerPivot(this);
+        IaManager = new BasicCpuManagerPivot(this);
+        Advisor = new BasicCpuManagerPivot(this);
     }
 
     #endregion Constructors

@@ -681,7 +681,7 @@ public partial class MainWindow : Window
                 _riichiTiles = _game.Round.CanCallRiichi();
                 if (_riichiTiles.Count > 0)
                 {
-                    var riichiDecision = _game.Ruleset.DiscardTip && _game.Round.IaManager.RiichiDecision() != null;
+                    var riichiDecision = _game.Ruleset.DiscardTip && _game.Round.Advisor.RiichiDecision() != null;
 
                     BtnRiichi.Visibility = Visibility.Visible;
                     BtnSkipCall.Visibility = Visibility.Visible;
@@ -974,7 +974,7 @@ public partial class MainWindow : Window
                     if (_game.Ruleset.DiscardTip)
                     {
                         needAdvice = true;
-                        if (_game.Round.IaManager.KanDecisionAdvice(_humanPlayerIndex, kanPossibilities, true))
+                        if (_game.Round.Advisor.KanDecisionAdvice(_humanPlayerIndex, kanPossibilities, true))
                         {
                             BtnKan.Foreground = Brushes.DarkMagenta;
                             advised = true;
@@ -997,7 +997,7 @@ public partial class MainWindow : Window
                     if (_game.Ruleset.DiscardTip)
                     {
                         needAdvice = true;
-                        if (_game.Round.IaManager.ChiiDecisionAdvice(chiiPossibilities))
+                        if (_game.Round.Advisor.ChiiDecisionAdvice(chiiPossibilities))
                         {
                             BtnChii.Foreground = Brushes.DarkMagenta;
                             advised = true;
@@ -1012,7 +1012,7 @@ public partial class MainWindow : Window
                 if (_game.Ruleset.DiscardTip)
                 {
                     needAdvice = true;
-                    if (_game.Round.IaManager.PonDecisionAdvice(_humanPlayerIndex))
+                    if (_game.Round.Advisor.PonDecisionAdvice(_humanPlayerIndex))
                     {
                         BtnPon.Foreground = Brushes.DarkMagenta;
                         advised = true;
@@ -1027,7 +1027,7 @@ public partial class MainWindow : Window
                 if (_game.Ruleset.DiscardTip)
                 {
                     needAdvice = true;
-                    if (_game.Round.IaManager.KanDecisionAdvice(_humanPlayerIndex, kanPossibilities, false))
+                    if (_game.Round.Advisor.KanDecisionAdvice(_humanPlayerIndex, kanPossibilities, false))
                     {
                         BtnKan.Foreground = Brushes.DarkMagenta;
                         advised = true;
@@ -1227,7 +1227,7 @@ public partial class MainWindow : Window
 
         if (_game.Round.IsHumanPlayer && _game.Round.GetHand(_humanPlayerIndex).IsFullHand)
         {
-            var discardChoice = _game.Round.IaManager.DiscardDecision();
+            var discardChoice = _game.Round.Advisor.DiscardDecision();
 
             var button = this.FindPanel(HandPanel, _humanPlayerIndex).Children.OfType<TileButton>()
                 .Concat(this.FindPanel(PickPanel, _humanPlayerIndex).Children.OfType<TileButton>())
