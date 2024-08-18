@@ -638,14 +638,9 @@ public partial class MainWindow : Window
         _game.Round.CallKan(_humanPlayerIndex, tile);
         InvokeOverlay(CallTypes.Kan, _humanPlayerIndex);
 
-        var opponentsCallRon = _game.Round.IaManager.RonDecision(false);
-        if (opponentsCallRon.Count > 0)
+        var anyRonCall = _game.Round.CheckOpponensRonCall(false);
+        if (anyRonCall)
         {
-            foreach (var opponentPlayerIndex in opponentsCallRon)
-            {
-                InvokeOverlay(CallTypes.Ron, opponentPlayerIndex);
-            }
-
             _game.Round.UndoPickCompensationTile();
             NewRound(_game.Round.CurrentPlayerIndex);
         }

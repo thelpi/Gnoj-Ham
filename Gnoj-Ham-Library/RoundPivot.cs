@@ -803,22 +803,28 @@ public class RoundPivot
         return _hands[(int)playerIndex];
     }
 
+    public bool CheckOpponensRonCall(bool humanRonPending)
+    {
+        var atLeastOneRon = humanRonPending;
+        // TODO: very marginally, the order of players can impact decision
+        foreach (var pi in Enum.GetValues<PlayerIndices>())
+        {
+            var ronCalled = IaManager.RonDecision(pi, atLeastOneRon);
+            if (ronCalled)
+            {
+                atLeastOneRon = true;
+                CallNotifier?.Invoke(new CallNotifierEventArgs { Action = CallTypes.Ron, PlayerIndex = pi });
+            }
+        }
+
+        return atLeastOneRon;
+    }
+
     #endregion Public methods
 
     #region Private methods
 
     #region Autoplay methods
-
-    private bool CheckOpponensRonCall(bool humanRonPending)
-    {
-        var opponentsCallRon = IaManager.RonDecision(humanRonPending);
-        foreach (var opponentPlayerIndex in opponentsCallRon)
-        {
-            CallNotifier?.Invoke(new CallNotifierEventArgs { Action = CallTypes.Ron, PlayerIndex = opponentPlayerIndex });
-        }
-
-        return humanRonPending || opponentsCallRon.Count > 0;
-    }
 
     private TilePivot? OpponentBeginCallKan(PlayerIndices playerId, TilePivot kanTilePick, bool concealedKan)
     {

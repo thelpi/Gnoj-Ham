@@ -57,18 +57,16 @@ public abstract class CpuManagerBasePivot
     }
 
     /// <summary>
-    /// Checks if any CPU player can call 'Ron' and computes the decision to do so.
+    /// Checks if the specified player can call 'Ron' and computes the decision to do so. 
     /// </summary>
-    /// <param name="humanRonCalled">Indicates if the human player has also made a 'Ron' call.</param>
-    /// <returns>List of player index calling 'Ron'.</returns>
-    /// <remarks>Not suitable for advice.</remarks>
-    public IReadOnlyList<PlayerIndices> RonDecision(bool humanRonCalled)
+    /// <param name="playerIndex">Player index.</param>
+    /// <param name="otherCallRon">Indicates if other players have already call 'Ron'.</param>
+    /// <returns><c>True</c> if calling 'Ron'.</returns>
+    /// <remarks>Suitable for advice.</remarks>
+    public bool RonDecision(PlayerIndices playerIndex, bool otherCallRon)
     {
-        return Enum.GetValues<PlayerIndices>()
-            .Where(i => Round.Game.IsCpu(i)
-                && Round.CanCallRon(i)
-                && RonDecisionInternal(i, humanRonCalled))
-            .ToList();
+        return Round.CanCallRon(playerIndex)
+            && RonDecisionInternal(playerIndex, otherCallRon);
     }
 
     /// <summary>
@@ -182,7 +180,7 @@ public abstract class CpuManagerBasePivot
 
     protected abstract TilePivot RiichiDecisionInternal(IReadOnlyList<TilePivot> riichiTiles);
 
-    protected virtual bool RonDecisionInternal(PlayerIndices playerIndex, bool humanRonCalled)
+    protected virtual bool RonDecisionInternal(PlayerIndices playerIndex, bool otherCallRon)
     {
         return true;
     }
