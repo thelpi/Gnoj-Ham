@@ -91,7 +91,7 @@ public class BasicCpuManagerPivot : CpuManagerBasePivot
         return tileSelected;
     }
 
-    protected override PlayerIndices? PonDecisionInternal(
+    protected override bool PonDecisionInternal(
         PlayerIndices playerIndex)
     {
         var tile = Round.GetDiscard(Round.PreviousPlayerIndex)[Round.GetDiscard(Round.PreviousPlayerIndex).Count - 1];
@@ -103,7 +103,7 @@ public class BasicCpuManagerPivot : CpuManagerBasePivot
         // if the hand is already opened and no opponent tenpai: takes it
         if (!hand.IsConcealed && tenpaiOpponentIndexes.Count == 0 && (!_itsuFamily.HasValue || _itsuFamily == tile.Family))
         {
-            return playerIndex;
+            return true;
         }
 
         var valuableWinds = new[] { Round.Game.GetPlayerCurrentWind(playerIndex), Round.Game.DominantWind };
@@ -119,7 +119,7 @@ public class BasicCpuManagerPivot : CpuManagerBasePivot
 
         if (!canPonForYakuhai && valuableHonorPairs < 2 && !closeToChinitsu)
         {
-            return null;
+            return false;
         }
 
         var dorasCount = hand.ConcealedTiles
@@ -138,9 +138,7 @@ public class BasicCpuManagerPivot : CpuManagerBasePivot
         return hasValuablePair
             || (dorasCount + redDorasCount) > 0
             || closeToHonitsuFamily.HasValue
-            || valuableWinds[0] == Winds.East
-            ? playerIndex
-            : null;
+            || valuableWinds[0] == Winds.East;
     }
 
     protected override (PlayerIndices playerIndex, TilePivot tile)? KanDecisionInternal(

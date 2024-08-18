@@ -27,7 +27,6 @@ public abstract class CpuManagerBasePivot
     /// Computes the best tile to discard for the current player.
     /// </summary>
     /// <returns>The tile to discard.</returns>
-    /// <remarks>Assumes it's called in the proper context. Suitable for advice.</remarks>
     public TilePivot DiscardDecision()
     {
         var concealedTiles = Round.GetHand(Round.CurrentPlayerIndex).ConcealedTiles;
@@ -46,7 +45,6 @@ public abstract class CpuManagerBasePivot
     /// Checks if the current player can call 'Riichi' and computes the decision to do so.
     /// </summary>
     /// <returns>The tile to discard if 'Riichi' is called; <c>Null</c> otherwise.</returns>
-    /// <remarks>Suitable for advice.</remarks>
     public TilePivot? RiichiDecision()
     {
         var riichiTiles = Round.CanCallRiichi();
@@ -62,7 +60,6 @@ public abstract class CpuManagerBasePivot
     /// <param name="playerIndex">Player index.</param>
     /// <param name="otherCallRon">Indicates if other players have already call 'Ron'.</param>
     /// <returns><c>True</c> if calling 'Ron'.</returns>
-    /// <remarks>Suitable for advice.</remarks>
     public bool RonDecision(PlayerIndices playerIndex, bool otherCallRon)
     {
         return Round.CanCallRon(playerIndex)
@@ -70,23 +67,13 @@ public abstract class CpuManagerBasePivot
     }
 
     /// <summary>
-    /// Checks if any CPU player can call 'Ron' and computes the decision to do so.
+    /// Checks if the specified player can call 'Ron' and computes the decision to do so.
     /// </summary>
     /// <returns>The player index if 'Pon' called; <c>Null</c> otherwise.</returns>
-    /// <remarks>Not suitable for advice.</remarks>
-    public PlayerIndices? PonDecision()
+    public bool PonDecision(PlayerIndices playerIndex)
     {
-        PlayerIndices? ponPlayerIndex = null;
-        foreach (var i in Enum.GetValues<PlayerIndices>())
-        {
-            if (Round.Game.IsCpu(i) && Round.CanCallPon(i))
-            {
-                ponPlayerIndex = PonDecisionInternal(i);
-                break;
-            }
-        }
-
-        return ponPlayerIndex;
+        return Round.CanCallPon(playerIndex)
+            && PonDecisionInternal(playerIndex);
     }
 
     /// <summary>
@@ -94,7 +81,6 @@ public abstract class CpuManagerBasePivot
     /// </summary>
     /// <param name="isKanCompensation"><c>True</c> if it's while a 'Kan' call is in progress; <c>False</c> otherwise.</param>
     /// <returns><c>True</c> if 'Tsumo' is called; <c>False</c> otherwise.</returns>
-    /// <remarks>Suitable for advice.</remarks>
     public bool TsumoDecision(bool isKanCompensation)
     {
         return Round.CanCallTsumo(isKanCompensation)
@@ -160,13 +146,6 @@ public abstract class CpuManagerBasePivot
         => KanDecisionInternal(pIndex, kanPossibilities, concealedKan).HasValue;
 
     /// <summary>
-    /// Computes an advice for the human player to call a Pon or not; assumes the Pon is possible.
-    /// </summary>
-    /// <returns><c>True</c> if Pon is advised.</returns>
-    public bool PonDecisionAdvice(PlayerIndices pIndex)
-        => PonDecisionInternal(pIndex).HasValue;
-
-    /// <summary>
     /// Computes an advice for the human player to call a Chii or not; assumes the Chii is possible.
     /// </summary>
     /// <param name="chiiPossibilities">See the result of the method <see cref="RoundPivot.CanCallChii"/>.</param>
@@ -185,7 +164,7 @@ public abstract class CpuManagerBasePivot
         return true;
     }
 
-    protected abstract PlayerIndices? PonDecisionInternal(PlayerIndices playerIndex);
+    protected abstract bool PonDecisionInternal(PlayerIndices playerIndex);
 
     protected virtual bool TsumoDecisionInternal(bool isKanCompensation)
     {

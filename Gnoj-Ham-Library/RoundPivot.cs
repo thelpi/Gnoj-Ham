@@ -320,11 +320,13 @@ public class RoundPivot
 
             // 6 - "pon" call from non-human players
             // the loop starts over
-            var opponentPlayerId = IaManager.PonDecision();
-            if (opponentPlayerId.HasValue)
+            foreach (var pi in Enum.GetValues<PlayerIndices>().Where(Game.IsCpu))
             {
-                PonCall(opponentPlayerId.Value, sleepTime);
-                continue;
+                if (IaManager.PonDecision(pi))
+                {
+                    PonCall(pi, sleepTime);
+                    continue;
+                }
             }
 
             // 7 - checks "chii" call for current player (human)

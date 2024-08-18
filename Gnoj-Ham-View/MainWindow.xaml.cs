@@ -1007,7 +1007,7 @@ public partial class MainWindow : Window
                 if (_game.Ruleset.DiscardTip)
                 {
                     needAdvice = true;
-                    if (_game.Round.Advisor.PonDecisionAdvice(_humanPlayerIndex))
+                    if (_game.Round.Advisor.PonDecision(_humanPlayerIndex))
                     {
                         BtnPon.Foreground = Brushes.DarkMagenta;
                         advised = true;
