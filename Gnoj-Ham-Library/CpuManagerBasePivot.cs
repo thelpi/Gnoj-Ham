@@ -100,46 +100,20 @@ public abstract class CpuManagerBasePivot
     }
 
     /// <summary>
-    /// Checks if any CPU player can call 'Kan' and computes the decision to do so.
+    /// Checks if the specified player can call 'Kan' and computes the decision to do so.
     /// </summary>
     /// <param name="checkConcealedOnly">
     /// <c>True</c> to check only concealed kan (or from a previous pon);
     /// <c>False</c> to check the opposite.
     /// </param>
-    /// <returns>
-    /// If the decision is made, a tuple :
-    /// - The first item indicates the player index who call the kan.
-    /// - The second item indicates the base tile of the kand (several choices are possible).
-    /// <c>Null</c> otherwise.
-    /// </returns>
-    /// <remarks>Not suitable for advice.</remarks>
-    public  (PlayerIndices pIndex, TilePivot tile)? KanDecision(bool checkConcealedOnly)
+    /// <returns>A tuple that indicates if the call is possible, and if that's the case, the tile involved in the 'Kan' (if decision is made, otherwise <c>Null</c>).</returns>
+    public (bool canCall, TilePivot? callTile) KanDecision(PlayerIndices playerIndex, bool checkConcealedOnly)
     {
-        (PlayerIndices pIndex, TilePivot tile)? callData = null;
-        foreach (var i in Enum.GetValues<PlayerIndices>())
-        {
-            if (Round.Game.IsCpu(i))
-            {
-                var kanTiles = Round.CanCallKanWithChoices(i, checkConcealedOnly);
-                if (kanTiles.Count > 0)
-                {
-                    callData = KanDecisionInternal(i, kanTiles, checkConcealedOnly);
-                    break;
-                }
-            }
-        }
-
-        return callData;
+        var kanTiles = Round.CanCallKanWithChoices(playerIndex, checkConcealedOnly);
+        return kanTiles.Count == 0
+            ? (false, null)
+            : (true, KanDecisionInternal(playerIndex, kanTiles, checkConcealedOnly));
     }
-
-    /// <summary>
-    /// Computes an advice for the human player to call a Kan or not; assumes the Kan is possible.
-    /// </summary>
-    /// <param name="kanPossibilities">The first tile of every possible Kan at the moment.</param>
-    /// <param name="concealedKan"><c>True</c> if the context is a concealed Kan.</param>
-    /// <returns><c>True</c> if Kan is advised.</returns>
-    public bool KanDecisionAdvice(PlayerIndices pIndex, IReadOnlyList<TilePivot> kanPossibilities, bool concealedKan)
-        => KanDecisionInternal(pIndex, kanPossibilities, concealedKan).HasValue;
 
     #region Protected logic to override
 
@@ -159,7 +133,7 @@ public abstract class CpuManagerBasePivot
         return true;
     }
 
-    protected abstract (PlayerIndices playerIndex, TilePivot tile)? KanDecisionInternal(PlayerIndices playerIndex, IReadOnlyList<TilePivot> kanPossibilities, bool concealed);
+    protected abstract TilePivot? KanDecisionInternal(PlayerIndices playerIndex, IReadOnlyList<TilePivot> kanPossibilities, bool concealed);
 
     protected abstract TilePivot? ChiiDecisionInternal(IReadOnlyList<TilePivot> chiiTiles);
 

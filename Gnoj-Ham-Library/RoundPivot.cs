@@ -276,7 +276,6 @@ public class RoundPivot
             }
 
             // 2 - this code runs after every human ron check has been made
-            // TODO: should the backend store human ron pendings, to free the UI from this responsability?
             // the loop ends, with the "EndOfRound" marker, if any "ron" call is made
             if (CheckOpponensRonCall(humanRonPending))
             {
@@ -309,13 +308,16 @@ public class RoundPivot
 
             // 5 - "kan" call from non-human players
             // the loop starts over
-            var opponentWithKanTilePick = IaManager.KanDecision(false);
-            if (opponentWithKanTilePick.HasValue)
+            foreach (var pi in Enum.GetValues<PlayerIndices>().Where(Game.IsCpu))
             {
-                var previousPlayerIndex = PreviousPlayerIndex;
-                var compensationTile = OpponentBeginCallKan(opponentWithKanTilePick.Value.pIndex, opponentWithKanTilePick.Value.tile, false);
-                kanInProgress = (opponentWithKanTilePick.Value.pIndex, compensationTile, previousPlayerIndex);
-                continue;
+                var (_, kanDecision) = IaManager.KanDecision(pi, false);
+                if (kanDecision != null)
+                {
+                    var previousPlayerIndex = PreviousPlayerIndex;
+                    var compensationTile = OpponentBeginCallKan(pi, kanDecision, false);
+                    kanInProgress = (pi, compensationTile, previousPlayerIndex);
+                    continue;
+                }
             }
 
             // 6 - "pon" call from non-human players
@@ -914,10 +916,10 @@ public class RoundPivot
             return true;
         }
 
-        var opponentWithKanTilePick = IaManager.KanDecision(true);
-        if (opponentWithKanTilePick.HasValue)
+        var (_, kanTile) = IaManager.KanDecision(CurrentPlayerIndex, true);
+        if (kanTile != null)
         {
-            var compensationTile = OpponentBeginCallKan(CurrentPlayerIndex, opponentWithKanTilePick.Value.tile, true);
+            var compensationTile = OpponentBeginCallKan(CurrentPlayerIndex, kanTile, true);
             kanInProgress = (CurrentPlayerIndex, compensationTile, null);
             return false;
         }

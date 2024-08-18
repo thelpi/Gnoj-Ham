@@ -141,7 +141,7 @@ public class BasicCpuManagerPivot : CpuManagerBasePivot
             || valuableWinds[0] == Winds.East;
     }
 
-    protected override (PlayerIndices playerIndex, TilePivot tile)? KanDecisionInternal(
+    protected override TilePivot? KanDecisionInternal(
         PlayerIndices playerIndex,
         IReadOnlyList<TilePivot> kanPossibilities,
         bool concealed)
@@ -166,7 +166,7 @@ public class BasicCpuManagerPivot : CpuManagerBasePivot
             if (concealed
                 || (!Round.GetHand(playerIndex).IsConcealed && (!_itsuFamily.HasValue || _itsuFamily == tile.Family)))
             {
-                return (playerIndex, tile);
+                return tile;
             }
         }
 

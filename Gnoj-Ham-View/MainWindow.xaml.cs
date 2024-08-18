@@ -962,14 +962,14 @@ public partial class MainWindow : Window
 
             if (!skippedInnerKan)
             {
-                var kanPossibilities = _game.Round.CanCallKan(_humanPlayerIndex);
-                if (kanPossibilities.Count > 0)
+                var (canCall, decisionTile) = _game.Round.Advisor.KanDecision(_humanPlayerIndex, true);
+                if (canCall)
                 {
                     BtnKan.Visibility = Visibility.Visible;
                     if (_game.Ruleset.DiscardTip)
                     {
                         needAdvice = true;
-                        if (_game.Round.Advisor.KanDecisionAdvice(_humanPlayerIndex, kanPossibilities, true))
+                        if (decisionTile != null)
                         {
                             BtnKan.Foreground = Brushes.DarkMagenta;
                             advised = true;
@@ -1015,14 +1015,14 @@ public partial class MainWindow : Window
                 }
             }
 
-            var kanPossibilities = _game.Round.CanCallKan(_humanPlayerIndex);
-            if (kanPossibilities.Count > 0)
+            var (canCall, decisionTile) = _game.Round.Advisor.KanDecision(_humanPlayerIndex, false);
+            if (canCall)
             {
                 BtnKan.Visibility = Visibility.Visible;
                 if (_game.Ruleset.DiscardTip)
                 {
                     needAdvice = true;
-                    if (_game.Round.Advisor.KanDecisionAdvice(_humanPlayerIndex, kanPossibilities, false))
+                    if (decisionTile != null)
                     {
                         BtnKan.Foreground = Brushes.DarkMagenta;
                         advised = true;
