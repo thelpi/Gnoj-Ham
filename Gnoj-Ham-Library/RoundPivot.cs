@@ -308,6 +308,7 @@ public class RoundPivot
 
             // 5 - "kan" call from non-human players
             // the loop starts over
+            var kanExit = false;
             foreach (var pi in Enum.GetValues<PlayerIndices>().Where(Game.IsCpu))
             {
                 var (_, kanDecision) = IaManager.KanDecision(pi, false);
@@ -316,19 +317,30 @@ public class RoundPivot
                     var previousPlayerIndex = PreviousPlayerIndex;
                     var compensationTile = OpponentBeginCallKan(pi, kanDecision, false);
                     kanInProgress = (pi, compensationTile, previousPlayerIndex);
-                    continue;
+                    kanExit = true;
+                    break;
                 }
+            }
+            if (kanExit)
+            {
+                continue;
             }
 
             // 6 - "pon" call from non-human players
             // the loop starts over
+            var ponExit = false;
             foreach (var pi in Enum.GetValues<PlayerIndices>().Where(Game.IsCpu))
             {
                 if (IaManager.PonDecision(pi))
                 {
                     PonCall(pi, sleepTime);
-                    continue;
+                    ponExit = true;
+                    break;
                 }
+            }
+            if (ponExit)
+            {
+                continue;
             }
 
             // 7 - checks "chii" call for current player (human)
