@@ -676,7 +676,7 @@ public partial class MainWindow : Window
                 _riichiTiles = _game.Round.CanCallRiichi();
                 if (_riichiTiles.Count > 0)
                 {
-                    var riichiDecision = _game.Ruleset.DiscardTip && _game.Round.Advisor.RiichiDecision() != null;
+                    var riichiDecision = _game.Ruleset.DiscardTip && _game.Round.Advisor!.RiichiDecision() != null;
 
                     BtnRiichi.Visibility = Visibility.Visible;
                     BtnSkipCall.Visibility = Visibility.Visible;
@@ -962,7 +962,7 @@ public partial class MainWindow : Window
 
             if (!skippedInnerKan)
             {
-                var (canCall, decisionTile) = _game.Round.Advisor.KanDecision(_humanPlayerIndex, true);
+                var (canCall, decisionTile) = _game.Round.Advisor!.KanDecision(_humanPlayerIndex, true);
                 if (canCall)
                 {
                     BtnKan.Visibility = Visibility.Visible;
@@ -985,7 +985,7 @@ public partial class MainWindow : Window
 
             if (_game.Round.IsHumanPlayer)
             {
-                var (canChii, chiiChoice) = _game.Round.Advisor.ChiiDecision();
+                var (canChii, chiiChoice) = _game.Round.Advisor!.ChiiDecision();
                 if (canChii)
                 {
                     BtnChii.Visibility = Visibility.Visible;
@@ -1007,7 +1007,7 @@ public partial class MainWindow : Window
                 if (_game.Ruleset.DiscardTip)
                 {
                     needAdvice = true;
-                    if (_game.Round.Advisor.PonDecision(_humanPlayerIndex))
+                    if (_game.Round.Advisor!.PonDecision(_humanPlayerIndex))
                     {
                         BtnPon.Foreground = Brushes.DarkMagenta;
                         advised = true;
@@ -1015,7 +1015,7 @@ public partial class MainWindow : Window
                 }
             }
 
-            var (canCall, decisionTile) = _game.Round.Advisor.KanDecision(_humanPlayerIndex, false);
+            var (canCall, decisionTile) = _game.Round.Advisor!.KanDecision(_humanPlayerIndex, false);
             if (canCall)
             {
                 BtnKan.Visibility = Visibility.Visible;
@@ -1222,7 +1222,7 @@ public partial class MainWindow : Window
 
         if (_game.Round.IsHumanPlayer && _game.Round.GetHand(_humanPlayerIndex).IsFullHand)
         {
-            var discardChoice = _game.Round.Advisor.DiscardDecision();
+            var discardChoice = _game.Round.Advisor!.DiscardDecision();
 
             var button = this.FindPanel(HandPanel, _humanPlayerIndex).Children.OfType<TileButton>()
                 .Concat(this.FindPanel(PickPanel, _humanPlayerIndex).Children.OfType<TileButton>())

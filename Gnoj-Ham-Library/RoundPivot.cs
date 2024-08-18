@@ -25,6 +25,7 @@ public class RoundPivot
     private readonly List<List<TilePivot>> _virtualDiscards;
     private readonly List<RiichiPivot?> _riichis;
     private readonly List<TilePivot> _fullTilesList;
+    private readonly IReadOnlyDictionary<PlayerIndices, CpuManagerBasePivot> _cpuManagers;
 
     /// <summary>
     /// All tiles.
@@ -75,16 +76,6 @@ public class RoundPivot
     public PlayerIndices CurrentPlayerIndex { get; private set; }
 
     /// <summary>
-    /// IA manager.
-    /// </summary>
-    public CpuManagerBasePivot IaManager { get; }
-
-    /// <summary>
-    /// Advisor.
-    /// </summary>
-    public CpuManagerBasePivot Advisor { get; }
-
-    /// <summary>
     /// The game in which this instance happens.
     /// </summary>
     internal GamePivot Game { get; }
@@ -97,6 +88,11 @@ public class RoundPivot
     #endregion Embedded properties
 
     #region Inferred properties
+
+    /// <summary>
+    /// Advisor.
+    /// </summary>
+    public CpuManagerBasePivot? Advisor => Game.HumanPlayerIndex.HasValue ? _cpuManagers[Game.HumanPlayerIndex.Value] : null;
 
     /// <summary>
     /// Inferred; indicates if the current player is the human player.
@@ -216,8 +212,13 @@ public class RoundPivot
         _openedKanInProgress = null;
         _waitForDiscard = false;
         _playerIndexHistory = new List<PlayerIndices>(10);
-        IaManager = new BasicCpuManagerPivot(this);
-        Advisor = new BasicCpuManagerPivot(this);
+        _cpuManagers = new Dictionary<PlayerIndices, CpuManagerBasePivot>
+        {
+            { PlayerIndices.Zero, new BasicCpuManagerPivot(this) },
+            { PlayerIndices.One, new BasicCpuManagerPivot(this) },
+            { PlayerIndices.Two, new BasicCpuManagerPivot(this) },
+            { PlayerIndices.Three, new BasicCpuManagerPivot(this) }
+        };
     }
 
     #endregion Constructors
@@ -311,7 +312,7 @@ public class RoundPivot
             var kanExit = false;
             foreach (var pi in Enum.GetValues<PlayerIndices>().Where(Game.IsCpu))
             {
-                var (_, kanDecision) = IaManager.KanDecision(pi, false);
+                var (_, kanDecision) = _cpuManagers[pi].KanDecision(pi, false);
                 if (kanDecision != null)
                 {
                     var previousPlayerIndex = PreviousPlayerIndex;
@@ -331,7 +332,7 @@ public class RoundPivot
             var ponExit = false;
             foreach (var pi in Enum.GetValues<PlayerIndices>().Where(Game.IsCpu))
             {
-                if (IaManager.PonDecision(pi))
+                if (_cpuManagers[pi].PonDecision(pi))
                 {
                     PonCall(pi, sleepTime);
                     ponExit = true;
@@ -353,7 +354,7 @@ public class RoundPivot
 
             // 8 - checks "chii" call for current player (non-human)
             // the loop starts over
-            var (_, chiiTilePick) = IaManager.ChiiDecision();
+            var (_, chiiTilePick) = _cpuManagers[CurrentPlayerIndex].ChiiDecision();
             if (chiiTilePick != null)
             {
                 ChiiCall(chiiTilePick, sleepTime);
@@ -825,7 +826,7 @@ public class RoundPivot
         // TODO: very marginally, the order of players can impact decision
         foreach (var pi in Enum.GetValues<PlayerIndices>().Where(Game.IsCpu))
         {
-            var ronCalled = IaManager.RonDecision(pi, atLeastOneRon);
+            var ronCalled = _cpuManagers[pi].RonDecision(pi, atLeastOneRon);
             if (ronCalled)
             {
                 atLeastOneRon = true;
@@ -876,7 +877,7 @@ public class RoundPivot
 
             if (!IsHumanPlayer)
             {
-                var discardDecision = IaManager.DiscardDecision();
+                var discardDecision = _cpuManagers[CurrentPlayerIndex].DiscardDecision();
                 Discard(discardDecision, sleepTime);
             }
         }
@@ -899,7 +900,7 @@ public class RoundPivot
 
             if (isCpu)
             {
-                var discardDecision = IaManager.DiscardDecision();
+                var discardDecision = _cpuManagers[CurrentPlayerIndex].DiscardDecision();
                 Discard(discardDecision, sleepTime);
             }
         }
@@ -921,14 +922,14 @@ public class RoundPivot
 
     private bool OpponentAfterPick(ref (PlayerIndices, TilePivot?, PlayerIndices?)? kanInProgress, int sleepTime)
     {
-        var tsumoDecision = IaManager.TsumoDecision(kanInProgress != null);
+        var tsumoDecision = _cpuManagers[CurrentPlayerIndex].TsumoDecision(kanInProgress != null);
         if (tsumoDecision)
         {
             CallNotifier?.Invoke(new CallNotifierEventArgs { Action = CallTypes.Tsumo, PlayerIndex = CurrentPlayerIndex });
             return true;
         }
 
-        var (_, kanTile) = IaManager.KanDecision(CurrentPlayerIndex, true);
+        var (_, kanTile) = _cpuManagers[CurrentPlayerIndex].KanDecision(CurrentPlayerIndex, true);
         if (kanTile != null)
         {
             var compensationTile = OpponentBeginCallKan(CurrentPlayerIndex, kanTile, true);
@@ -938,14 +939,14 @@ public class RoundPivot
 
         kanInProgress = null;
 
-        var riichiTile = IaManager.RiichiDecision();
+        var riichiTile = _cpuManagers[CurrentPlayerIndex].RiichiDecision();
         if (riichiTile != null)
         {
             CallRiichi(riichiTile, sleepTime);
             return false;
         }
 
-        Discard(IaManager.DiscardDecision(), sleepTime);
+        Discard(_cpuManagers[CurrentPlayerIndex].DiscardDecision(), sleepTime);
         return false;
     }
 
@@ -976,7 +977,8 @@ public class RoundPivot
         RiichiChoicesNotifier?.Invoke(new RiichiChoicesNotifierEventArgs(riichiTiles));
         if (riichiTiles.Count > 0)
         {
-            var adviseRiichi = Game.Ruleset.DiscardTip && IaManager.RiichiDecision() != null;
+            // TODO: move to view!
+            var adviseRiichi = Game.Ruleset.DiscardTip && _cpuManagers[CurrentPlayerIndex].RiichiDecision() != null;
             HumanCallNotifier?.Invoke(new HumanCallNotifierEventArgs { Call = CallTypes.Riichi, RiichiAdvised = adviseRiichi });
             return null;
         }
