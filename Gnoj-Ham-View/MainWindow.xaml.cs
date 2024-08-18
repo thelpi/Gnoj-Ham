@@ -985,14 +985,14 @@ public partial class MainWindow : Window
 
             if (_game.Round.IsHumanPlayer)
             {
-                var chiiPossibilities = _game.Round.CanCallChii();
-                if (chiiPossibilities.Count > 0)
+                var (canChii, chiiChoice) = _game.Round.Advisor.ChiiDecision();
+                if (canChii)
                 {
                     BtnChii.Visibility = Visibility.Visible;
                     if (_game.Ruleset.DiscardTip)
                     {
                         needAdvice = true;
-                        if (_game.Round.Advisor.ChiiDecisionAdvice(chiiPossibilities))
+                        if (chiiChoice != null)
                         {
                             BtnChii.Foreground = Brushes.DarkMagenta;
                             advised = true;

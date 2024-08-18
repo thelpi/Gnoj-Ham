@@ -339,7 +339,7 @@ public class RoundPivot
 
             // 8 - checks "chii" call for current player (non-human)
             // the loop starts over
-            var chiiTilePick = IaManager.ChiiDecision();
+            var (_, chiiTilePick) = IaManager.ChiiDecision();
             if (chiiTilePick != null)
             {
                 ChiiCall(chiiTilePick, sleepTime);

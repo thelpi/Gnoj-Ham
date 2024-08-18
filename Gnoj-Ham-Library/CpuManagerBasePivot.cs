@@ -90,17 +90,13 @@ public abstract class CpuManagerBasePivot
     /// <summary>
     /// Checks if the current player can call 'Chii' and computes the decision to do so.
     /// </summary>
-    /// <returns>
-    /// If the decision is made, the first tile to use, in the sequence order, in the concealed hand of the player.
-    /// <c>Null</c> otherwise.
-    /// </returns>
-    /// <remarks>Not suitable for advice.</remarks>
-    public TilePivot? ChiiDecision()
+    /// <returns>A tuple that indicates if chii is possible and, if that's the case, the first tile to use, in the sequence order, in the concealed hand of the player.</returns>
+    public (bool canChii, TilePivot? chiiChoice) ChiiDecision()
     {
         var chiiTiles = Round.CanCallChii();
-        return chiiTiles.Count > 0
-            ? ChiiDecisionInternal(chiiTiles)
-            : null;
+        return chiiTiles.Count == 0
+            ? (false, null)
+            : (true, ChiiDecisionInternal(chiiTiles));
     }
 
     /// <summary>
@@ -144,14 +140,6 @@ public abstract class CpuManagerBasePivot
     /// <returns><c>True</c> if Kan is advised.</returns>
     public bool KanDecisionAdvice(PlayerIndices pIndex, IReadOnlyList<TilePivot> kanPossibilities, bool concealedKan)
         => KanDecisionInternal(pIndex, kanPossibilities, concealedKan).HasValue;
-
-    /// <summary>
-    /// Computes an advice for the human player to call a Chii or not; assumes the Chii is possible.
-    /// </summary>
-    /// <param name="chiiPossibilities">See the result of the method <see cref="RoundPivot.CanCallChii"/>.</param>
-    /// <returns><c>True</c> if Chii is advised.</returns>
-    public bool ChiiDecisionAdvice(IReadOnlyList<TilePivot> chiiPossibilities)
-        => ChiiDecisionInternal(chiiPossibilities) != null;
 
     #region Protected logic to override
 
