@@ -235,21 +235,25 @@ public class HandPivot
         var combinationsSequences = new List<List<TileComboPivot>>(20);
 
         // Creates a group for each family
-        var familyGroups = concealedTiles.GroupBy(t => t.Family);
+        List<(Families family, List<TilePivot> tiles)> familyGroups = concealedTiles
+            .GroupBy(t => t.Family)
+            // dragon and wind first!
+            .OrderByDescending(t => (int)t.Key)
+            .Select(t => (t.Key, t.ToList()))
+            .ToList();
 
         // The first case is not possible because its implies a single tile or several pairs.
         // The second case is not possible more than once because its implies a pair.
         var isSingle = false;
         var pairCount = 0;
-        foreach (var fg in familyGroups)
+        foreach (var (_, tiles) in familyGroups)
         {
-            var count = fg.Count();
-            if (ImpliesSingles.Contains(count))
+            if (ImpliesSingles.Contains(tiles.Count))
             {
                 isSingle = true;
                 break;
             }
-            if (ImpliesPairs.Contains(count))
+            if (ImpliesPairs.Contains(tiles.Count))
             {
                 pairCount++;
                 if (pairCount > 1)
@@ -259,22 +263,22 @@ public class HandPivot
 
         if (!isSingle && pairCount <= 1)
         {
-            foreach (var familyGroup in familyGroups)
+            foreach (var (family, tiles) in familyGroups)
             {
-                switch (familyGroup.Key)
+                switch (family)
                 {
                     case Families.Dragon:
-                        forceExit = CheckHonorsForCombinations(familyGroup, k => k.Dragon!.Value, combinationsSequences, declaredCombinationsCount);
+                        forceExit = CheckHonorsForCombinations(tiles, k => k.Dragon!.Value, combinationsSequences, declaredCombinationsCount);
                         if (forceExit)
                             return combinationsSequences;
                         break;
                     case Families.Wind:
-                        forceExit = CheckHonorsForCombinations(familyGroup, t => t.Wind!.Value, combinationsSequences, declaredCombinationsCount);
+                        forceExit = CheckHonorsForCombinations(tiles, t => t.Wind!.Value, combinationsSequences, declaredCombinationsCount);
                         if (forceExit)
                             return combinationsSequences;
                         break;
                     default:
-                        var temporaryCombinationsSequences = GetCombinationSequencesRecursive(familyGroup.ToList());
+                        var temporaryCombinationsSequences = GetCombinationSequencesRecursive(tiles);
                         if (combinationsSequences.Count > 0)
                         {
                             // Cartesian product of existant sequences and temporary list.
@@ -307,7 +311,7 @@ public class HandPivot
 
     // Builds combinations (pairs and brelans) from dragon family or wind family.
     private static bool CheckHonorsForCombinations<T>(
-        IEnumerable<TilePivot> familyGroup,
+        List<TilePivot> familyGroup,
         Func<TilePivot, T> groupKeyFunc, 
         List<List<TileComboPivot>> combinationsSequences,
         int declaredCombinationsCount)
