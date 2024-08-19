@@ -421,6 +421,96 @@ public class HandPivot
     {
         var combinationsSequences = new List<List<TileComboPivot>>(10);
 
+        var tilesCount = tiles.Count();
+        if (ImpliesSingles.Contains(tilesCount))
+        {
+            return combinationsSequences;
+        }
+        else if (tilesCount == 2)
+        {
+            var firstTile = tiles.First();
+            var lastTile = tiles.Last();
+            if (firstTile == lastTile)
+            {
+                combinationsSequences.Add(new List<TileComboPivot> { new(firstTile, lastTile) });
+            }
+            return combinationsSequences;
+        }
+        else if (tilesCount == 3)
+        {
+            var firstTile = tiles.First();
+            var lastTile = tiles.Last();
+            if (firstTile == lastTile)
+            {
+                var secondTile = tiles.ElementAt(1);
+                if (secondTile == firstTile)
+                {
+                    combinationsSequences.Add(new List<TileComboPivot> { new(firstTile, secondTile, lastTile) });
+                }
+                return combinationsSequences;
+            }
+            else if (firstTile.Number == lastTile.Number + 1)
+            {
+                var secondTile = tiles.ElementAt(1);
+                if (firstTile.Number == secondTile.Number - 1)
+                {
+                    combinationsSequences.Add(new List<TileComboPivot> { new(lastTile, firstTile, secondTile) });
+                }
+                else if (firstTile.Number == secondTile.Number + 2)
+                {
+                    combinationsSequences.Add(new List<TileComboPivot> { new(secondTile, lastTile, firstTile) });
+                }
+                else
+                {
+                    return combinationsSequences;
+                }
+            }
+            else if (firstTile.Number == lastTile.Number - 1)
+            {
+                var secondTile = tiles.ElementAt(1);
+                if (firstTile.Number == secondTile.Number + 1)
+                {
+                    combinationsSequences.Add(new List<TileComboPivot> { new(secondTile, firstTile, lastTile) });
+                }
+                else if (firstTile.Number == secondTile.Number - 2)
+                {
+                    combinationsSequences.Add(new List<TileComboPivot> { new(firstTile, lastTile, secondTile) });
+                }
+                else
+                {
+                    return combinationsSequences;
+                }
+            }
+            else if (firstTile.Number == lastTile.Number + 2)
+            {
+                var secondTile = tiles.ElementAt(1);
+                if (firstTile.Number == secondTile.Number + 1)
+                {
+                    combinationsSequences.Add(new List<TileComboPivot> { new(lastTile, secondTile, firstTile) });
+                }
+                else
+                {
+                    return combinationsSequences;
+                }
+            }
+            else if (firstTile.Number == lastTile.Number - 2)
+            {
+                var secondTile = tiles.ElementAt(1);
+                if (firstTile.Number == secondTile.Number - 1)
+                {
+                    combinationsSequences.Add(new List<TileComboPivot> { new(firstTile, secondTile, lastTile) });
+                }
+                else
+                {
+                    return combinationsSequences;
+                }
+            }
+            else
+            {
+                return combinationsSequences;
+            }
+        }
+
         var distinctNumbers = tiles.Select(tg => tg.Number).Distinct().OrderBy(v => v).ToList();
 
         foreach (var number in distinctNumbers)
