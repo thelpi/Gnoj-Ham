@@ -320,7 +320,8 @@ public class HandPivot
     {
         return familyGroup
             .GroupBy(groupKeyFunc)
-            .Where(sg => TwoOrThreeTiles.Contains(sg.Count()))
+            .Select(gf => gf.ToArray())
+            .Where(sg => TwoOrThreeTiles.Contains(sg.Length))
             .Select(sg => new TileComboPivot(sg))
             .ToList();
     }
