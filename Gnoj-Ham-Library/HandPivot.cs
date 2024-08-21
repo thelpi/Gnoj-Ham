@@ -268,14 +268,18 @@ public class HandPivot
                 switch (family)
                 {
                     case Families.Dragon:
-                        forceExit = CheckHonorsForCombinations(tiles, k => k.Dragon!.Value, combinationsSequences, declaredCombinationsCount);
-                        if (forceExit)
-                            return combinationsSequences;
+                        var dragonCombinations = CheckHonorsForCombinations(tiles, k => k.Dragon!.Value);
+                        if (combinationsSequences.Count > 0)
+                            combinationsSequences.ForEach(x => x.AddRange(dragonCombinations));
+                        else
+                            combinationsSequences.Add(dragonCombinations);
                         break;
                     case Families.Wind:
-                        forceExit = CheckHonorsForCombinations(tiles, t => t.Wind!.Value, combinationsSequences, declaredCombinationsCount);
-                        if (forceExit)
-                            return combinationsSequences;
+                        var windCombinations = CheckHonorsForCombinations(tiles, t => t.Wind!.Value);
+                        if (combinationsSequences.Count > 0)
+                            combinationsSequences.ForEach(x => x.AddRange(windCombinations));
+                        else
+                            combinationsSequences.Add(windCombinations);
                         break;
                     default:
                         var temporaryCombinationsSequences = GetCombinationSequencesRecursive(tiles);
@@ -310,45 +314,15 @@ public class HandPivot
     }
 
     // Builds combinations (pairs and brelans) from dragon family or wind family.
-    private static bool CheckHonorsForCombinations<T>(
+    private static List<TileComboPivot> CheckHonorsForCombinations<T>(
         List<TilePivot> familyGroup,
-        Func<TilePivot, T> groupKeyFunc, 
-        List<List<TileComboPivot>> combinationsSequences,
-        int declaredCombinationsCount)
+        Func<TilePivot, T> groupKeyFunc)
     {
-        var combinations =
-            familyGroup
-                .GroupBy(groupKeyFunc)
-                .Where(sg => TwoOrThreeTiles.Contains(sg.Count()))
-                .Select(sg => new TileComboPivot(sg))
-                .ToList();
-
-        if (combinations.Count > 0)
-        {
-            if (combinationsSequences.Count == 0)
-            {
-                // Creates a new sequence of combinations, if empty at this point.
-                combinationsSequences.Add(combinations);
-                if (declaredCombinationsCount > -1 && CombinationSequenceIsValid(declaredCombinationsCount, combinationsSequences[^1]))
-                {
-                    return true;
-                }
-            }
-            else
-            {
-                // Adds the list of combinations to each existant sequence.
-                foreach (var cs in combinationsSequences)
-                {
-                    cs.AddRange(combinations);
-                    if (declaredCombinationsCount > -1 && CombinationSequenceIsValid(declaredCombinationsCount, cs))
-                    {
-                        return true;
-                    }
-                }
-            }
-        }
-
-        return false;
+        return familyGroup
+            .GroupBy(groupKeyFunc)
+            .Where(sg => TwoOrThreeTiles.Contains(sg.Count()))
+            .Select(sg => new TileComboPivot(sg))
+            .ToList();
     }
 
     // Assumes that all tiles are from the same family, and this family is caracter / circle / bamboo.
