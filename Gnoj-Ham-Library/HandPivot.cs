@@ -244,69 +244,64 @@ public class HandPivot
 
         // The first case is not possible because its implies a single tile or several pairs.
         // The second case is not possible more than once because its implies a pair.
-        var isSingle = false;
         var pairCount = 0;
         foreach (var (_, tiles) in familyGroups)
         {
             if (ImpliesSingles.Contains(tiles.Count))
             {
-                isSingle = true;
-                break;
+                return combinationsSequences;
             }
             if (ImpliesPairs.Contains(tiles.Count))
             {
                 pairCount++;
                 if (pairCount > 1)
-                    break;
+                    return combinationsSequences;
             }
         }
 
-        if (!isSingle && pairCount <= 1)
+        foreach (var (family, tiles) in familyGroups)
         {
-            foreach (var (family, tiles) in familyGroups)
+            switch (family)
             {
-                switch (family)
-                {
-                    case Families.Dragon:
-                        var dragonCombinations = CheckHonorsForCombinations(tiles, k => k.Dragon!.Value);
-                        if (combinationsSequences.Count > 0)
-                            combinationsSequences.ForEach(x => x.AddRange(dragonCombinations));
-                        else
-                            combinationsSequences.Add(dragonCombinations);
-                        break;
-                    case Families.Wind:
-                        var windCombinations = CheckHonorsForCombinations(tiles, t => t.Wind!.Value);
-                        if (combinationsSequences.Count > 0)
-                            combinationsSequences.ForEach(x => x.AddRange(windCombinations));
-                        else
-                            combinationsSequences.Add(windCombinations);
-                        break;
-                    default:
-                        var temporaryCombinationsSequences = GetCombinationSequencesRecursive(tiles);
-                        if (combinationsSequences.Count > 0)
+                case Families.Dragon:
+                    var dragonCombinations = CheckHonorsForCombinations(tiles, k => k.Dragon!.Value);
+                    if (combinationsSequences.Count > 0)
+                        combinationsSequences.ForEach(x => x.AddRange(dragonCombinations));
+                    else
+                        combinationsSequences.Add(dragonCombinations);
+                    break;
+                case Families.Wind:
+                    var windCombinations = CheckHonorsForCombinations(tiles, t => t.Wind!.Value);
+                    if (combinationsSequences.Count > 0)
+                        combinationsSequences.ForEach(x => x.AddRange(windCombinations));
+                    else
+                        combinationsSequences.Add(windCombinations);
+                    break;
+                default:
+                    var temporaryCombinationsSequences = GetCombinationSequencesRecursive(tiles);
+                    if (combinationsSequences.Count > 0)
+                    {
+                        // Cartesian product of existant sequences and temporary list.
+                        var newCombinationsSequences = new List<List<TileComboPivot>>(combinationsSequences.Count * temporaryCombinationsSequences.Count);
+                        foreach (var cs in combinationsSequences)
                         {
-                            // Cartesian product of existant sequences and temporary list.
-                            var newCombinationsSequences = new List<List<TileComboPivot>>(combinationsSequences.Count * temporaryCombinationsSequences.Count);
-                            foreach (var cs in combinationsSequences)
+                            foreach (var cs2 in temporaryCombinationsSequences)
                             {
-                                foreach (var cs2 in temporaryCombinationsSequences)
+                                newCombinationsSequences.Add(new List<TileComboPivot>(cs.Concat(cs2)));
+                                if (declaredCombinationsCount > -1 && CombinationSequenceIsValid(declaredCombinationsCount, newCombinationsSequences[^1]))
                                 {
-                                    newCombinationsSequences.Add(new List<TileComboPivot>(cs.Concat(cs2)));
-                                    if (declaredCombinationsCount > -1 && CombinationSequenceIsValid(declaredCombinationsCount, newCombinationsSequences[^1]))
-                                    {
-                                        forceExit = true;
-                                        return newCombinationsSequences;
-                                    }
+                                    forceExit = true;
+                                    return newCombinationsSequences;
                                 }
                             }
-                            combinationsSequences = newCombinationsSequences;
                         }
-                        else
-                        {
-                            combinationsSequences = temporaryCombinationsSequences;
-                        }
-                        break;
-                }
+                        combinationsSequences = newCombinationsSequences;
+                    }
+                    else
+                    {
+                        combinationsSequences = temporaryCombinationsSequences;
+                    }
+                    break;
             }
         }
 
@@ -320,9 +315,8 @@ public class HandPivot
     {
         return familyGroup
             .GroupBy(groupKeyFunc)
-            .Select(gf => gf.ToArray())
-            .Where(sg => TwoOrThreeTiles.Contains(sg.Length))
-            .Select(sg => new TileComboPivot(sg))
+            .Where(sg => TwoOrThreeTiles.Contains(sg.Count()))
+            .Select(sg => new TileComboPivot(sg.ToArray()))
             .ToList();
     }
 
