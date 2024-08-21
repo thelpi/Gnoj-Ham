@@ -328,22 +328,9 @@ public class HandPivot
 
     // Assumes that all tiles are from the same family, and this family is caracter / circle / bamboo.
     // Also assumes that referenced tile is included in the list.
-    private static List<TileComboPivot> GetCombinationsForTile(TilePivot tile, IEnumerable<TilePivot> tiles)
+    private static List<TileComboPivot> GetCombinationsForTile(TilePivot tile, List<TilePivot> tiles)
     {
         var combinations = new List<TileComboPivot>(5);
-
-        var sameNumber = tiles.Count(t => t.Number == tile.Number);
-
-        if (sameNumber > 1)
-        {
-            // Can make a pair.
-            combinations.Add(new TileComboPivot(tile, tile));
-            if (sameNumber > 2)
-            {
-                // Can make a brelan.
-                combinations.Add(new TileComboPivot(tile, tile, tile));
-            }
-        }
 
         TilePivot? secondLow = null;
         TilePivot? firstLow = null;
@@ -352,28 +339,34 @@ public class HandPivot
         var count = 0;
         foreach (var t in tiles)
         {
-            if (t.Number == tile.Number - 2)
+            if (t.Number == tile.Number)
+            {
+                count++;
+                if (count == 2)
+                {
+                    combinations.Add(new TileComboPivot(tile, tile));
+                }
+                else if (count == 3)
+                {
+                    combinations.Add(new TileComboPivot(tile, tile, tile));
+                }
+            }
+            else if (t.Number == tile.Number - 2)
             {
                 secondLow = t;
-                count++;
             }
             else if (t.Number == tile.Number - 1)
             {
                 firstLow = t;
-                count++;
             }
             else if(t.Number == tile.Number + 1)
             {
                 firstHigh = t;
-                count++;
             }
             else if (t.Number == tile.Number + 2)
             {
                 secondHigh = t;
-                count++;
             }
-            if (count == 4)
-                break;
         }
 
         if (secondLow != null && firstLow != null)
@@ -467,14 +460,14 @@ public class HandPivot
         }
 
         var checkedNumbers = new List<int>(tiles.Count);
-        foreach (var currentTile in tiles.OrderBy(t => t.Number))
+        foreach (var currentTile in tiles)
         {
             var number = currentTile.Number;
             if (checkedNumbers.Contains(number))
                 continue;
             checkedNumbers.Add(number);
 
-            var combinations = GetCombinationsForTile(tiles.First(fg => fg.Number == number), tiles);
+            var combinations = GetCombinationsForTile(currentTile, tiles);
             foreach (var combination in combinations)
             {
                 var subTiles = new List<TilePivot>(tiles);
