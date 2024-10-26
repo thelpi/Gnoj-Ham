@@ -460,64 +460,122 @@ public class HandPivot
         {
             return combinationsSequences;
         }
-
-        var firstTile = tiles[0];
-        var lastTile = tiles[^1];
-
+        
         if (tiles.Count == 2)
         {
-            if (firstTile == lastTile)
+            // aa
+            if (tiles[0] == tiles[1])
             {
-                combinationsSequences.Add(new List<TileComboPivot> { new(firstTile, lastTile) });
+                combinationsSequences.Add(new List<TileComboPivot> { new(tiles[0], tiles[1]) });
+            }
+            return combinationsSequences;
+        }
+        
+        if (tiles.Count == 3)
+        {
+            // aaa
+            // abc
+            if ((tiles[0] == tiles[1] && tiles[0] == tiles[2])
+                || (tiles[0].Number == tiles[1].Number - 1 && tiles[0].Number == tiles[2].Number - 2))
+            {
+                combinationsSequences.Add(new List<TileComboPivot> { new(tiles[0], tiles[1], tiles[2]) });
             }
             return combinationsSequences;
         }
 
-        var secondTile = tiles[1];
-        if (tiles.Count == 3)
+        if (tiles.Count == 5)
         {
-            if (firstTile == lastTile)
+            // aaa bb
+            // abc cc
+            if ((tiles[0] == tiles[1]
+                    && tiles[0] == tiles[2]
+                    && tiles[3] == tiles[4])
+                || (tiles[0].Number == tiles[1].Number - 1
+                    && tiles[0].Number == tiles[2].Number - 2
+                    && tiles[3] == tiles[4]))
             {
-                if (secondTile == firstTile)
-                {
-                    combinationsSequences.Add(new List<TileComboPivot> { new(firstTile, secondTile, lastTile) });
-                }
+                combinationsSequences.Add(new List<TileComboPivot> { new(tiles[0], tiles[1], tiles[2]), new(tiles[3], tiles[4]) });
             }
-            else if (firstTile.Number == lastTile.Number + 1)
+            // aa abc
+            // aa bbb
+            else if ((tiles[0] == tiles[1]
+                    && tiles[2].Number == tiles[3].Number - 1
+                    && tiles[2].Number == tiles[4].Number - 2)
+                || (tiles[0] == tiles[1]
+                    && tiles[2] == tiles[3]
+                    && tiles[3] == tiles[4]))
             {
-                if (firstTile.Number == secondTile.Number - 1)
-                {
-                    combinationsSequences.Add(new List<TileComboPivot> { new(lastTile, firstTile, secondTile) });
-                }
-                else if (firstTile.Number == secondTile.Number + 2)
-                {
-                    combinationsSequences.Add(new List<TileComboPivot> { new(secondTile, lastTile, firstTile) });
-                }
+                combinationsSequences.Add(new List<TileComboPivot> { new(tiles[0], tiles[1]), new(tiles[2], tiles[3], tiles[4]) });
             }
-            else if (firstTile.Number == lastTile.Number - 1)
+            // abbbc
+            else if (tiles[0].Number == tiles[1].Number - 1
+                && tiles[0].Number == tiles[4].Number - 2
+                && tiles[1] == tiles[2]
+                && tiles[1] == tiles[3])
             {
-                if (firstTile.Number == secondTile.Number + 1)
-                {
-                    combinationsSequences.Add(new List<TileComboPivot> { new(secondTile, firstTile, lastTile) });
-                }
-                else if (firstTile.Number == secondTile.Number - 2)
-                {
-                    combinationsSequences.Add(new List<TileComboPivot> { new(firstTile, lastTile, secondTile) });
-                }
+                combinationsSequences.Add(new List<TileComboPivot> { new(tiles[0], tiles[1], tiles[4]), new(tiles[2], tiles[3]) });
             }
-            else if (firstTile.Number == lastTile.Number + 2)
+            return combinationsSequences;
+        }
+
+        if (tiles.Count == 6)
+        {
+            // aaabbb
+            if (tiles[0] == tiles[1]
+                && tiles[0] == tiles[2]
+                && tiles[3] == tiles[4]
+                && tiles[3] == tiles[5])
             {
-                if (firstTile.Number == secondTile.Number + 1)
-                {
-                    combinationsSequences.Add(new List<TileComboPivot> { new(lastTile, secondTile, firstTile) });
-                }
+                combinationsSequences.Add(new List<TileComboPivot> { new(tiles[0], tiles[1], tiles[2]), new(tiles[3], tiles[4], tiles[5]) });
             }
-            else if (firstTile.Number == lastTile.Number - 2)
+            // aaaabc
+            else if (tiles[0] == tiles[1]
+                && tiles[0] == tiles[2]
+                && tiles[3].Number == tiles[4].Number - 1
+                && tiles[3].Number == tiles[5].Number - 2)
             {
-                if (firstTile.Number == secondTile.Number - 1)
-                {
-                    combinationsSequences.Add(new List<TileComboPivot> { new(firstTile, secondTile, lastTile) });
-                }
+                combinationsSequences.Add(new List<TileComboPivot> { new(tiles[0], tiles[1], tiles[2]), new(tiles[3], tiles[4], tiles[5]) });
+            }
+            // aabbcc
+            else if (tiles[0] == tiles[1]
+                && tiles[2] == tiles[3]
+                && tiles[4] == tiles[5]
+                && tiles[0].Number == tiles[2].Number - 1
+                && tiles[0].Number == tiles[4].Number - 2)
+            {
+                combinationsSequences.Add(new List<TileComboPivot> { new(tiles[0], tiles[2], tiles[4]), new(tiles[1], tiles[3], tiles[5]) });
+            }
+            // abbbbc
+            else if (tiles[0].Number == tiles[1].Number - 1
+                && tiles[0].Number == tiles[5].Number - 2
+                && tiles[2] == tiles[3]
+                && tiles[2] == tiles[4])
+            {
+                combinationsSequences.Add(new List<TileComboPivot> { new(tiles[0], tiles[1], tiles[5]), new(tiles[2], tiles[3], tiles[4]) });
+            }
+            // abcccc
+            else if (tiles[0].Number == tiles[1].Number - 1
+                && tiles[0].Number == tiles[2].Number - 2
+                && tiles[3] == tiles[4]
+                && tiles[3] == tiles[5])
+            {
+                combinationsSequences.Add(new List<TileComboPivot> { new(tiles[0], tiles[1], tiles[2]), new(tiles[3], tiles[4], tiles[5]) });
+            }
+            // abccdf
+            else if (tiles[0].Number == tiles[1].Number - 1
+                && tiles[0].Number == tiles[2].Number - 2
+                && tiles[3].Number == tiles[4].Number - 1
+                && tiles[3].Number == tiles[5].Number - 2)
+            {
+                combinationsSequences.Add(new List<TileComboPivot> { new(tiles[0], tiles[1], tiles[2]), new(tiles[3], tiles[4], tiles[5]) });
+            }
+            // abbccd
+            if (tiles[0].Number == tiles[1].Number - 1
+                && tiles[0].Number == tiles[3].Number - 2
+                && tiles[2].Number == tiles[4].Number - 1
+                && tiles[2].Number == tiles[5].Number - 2)
+            {
+                combinationsSequences.Add(new List<TileComboPivot> { new(tiles[0], tiles[1], tiles[3]), new(tiles[2], tiles[4], tiles[5]) });
             }
             return combinationsSequences;
         }
