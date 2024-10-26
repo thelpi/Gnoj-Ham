@@ -142,4 +142,33 @@ public static class GlobalExtensions
     {
         return endOfGameRule == EndOfGameRules.Enchousen || endOfGameRule == EndOfGameRules.EnchousenAndTobi;
     }
+
+    /// <summary>
+    /// Adds an element in a list while respecting ascending order.
+    /// </summary>
+    /// <typeparam name="T">targeted items type.</typeparam>
+    /// <param name="list">The source list.</param>
+    /// <param name="item">The item.</param>
+    internal static void AddSorted<T>(this List<T> list, T item) where T : IComparable<T>
+    {
+        if (list.Count == 0)
+        {
+            list.Add(item);
+        }
+        else if (list[^1].CompareTo(item) <= 0)
+        {
+            list.Add(item);
+        }
+        else if (list[0].CompareTo(item) >= 0)
+        {
+            list.Insert(0, item);
+        }
+        else
+        {
+            var index = list.BinarySearch(item);
+            if (index < 0)
+                index = ~index;
+            list.Insert(index, item);
+        }
+    }
 }

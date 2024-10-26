@@ -93,16 +93,21 @@ public class HandPivot
     private static readonly int[] TwoOrThreeTiles = new[] { 2, 3 };
 
     /// <summary>
-    /// Checks if the specified list of tiles forms a complete hand.
+    /// Checks if the specified list of tiles forms a complete hand while associated with an additional tile.
     /// </summary>
-    /// <param name="tiles">List of tiles (other than <paramref name="declaredCombinations"/>).</param>
+    /// <param name="tiles">List of tiles (other than <paramref name="declaredCombinations"/>); must be sorted (asc).</param>
     /// <param name="declaredCombinations">List of declared combinations.</param>
+    /// <param name="additionalTile">The additional tile.</param>
     /// <returns><c>True</c> if complete; <c>False</c> otherwise.</returns>
-    internal static bool IsCompleteFull(IReadOnlyList<TilePivot> tiles, IReadOnlyList<TileComboPivot> declaredCombinations)
+    internal static bool IsCompleteFull(IReadOnlyList<TilePivot> tiles,
+        IReadOnlyList<TileComboPivot> declaredCombinations,
+        TilePivot additionalTile)
     {
-        return IsCompleteBasic(tiles, declaredCombinations.Count)
-            || IsSevenPairs(tiles)
-            || IsThirteenOrphans(tiles);
+        var localCopy = new List<TilePivot>(tiles);
+        localCopy.AddSorted(additionalTile);
+        return IsCompleteBasic(localCopy, declaredCombinations.Count)
+            || IsSevenPairs(localCopy)
+            || IsThirteenOrphans(localCopy);
     }
 
     /// <summary>
@@ -121,23 +126,87 @@ public class HandPivot
     }
 
     /// <summary>
-    /// Checks if the specified tiles form a valid "Kokushi musou" (thirteen orphans).
+    /// Checks if the specified tiles form a valid "Kokushi musou" (thirteen orphans); tiles have to be sorted.
     /// </summary>
     /// <param name="tiles">List of tiles.</param>
     /// <returns><c>True</c> if "Kokushi musou"; <c>False</c> otherwise.</returns>
     internal static bool IsThirteenOrphans(IReadOnlyList<TilePivot> tiles)
     {
-        return tiles.Count == 14 && tiles.All(t => t.IsHonorOrTerminal) && tiles.Distinct().Count() == 13;
+        if (tiles.Count != 14)
+        {
+            return false;
+        }
+
+        TilePivot? tile = null;
+        var i = 0;
+        var paired = false;
+        foreach (var t in tiles)
+        {
+            if (!t.IsHonorOrTerminal)
+            {
+                return false;
+            }
+            
+            if (tile == null || tile != t)
+            {
+                tile = t;
+                i = 1;
+            }
+            else if (i == 2 || paired)
+            {
+                return false;
+            }
+            else
+            {
+                i++;
+                paired = true;
+            }
+        }
+
+        return paired;
     }
 
     /// <summary>
-    /// Checks if the specified tiles form a valid "Chiitoitsu" (seven pairs).
+    /// Checks if the specified tiles form a valid "Chiitoitsu" (seven pairs); tiles have to be sorted.
     /// </summary>
     /// <param name="tiles">List of tiles.</param>
     /// <returns><c>True</c> if "Chiitoitsu"; <c>False</c> otherwise.</returns>
     internal static bool IsSevenPairs(IReadOnlyList<TilePivot> tiles)
     {
-        return tiles.Count == 14 && tiles.GroupBy(t => t).All(t => t.Count() == 2);
+        if (tiles.Count != 14)
+        {
+            return false;
+        }
+
+        TilePivot? tile = null;
+        var i = 0;
+        foreach (var t in tiles)
+        {
+            if (tile == null)
+            {
+                tile = t;
+                i = 1;
+            }
+            else if (t == tile)
+            {
+                if (i == 2)
+                {
+                    return false;
+                }
+                i++;
+            }
+            else if (i < 2)
+            {
+                return false;
+            }
+            else
+            {
+                tile = t;
+                i = 1;
+            }
+        }
+
+        return true;
     }
 
     /// <summary>
@@ -168,7 +237,7 @@ public class HandPivot
     /// Checks if the specified tiles form a complete hand (four combinations of three tiles and a pair).
     /// "Kokushi musou" and "Chiitoitsu" must be checked separately.
     /// </summary>
-    /// <param name="concealedTiles">List of concealed tiles.</param>
+    /// <param name="concealedTiles">List of concealed tiles; have to be sorted.</param>
     /// <param name="declaredCombinations">List of declared combinations.</param>
     /// <returns>A list of every valid sequences of combinations.</returns>
     internal static IReadOnlyList<List<TileComboPivot>> IsCompleteBasic(IReadOnlyList<TilePivot> concealedTiles, IReadOnlyList<TileComboPivot> declaredCombinations)
@@ -219,11 +288,12 @@ public class HandPivot
     /// <returns><c>True</c> if tenpai; <c>False</c> otherwise.</returns>
     internal static bool IsTenpai(IReadOnlyList<TilePivot> concealedTiles, IReadOnlyList<TileComboPivot> combinations, IReadOnlyList<TilePivot> notInHandTiles)
     {
-        return notInHandTiles.Any(sub => IsCompleteFull(new List<TilePivot>(concealedTiles) { sub }, combinations));
+        return notInHandTiles.Any(sub => IsCompleteFull(concealedTiles, combinations, sub));
     }
 
     // Gets every possible combinations from the given list of tiles
     // declaredCombinationsCount => -1 to not exit at first
+    // concealedTiles have to be sorted
     private static List<List<TileComboPivot>> GetCombinationsSequences(
         IReadOnlyList<TilePivot> concealedTiles,
         int declaredCombinationsCount,
@@ -500,14 +570,14 @@ public class HandPivot
     /// <returns><c>True</c> if furiten; <c>False</c> otherwise.</returns>
     internal bool CancelYakusIfFuriten(IReadOnlyList<TilePivot> discard, IReadOnlyList<TilePivot> opponentDiscards)
     {
-        if (discard.Any(t => IsCompleteFull(new List<TilePivot>(ConcealedTiles) { t }, DeclaredCombinations.ToList())))
+        if (discard.Any(t => IsCompleteFull(ConcealedTiles, DeclaredCombinations.ToList(), t)))
         {
             Yakus = null;
             YakusCombinations = null;
             return true;
         }
 
-        if (opponentDiscards.Any(t => IsCompleteFull(new List<TilePivot>(ConcealedTiles) { t }, DeclaredCombinations.ToList())))
+        if (opponentDiscards.Any(t => IsCompleteFull(ConcealedTiles, DeclaredCombinations.ToList(), t)))
         {
             Yakus = null;
             YakusCombinations = null;
@@ -535,7 +605,7 @@ public class HandPivot
             {
                 var discard = currentRound.GetDiscard(currentRound.PlayerIndexHistory[i]);
                 var lastFromDiscard = discard.Count > 0 ? discard[discard.Count - 1] : null;
-                if (lastFromDiscard != null && IsCompleteFull(new List<TilePivot>(ConcealedTiles) { lastFromDiscard }, DeclaredCombinations.ToList()))
+                if (lastFromDiscard != null && IsCompleteFull(ConcealedTiles, DeclaredCombinations.ToList(), lastFromDiscard))
                 {
                     Yakus = null;
                     YakusCombinations = null;
@@ -565,15 +635,17 @@ public class HandPivot
         Yakus = null;
         YakusCombinations = null;
 
-        var winningSequences = IsCompleteBasic(concealedTiles, new List<TileComboPivot>(_declaredCombinations)).ToList();
-        if (IsSevenPairs(concealedTiles))
+        var orderedConcealedTiles = concealedTiles.OrderBy(t => t).ToList();
+
+        var winningSequences = IsCompleteBasic(orderedConcealedTiles, new List<TileComboPivot>(_declaredCombinations)).ToList();
+        if (IsSevenPairs(orderedConcealedTiles))
         {
             winningSequences.Add(new List<TileComboPivot>(concealedTiles.GroupBy(t => t).Select(c => new TileComboPivot(c))));
         }
 
         var yakusSequences = new Dictionary<IReadOnlyList<YakuPivot>, IReadOnlyList<TileComboPivot>?>();
 
-        if (IsThirteenOrphans(concealedTiles))
+        if (IsThirteenOrphans(orderedConcealedTiles))
         {
             var yakus = new List<YakuPivot> { YakuPivot.KokushiMusou };
             if (context.IsTenhou())
