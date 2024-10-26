@@ -475,7 +475,15 @@ public partial class MainWindow : Window
                 {
                     if (e.Call == CallTypes.NoCall)
                     {
-                        autoButtonOnTimer = this.FindPanel(PickPanel, _humanPlayerIndex).Children[0] as Button;
+                        var panel = this.FindPanel(PickPanel, _humanPlayerIndex);
+                        if (panel.Children.Count > 0)
+                        {
+                            autoButtonOnTimer = panel.Children[0] as Button;
+                        }
+                        else
+                        {
+                            MessageBox.Show("Le panel de réception de la pioche est vide !", "Gnoj-Ham - Warning", MessageBoxButton.OK);
+                        }
                     }
                     else
                     {
