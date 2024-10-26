@@ -305,12 +305,9 @@ public class HandPivot
         var combinationsSequences = new List<List<TileComboPivot>>(20);
 
         // Creates a group for each family
-        List<(Families family, List<TilePivot> tiles)> familyGroups = concealedTiles
+        var familyGroups = concealedTiles
             .GroupBy(t => t.Family)
-            // dragon and wind first!
-            .OrderByDescending(t => (int)t.Key)
-            .Select(t => (t.Key, t.ToList()))
-            .ToList();
+            .ToDictionary(g => g.Key, g => g.ToList());
 
         // The first case is not possible because its implies a single tile or several pairs.
         // The second case is not possible more than once because its implies a pair.
@@ -329,49 +326,51 @@ public class HandPivot
             }
         }
 
-        foreach (var (family, tiles) in familyGroups)
+        if (familyGroups.TryGetValue(Families.Dragon, out var dragonTiles))
         {
-            switch (family)
+            var dragonCombinations = CheckHonorsForCombinations(dragonTiles, k => k.Dragon!.Value);
+            if (combinationsSequences.Count > 0)
+                combinationsSequences.ForEach(x => x.AddRange(dragonCombinations));
+            else
+                combinationsSequences.Add(dragonCombinations);
+        }
+
+        if (familyGroups.TryGetValue(Families.Wind, out var windTiles))
+        {
+            var windCombinations = CheckHonorsForCombinations(windTiles, t => t.Wind!.Value);
+            if (combinationsSequences.Count > 0)
+                combinationsSequences.ForEach(x => x.AddRange(windCombinations));
+            else
+                combinationsSequences.Add(windCombinations);
+        }
+
+        foreach (var family in new[] { Families.Caracter, Families.Circle, Families.Bamboo })
+        {
+            if (familyGroups.TryGetValue(family, out var familyTiles))
             {
-                case Families.Dragon:
-                    var dragonCombinations = CheckHonorsForCombinations(tiles, k => k.Dragon!.Value);
-                    if (combinationsSequences.Count > 0)
-                        combinationsSequences.ForEach(x => x.AddRange(dragonCombinations));
-                    else
-                        combinationsSequences.Add(dragonCombinations);
-                    break;
-                case Families.Wind:
-                    var windCombinations = CheckHonorsForCombinations(tiles, t => t.Wind!.Value);
-                    if (combinationsSequences.Count > 0)
-                        combinationsSequences.ForEach(x => x.AddRange(windCombinations));
-                    else
-                        combinationsSequences.Add(windCombinations);
-                    break;
-                default:
-                    var temporaryCombinationsSequences = GetCombinationSequencesRecursive(tiles);
-                    if (combinationsSequences.Count > 0)
+                var temporaryCombinationsSequences = GetCombinationSequencesRecursive(familyTiles);
+                if (combinationsSequences.Count > 0)
+                {
+                    // Cartesian product of existant sequences and temporary list.
+                    var newCombinationsSequences = new List<List<TileComboPivot>>(combinationsSequences.Count * temporaryCombinationsSequences.Count);
+                    foreach (var cs in combinationsSequences)
                     {
-                        // Cartesian product of existant sequences and temporary list.
-                        var newCombinationsSequences = new List<List<TileComboPivot>>(combinationsSequences.Count * temporaryCombinationsSequences.Count);
-                        foreach (var cs in combinationsSequences)
+                        foreach (var cs2 in temporaryCombinationsSequences)
                         {
-                            foreach (var cs2 in temporaryCombinationsSequences)
+                            newCombinationsSequences.Add(new List<TileComboPivot>(cs.Concat(cs2)));
+                            if (declaredCombinationsCount > -1 && CombinationSequenceIsValid(declaredCombinationsCount, newCombinationsSequences[^1]))
                             {
-                                newCombinationsSequences.Add(new List<TileComboPivot>(cs.Concat(cs2)));
-                                if (declaredCombinationsCount > -1 && CombinationSequenceIsValid(declaredCombinationsCount, newCombinationsSequences[^1]))
-                                {
-                                    forceExit = true;
-                                    return newCombinationsSequences;
-                                }
+                                forceExit = true;
+                                return newCombinationsSequences;
                             }
                         }
-                        combinationsSequences = newCombinationsSequences;
                     }
-                    else
-                    {
-                        combinationsSequences = temporaryCombinationsSequences;
-                    }
-                    break;
+                    combinationsSequences = newCombinationsSequences;
+                }
+                else
+                {
+                    combinationsSequences = temporaryCombinationsSequences;
+                }
             }
         }
 
