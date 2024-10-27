@@ -357,20 +357,30 @@ public class HandPivot
 
         if (familyGroups[Families.Dragon].Count > 0)
         {
-            var dragonCombinations = CheckHonorsForCombinations(familyGroups[Families.Dragon], k => k.Dragon!.Value);
-            if (combinationsSequences.Count > 0)
-                combinationsSequences.ForEach(x => x.AddRange(dragonCombinations));
-            else
-                combinationsSequences.Add(dragonCombinations);
+            var dragonCombinations = familyGroups[Families.Dragon]
+                .GroupBy(k => k.Dragon!.Value)
+                .Where(sg => TwoOrThreeTiles.Contains(sg.Count()))
+                .Select(sg => new TileComboPivot(sg.ToArray()))
+                .ToList();
+            combinationsSequences.Add(dragonCombinations);
         }
 
         if (familyGroups[Families.Wind].Count > 0)
         {
-            var windCombinations = CheckHonorsForCombinations(familyGroups[Families.Wind], t => t.Wind!.Value);
+            var windCombinations = familyGroups[Families.Wind]
+                .GroupBy(k => k.Wind!.Value)
+                .Where(sg => TwoOrThreeTiles.Contains(sg.Count()))
+                .Select(sg => new TileComboPivot(sg.ToArray()))
+                .ToList();
             if (combinationsSequences.Count > 0)
-                combinationsSequences.ForEach(x => x.AddRange(windCombinations));
+            {
+                foreach (var cs in combinationsSequences)
+                    cs.AddRange(windCombinations);
+            }
             else
+            {
                 combinationsSequences.Add(windCombinations);
+            }
         }
 
         foreach (var oneFamily in StandardFamilies)
@@ -404,18 +414,6 @@ public class HandPivot
         }
 
         return combinationsSequences;
-    }
-
-    // Builds combinations (pairs and brelans) from dragon family or wind family.
-    private static List<TileComboPivot> CheckHonorsForCombinations<T>(
-        List<TilePivot> familyGroup,
-        Func<TilePivot, T> groupKeyFunc)
-    {
-        return familyGroup
-            .GroupBy(groupKeyFunc)
-            .Where(sg => TwoOrThreeTiles.Contains(sg.Count()))
-            .Select(sg => new TileComboPivot(sg.ToArray()))
-            .ToList();
     }
 
     // Assumes that all tiles are from the same family, and this family is caracter / circle / bamboo.
