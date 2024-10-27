@@ -232,7 +232,25 @@ public class HandPivot
     }
 
     private static bool CombinationSequenceIsValid(int declaredCombinationsCount, List<TileComboPivot> cs)
-        => cs.Count == 5 - declaredCombinationsCount && cs.Count(c => c.IsPair) == 1;
+    {
+        if (cs.Count != 5 - declaredCombinationsCount)
+        {
+            return false;
+        }
+
+        var paired = false;
+        foreach (var c in cs)
+        {
+            if (c.IsPair)
+            {
+                if (paired)
+                    return false;
+                paired = true;
+            }
+        }
+
+        return paired;
+    }
 
     /// <summary>
     /// Checks if the specified tiles form a complete hand (four combinations of three tiles and a pair).
@@ -396,7 +414,9 @@ public class HandPivot
                     {
                         foreach (var cs2 in temporaryCombinationsSequences)
                         {
-                            newCombinationsSequences.Add(new List<TileComboPivot>(cs.Concat(cs2)));
+                            var x = new List<TileComboPivot>(cs);
+                            x.AddRange(cs2);
+                            newCombinationsSequences.Add(new List<TileComboPivot>(x));
                             if (declaredCombinationsCount > -1 && CombinationSequenceIsValid(declaredCombinationsCount, newCombinationsSequences[^1]))
                             {
                                 forceExit = true;
