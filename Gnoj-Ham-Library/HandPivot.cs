@@ -307,7 +307,14 @@ public class HandPivot
     /// <returns><c>True</c> if tenpai; <c>False</c> otherwise.</returns>
     internal static bool IsTenpai(IReadOnlyList<TilePivot> concealedTiles, IReadOnlyList<TileComboPivot> combinations, IReadOnlyList<TilePivot> notInHandTiles)
     {
-        return notInHandTiles.Any(sub => IsCompleteFull(concealedTiles, combinations, sub));
+        foreach (var sub in notInHandTiles)
+        {
+            if (IsCompleteFull(concealedTiles, combinations, sub))
+            {
+                return true;
+            }
+        }
+        return false;
     }
 
     // Gets every possible combinations from the given list of tiles
