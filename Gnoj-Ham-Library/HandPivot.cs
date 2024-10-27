@@ -305,8 +305,6 @@ public class HandPivot
         // bad approximation of size
         var combinationsSequences = new List<List<TileComboPivot>>(20);
 
-        // The first case is not possible because its implies a single tile or several pairs.
-        // The second case is not possible more than once because its implies a pair.
         var pairCount = 0;
         Families? family = null;
         var familyGroups = new Dictionary<Families, List<TilePivot>>
@@ -326,10 +324,12 @@ public class HandPivot
             }
             else if (family.Value != tile.Family)
             {
+                // The first case is not possible because its implies a single tile or several pairs.
                 if (ImpliesSingles.Contains(familyGroups[family.Value].Count))
                 {
                     return combinationsSequences;
                 }
+                // The second case is not possible more than once because its implies a pair.
                 if (ImpliesPairs.Contains(familyGroups[family.Value].Count))
                 {
                     pairCount++;
@@ -357,21 +357,13 @@ public class HandPivot
 
         if (familyGroups[Families.Dragon].Count > 0)
         {
-            var dragonCombinations = familyGroups[Families.Dragon]
-                .GroupBy(k => k.Dragon!.Value)
-                .Where(sg => TwoOrThreeTiles.Contains(sg.Count()))
-                .Select(sg => new TileComboPivot(sg.ToArray()))
-                .ToList();
+            var dragonCombinations = GetHonorCombinations(familyGroups[Families.Dragon], t => t.Dragon!.Value);
             combinationsSequences.Add(dragonCombinations);
         }
 
         if (familyGroups[Families.Wind].Count > 0)
         {
-            var windCombinations = familyGroups[Families.Wind]
-                .GroupBy(k => k.Wind!.Value)
-                .Where(sg => TwoOrThreeTiles.Contains(sg.Count()))
-                .Select(sg => new TileComboPivot(sg.ToArray()))
-                .ToList();
+            var windCombinations = GetHonorCombinations(familyGroups[Families.Wind], t => t.Wind!.Value);
             if (combinationsSequences.Count > 0)
             {
                 foreach (var cs in combinationsSequences)
@@ -414,6 +406,48 @@ public class HandPivot
         }
 
         return combinationsSequences;
+    }
+
+    private static List<TileComboPivot> GetHonorCombinations<T>(List<TilePivot> tiles, Func<TilePivot, T> getValue)
+        where T : struct
+    {
+        T? currentV = null;
+        var count = 0;
+        var j = 0;
+        var combinations = new List<TileComboPivot>(4);
+        foreach (var t in tiles)
+        {
+            if (!currentV.HasValue || !currentV.Value.Equals(getValue(t)))
+            {
+                if (count == 2)
+                {
+                    combinations.Add(new TileComboPivot(tiles[j - 2], tiles[j - 1]));
+                }
+                else if (count == 3)
+                {
+                    combinations.Add(new TileComboPivot(tiles[j - 3], tiles[j - 2], tiles[j - 1]));
+                }
+                currentV = getValue(t);
+                count = 1;
+            }
+            else
+            {
+                count++;
+            }
+            j++;
+            if (j == tiles.Count)
+            {
+                if (count == 2)
+                {
+                    combinations.Add(new TileComboPivot(tiles[j - 2], tiles[j - 1]));
+                }
+                else if (count == 3)
+                {
+                    combinations.Add(new TileComboPivot(tiles[j - 3], tiles[j - 2], tiles[j - 1]));
+                }
+            }
+        }
+        return combinations;
     }
 
     // Assumes that all tiles are from the same family, and this family is caracter / circle / bamboo.
