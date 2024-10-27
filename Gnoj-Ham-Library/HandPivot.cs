@@ -90,7 +90,6 @@ public class HandPivot
 
     private static readonly int[] ImpliesSingles = new[] { 1, 4, 7, 10 };
     private static readonly int[] ImpliesPairs = new[] { 2, 5, 8, 11 };
-    private static readonly int[] TwoOrThreeTiles = new[] { 2, 3 };
     private static readonly Families[] StandardFamilies = new[] { Families.Caracter, Families.Circle, Families.Bamboo };
 
     /// <summary>
@@ -99,14 +98,16 @@ public class HandPivot
     /// <param name="tiles">List of tiles (other than <paramref name="declaredCombinations"/>); must be sorted (asc).</param>
     /// <param name="declaredCombinations">List of declared combinations.</param>
     /// <param name="additionalTile">The additional tile.</param>
+    /// <param name="skipBasic"><c>True</c> to completely skip the basic check (example: two single winds).</param>
     /// <returns><c>True</c> if complete; <c>False</c> otherwise.</returns>
     internal static bool IsCompleteFull(IReadOnlyList<TilePivot> tiles,
         IReadOnlyList<TileComboPivot> declaredCombinations,
-        TilePivot additionalTile)
+        TilePivot additionalTile,
+        bool skipBasic = false)
     {
         var localCopy = new List<TilePivot>(tiles);
         localCopy.AddSorted(additionalTile);
-        return IsCompleteBasic(localCopy, declaredCombinations.Count)
+        return (!skipBasic && IsCompleteBasic(localCopy, declaredCombinations.Count))
             || IsSevenPairs(localCopy)
             || IsThirteenOrphans(localCopy);
     }
@@ -304,12 +305,16 @@ public class HandPivot
     /// <param name="concealedTiles">Concealed tiles of the hand.</param>
     /// <param name="combinations">Declared combinations of the hand.</param>
     /// <param name="notInHandTiles">List of substitution tiles.</param>
+    /// <param name="skipBasic"><c>True</c> to skip regular tenpai check (example : two single winds).</param>
     /// <returns><c>True</c> if tenpai; <c>False</c> otherwise.</returns>
-    internal static bool IsTenpai(IReadOnlyList<TilePivot> concealedTiles, IReadOnlyList<TileComboPivot> combinations, IReadOnlyList<TilePivot> notInHandTiles)
+    internal static bool IsTenpai(IReadOnlyList<TilePivot> concealedTiles,
+        IReadOnlyList<TileComboPivot> combinations,
+        IReadOnlyList<TilePivot> notInHandTiles,
+        bool skipBasic)
     {
         foreach (var sub in notInHandTiles)
         {
-            if (IsCompleteFull(concealedTiles, combinations, sub))
+            if (IsCompleteFull(concealedTiles, combinations, sub, skipBasic))
             {
                 return true;
             }
@@ -976,7 +981,7 @@ public class HandPivot
             concealedTilesCopy = concealedTilesCopyList;
         }
 
-        return IsTenpai(concealedTilesCopy, DeclaredCombinations, subTiles);
+        return IsTenpai(concealedTilesCopy, DeclaredCombinations, subTiles, false);
     }
 
     /// <summary>

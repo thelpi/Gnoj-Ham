@@ -906,12 +906,51 @@ public class RoundPivot
             .Distinct()
             .ToList();
 
+        // note: this algorithm makes sense only with tiles ordered with honors in last
+        TilePivot? refT = null;
+        var countRefT = 0;
+        var singleCount = 0;
+        var j = 0;
+        foreach (var t in hand.ConcealedTiles)
+        {
+            if (t.IsHonor)
+            {
+                if (refT == null)
+                {
+                    refT = t;
+                    countRefT = 1;
+                }
+                else if (refT == t)
+                {
+                    countRefT++;
+                }
+                else
+                {
+                    if (countRefT < 2)
+                    {
+                        singleCount++;
+                        if (singleCount > 1)
+                            break;
+                    }
+                    refT = t;
+                    countRefT = 1;
+                }
+            }
+            j++;
+            if (j == hand.ConcealedTiles.Count)
+            {
+                if (countRefT < 2)
+                    singleCount++;
+            }
+        }
+        var skipBasic = singleCount > 1;
+
         var subPossibilities = new List<TilePivot>(tilesToSub.Count);
         foreach (var tileToSub in tilesToSub)
         {
             var tempListConcealed = new List<TilePivot>(hand.ConcealedTiles);
             tempListConcealed.Remove(tileToSub);
-            if (HandPivot.IsTenpai(tempListConcealed, hand.DeclaredCombinations, distinctTilesFromOverallConcealed))
+            if (HandPivot.IsTenpai(tempListConcealed, hand.DeclaredCombinations, distinctTilesFromOverallConcealed, skipBasic))
             {
                 subPossibilities.Add(tileToSub);
             }
