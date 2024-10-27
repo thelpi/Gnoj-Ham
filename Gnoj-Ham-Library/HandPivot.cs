@@ -358,12 +358,20 @@ public class HandPivot
         if (familyGroups[Families.Dragon].Count > 0)
         {
             var dragonCombinations = GetHonorCombinations(familyGroups[Families.Dragon], t => t.Dragon!.Value);
+            if (dragonCombinations.Count == 0)
+            {
+                return new List<List<TileComboPivot>>();
+            }
             combinationsSequences.Add(dragonCombinations);
         }
 
         if (familyGroups[Families.Wind].Count > 0)
         {
             var windCombinations = GetHonorCombinations(familyGroups[Families.Wind], t => t.Wind!.Value);
+            if (windCombinations.Count == 0)
+            {
+                return new List<List<TileComboPivot>>();
+            }
             if (combinationsSequences.Count > 0)
             {
                 foreach (var cs in combinationsSequences)

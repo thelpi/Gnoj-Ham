@@ -28,7 +28,7 @@ public class IsComplete_Tests
             TilePivot.GetTile(tilesSet, Families.Circle, number: 4)
         };
 
-        concealedTiles = concealedTiles.OrderBy(t => new Random().NextDouble()).ToList();
+        concealedTiles = concealedTiles.OrderBy(t => t).ToList();
 
         var result = HandPivot.IsCompleteBasic(concealedTiles, new List<TileComboPivot>());
 
@@ -57,7 +57,7 @@ public class IsComplete_Tests
             TilePivot.GetTile(tilesSet, Families.Circle, number: 6)
         };
 
-        concealedTiles = concealedTiles.OrderBy(t => new Random().NextDouble()).ToList();
+        concealedTiles = concealedTiles.OrderBy(t => t).ToList();
 
         var result = HandPivot.IsCompleteBasic(concealedTiles, new List<TileComboPivot>
         {
