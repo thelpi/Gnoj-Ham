@@ -91,6 +91,7 @@ public class HandPivot
     private static readonly int[] ImpliesSingles = new[] { 1, 4, 7, 10 };
     private static readonly int[] ImpliesPairs = new[] { 2, 5, 8, 11 };
     private static readonly int[] TwoOrThreeTiles = new[] { 2, 3 };
+    private static readonly Families[] StandardFamilies = new[] { Families.Caracter, Families.Circle, Families.Bamboo };
 
     /// <summary>
     /// Checks if the specified list of tiles forms a complete hand while associated with an additional tile.
@@ -304,51 +305,79 @@ public class HandPivot
         // bad approximation of size
         var combinationsSequences = new List<List<TileComboPivot>>(20);
 
-        // Creates a group for each family
-        var familyGroups = concealedTiles
-            .GroupBy(t => t.Family)
-            .ToDictionary(g => g.Key, g => g.ToList());
-
         // The first case is not possible because its implies a single tile or several pairs.
         // The second case is not possible more than once because its implies a pair.
         var pairCount = 0;
-        foreach (var (_, tiles) in familyGroups)
+        Families? family = null;
+        var familyGroups = new Dictionary<Families, List<TilePivot>>
         {
-            if (ImpliesSingles.Contains(tiles.Count))
+            { Families.Dragon, new(5) },
+            { Families.Wind, new(5) },
+            { Families.Caracter, new(5) },
+            { Families.Circle, new(5) },
+            { Families.Bamboo, new(5) },
+        };
+        var i = 0;
+        foreach (var tile in concealedTiles)
+        {
+            if (!family.HasValue)
             {
-                return combinationsSequences;
+                family = tile.Family;
             }
-            if (ImpliesPairs.Contains(tiles.Count))
+            else if (family.Value != tile.Family)
             {
-                pairCount++;
-                if (pairCount > 1)
+                if (ImpliesSingles.Contains(familyGroups[family.Value].Count))
+                {
                     return combinationsSequences;
+                }
+                if (ImpliesPairs.Contains(familyGroups[family.Value].Count))
+                {
+                    pairCount++;
+                    if (pairCount > 1)
+                        return combinationsSequences;
+                }
+                family = tile.Family;
+            }
+            familyGroups[family.Value].Add(tile);
+            i++;
+            if (i == concealedTiles.Count)
+            {
+                if (ImpliesSingles.Contains(familyGroups[family.Value].Count))
+                {
+                    return combinationsSequences;
+                }
+                if (ImpliesPairs.Contains(familyGroups[family.Value].Count))
+                {
+                    pairCount++;
+                    if (pairCount > 1)
+                        return combinationsSequences;
+                }
             }
         }
 
-        if (familyGroups.TryGetValue(Families.Dragon, out var dragonTiles))
+        if (familyGroups[Families.Dragon].Count > 0)
         {
-            var dragonCombinations = CheckHonorsForCombinations(dragonTiles, k => k.Dragon!.Value);
+            var dragonCombinations = CheckHonorsForCombinations(familyGroups[Families.Dragon], k => k.Dragon!.Value);
             if (combinationsSequences.Count > 0)
                 combinationsSequences.ForEach(x => x.AddRange(dragonCombinations));
             else
                 combinationsSequences.Add(dragonCombinations);
         }
 
-        if (familyGroups.TryGetValue(Families.Wind, out var windTiles))
+        if (familyGroups[Families.Wind].Count > 0)
         {
-            var windCombinations = CheckHonorsForCombinations(windTiles, t => t.Wind!.Value);
+            var windCombinations = CheckHonorsForCombinations(familyGroups[Families.Wind], t => t.Wind!.Value);
             if (combinationsSequences.Count > 0)
                 combinationsSequences.ForEach(x => x.AddRange(windCombinations));
             else
                 combinationsSequences.Add(windCombinations);
         }
 
-        foreach (var family in new[] { Families.Caracter, Families.Circle, Families.Bamboo })
+        foreach (var oneFamily in StandardFamilies)
         {
-            if (familyGroups.TryGetValue(family, out var familyTiles))
+            if (familyGroups[oneFamily].Count > 0)
             {
-                var temporaryCombinationsSequences = GetCombinationSequencesRecursive(familyTiles);
+                var temporaryCombinationsSequences = GetCombinationSequencesRecursive(familyGroups[oneFamily]);
                 if (combinationsSequences.Count > 0)
                 {
                     // Cartesian product of existant sequences and temporary list.
