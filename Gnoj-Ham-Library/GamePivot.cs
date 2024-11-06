@@ -64,11 +64,11 @@ public class GamePivot
     /// <summary>
     /// Inferred; get players sorted by their ranking.
     /// </summary>
-    internal IReadOnlyList<PlayerPivot> PlayersRanked => Players.OrderByDescending(p => p.Points).ThenBy(p => (int)p.InitialWind).ToList();
+    internal IReadOnlyList<PlayerPivot> PlayersRanked => Players.OrderByDescending(p => p.CurrentGamePoints).ThenBy(p => (int)p.CurrentGameInitialWind).ToList();
     /// <summary>
     /// Inferred; gets the player index which was the first <see cref="Winds.East"/>.
     /// </summary>
-    internal PlayerIndices FirstEastIndex => (PlayerIndices)Players.Select((p, i) => (p, i)).First(pi => pi.p.InitialWind == Winds.East).i; // TODO: gross
+    internal PlayerIndices FirstEastIndex => (PlayerIndices)Players.Select((p, i) => (p, i)).First(pi => pi.p.CurrentGameInitialWind == Winds.East).i; // TODO: gross
 
     #endregion Properties
 
@@ -89,9 +89,12 @@ public class GamePivot
 
         _save = save;
 
+        var players = PlayerPivot.BuildPlayers((PlayerIndices.Zero, humanPlayerName));
+        PlayerPivot.SetPlayersForNewGame(players, ruleset.InitialPointsRule, random);
+
         HumanPlayerIndex = PlayerIndices.Zero;
         Ruleset = ruleset;
-        Players = PlayerPivot.GetFourPlayers((HumanPlayerIndex.Value, humanPlayerName), Ruleset.InitialPointsRule, random);
+        Players = players;
         DominantWind = Winds.East;
         EastIndexTurnCount = 1;
         EastIndex = FirstEastIndex;
@@ -102,21 +105,23 @@ public class GamePivot
     }
 
     /// <summary>
-    /// Constructor for CPU game with permanent players.
+    /// Constructor for CPU game.
     /// </summary>
     /// <param name="ruleset">Ruleset for the game.</param>
-    /// <param name="permanentPlayers">Four permanent players.</param>
+    /// <param name="players">Four players.</param>
     /// <param name="random">Randomizer instance.</param>
     /// <exception cref="ArgumentException">Four players are required.</exception>
-    public GamePivot(RulePivot ruleset, IReadOnlyList<PermanentPlayerPivot> permanentPlayers, Random random)
+    public GamePivot(RulePivot ruleset, IReadOnlyList<PlayerPivot> players, Random random)
     {
-        if (permanentPlayers.Count != 4)
+        if (players.Count != 4)
         {
-            throw new ArgumentException("Four players are required.", nameof(permanentPlayers));
+            throw new ArgumentException("Four players are required.", nameof(players));
         }
 
+        PlayerPivot.SetPlayersForNewGame(players, ruleset.InitialPointsRule, random);
+
         Ruleset = ruleset;
-        Players = PlayerPivot.GetFourPlayersFromPermanent(permanentPlayers, Ruleset.InitialPointsRule, random);
+        Players = players;
         DominantWind = Winds.East;
         EastIndexTurnCount = 1;
         EastIndex = FirstEastIndex;
@@ -137,7 +142,7 @@ public class GamePivot
         var playersOrdered = new List<PlayerScorePivot>(4);
 
         var i = 1;
-        foreach (var player in Players.OrderByDescending(p => p.Points))
+        foreach (var player in Players.OrderByDescending(p => p.CurrentGamePoints))
         {
             playersOrdered.Add(new PlayerScorePivot(player, i, ScoreTools.ComputeUma(i), Ruleset.InitialPointsRule.GetInitialPointsFromRule()));
             i++;
@@ -174,7 +179,7 @@ public class GamePivot
             HonbaCount = 0;
         }
 
-        if (Ruleset.EndOfGameRule.TobiRuleApply() && Players.Any(p => p.Points < 0))
+        if (Ruleset.EndOfGameRule.TobiRuleApply() && Players.Any(p => p.CurrentGamePoints < 0))
         {
             endOfRoundInformations.EndOfGame = true;
             ClearPendingRiichi();
@@ -183,7 +188,7 @@ public class GamePivot
 
         if (DominantWind == Winds.West || DominantWind == Winds.North)
         {
-            if (!endOfRoundInformations.Ryuukyoku && Players.Any(p => p.Points >= 30000))
+            if (!endOfRoundInformations.Ryuukyoku && Players.Any(p => p.CurrentGamePoints >= 30000))
             {
                 endOfRoundInformations.EndOfGame = true;
                 ClearPendingRiichi();
@@ -204,7 +209,7 @@ public class GamePivot
                 {
                     if (Ruleset.EndOfGameRule.EnchousenRuleApply()
                         && Ruleset.InitialPointsRule == InitialPointsRules.K25
-                        && Players.All(p => p.Points < 30000))
+                        && Players.All(p => p.CurrentGamePoints < 30000))
                     {
                         DominantWind = Winds.West;
                     }
@@ -247,8 +252,8 @@ public class GamePivot
                 ronPlayerIndex.HasValue,
                 humanIsRiichi,
                 humanIsConcealed,
-                Players.OrderByDescending(_ => _.Points).ToList().IndexOf(humanPlayer),
-                humanPlayer.Points);
+                Players.OrderByDescending(_ => _.CurrentGamePoints).ToList().IndexOf(humanPlayer),
+                humanPlayer.CurrentGamePoints);
         }
 
         return (endOfRoundInformations, error);
@@ -320,8 +325,8 @@ public class GamePivot
     {
         if (PendingRiichiCount > 0)
         {
-            var winner = Players.OrderByDescending(p => p.Points).First();
-            var everyWinner = Players.Where(p => p.Points == winner.Points).ToList();
+            var winner = Players.OrderByDescending(p => p.CurrentGamePoints).First();
+            var everyWinner = Players.Where(p => p.CurrentGamePoints == winner.CurrentGamePoints).ToList();
             if (PendingRiichiCount * ScoreTools.RIICHI_COST % everyWinner.Count != 0)
             {
                 // This is ugly...

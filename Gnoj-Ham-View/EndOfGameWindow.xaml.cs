@@ -22,7 +22,7 @@ public partial class EndOfGameWindow : Window
         {
             this.FindControl("LblRank", i).Content = playerScores[(int)i].Rank;
             this.FindControl("LblPlayer", i).Content = playerScores[(int)i].Player.Name;
-            this.FindControl("LblPoints", i).Content = playerScores[(int)i].Player.Points;
+            this.FindControl("LblPoints", i).Content = playerScores[(int)i].Player.CurrentGamePoints;
             this.FindControl("LblUma", i).ApplyGainAndLostStyle(playerScores[(int)i].Uma);
             this.FindControl("LblScore", i).ApplyGainAndLostStyle(playerScores[(int)i].Score);
         }

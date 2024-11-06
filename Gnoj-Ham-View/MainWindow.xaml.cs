@@ -811,7 +811,7 @@ public partial class MainWindow : Window
             this.FindName<Panel>(PlayerPanel, pIndex).ToolTip = _game.GetPlayerCurrentWind(pIndex).DisplayName();
             this.FindControl(WindLabel, pIndex).Content = _game.GetPlayerCurrentWind(pIndex).ToWindDisplay();
             this.FindControl(NameLabel, pIndex).Content = _game.Players[(int)pIndex].Name;
-            this.FindControl(PointsLabel, pIndex).Content = $"{_game.Players[(int)pIndex].Points / 1000}k";
+            this.FindControl(PointsLabel, pIndex).Content = $"{_game.Players[(int)pIndex].CurrentGamePoints / 1000}k";
             this.FindName<Image>(RiichiStickImage, pIndex).Visibility = Visibility.Hidden;
         }
 

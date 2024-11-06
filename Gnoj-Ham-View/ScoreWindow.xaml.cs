@@ -41,10 +41,10 @@ public partial class ScoreWindow : Window
         }
 
         var x = 0;
-        foreach (var (p, i) in players.Select((p, i) => (p, i)).OrderByDescending(ip => ip.p.Points))
+        foreach (var (p, i) in players.Select((p, i) => (p, i)).OrderByDescending(ip => ip.p.CurrentGamePoints))
         {
             this.FindControl("LblPlayer", (PlayerIndices)x).Content = p.Name;
-            this.FindControl("LblScore", (PlayerIndices)x).Content = p.Points;
+            this.FindControl("LblScore", (PlayerIndices)x).Content = p.CurrentGamePoints;
             this.FindControl("LblGain", (PlayerIndices)x).ApplyGainAndLostStyle(endOfRoundInformations.GetPlayerPointsGain((PlayerIndices)i));
             x++;
         }

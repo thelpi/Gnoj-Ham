@@ -10,32 +10,65 @@ public class PlayerPivot
     private const string CPU_NAME_PREFIX = "CPU_";
     private const string DEFAULT_HUMAN_NAME = "Empty";
 
+    private readonly List<PlayerScorePivot> _scores = new(10);
+
     /// <summary>
     /// Name.
     /// </summary>
     public string Name { get; }
 
     /// <summary>
-    /// <see cref="Winds"/> at the first round of the game.
+    /// <see cref="Winds"/> at the first round of the current game.
     /// </summary>
-    public Winds InitialWind { get; }
+    public Winds CurrentGameInitialWind { get; private set; }
 
     /// <summary>
-    /// Number of points.
+    /// Number of points in the current game.
     /// </summary>
-    public int Points { get; private set; }
+    public int CurrentGamePoints { get; private set; }
+
+    #region Overall statistics
 
     /// <summary>
-    /// Permanent player the current instance is based upon.
+    /// Number of games played.
     /// </summary>
-    public PermanentPlayerPivot? PermanentPlayer { get; }
+    internal int GamesCount => _scores.Count;
 
-    private PlayerPivot(string name, Winds initialWind, InitialPointsRules initialPointsRulePivot, PermanentPlayerPivot? permanentPlayer)
+    /// <summary>
+    /// Cumulated score.
+    /// </summary>
+    public int TotalScore => _scores.Sum(s => s.Score);
+
+    /// <summary>
+    /// Number of first places.
+    /// </summary>
+    public int FirstPlaceCount => _scores.Count(s => s.Rank == 1);
+
+    /// <summary>
+    /// Number of first or second places.
+    /// </summary>
+    public int FirstOrSecondPlaceCount => _scores.Count(s => s.Rank == 1 || s.Rank == 2);
+
+    /// <summary>
+    /// Number of last places.
+    /// </summary>
+    public int LastPlaceCount => _scores.Count(s => s.Rank == 4);
+
+    /// <summary>
+    /// Average score.
+    /// </summary>
+    public double AverageScore => _scores.Average(s => s.Score);
+
+    /// <summary>
+    /// Average rank.
+    /// </summary>
+    public double AverageRank => _scores.Average(s => s.Rank);
+
+    #endregion Overall statistics
+
+    private PlayerPivot(string name)
     {
         Name = name;
-        InitialWind = initialWind;
-        Points = initialPointsRulePivot.GetInitialPointsFromRule();
-        PermanentPlayer = permanentPlayer;
     }
 
     /// <summary>
@@ -44,58 +77,60 @@ public class PlayerPivot
     /// <param name="points">The points count to add; might be negative.</param>
     internal void AddPoints(int points)
     {
-        Points += points;
+        CurrentGamePoints += points;
     }
 
     /// <summary>
-    /// Generates a list of four <see cref="PlayerPivot"/> to start a game.
+    /// Builds a collection of four players.
     /// </summary>
-    /// <param name="humanPlayer">Human player name and index.</param>
-    /// <param name="initialPointsRulePivot">Rule for initial points count.</param>
-    /// <param name="random">Randomizer instance.</param>
-    /// <returns>List of four <see cref="PlayerPivot"/>, not sorted.</returns>
-    internal static IReadOnlyList<PlayerPivot> GetFourPlayers(
-        (PlayerIndices index, string name) humanPlayer,
+    /// <param name="humanPlayer">Human player information; <c>Null</c> if all players are CPU.</param>
+    /// <returns>Four players.</returns>
+    public static IReadOnlyList<PlayerPivot> BuildPlayers(
+        (PlayerIndices index, string name)? humanPlayer)
+    {
+        return Enum.GetValues<PlayerIndices>()
+            .Select(i => new PlayerPivot(humanPlayer.HasValue && i == humanPlayer.Value.index
+                ? (string.IsNullOrWhiteSpace(humanPlayer.Value.name)
+                    ? DEFAULT_HUMAN_NAME
+                    : humanPlayer.Value.name.Trim())
+                : $"{CPU_NAME_PREFIX}{(int)i}"))
+            .ToList();
+    }
+
+    /// <summary>
+    /// Prepares players for the next game.
+    /// </summary>
+    /// <param name="players">Players to prepare.</param>
+    /// <param name="initialPointsRulePivot">Initial points rule.</param>
+    /// <param name="random"><see cref="Random"/> instance; to determine which player is <see cref="Winds.East"/>>..</param>
+    internal static void SetPlayersForNewGame(IReadOnlyList<PlayerPivot> players,
         InitialPointsRules initialPointsRulePivot,
         Random random)
     {
-        var humanPlayerName = string.IsNullOrWhiteSpace(humanPlayer.name)
-            ? DEFAULT_HUMAN_NAME
-            : humanPlayer.name.Trim();
-
         var eastIndex = (PlayerIndices)random.Next(0, 4);
 
-        var players = new List<PlayerPivot>(4);
         foreach (var i in Enum.GetValues<PlayerIndices>())
         {
-            players.Add(new PlayerPivot(
-                i == humanPlayer.index ? humanPlayerName : $"{CPU_NAME_PREFIX}{i}",
-                GetWindFromIndex(eastIndex, i),
-                initialPointsRulePivot,
-                null
-            ));
+            players[(int)i].CurrentGameInitialWind = GetWindFromIndex(eastIndex, i);
+            players[(int)i].CurrentGamePoints = initialPointsRulePivot.GetInitialPointsFromRule();
         }
-
-        return players;
     }
 
     /// <summary>
-    /// Generates a list of four <see cref="PlayerPivot"/> from permanent players.
+    /// Add a score sheet for on game.
     /// </summary>
-    /// <param name="permanentPlayers">Four permanent players.</param>
-    /// <param name="initialPointsRulePivot">Rule for initial points count.</param>
-    /// <param name="random">Randomizer instance.</param>
-    /// <returns>Four players generated.</returns>
-    internal static IReadOnlyList<PlayerPivot> GetFourPlayersFromPermanent(
-        IReadOnlyList<PermanentPlayerPivot> permanentPlayers,
-        InitialPointsRules initialPointsRulePivot,
-        Random random)
+    /// <param name="score"></param>
+    internal void AddGameScore(PlayerScorePivot score)
     {
-        var eastIndex = (PlayerIndices)random.Next(0, 4);
+        _scores.Add(score);
+    }
 
-        return permanentPlayers
-            .Select((p, i) => new PlayerPivot($"{CPU_NAME_PREFIX}{i}", GetWindFromIndex(eastIndex, (PlayerIndices)i), initialPointsRulePivot, p))
-            .ToList();
+    /// <summary>
+    /// Resets player's score.
+    /// </summary>
+    internal void ResetScores()
+    {
+        _scores.Clear();
     }
 
     private static Winds GetWindFromIndex(PlayerIndices eastIndex, PlayerIndices i)

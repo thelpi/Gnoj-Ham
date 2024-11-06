@@ -14,7 +14,7 @@ public partial class AutoPlayWindow : Window
     private readonly BackgroundWorker _autoPlay;
     private int _currentGameIndex;
     private int _totalGamesCount;
-    private IReadOnlyList<PermanentPlayerPivot>? _permanentPlayers;
+    private IReadOnlyList<PlayerPivot>? _permanentCpuPlayers;
 
     private readonly Dictionary<string, (int count, double sum)> _times = new(50);
     private readonly RulePivot _ruleset;
@@ -51,7 +51,7 @@ public partial class AutoPlayWindow : Window
     {
         if (newGame)
         {
-            _game = new GamePivot(_ruleset, _permanentPlayers!, new Random());
+            _game = new GamePivot(_ruleset, _permanentCpuPlayers!, new Random());
         }
         _autoPlay.RunWorkerAsync();
     }
@@ -82,7 +82,7 @@ public partial class AutoPlayWindow : Window
                     }
                     else
                     {
-                        ScoresList.ItemsSource = _permanentPlayers;
+                        ScoresList.ItemsSource = _permanentCpuPlayers;
 
                         WaitingPanel.Visibility = Visibility.Collapsed;
                         ActionPanel.Visibility = Visibility.Visible;
@@ -117,13 +117,7 @@ public partial class AutoPlayWindow : Window
 
         _currentGameIndex = 0;
         _times.Clear();
-        _permanentPlayers = new List<PermanentPlayerPivot>
-        {
-            new(),
-            new(),
-            new(),
-            new()
-        };
+        _permanentCpuPlayers = PlayerPivot.BuildPlayers(null);
 
         WaitingPanel.Visibility = Visibility.Visible;
         ActionPanel.Visibility = Visibility.Collapsed;

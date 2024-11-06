@@ -23,7 +23,7 @@ public class PlayerScorePivot
     public int Uma { get; }
 
     /// <summary>
-    /// Final score; <see cref="PlayerPivot.Points"/> (only thousands) plus <see cref="Uma"/>.
+    /// Final score; <see cref="PlayerPivot.CurrentGamePoints"/> (only thousands) plus <see cref="Uma"/>.
     /// </summary>
     public int Score { get; }
 
@@ -43,9 +43,9 @@ public class PlayerScorePivot
         Player = player;
         Rank = rank;
         Uma = uma;
-        Score = ((player.Points - initialPoints) / 1000) + uma;
+        Score = ((player.CurrentGamePoints - initialPoints) / 1000) + uma;
 
-        Player.PermanentPlayer?.AddGameScore(this);
+        Player.AddGameScore(this);
     }
 
     #endregion Constructors

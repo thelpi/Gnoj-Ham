@@ -21,10 +21,10 @@
         <ListView Visibility="Collapsed" Name="ScoresList">
             <ListView.View>
                 <GridView>
-                    <GridViewColumn Header="Id">
+                    <GridViewColumn Header="Name">
                         <GridViewColumn.CellTemplate>
                             <DataTemplate>
-                                <TextBlock Text="{Binding Path=Id}" />
+                                <TextBlock Text="{Binding Path=Name}" />
                             </DataTemplate>
                         </GridViewColumn.CellTemplate>
                     </GridViewColumn>

@@ -25,15 +25,7 @@ public class AutoPlay_Tests
     {
         var random = new Random(seed);
 
-        var permanentPlayers = new List<PermanentPlayerPivot>
-        {
-            new(),
-            new(),
-            new(),
-            new()
-        };
-
-        var game = new GamePivot(RulePivot.Default, permanentPlayers, random);
+        var game = new GamePivot(RulePivot.Default, PlayerPivot.BuildPlayers(null), random);
 
         IReadOnlyList<PlayerScorePivot>? scores;
         while (true)
@@ -52,7 +44,7 @@ public class AutoPlay_Tests
         for (var i = 0; i < scores.Count; i++)
         {
             Assert.Equal(_expected[seed][i].pName, scores[i].Player.Name);
-            Assert.Equal(_expected[seed][i].points, scores[i].Player.Points);
+            Assert.Equal(_expected[seed][i].points, scores[i].Player.CurrentGamePoints);
         }
     }
 }

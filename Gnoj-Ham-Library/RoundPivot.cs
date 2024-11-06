@@ -806,7 +806,7 @@ public class RoundPivot
             || IsRiichi(CurrentPlayerIndex)
             || !_hands[(int)CurrentPlayerIndex].IsConcealed
             || _wallTiles.Count < 4
-            || Game.Players[(int)CurrentPlayerIndex].Points < ScoreTools.RIICHI_COST)
+            || Game.Players[(int)CurrentPlayerIndex].CurrentGamePoints < ScoreTools.RIICHI_COST)
         {
             return new List<TilePivot>();
         }
