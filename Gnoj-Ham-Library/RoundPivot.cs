@@ -23,6 +23,7 @@ public class RoundPivot
     private readonly List<TilePivot> _deadTreasureTiles;
     private readonly List<List<TilePivot>> _discards;
     private readonly List<List<TilePivot>> _virtualDiscards;
+    private readonly List<Dictionary<PlayerIndices, int>> _lastOwnDiscardOpponentsVirtualRank;
     private readonly List<RiichiPivot?> _riichis;
     private readonly List<TilePivot> _fullTilesList;
     private readonly IReadOnlyDictionary<PlayerIndices, CpuManagerBasePivot> _cpuManagers;
@@ -212,6 +213,11 @@ public class RoundPivot
         _openedKanInProgress = null;
         _waitForDiscard = false;
         _playerIndexHistory = new List<PlayerIndices>(10);
+        _lastOwnDiscardOpponentsVirtualRank = Enumerable.Range(0, 4)
+            .Select(i => Enum.GetValues<PlayerIndices>()
+                .Where(p => (int)p != i)
+                .ToDictionary(p => p, _ => 0))
+            .ToList();
         _cpuManagers = new Dictionary<PlayerIndices, CpuManagerBasePivot>
         {
             { PlayerIndices.Zero, new BasicCpuManagerPivot(this) },
@@ -699,6 +705,19 @@ public class RoundPivot
 
         _discards[(int)CurrentPlayerIndex].Add(tile);
         _virtualDiscards[(int)CurrentPlayerIndex].Add(tile);
+
+        // Freezes, for this player, the current discard count of every opponent: this is the
+        // starting point from which future opponent discards are checked for temporary furiten.
+        // Unlike "_playerIndexHistory", this isn't reset by a call (pon / chii / kan) made by someone
+        // else in the meantime, because the temporary furiten rule survives such interruptions.
+        foreach (var opponent in Enum.GetValues<PlayerIndices>())
+        {
+            if (opponent != CurrentPlayerIndex)
+            {
+                _lastOwnDiscardOpponentsVirtualRank[(int)CurrentPlayerIndex][opponent] = _virtualDiscards[(int)opponent].Count;
+            }
+        }
+
         _stealingInProgress = false;
         _closedKanInProgress = null;
         _openedKanInProgress = null;
@@ -850,7 +869,7 @@ public class RoundPivot
 
         return _hands[(int)playerIndex].IsComplete
             && !_hands[(int)playerIndex].CancelYakusIfFuriten(_discards[(int)playerIndex], GetTilesFromVirtualDiscardsAtRank(playerIndex, tile))
-            && !_hands[(int)playerIndex].CancelYakusIfTemporaryFuriten(this, playerIndex);
+            && !_hands[(int)playerIndex].CancelYakusIfTemporaryFuriten(GetTilesFromVirtualDiscardsSinceLastOwnDiscard(playerIndex, tile));
     }
 
     /// <summary>
@@ -1438,6 +1457,26 @@ public class RoundPivot
             {
                 var opponentRank = _riichis[(int)riichiPlayerIndex]!.OpponentsVirtualDiscardRank[i];
                 fullList.AddRange(_virtualDiscards[(int)i].Skip(opponentRank));
+            }
+        }
+
+        return fullList.Where(t => !ReferenceEquals(t, exceptTile)).ToList();
+    }
+
+    // Gets every tile discarded by opponents since the specified player's own last discard.
+    // Unlike "PlayerIndexHistory", this is immune to call (pon / chii / kan) interruptions in between,
+    // which is required by the temporary furiten rule: it lasts until the player's own next discard,
+    // regardless of any call made by someone else in the meantime.
+    internal List<TilePivot> GetTilesFromVirtualDiscardsSinceLastOwnDiscard(PlayerIndices playerIndex, TilePivot exceptTile)
+    {
+        var fullList = new List<TilePivot>(20);
+
+        foreach (var opponent in Enum.GetValues<PlayerIndices>())
+        {
+            if (opponent != playerIndex)
+            {
+                var rank = _lastOwnDiscardOpponentsVirtualRank[(int)playerIndex][opponent];
+                fullList.AddRange(_virtualDiscards[(int)opponent].Skip(rank));
             }
         }
 

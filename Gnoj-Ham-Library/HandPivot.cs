@@ -748,29 +748,18 @@ public class HandPivot
     /// <summary>
     /// Checks if <see cref="Yakus"/> and <see cref="YakusCombinations"/> have to be cancelled because of the temporary furiten rule.
     /// </summary>
-    /// <param name="currentRound">The current round</param>
-    /// <param name="playerIndex">The player index of the hand.</param>
+    /// <param name="tilesSinceLastOwnDiscard">
+    /// Tiles discarded by opponents since this hand owner's own last discard (the current ron tile excluded).
+    /// Lasts until the hand owner's own next discard, regardless of any call made by someone else in the meantime.
+    /// </param>
     /// <returns><c>True</c> if temporary furiten; <c>False</c> otherwise.</returns>
-    internal bool CancelYakusIfTemporaryFuriten(RoundPivot currentRound, PlayerIndices playerIndex)
+    internal bool CancelYakusIfTemporaryFuriten(IReadOnlyList<TilePivot> tilesSinceLastOwnDiscard)
     {
-        var i = 0;
-        while (currentRound.PlayerIndexHistory.Count < i
-            && currentRound.PlayerIndexHistory[i] == playerIndex.RelativePlayerIndex(-(i + 1))
-            && playerIndex.RelativePlayerIndex(-(i + 1)) != playerIndex)
+        if (tilesSinceLastOwnDiscard.Any(t => IsCompleteFull(ConcealedTiles, DeclaredCombinations.ToList(), t)))
         {
-            // The tile discarded by the latest player is the tile we ron !
-            if (i > 0)
-            {
-                var discard = currentRound.GetDiscard(currentRound.PlayerIndexHistory[i]);
-                var lastFromDiscard = discard.Count > 0 ? discard[discard.Count - 1] : null;
-                if (lastFromDiscard != null && IsCompleteFull(ConcealedTiles, DeclaredCombinations.ToList(), lastFromDiscard))
-                {
-                    Yakus = null;
-                    YakusCombinations = null;
-                    return true;
-                }
-            }
-            i++;
+            Yakus = null;
+            YakusCombinations = null;
+            return true;
         }
 
         return false;
