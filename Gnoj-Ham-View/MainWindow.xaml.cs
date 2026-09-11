@@ -396,132 +396,6 @@ public partial class MainWindow : Window
         {
             var argumentsList = (evt.Argument as object?[])!;
 
-            _game.Round.ReadyToCallNotifier += e =>
-            {
-                Dispatcher.Invoke(() =>
-                {
-                    switch (e.Call)
-                    {
-                        case CallTypes.Chii:
-                            FillHandPanel(_game.Round.CurrentPlayerIndex);
-                            FillCombinationStack(_game.Round.CurrentPlayerIndex);
-                            FillDiscardPanel(_game.Round.PreviousPlayerIndex);
-                            SetActionButtonsVisibility(cpuPlay: !_game.Round.IsHumanPlayer);
-                            if (_game.Round.IsHumanPlayer)
-                            {
-                                ActivateTimer(GetFirstAvailableDiscardButton());
-                            }
-                            break;
-                        case CallTypes.Pon:
-                            var isCpu = e.PlayerIndex != _humanPlayerIndex;
-                            FillHandPanel(e.PlayerIndex);
-                            FillCombinationStack(e.PlayerIndex);
-                            FillDiscardPanel(e.PreviousPlayerIndex);
-                            SetActionButtonsVisibility(cpuPlay: isCpu);
-                            if (!isCpu)
-                            {
-                                ActivateTimer(GetFirstAvailableDiscardButton());
-                            }
-                            break;
-                        case CallTypes.Riichi:
-                            FillHandPanel(_game.Round.PreviousPlayerIndex);
-                            FillDiscardPanel(_game.Round.PreviousPlayerIndex);
-                            SetActionButtonsVisibility(cpuPlay: !_game.Round.PreviousIsHumanPlayer);
-                            this.FindName<Image>(RiichiStickImage, _game.Round.PreviousPlayerIndex).Visibility = Visibility.Visible;
-                            break;
-                        case CallTypes.NoCall:
-                            FillHandPanel(_game.Round.PreviousPlayerIndex);
-                            FillDiscardPanel(_game.Round.PreviousPlayerIndex);
-                            SetActionButtonsVisibility(cpuPlay: !_game.Round.PreviousIsHumanPlayer);
-                            break;
-                        case CallTypes.Kan:
-                            if (e.PotentialPreviousPlayerIndex.HasValue)
-                            {
-                                FillDiscardPanel(e.PotentialPreviousPlayerIndex.Value);
-                            }
-                            FillCombinationStack(_game.Round.CurrentPlayerIndex);
-                            SetActionButtonsVisibility(cpuPlay: !_game.Round.IsHumanPlayer, preDiscard: _game.Round.IsHumanPlayer);
-                            StpDoras.SetDorasPanel(_game.Round.DoraIndicatorTiles, _game.Round.VisibleDorasCount);
-                            break;
-                    }
-                });
-            };
-            _game.Round.PickNotifier += e =>
-            {
-                Dispatcher.Invoke(() =>
-                {
-                    if (_game.Round.IsHumanPlayer)
-                    {
-                        SetActionButtonsVisibility(preDiscard: true);
-                    }
-                    SetWallsLength();
-                });
-            };
-            _game.Round.DiscardTileNotifier += e =>
-            {
-                Dispatcher.Invoke(() =>
-                {
-                    var highlightButton = FillDiscardPanel(_game.Round.PreviousPlayerIndex);
-                    if (highlightButton != null)
-                    {
-                        SetHighlight(highlightButton);
-                    }
-                });
-            };
-            _game.Round.HumanCallNotifier += e =>
-            {
-                Button? autoButtonOnTimer = null;
-                Dispatcher.Invoke(() =>
-                {
-                    if (e.Call == CallTypes.NoCall)
-                    {
-                        var panel = this.FindPanel(PickPanel, _humanPlayerIndex);
-                        if (panel.Children.Count > 0)
-                        {
-                            autoButtonOnTimer = panel.Children[0] as Button;
-                        }
-                        else
-                        {
-                            MessageBox.Show("Le panel de réception de la pioche est vide !", "Gnoj-Ham - Warning", MessageBoxButton.OK);
-                        }
-                    }
-                    else
-                    {
-                        GrdOverlayCanCall.Visibility = Visibility.Visible;
-                        BtnSkipCall.Visibility = Visibility.Visible;
-                        switch (e.Call)
-                        {
-                            case CallTypes.Riichi:
-                                BtnRiichi.Visibility = Visibility.Visible;
-                                if (e.RiichiAdvised)
-                                    BtnRiichi.Foreground = Brushes.DarkMagenta;
-                                else
-                                    BtnSkipCall.Foreground = Brushes.DarkMagenta;
-                                break;
-                            case CallTypes.Ron:
-                                BtnRon.Visibility = Visibility.Visible;
-                                break;
-                            case CallTypes.Tsumo:
-                                BtnTsumo.Visibility = Visibility.Visible;
-                                break;
-                        }
-                    }
-                });
-                ActivateTimer(autoButtonOnTimer);
-            };
-            _game.Round.CallNotifier += e =>
-            {
-                InvokeOverlay(e.Action, e.PlayerIndex);
-            };
-            _game.Round.RiichiChoicesNotifier += e =>
-            {
-                _riichiTiles = e.Tiles;
-            };
-            _game.Round.TurnChangeNotifier += e =>
-            {
-                RefreshPlayerTurnStyle();
-            };
-
             evt.Result = _game.Round.RunAutoPlay(
                 _cancellationToken,
                 Convert.ToBoolean(argumentsList[0]),
@@ -787,6 +661,131 @@ public partial class MainWindow : Window
                     FillHandPanel(e.PlayerIndex, e.Tile);
                 });
             }
+        };
+        _game.Round.ReadyToCallNotifier += e =>
+        {
+            Dispatcher.Invoke(() =>
+            {
+                switch (e.Call)
+                {
+                    case CallTypes.Chii:
+                        FillHandPanel(_game.Round.CurrentPlayerIndex);
+                        FillCombinationStack(_game.Round.CurrentPlayerIndex);
+                        FillDiscardPanel(_game.Round.PreviousPlayerIndex);
+                        SetActionButtonsVisibility(cpuPlay: !_game.Round.IsHumanPlayer);
+                        if (_game.Round.IsHumanPlayer)
+                        {
+                            ActivateTimer(GetFirstAvailableDiscardButton());
+                        }
+                        break;
+                    case CallTypes.Pon:
+                        var isCpu = e.PlayerIndex != _humanPlayerIndex;
+                        FillHandPanel(e.PlayerIndex);
+                        FillCombinationStack(e.PlayerIndex);
+                        FillDiscardPanel(e.PreviousPlayerIndex);
+                        SetActionButtonsVisibility(cpuPlay: isCpu);
+                        if (!isCpu)
+                        {
+                            ActivateTimer(GetFirstAvailableDiscardButton());
+                        }
+                        break;
+                    case CallTypes.Riichi:
+                        FillHandPanel(_game.Round.PreviousPlayerIndex);
+                        FillDiscardPanel(_game.Round.PreviousPlayerIndex);
+                        SetActionButtonsVisibility(cpuPlay: !_game.Round.PreviousIsHumanPlayer);
+                        this.FindName<Image>(RiichiStickImage, _game.Round.PreviousPlayerIndex).Visibility = Visibility.Visible;
+                        break;
+                    case CallTypes.NoCall:
+                        FillHandPanel(_game.Round.PreviousPlayerIndex);
+                        FillDiscardPanel(_game.Round.PreviousPlayerIndex);
+                        SetActionButtonsVisibility(cpuPlay: !_game.Round.PreviousIsHumanPlayer);
+                        break;
+                    case CallTypes.Kan:
+                        if (e.PotentialPreviousPlayerIndex.HasValue)
+                        {
+                            FillDiscardPanel(e.PotentialPreviousPlayerIndex.Value);
+                        }
+                        FillCombinationStack(_game.Round.CurrentPlayerIndex);
+                        SetActionButtonsVisibility(cpuPlay: !_game.Round.IsHumanPlayer, preDiscard: _game.Round.IsHumanPlayer);
+                        StpDoras.SetDorasPanel(_game.Round.DoraIndicatorTiles, _game.Round.VisibleDorasCount);
+                        break;
+                }
+            });
+        };
+        _game.Round.PickNotifier += e =>
+        {
+            Dispatcher.Invoke(() =>
+            {
+                if (_game.Round.IsHumanPlayer)
+                {
+                    SetActionButtonsVisibility(preDiscard: true);
+                }
+                SetWallsLength();
+            });
+        };
+        _game.Round.DiscardTileNotifier += e =>
+        {
+            Dispatcher.Invoke(() =>
+            {
+                var highlightButton = FillDiscardPanel(_game.Round.PreviousPlayerIndex);
+                if (highlightButton != null)
+                {
+                    SetHighlight(highlightButton);
+                }
+            });
+        };
+        _game.Round.HumanCallNotifier += e =>
+        {
+            Button? autoButtonOnTimer = null;
+            Dispatcher.Invoke(() =>
+            {
+                if (e.Call == CallTypes.NoCall)
+                {
+                    var panel = this.FindPanel(PickPanel, _humanPlayerIndex);
+                    if (panel.Children.Count > 0)
+                    {
+                        autoButtonOnTimer = panel.Children[0] as Button;
+                    }
+                    else
+                    {
+                        MessageBox.Show("Le panel de réception de la pioche est vide !", "Gnoj-Ham - Warning", MessageBoxButton.OK);
+                    }
+                }
+                else
+                {
+                    GrdOverlayCanCall.Visibility = Visibility.Visible;
+                    BtnSkipCall.Visibility = Visibility.Visible;
+                    switch (e.Call)
+                    {
+                        case CallTypes.Riichi:
+                            BtnRiichi.Visibility = Visibility.Visible;
+                            if (e.RiichiAdvised)
+                                BtnRiichi.Foreground = Brushes.DarkMagenta;
+                            else
+                                BtnSkipCall.Foreground = Brushes.DarkMagenta;
+                            break;
+                        case CallTypes.Ron:
+                            BtnRon.Visibility = Visibility.Visible;
+                            break;
+                        case CallTypes.Tsumo:
+                            BtnTsumo.Visibility = Visibility.Visible;
+                            break;
+                    }
+                }
+            });
+            ActivateTimer(autoButtonOnTimer);
+        };
+        _game.Round.CallNotifier += e =>
+        {
+            InvokeOverlay(e.Action, e.PlayerIndex);
+        };
+        _game.Round.RiichiChoicesNotifier += e =>
+        {
+            _riichiTiles = e.Tiles;
+        };
+        _game.Round.TurnChangeNotifier += e =>
+        {
+            RefreshPlayerTurnStyle();
         };
 
         // event is forced because the subscription is made too late relative to first triggered event

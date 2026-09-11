@@ -15,7 +15,6 @@ Points notés en cours de route, pas traités tout de suite.
 
 ## Interface WPF (Gnoj-Ham-View)
 
-- [ ] `MainWindow.InitializeAutoPlayWorker` : fuite d'abonnements aux événements du round (jamais désabonnés).
 - [ ] `MainWindow.CancelCallProcess` : `Thread.Sleep` sur le thread UI.
 - [ ] `RunWorkerCompleted` (MainWindow + AutoPlayWindow) : ignore `evt.Error`.
 - [ ] Pas de MVVM, accès aux contrôles par reconstruction de nom (`GraphicTools.FindName<T>`) — fragile aux renommages XAML ; `FindName` peut renvoyer `null` sans revérification (`GraphicTools.cs:150`).
