@@ -66,6 +66,13 @@ public partial class AutoPlayWindow : Window
         };
         _autoPlay.RunWorkerCompleted += delegate (object? sender, RunWorkerCompletedEventArgs evt)
         {
+            if (evt.Error != null)
+            {
+                // Without this, evt.Result stays null and gets silently treated as a ryuukyoku
+                // (ronPlayerIndex: null) below instead of surfacing the real exception.
+                throw evt.Error;
+            }
+
             if (!_cancellationToken.IsCancellationRequested)
             {
                 var (endOfRoundInfo, _) = _game!.NextRound((PlayerIndices?)evt.Result);

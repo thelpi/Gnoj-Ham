@@ -416,6 +416,13 @@ public partial class MainWindow : Window
         };
         _autoPlay.RunWorkerCompleted += delegate (object? sender, RunWorkerCompletedEventArgs evt)
         {
+            if (evt.Error != null)
+            {
+                // Surfaces the real exception instead of the NullReferenceException that would
+                // otherwise come from casting the (null) evt.Result below.
+                throw evt.Error;
+            }
+
             if (!_cancellationToken.IsCancellationRequested)
             {
                 var result = (AutoPlayResultPivot)evt.Result!;
