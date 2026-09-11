@@ -15,7 +15,6 @@ Points notés en cours de route, pas traités tout de suite.
 
 ## Interface WPF (Gnoj-Ham-View)
 
-- [ ] `MainWindow.CancelCallProcess` : `Thread.Sleep` sur le thread UI.
 - [ ] `RunWorkerCompleted` (MainWindow + AutoPlayWindow) : ignore `evt.Error`.
 - [ ] Pas de MVVM, accès aux contrôles par reconstruction de nom (`GraphicTools.FindName<T>`) — fragile aux renommages XAML ; `FindName` peut renvoyer `null` sans revérification (`GraphicTools.cs:150`).
 - [ ] `MainWindow.xaml.cs:649` : `CallKan(...)!` peut renvoyer `null`, pas revérifié juste avant le `!`.
