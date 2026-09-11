@@ -360,9 +360,18 @@ public partial class MainWindow : Window
                 SetActionButtonsVisibility(preDiscard: true, skippedInnerKan: true);
                 if (_game.Round.HumanCanAutoDiscard())
                 {
-                    // Not a real CPU sleep: the auto-discard by human player is considered as such
-                    Thread.Sleep(((CpuSpeedPivot)Properties.Settings.Default.CpuSpeed).ParseSpeed());
-                    RaiseButtonClickEvent(new PanelButton(PickPanel, 0));
+                    // Not a real CPU sleep: the auto-discard by human player is considered as such.
+                    // Runs on a timer instead of Thread.Sleep so the UI thread isn't blocked/frozen for the delay.
+                    var autoDiscardDelay = new System.Timers.Timer(((CpuSpeedPivot)Properties.Settings.Default.CpuSpeed).ParseSpeed())
+                    {
+                        AutoReset = false
+                    };
+                    autoDiscardDelay.Elapsed += delegate (object? sender, System.Timers.ElapsedEventArgs e)
+                    {
+                        autoDiscardDelay.Dispose();
+                        Dispatcher.Invoke(() => RaiseButtonClickEvent(new PanelButton(PickPanel, 0)));
+                    };
+                    autoDiscardDelay.Start();
                 }
                 else
                 {
