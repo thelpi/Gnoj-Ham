@@ -294,6 +294,30 @@ internal static class GraphicTools
     }
 
     /// <summary>
+    /// Transforms the enumeration <see cref="DrivenDrawScenarios"/> into a list of <see cref="string"/> (with matching index).
+    /// </summary>
+    /// <returns>List of strings ready for display.</returns>
+    internal static IReadOnlyList<string> GetDrivenDrawScenarioDisplayValue()
+    {
+        var results = new List<string>();
+
+        foreach (var scenario in Enum.GetValues<DrivenDrawScenarios>())
+        {
+            switch (scenario)
+            {
+                case DrivenDrawScenarios.None:
+                    results.Add("Aucun");
+                    break;
+                case DrivenDrawScenarios.HumanInitialKan:
+                    results.Add("Kan possible au 1er tour");
+                    break;
+            }
+        }
+
+        return results;
+    }
+
+    /// <summary>
     /// Transforms the enumeration <see cref="InitialPointsRules"/> into a list of <see cref="string"/> (with matching index).
     /// </summary>
     /// <returns>List of strings ready for display.</returns>

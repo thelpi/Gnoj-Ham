@@ -23,6 +23,7 @@ public partial class IntroWindow : Window
         CbbPointsRule.ItemsSource = GraphicTools.GetInitialPointsRuleDisplayValue();
         CbbChronoSpeed.ItemsSource = GraphicTools.GetChronoDisplayValues();
         CbbCpuSpeed.ItemsSource = GraphicTools.GetCpuSpeedDisplayValues();
+        CbbDrivenDrawScenario.ItemsSource = GraphicTools.GetDrivenDrawScenarioDisplayValue();
 
         LoadConfiguration();
     }
@@ -55,7 +56,8 @@ public partial class IntroWindow : Window
         }
         else
         {
-            new MainWindow(TxtPlayerName.Text, ruleset, save).ShowDialog();
+            var drivenDraw = DrivenDrawPivot.Resolve((DrivenDrawScenarios)CbbDrivenDrawScenario.SelectedIndex, PlayerIndices.Zero);
+            new MainWindow(TxtPlayerName.Text, ruleset, save, drivenDraw).ShowDialog();
         }
 
         // The configuration might be updated in-game.
@@ -92,6 +94,7 @@ public partial class IntroWindow : Window
         // Dvelopment tools
         ChkDebugMode.IsChecked = false;
         ChkFourCpus.IsChecked = false;
+        CbbDrivenDrawScenario.SelectedIndex = (int)DrivenDrawScenarios.None;
     }
 
     private void SaveConfiguration()

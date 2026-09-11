@@ -184,7 +184,11 @@ public class RoundPivot
     /// <param name="game">The <see cref="Game"/> value.</param>
     /// <param name="firstPlayerIndex">The initial <see cref="CurrentPlayerIndex"/> value.</param>
     /// <param name="random">Randomizer instance.</param>
-    internal RoundPivot(GamePivot game, PlayerIndices firstPlayerIndex, Random random)
+    /// <param name="drivenDraw">
+    /// Optional; a <see cref="DrivenDrawPivot"/> method to rig the wall for a specific manual-testing
+    /// scenario. <c>Null</c> (default) for a normal, fully random draw.
+    /// </param>
+    internal RoundPivot(GamePivot game, PlayerIndices firstPlayerIndex, Random random, Action<List<TilePivot>>? drivenDraw = null)
     {
         Game = game;
 
@@ -195,8 +199,7 @@ public class RoundPivot
             .OrderBy(t => random.NextDouble())
             .ToList();
 
-        // Add below specific calls to sort the draw
-        // DrivenDrawPivot.HumanTenpai(_fullTilesList);
+        drivenDraw?.Invoke(_fullTilesList);
 
         _hands = Enumerable.Range(0, 4).Select(i => new HandPivot(_fullTilesList.GetRange(i * 13, 13))).ToList();
         _discards = Enumerable.Range(0, 4).Select(i => new List<TilePivot>(20)).ToList();

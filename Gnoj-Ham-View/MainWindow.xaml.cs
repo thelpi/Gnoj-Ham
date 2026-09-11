@@ -52,14 +52,15 @@ public partial class MainWindow : Window
     /// <param name="playerName">Human player name.</param>
     /// <param name="ruleset">The ruleset.</param>
     /// <param name="save">Player save file.</param>
-    public MainWindow(string playerName, RulePivot ruleset, PlayerSavePivot save)
+    /// <param name="drivenDraw">Optional; see <see cref="DrivenDrawPivot.Resolve(DrivenDrawScenarios, PlayerIndices)"/>. <c>Null</c> (default) for a normal, fully random draw.</param>
+    public MainWindow(string playerName, RulePivot ruleset, PlayerSavePivot save, Action<List<TilePivot>>? drivenDraw = null)
     {
         InitializeComponent();
 
         _cancellationToken = _cancellationTokenSource.Token;
         this.FindControl(PlayerLabel, _humanPlayerIndex).Content = playerName;
 
-        _game = new GamePivot(playerName, ruleset, save, new Random());
+        _game = new GamePivot(playerName, ruleset, save, new Random(), drivenDraw);
         _tickSound = new System.Media.SoundPlayer(Properties.Resources.tick);
 
         _overlayStoryboard = (FindResource(OverlayStoryboardResourceName) as Storyboard)!;

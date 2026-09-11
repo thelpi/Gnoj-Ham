@@ -79,8 +79,9 @@ public class GamePivot
     /// <param name="ruleset">Ruleset for the game.</param>
     /// <param name="save">Player save stats.</param>
     /// <param name="random">Randomizer instance.</param>
+    /// <param name="drivenDraw">Optional; see <see cref="DrivenDrawPivot.Resolve(DrivenDrawScenarios, PlayerIndices)"/>. <c>Null</c> (default) for a normal, fully random draw.</param>
     /// <exception cref="ArgumentNullException"><paramref name="save"/> is <c>Null</c> while ruleset is default.</exception>
-    public GamePivot(string humanPlayerName, RulePivot ruleset, PlayerSavePivot? save, Random random)
+    public GamePivot(string humanPlayerName, RulePivot ruleset, PlayerSavePivot? save, Random random, Action<List<TilePivot>>? drivenDraw = null)
     {
         if (ruleset.AreDefaultRules() && save == null)
         {
@@ -101,7 +102,7 @@ public class GamePivot
         EastRank = 1;
         _random = random;
 
-        Round = new RoundPivot(this, EastIndex, random);
+        Round = new RoundPivot(this, EastIndex, random, drivenDraw);
     }
 
     /// <summary>
