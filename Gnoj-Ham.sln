@@ -1,13 +1,18 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 17
-VisualStudioVersion = 17.10.35122.118
+# Visual Studio Version 18
+VisualStudioVersion = 18.10.12201.205 stable
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gnoj-Ham-Library", "Gnoj-Ham-Library\Gnoj-Ham-Library.csproj", "{1B909A17-E02B-432E-A872-242CB47B4C0B}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gnoj-Ham-Library-Tests", "Gnoj-Ham-Library-Tests\Gnoj-Ham-Library-Tests.csproj", "{AE2E9411-9F45-4644-9DC1-340CCBA16B03}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gnoj-Ham-View", "Gnoj-Ham-View\Gnoj-Ham-View.csproj", "{1BF32532-0CE5-44DB-98C2-8C5F35AF5FB9}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Éléments de solution", "Éléments de solution", "{276708C3-5DFC-4A04-B73F-B8CD4A66E4F0}"
+	ProjectSection(SolutionItems) = preProject
+		TODO.md = TODO.md
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
