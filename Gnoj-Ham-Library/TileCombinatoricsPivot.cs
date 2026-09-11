@@ -20,15 +20,23 @@ internal static class TileCombinatoricsPivot
     /// <param name="declaredCombinations">List of declared combinations.</param>
     /// <param name="additionalTile">The additional tile.</param>
     /// <param name="skipBasic"><c>True</c> to completely skip the basic check (example: two single winds).</param>
+    /// <param name="recursiveCache">
+    /// Optional; memoizes <see cref="GetCombinationSequencesRecursive"/> results by family and tile content.
+    /// Only useful when calling this method repeatedly against the same base <paramref name="tiles"/> with a
+    /// varying <paramref name="additionalTile"/> (see <see cref="IsTenpai"/>): three of the five family groups
+    /// are then identical across calls and their (expensive) recursive decomposition can be reused as-is.
+    /// <c>Null</c> (default) disables caching entirely.
+    /// </param>
     /// <returns><c>True</c> if complete; <c>False</c> otherwise.</returns>
     internal static bool IsCompleteFull(IReadOnlyList<TilePivot> tiles,
         IReadOnlyList<TileComboPivot> declaredCombinations,
         TilePivot additionalTile,
-        bool skipBasic = false)
+        bool skipBasic = false,
+        Dictionary<Families, (List<TilePivot> Tiles, List<List<TileComboPivot>> Result)>? recursiveCache = null)
     {
         var localCopy = new List<TilePivot>(tiles);
         localCopy.AddSorted(additionalTile);
-        return (!skipBasic && IsCompleteBasic(localCopy, declaredCombinations.Count))
+        return (!skipBasic && IsCompleteBasic(localCopy, declaredCombinations.Count, recursiveCache))
             || IsSevenPairs(localCopy)
             || IsThirteenOrphans(localCopy);
     }
@@ -138,8 +146,10 @@ internal static class TileCombinatoricsPivot
     /// </summary>
     /// <param name="concealedTiles">List of concealed tiles.</param>
     /// <param name="declaredCombinationsCount">Count of declared combinations.</param>
+    /// <param name="recursiveCache">Optional; see <see cref="IsCompleteFull"/>.</param>
     /// <returns>True if the hand is complete.</returns>
-    internal static bool IsCompleteBasic(IReadOnlyList<TilePivot> concealedTiles, int declaredCombinationsCount)
+    internal static bool IsCompleteBasic(IReadOnlyList<TilePivot> concealedTiles, int declaredCombinationsCount,
+        Dictionary<Families, (List<TilePivot> Tiles, List<List<TileComboPivot>> Result)>? recursiveCache = null)
     {
         // Every combinations are declared.
         if (declaredCombinationsCount == 4)
@@ -148,7 +158,7 @@ internal static class TileCombinatoricsPivot
             return concealedTiles[0] == concealedTiles[1];
         }
 
-        var combinationsSequences = GetCombinationsSequences(concealedTiles, declaredCombinationsCount, out var forceExit);
+        var combinationsSequences = GetCombinationsSequences(concealedTiles, declaredCombinationsCount, out var forceExit, recursiveCache);
 
         return forceExit || combinationsSequences.Any(cs => CombinationSequenceIsValid(declaredCombinationsCount, cs));
     }
@@ -233,9 +243,15 @@ internal static class TileCombinatoricsPivot
         IReadOnlyList<TilePivot> notInHandTiles,
         bool skipBasic)
     {
+        // concealedTiles is fixed across every substitution tile tried below: at most one family group
+        // actually changes per attempt (whichever one the substitution tile belongs to), so the other
+        // four can have their (expensive) recursive decomposition computed once and reused instead of
+        // recomputed from scratch for every single one of the notInHandTiles candidates.
+        var recursiveCache = new Dictionary<Families, (List<TilePivot> Tiles, List<List<TileComboPivot>> Result)>();
+
         foreach (var sub in notInHandTiles)
         {
-            if (IsCompleteFull(concealedTiles, combinations, sub, skipBasic))
+            if (IsCompleteFull(concealedTiles, combinations, sub, skipBasic, recursiveCache))
             {
                 return true;
             }
@@ -249,7 +265,8 @@ internal static class TileCombinatoricsPivot
     private static List<List<TileComboPivot>> GetCombinationsSequences(
         IReadOnlyList<TilePivot> concealedTiles,
         int declaredCombinationsCount,
-        out bool forceExit)
+        out bool forceExit,
+        Dictionary<Families, (List<TilePivot> Tiles, List<List<TileComboPivot>> Result)>? recursiveCache = null)
     {
         forceExit = false;
 
@@ -338,7 +355,7 @@ internal static class TileCombinatoricsPivot
         {
             if (familyGroups[oneFamily].Count > 0)
             {
-                var temporaryCombinationsSequences = GetCombinationSequencesRecursive(familyGroups[oneFamily]);
+                var temporaryCombinationsSequences = GetCachedCombinationSequencesRecursive(oneFamily, familyGroups[oneFamily], recursiveCache);
                 if (combinationsSequences.Count > 0)
                 {
                     // Cartesian product of existant sequences and temporary list.
@@ -471,6 +488,47 @@ internal static class TileCombinatoricsPivot
         }
 
         return combinations;
+    }
+
+    // Same as GetCombinationSequencesRecursive, memoized by (family, tile content) when a cache is provided.
+    // Single-slot-per-family cache: within one IsTenpai call, the tile list for a family untouched by
+    // the current substitution tile is rebuilt from the exact same TilePivot references, in the exact
+    // same order, every time - so a cheap reference-by-reference comparison against the last computed
+    // input is enough to detect a hit, with no hashing or string allocation needed.
+    private static List<List<TileComboPivot>> GetCachedCombinationSequencesRecursive(
+        Families family, List<TilePivot> tiles, Dictionary<Families, (List<TilePivot> Tiles, List<List<TileComboPivot>> Result)>? cache)
+    {
+        if (cache == null)
+        {
+            return GetCombinationSequencesRecursive(tiles);
+        }
+
+        if (cache.TryGetValue(family, out var cached) && SameTiles(cached.Tiles, tiles))
+        {
+            return cached.Result;
+        }
+
+        var result = GetCombinationSequencesRecursive(tiles);
+        cache[family] = (tiles, result);
+        return result;
+    }
+
+    private static bool SameTiles(List<TilePivot> a, List<TilePivot> b)
+    {
+        if (a.Count != b.Count)
+        {
+            return false;
+        }
+
+        for (var i = 0; i < a.Count; i++)
+        {
+            if (!ReferenceEquals(a[i], b[i]))
+            {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     // Assumes that all tiles are from the same family, and this family is caracter / circle / bamboo.
