@@ -76,7 +76,8 @@ public class PlayerSavePivot
             {
                 // TODO decrypt
                 using var stream = new FileStream(FullFileName, FileMode.Open, FileAccess.Read, FileShare.Read);
-                save = JsonSerializer.Deserialize<PlayerSavePivot>(stream)!;
+                save = JsonSerializer.Deserialize<PlayerSavePivot>(stream)
+                    ?? throw new InvalidOperationException("Le fichier de sauvegarde est vide ou invalide.");
             }
         }
         catch (Exception ex)

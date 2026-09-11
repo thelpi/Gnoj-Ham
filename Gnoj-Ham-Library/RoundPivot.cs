@@ -1121,7 +1121,8 @@ public class RoundPivot
                 var riichiPart = Game.PendingRiichiCount * ScoreTools.RIICHI_COST;
 
                 // In case of ron with multiple winners, only the one who comes right next to "ronPlayerIndex" takes the stack of riichi.
-                if (winners.Count > 1)
+                // Doesn't apply to simultaneous nagashi mangan winners: there's no discarder to compare against.
+                if (ronPlayerIndex.HasValue && winners.Count > 1)
                 {
                     for (var i = 1; i <= 3; i++)
                     {
@@ -1596,6 +1597,12 @@ public class RoundPivot
                 _hands[(int)i].SetYakus(new WinContextPivot());
                 playerIndexList.Add(i);
             }
+        }
+
+        if (playerIndexList.Count > 1)
+        {
+            // Atama-hane: only the winner closest to the dealer (turn order East -> South -> West -> North) is kept.
+            playerIndexList = new List<PlayerIndices> { playerIndexList.OrderBy(i => (int)Game.GetPlayerCurrentWind(i)).First() };
         }
 
         return playerIndexList;

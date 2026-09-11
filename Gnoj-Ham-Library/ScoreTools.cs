@@ -166,6 +166,13 @@ internal static class ScoreTools
             return CHIITOI_FU;
         }
 
+        if (hand.Yakus!.Any(y => y == YakuPivot.NagashiMangan))
+        {
+            // No combination to look at: nagashi mangan is a flat 5-fan win with no meaningful fu,
+            // and its fan count already guarantees a mangan-equivalent score regardless of fu.
+            return BASE_FU;
+        }
+
         var fuCount =
             (hand.YakusCombinations!.Count(c => c.IsSquare && c.HasTerminalOrHonor) * HONOR_KAN_FU)
             + (hand.YakusCombinations!.Count(c => c.IsSquare && !c.HasTerminalOrHonor) * REGULAR_KAN_FU)
