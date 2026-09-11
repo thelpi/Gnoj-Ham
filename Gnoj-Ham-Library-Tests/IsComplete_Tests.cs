@@ -30,7 +30,7 @@ public class IsComplete_Tests
 
         concealedTiles = concealedTiles.OrderBy(t => t).ToList();
 
-        var result = HandPivot.IsCompleteBasic(concealedTiles, new List<TileComboPivot>());
+        var result = TileCombinatoricsPivot.IsCompleteBasic(concealedTiles, new List<TileComboPivot>());
 
         Assert.NotNull(result);
         Assert.Single(result);
@@ -59,7 +59,7 @@ public class IsComplete_Tests
 
         concealedTiles = concealedTiles.OrderBy(t => t).ToList();
 
-        var result = HandPivot.IsCompleteBasic(concealedTiles, new List<TileComboPivot>
+        var result = TileCombinatoricsPivot.IsCompleteBasic(concealedTiles, new List<TileComboPivot>
         {
             TileComboPivot.BuildSquare(TilePivot.GetTile(tilesSet, Families.Dragon, dragon: Dragons.White))
         });

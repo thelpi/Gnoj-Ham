@@ -972,7 +972,7 @@ public class RoundPivot
         {
             var tempListConcealed = new List<TilePivot>(hand.ConcealedTiles);
             tempListConcealed.Remove(tileToSub);
-            if (HandPivot.IsTenpai(tempListConcealed, hand.DeclaredCombinations, distinctTilesFromOverallConcealed, skipBasic))
+            if (TileCombinatoricsPivot.IsTenpai(tempListConcealed, hand.DeclaredCombinations, distinctTilesFromOverallConcealed, skipBasic))
             {
                 subPossibilities.Add(tileToSub);
             }

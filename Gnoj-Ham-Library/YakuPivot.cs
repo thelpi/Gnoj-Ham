@@ -327,7 +327,7 @@ public class YakuPivot
                         tiles.First(x => x.Family == Families.Wind && x.Wind == Winds.East),
                         tiles.First(x => x.Family == Families.Wind && x.Wind == Winds.East)
                     }),
-                    new(TOITOI, "Que des brelans", 2, "Quatre brelans (ou carrés).", 0, new List<TilePivot>
+                    new(TOITOI, "Que des brelans", 2, "Quatre brelans (ou carrés). Attention : l'exemple ci-contre, si les quatre brelans sont cachés (jamais volés), compte en réalité comme Suuankou (yakuman) et pas comme Toitoi.", 0, new List<TilePivot>
                     {
                         tiles.First(x => x.Family == Families.Bamboo && x.Number == 7),
                         tiles.First(x => x.Family == Families.Bamboo && x.Number == 7),
@@ -380,7 +380,7 @@ public class YakuPivot
                         tiles.First(x => x.Family == Families.Wind && x.Wind == Winds.East),
                         tiles.First(x => x.Family == Families.Wind && x.Wind == Winds.East),
                     }),
-                    new(HONROUTOU, "Terminaux et honneurs", 2, "Chaque combinaison contient un honneur ou un terminal (1 ou 9).", 0, new List<TilePivot>
+                    new(HONROUTOU, "Terminaux et honneurs", 2, "Chaque combinaison contient un honneur ou un terminal (1 ou 9). Attention : l'exemple ci-contre, si les quatre brelans sont cachés (jamais volés), compte en réalité comme Suuankou (yakuman) et pas comme Honroutou.", 0, new List<TilePivot>
                     {
                         tiles.First(x => x.Family == Families.Caracter && x.Number == 9),
                         tiles.First(x => x.Family == Families.Caracter && x.Number == 9),
@@ -937,7 +937,7 @@ public class YakuPivot
             else if (yaku == Pinfu)
             {
                 addYaku = combinationsSequence.Count(c => c.IsSequence && c.IsConcealed) == 4
-                    && !HandPivot.HandWithValuablePair(combinationsSequence, context.DominantWind, context.PlayerWind)
+                    && !TileCombinatoricsPivot.HandWithValuablePair(combinationsSequence, context.DominantWind, context.PlayerWind)
                     && combinationsSequence.Any(c => c.IsSequence && c.Tiles.Contains(context.LatestTile)
                         && !context.LatestTile!.TileIsEdgeWait(c) && !context.LatestTile.TileIsMiddleWait(c));
             }

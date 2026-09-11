@@ -184,7 +184,7 @@ internal static class ScoreTools
             fuCount += TSUMO_FU;
         }
 
-        if (HandPivot.HandWithValuablePair(hand.YakusCombinations!, dominantWind, playerWind))
+        if (TileCombinatoricsPivot.HandWithValuablePair(hand.YakusCombinations!, dominantWind, playerWind))
         {
             fuCount += VALUABLE_PAIR_FU;
         }
