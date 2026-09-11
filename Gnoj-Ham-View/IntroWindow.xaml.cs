@@ -45,7 +45,9 @@ public partial class IntroWindow : Window
             ChkUseRedDoras.IsChecked == true,
             ChkUseNagashiMangan.IsChecked == true,
             ChkDebugMode.IsChecked == true,
-            ChkDiscardTip.IsChecked == true);
+            ChkDiscardTip.IsChecked == true,
+            ChkUseMultipleYakumans.IsChecked == true,
+            ChkUseKazoeYakuman.IsChecked == true);
 
         if (ChkFourCpus.IsChecked == true)
         {
@@ -74,6 +76,8 @@ public partial class IntroWindow : Window
         CbbEndOfGameRule.SelectedIndex = (int)RulePivot.Default.EndOfGameRule;
         ChkUseRedDoras.IsChecked = RulePivot.Default.UseRedDoras;
         ChkUseNagashiMangan.IsChecked = RulePivot.Default.UseNagashiMangan;
+        ChkUseMultipleYakumans.IsChecked = RulePivot.Default.UseMultipleYakumans;
+        ChkUseKazoeYakuman.IsChecked = RulePivot.Default.UseKazoeYakuman;
 
         // Options as rules
         ChkDiscardTip.IsChecked = RulePivot.Default.DiscardTip;

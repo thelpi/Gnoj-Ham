@@ -64,11 +64,15 @@
                             <RowDefinition Height="30" />
                             <RowDefinition Height="30" />
                             <RowDefinition Height="30" />
+                            <RowDefinition Height="30" />
+                            <RowDefinition Height="30" />
                         </Grid.RowDefinitions>
                         <Label Grid.Column="0" Grid.Row="0" HorizontalContentAlignment="Right" VerticalContentAlignment="Center" Content="Akadora" Grid.ColumnSpan="2" />
                         <Label Grid.Column="0" Grid.Row="1" HorizontalContentAlignment="Right" VerticalContentAlignment="Center" Content="Points au départ" Grid.ColumnSpan="2" />
                         <Label Grid.Column="0" Grid.Row="2" HorizontalContentAlignment="Right" VerticalContentAlignment="Center" Content="Nagashi mangan" Grid.ColumnSpan="2" />
                         <Label Grid.Column="0" Grid.Row="3" HorizontalContentAlignment="Right" VerticalContentAlignment="Center" Content="Règles de fin de partie" Grid.ColumnSpan="2" />
+                        <Label Grid.Column="0" Grid.Row="4" HorizontalContentAlignment="Right" VerticalContentAlignment="Center" Content="Yakumans multiples" Grid.ColumnSpan="2" />
+                        <Label Grid.Column="0" Grid.Row="5" HorizontalContentAlignment="Right" VerticalContentAlignment="Center" Content="Yakuman au compte" Grid.ColumnSpan="2" />
                         <CheckBox Margin="5,0,0,0" Grid.Column="2" Name="ChkUseRedDoras" VerticalAlignment="Center" Grid.ColumnSpan="2" />
                         <ComboBox Margin="5,2,0,2" Grid.Column="2" Grid.Row="1" Name="CbbPointsRule" Height="25" VerticalContentAlignment="Center" Grid.ColumnSpan="2" />
                         <CheckBox Margin="5,0,0,0" Grid.Column="2" Grid.Row="2" Name="ChkUseNagashiMangan" VerticalAlignment="Center" Grid.ColumnSpan="2" />
@@ -81,6 +85,10 @@
                                 </TextBlock>
                             </ComboBox.ToolTip>
                         </ComboBox>
+                        <CheckBox Margin="5,0,0,0" Grid.Column="2" Grid.Row="4" Name="ChkUseMultipleYakumans" VerticalAlignment="Center" Grid.ColumnSpan="2"
+                                  ToolTip="Cumule la valeur de plusieurs Yakumans distincts obtenus dans la même main (sinon, un seul compte)." />
+                        <CheckBox Margin="5,0,0,0" Grid.Column="2" Grid.Row="5" Name="ChkUseKazoeYakuman" VerticalAlignment="Center" Grid.ColumnSpan="2"
+                                  ToolTip="Une main atteignant 13 fans sans Yakuman est comptée comme un Yakuman (sinon, elle est plafonnée à 12 fans)." />
                     </Grid>
                 </TabItem>
                 <TabItem Name="DevelopmentTab" Header="Development">

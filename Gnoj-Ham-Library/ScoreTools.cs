@@ -16,8 +16,6 @@ internal static class ScoreTools
 
     private const int HONBA_VALUE = 300;
     private const int TENPAI_BASE_POINTS = 1000;
-    private const bool MULTIPLE_YAKUMANS = false;
-    private const bool ALLOW_KAZOE_YAKUMAN = false;
     private const int HONOR_KAN_FU = 32;
     private const int REGULAR_KAN_FU = 16;
     private const int HONOR_PON_FU = 8;
@@ -133,22 +131,25 @@ internal static class ScoreTools
     /// </summary>
     /// <param name="yakus">List of yakus.</param>
     /// <param name="concealed"><c>True</c> if the hand is concealed; <c>False</c> otherwise.</param>
+    /// <param name="allowMultipleYakumans"><see cref="RulePivot.UseMultipleYakumans"/>.</param>
+    /// <param name="allowKazoeYakuman"><see cref="RulePivot.UseKazoeYakuman"/>.</param>
     /// <param name="dorasCount">Optionnal; doras count.</param>
     /// <param name="uraDorasCount">Optionnal; ura-doras count.</param>
     /// <param name="redDorasCount">Optionnal; red doras count.</param>
     /// <returns>The fan count.</returns>
-    internal static int GetFanCount(IReadOnlyList<YakuPivot> yakus, bool concealed, int dorasCount = 0, int uraDorasCount = 0, int redDorasCount = 0)
+    internal static int GetFanCount(IReadOnlyList<YakuPivot> yakus, bool concealed, bool allowMultipleYakumans, bool allowKazoeYakuman,
+        int dorasCount = 0, int uraDorasCount = 0, int redDorasCount = 0)
     {
         var yakumansCount = yakus.Count(y => (concealed ? y.ConcealedFanCount : y.FanCount) == 13);
 
         if (yakumansCount > 0)
         {
-            return (MULTIPLE_YAKUMANS ? yakumansCount : 1) * 13;
+            return (allowMultipleYakumans ? yakumansCount : 1) * 13;
         }
 
         var initialFanCount = yakus.Sum(y => concealed ? y.ConcealedFanCount : y.FanCount) + dorasCount + uraDorasCount + redDorasCount;
 
-        return initialFanCount >= 13 ? (ALLOW_KAZOE_YAKUMAN ? 13 : 12) : initialFanCount;
+        return initialFanCount >= 13 ? (allowKazoeYakuman ? 13 : 12) : initialFanCount;
     }
 
     /// <summary>

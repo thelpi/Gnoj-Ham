@@ -1096,7 +1096,7 @@ public class RoundPivot
                     displayUraDoraTiles = true;
                 }
 
-                var fanCount = ScoreTools.GetFanCount(phand.Yakus!, phand.IsConcealed, dorasCount, uraDorasCount, redDorasCount);
+                var fanCount = ScoreTools.GetFanCount(phand.Yakus!, phand.IsConcealed, Game.Ruleset.UseMultipleYakumans, Game.Ruleset.UseKazoeYakuman, dorasCount, uraDorasCount, redDorasCount);
                 var fuCount = ScoreTools.GetFuCount(phand, !ronPlayerIndex.HasValue, Game.DominantWind, Game.GetPlayerCurrentWind(pIndex));
 
                 if (liablePlayerId.HasValue)
