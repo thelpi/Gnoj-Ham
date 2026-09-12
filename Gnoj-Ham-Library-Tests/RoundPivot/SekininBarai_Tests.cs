@@ -21,9 +21,12 @@ public class SekininBarai_Tests
 
     private static void AddDiscard(RoundPivot round, PlayerIndices playerIndex, TilePivot tile)
     {
-        var discards = (List<List<TilePivot>>)typeof(RoundPivot)
-            .GetField("_discards", BindingFlags.NonPublic | BindingFlags.Instance)!
+        var discardHistory = typeof(RoundPivot)
+            .GetField("_discardHistory", BindingFlags.NonPublic | BindingFlags.Instance)!
             .GetValue(round)!;
+        var discards = (List<List<TilePivot>>)typeof(DiscardHistoryPivot)
+            .GetField("_discards", BindingFlags.NonPublic | BindingFlags.Instance)!
+            .GetValue(discardHistory)!;
         discards[(int)playerIndex].Add(tile);
     }
 

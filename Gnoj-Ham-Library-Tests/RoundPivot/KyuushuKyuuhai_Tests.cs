@@ -76,9 +76,12 @@ public class KyuushuKyuuhai_Tests
         var tilesSet = TilePivot.GetCompleteSet(false);
         SetHandAndWaitForDiscard(round, round.CurrentPlayerIndex, BuildNineKindsHand(tilesSet));
 
-        var discards = (List<List<TilePivot>>)typeof(RoundPivot)
-            .GetField("_discards", BindingFlags.NonPublic | BindingFlags.Instance)!
+        var discardHistory = typeof(RoundPivot)
+            .GetField("_discardHistory", BindingFlags.NonPublic | BindingFlags.Instance)!
             .GetValue(round)!;
+        var discards = (List<List<TilePivot>>)typeof(DiscardHistoryPivot)
+            .GetField("_discards", BindingFlags.NonPublic | BindingFlags.Instance)!
+            .GetValue(discardHistory)!;
         discards[(int)round.CurrentPlayerIndex].Add(tilesSet[0]);
 
         Assert.False(round.CanCallKyuushuKyuuhai());

@@ -14,16 +14,13 @@ public class RoundPivot
     private TilePivot? _closedKanInProgress;
     private TilePivot? _openedKanInProgress;
     private bool _waitForDiscard;
-    private readonly List<PlayerIndices> _playerIndexHistory;
+    private readonly DiscardHistoryPivot _discardHistory;
     private readonly List<TilePivot> _wallTiles;
     private readonly List<HandPivot> _hands;
     private readonly List<TilePivot> _compensationTiles;
     private readonly List<TilePivot> _doraIndicatorTiles;
     private readonly List<TilePivot> _uraDoraIndicatorTiles;
     private readonly List<TilePivot> _deadTreasureTiles;
-    private readonly List<List<TilePivot>> _discards;
-    private readonly List<List<TilePivot>> _virtualDiscards;
-    private readonly List<Dictionary<PlayerIndices, int>> _lastOwnDiscardOpponentsVirtualRank;
     private readonly List<RiichiPivot?> _riichis;
     private readonly List<TilePivot> _fullTilesList;
     private readonly IReadOnlyDictionary<PlayerIndices, CpuManagerBasePivot> _cpuManagers;
@@ -32,13 +29,6 @@ public class RoundPivot
     /// All tiles.
     /// </summary>
     public IReadOnlyList<TilePivot> FullTilesList => _fullTilesList;
-
-    /// <summary>
-    /// History of the latest players to play.
-    /// First on the list is the latest to play.
-    /// The list is cleared when a jump (ie a call) is made.
-    /// </summary>
-    internal IReadOnlyList<PlayerIndices> PlayerIndexHistory => _playerIndexHistory;
 
     /// <summary>
     /// Wall tiles.
@@ -141,8 +131,8 @@ public class RoundPivot
 
     /// <summary>
     /// Inferred; indicates if all four players discarded the same wind tile on their first,
-    /// uninterrupted turn ("suufon renda" abortive draw). Optional rule, off by default (not used in
-    /// European competition rules).
+    /// uninterrupted turn ("suufon renda" abortive draw). Optional rule (not used in European
+    /// competition rules), on by default.
     /// </summary>
     internal bool IsSuufonRenda
     {
@@ -153,17 +143,17 @@ public class RoundPivot
                 return false;
             }
 
-            // "_playerIndexHistory.Count" only ever equals the total discard count when no call
+            // "PlayerIndexHistory.Count" only ever equals the total discard count when no call
             // (pon / chii / kan) has happened yet: any call clears it. Requiring both to be 4 pins
             // this down to exactly "four discards, first turn each, nothing called in between".
-            if (_playerIndexHistory.Count != 4 || _discards.Sum(d => d.Count) != 4)
+            if (_discardHistory.PlayerIndexHistory.Count != 4 || _discardHistory.Discards.Sum(d => d.Count) != 4)
             {
                 return false;
             }
 
-            var firstDiscardedWind = _discards[0][0];
+            var firstDiscardedWind = _discardHistory.Discards[0][0];
             return firstDiscardedWind.Family == Families.Wind
-                && _discards.All(d => d[0].Family == Families.Wind && d[0].Wind == firstDiscardedWind.Wind);
+                && _discardHistory.Discards.All(d => d[0].Family == Families.Wind && d[0].Wind == firstDiscardedWind.Wind);
         }
     }
 
@@ -254,8 +244,7 @@ public class RoundPivot
         drivenDraw?.Invoke(_fullTilesList);
 
         _hands = Enumerable.Range(0, 4).Select(i => new HandPivot(_fullTilesList.GetRange(i * 13, 13))).ToList();
-        _discards = Enumerable.Range(0, 4).Select(i => new List<TilePivot>(20)).ToList();
-        _virtualDiscards = Enumerable.Range(0, 4).Select(i => new List<TilePivot>(20)).ToList();
+        _discardHistory = new DiscardHistoryPivot();
         _riichis = Enumerable.Range(0, 4).Select(i => (RiichiPivot?)null).ToList();
         _wallTiles = _fullTilesList.GetRange(52, 70);
         _compensationTiles = _fullTilesList.GetRange(122, 4);
@@ -267,12 +256,6 @@ public class RoundPivot
         _closedKanInProgress = null;
         _openedKanInProgress = null;
         _waitForDiscard = false;
-        _playerIndexHistory = new List<PlayerIndices>(10);
-        _lastOwnDiscardOpponentsVirtualRank = Enumerable.Range(0, 4)
-            .Select(i => Enum.GetValues<PlayerIndices>()
-                .Where(p => (int)p != i)
-                .ToDictionary(p => p, _ => 0))
-            .ToList();
         _cpuManagers = new Dictionary<PlayerIndices, CpuManagerBasePivot>
         {
             { PlayerIndices.Zero, new BasicCpuManagerPivot(this) },
@@ -510,12 +493,12 @@ public class RoundPivot
     /// </returns>
     public IReadOnlyList<TilePivot> CanCallChii()
     {
-        if (_wallTiles.Count == 0 || _discards[(int)PreviousPlayerIndex].Count == 0 || _waitForDiscard || IsRiichi(CurrentPlayerIndex))
+        if (_wallTiles.Count == 0 || _discardHistory.Discards[(int)PreviousPlayerIndex].Count == 0 || _waitForDiscard || IsRiichi(CurrentPlayerIndex))
         {
             return new List<TilePivot>();
         }
 
-        var tile = _discards[(int)PreviousPlayerIndex][^1];
+        var tile = _discardHistory.Discards[(int)PreviousPlayerIndex][^1];
         if (tile.IsHonor)
         {
             return new List<TilePivot>();
@@ -559,9 +542,9 @@ public class RoundPivot
     {
         return _wallTiles.Count != 0
             && PreviousPlayerIndex != playerIndex
-            && _discards[(int)PreviousPlayerIndex].Count != 0
+            && _discardHistory.Discards[(int)PreviousPlayerIndex].Count != 0
             && !_waitForDiscard && !IsRiichi(playerIndex)
-            && _hands[(int)playerIndex].ConcealedTiles.Where(t => t == _discards[(int)PreviousPlayerIndex][^1]).Count() >= 2;
+            && _hands[(int)playerIndex].ConcealedTiles.Where(t => t == _discardHistory.Discards[(int)PreviousPlayerIndex][^1]).Count() >= 2;
     }
 
     /// <summary>
@@ -611,12 +594,12 @@ public class RoundPivot
         }
         else
         {
-            if (_waitForDiscard || PreviousPlayerIndex == playerIndex || _discards[(int)PreviousPlayerIndex].Count == 0 || IsRiichi(playerIndex))
+            if (_waitForDiscard || PreviousPlayerIndex == playerIndex || _discardHistory.Discards[(int)PreviousPlayerIndex].Count == 0 || IsRiichi(playerIndex))
             {
                 return new List<TilePivot>();
             }
 
-            var referenceTileFromDiscard = _discards[(int)PreviousPlayerIndex][^1];
+            var referenceTileFromDiscard = _discardHistory.Discards[(int)PreviousPlayerIndex][^1];
             return _hands[(int)playerIndex].ConcealedTiles.Where(t => t == referenceTileFromDiscard).Count() >= 3
                 ? new List<TilePivot>
                 {
@@ -638,14 +621,13 @@ public class RoundPivot
             return false;
         }
 
-        var stolenTile = _discards[(int)PreviousPlayerIndex][^1];
+        var stolenTile = _discardHistory.TakeLastDiscard(PreviousPlayerIndex);
 
         _hands[(int)CurrentPlayerIndex].DeclareChii(
             stolenTile,
             Game.GetPlayerCurrentWind(PreviousPlayerIndex),
             Math.Min(pickInSequence.Number, stolenTile.Number)
         );
-        _discards[(int)PreviousPlayerIndex].RemoveAt(_discards[(int)PreviousPlayerIndex].Count - 1);
         _stealingInProgress = true;
         _waitForDiscard = true;
         return true;
@@ -664,10 +646,9 @@ public class RoundPivot
         }
 
         _hands[(int)playerIndex].DeclarePon(
-            _discards[(int)PreviousPlayerIndex][^1],
+            _discardHistory.TakeLastDiscard(PreviousPlayerIndex),
             Game.GetPlayerCurrentWind(PreviousPlayerIndex)
         );
-        _discards[(int)PreviousPlayerIndex].RemoveAt(_discards[(int)PreviousPlayerIndex].Count - 1);
         CurrentPlayerIndex = playerIndex;
         _stealingInProgress = true;
         _waitForDiscard = true;
@@ -707,18 +688,17 @@ public class RoundPivot
             _hands[(int)playerIndex].DeclareKan(tileChoice, null, fromPreviousPon);
             if (fromPreviousPon != null)
             {
-                _virtualDiscards[(int)playerIndex].Add(tileChoice);
+                _discardHistory.RecordVirtualOnly(playerIndex, tileChoice);
             }
             isClosedKan = true;
         }
         else
         {
             _hands[(int)playerIndex].DeclareKan(
-                _discards[(int)PreviousPlayerIndex][^1],
+                _discardHistory.TakeLastDiscard(PreviousPlayerIndex),
                 Game.GetPlayerCurrentWind(PreviousPlayerIndex),
                 null
             );
-            _discards[(int)PreviousPlayerIndex].RemoveAt(_discards[(int)PreviousPlayerIndex].Count - 1);
             CurrentPlayerIndex = playerIndex;
             _stealingInProgress = true;
         }
@@ -737,8 +717,8 @@ public class RoundPivot
     {
         // Computes before discard, but proceeds after.
         // Otherwise, the discard will fail.
-        var riichiTurnsCount = _discards[(int)CurrentPlayerIndex].Count;
-        var isUninterruptedFirstTurn = _discards[(int)CurrentPlayerIndex].Count == 0 && IsUninterruptedHistory(CurrentPlayerIndex);
+        var riichiTurnsCount = _discardHistory.Discards[(int)CurrentPlayerIndex].Count;
+        var isUninterruptedFirstTurn = _discardHistory.Discards[(int)CurrentPlayerIndex].Count == 0 && IsUninterruptedHistory(CurrentPlayerIndex);
 
         if (!Discard(tile))
         {
@@ -746,7 +726,7 @@ public class RoundPivot
         }
 
         _riichis[(int)PreviousPlayerIndex] = new RiichiPivot(riichiTurnsCount, isUninterruptedFirstTurn, tile,
-            Enum.GetValues<PlayerIndices>().Where(i => i != PreviousPlayerIndex).Select(i => new KeyValuePair<PlayerIndices, int>(i, _virtualDiscards[(int)i].Count)).ToDictionary(kvp => kvp.Key, kvp => kvp.Value));
+            Enum.GetValues<PlayerIndices>().Where(i => i != PreviousPlayerIndex).Select(i => new KeyValuePair<PlayerIndices, int>(i, _discardHistory.VirtualDiscards[(int)i].Count)).ToDictionary(kvp => kvp.Key, kvp => kvp.Value));
         Game.AddPendingRiichi(PreviousPlayerIndex);
 
         return true;
@@ -769,31 +749,16 @@ public class RoundPivot
 
         _hands[(int)CurrentPlayerIndex].Discard(tile);
 
-        if (_stealingInProgress || _closedKanInProgress != null)
-        {
-            _playerIndexHistory.Clear();
-        }
-
-        _discards[(int)CurrentPlayerIndex].Add(tile);
-        _virtualDiscards[(int)CurrentPlayerIndex].Add(tile);
-
-        // Freezes, for this player, the current discard count of every opponent: this is the
-        // starting point from which future opponent discards are checked for temporary furiten.
-        // Unlike "_playerIndexHistory", this isn't reset by a call (pon / chii / kan) made by someone
-        // else in the meantime, because the temporary furiten rule survives such interruptions.
-        foreach (var opponent in Enum.GetValues<PlayerIndices>())
-        {
-            if (opponent != CurrentPlayerIndex)
-            {
-                _lastOwnDiscardOpponentsVirtualRank[(int)CurrentPlayerIndex][opponent] = _virtualDiscards[(int)opponent].Count;
-            }
-        }
+        // Freezing every opponent's current virtual-discard count, and extending (or, if a call just
+        // interrupted the sequence, resetting) the clean turn-order history, are both handled inside
+        // RecordDiscard - see DiscardHistoryPivot for why each survives (or doesn't) a call made by
+        // someone else in the meantime.
+        _discardHistory.RecordDiscard(CurrentPlayerIndex, tile, _stealingInProgress || _closedKanInProgress != null);
 
         _stealingInProgress = false;
         _closedKanInProgress = null;
         _openedKanInProgress = null;
         _waitForDiscard = false;
-        _playerIndexHistory.Insert(0, CurrentPlayerIndex);
         CurrentPlayerIndex = CurrentPlayerIndex.RelativePlayerIndex(1);
         return true;
     }
@@ -850,7 +815,7 @@ public class RoundPivot
     /// <returns>Collection of discarded <see cref="TilePivot"/> instances.</returns>
     public IReadOnlyList<TilePivot> GetDiscard(PlayerIndices playerIndex)
     {
-        return _discards[(int)playerIndex];
+        return _discardHistory.Discards[(int)playerIndex];
     }
 
     /// <summary>
@@ -909,7 +874,7 @@ public class RoundPivot
     internal bool CanCallKyuushuKyuuhai()
     {
         return _waitForDiscard
-            && _discards[(int)CurrentPlayerIndex].Count == 0
+            && _discardHistory.Discards[(int)CurrentPlayerIndex].Count == 0
             && IsUninterruptedHistory(CurrentPlayerIndex)
             && _hands[(int)CurrentPlayerIndex].ConcealedTiles.Where(t => t.IsHonorOrTerminal).Distinct().Count() >= 9;
     }
@@ -948,7 +913,7 @@ public class RoundPivot
     /// <returns><c>True</c> if calling ron is possible; <c>False</c> otherwise.</returns>
     internal bool CanCallRon(PlayerIndices playerIndex)
     {
-        var tile = _waitForDiscard ? null : _discards[(int)PreviousPlayerIndex].LastOrDefault();
+        var tile = _waitForDiscard ? null : _discardHistory.Discards[(int)PreviousPlayerIndex].LastOrDefault();
         var forKokushiOnly = false;
         var isChanka = false;
         if (CurrentPlayerIndex != playerIndex)
@@ -974,7 +939,7 @@ public class RoundPivot
         SetYakus(playerIndex, tile, forKokushiOnly ? DrawTypes.OpponentKanCallConcealed : (isChanka ? DrawTypes.OpponentKanCallOpen : DrawTypes.OpponentDiscard));
 
         return _hands[(int)playerIndex].IsComplete
-            && !_hands[(int)playerIndex].CancelYakusIfFuriten(_discards[(int)playerIndex], GetTilesFromVirtualDiscardsAtRank(playerIndex, tile))
+            && !_hands[(int)playerIndex].CancelYakusIfFuriten(_discardHistory.Discards[(int)playerIndex], GetTilesFromVirtualDiscardsAtRank(playerIndex, tile))
             && !_hands[(int)playerIndex].CancelYakusIfTemporaryFuriten(GetTilesFromVirtualDiscardsSinceLastOwnDiscard(playerIndex, tile));
     }
 
@@ -1190,7 +1155,7 @@ public class RoundPivot
                 // In case of ron, fix the "LatestPick" property of the winning hand
                 if (ronPlayerIndex.HasValue)
                 {
-                    phand.SetFromRon(_discards[(int)ronPlayerIndex.Value][^1]);
+                    phand.SetFromRon(_discardHistory.Discards[(int)ronPlayerIndex.Value][^1]);
                 }
 
                 PlayerIndices? liablePlayerId = null;
@@ -1625,7 +1590,7 @@ public class RoundPivot
             if (i != riichiPlayerIndex)
             {
                 var opponentRank = _riichis[(int)riichiPlayerIndex]!.OpponentsVirtualDiscardRank[i];
-                fullList.AddRange(_virtualDiscards[(int)i].Skip(opponentRank));
+                fullList.AddRange(_discardHistory.VirtualDiscards[(int)i].Skip(opponentRank));
             }
         }
 
@@ -1644,8 +1609,8 @@ public class RoundPivot
         {
             if (opponent != playerIndex)
             {
-                var rank = _lastOwnDiscardOpponentsVirtualRank[(int)playerIndex][opponent];
-                fullList.AddRange(_virtualDiscards[(int)opponent].Skip(rank));
+                var rank = _discardHistory.GetLastOwnDiscardOpponentRank(playerIndex, opponent);
+                fullList.AddRange(_discardHistory.VirtualDiscards[(int)opponent].Skip(rank));
             }
         }
 
@@ -1681,7 +1646,7 @@ public class RoundPivot
     // Checks there's no call interruption since the latest move of the specified player.
     private bool IsUninterruptedHistory(PlayerIndices playerIndex)
     {
-        var historySinceLastTime = _playerIndexHistory.TakeWhile(i => i != playerIndex).ToList();
+        var historySinceLastTime = _discardHistory.PlayerIndexHistory.TakeWhile(i => i != playerIndex).ToList();
 
         var rank = 1;
         for (var i = historySinceLastTime.Count - 1; i >= 0; i--)
@@ -1705,7 +1670,7 @@ public class RoundPivot
             drawType: drawType,
             dominantWind: Game.DominantWind,
             playerWind: Game.GetPlayerCurrentWind(playerIndex),
-            isFirstOrLast: IsWallExhaustion ? (bool?)null : (_discards[(int)playerIndex].Count == 0 && IsUninterruptedHistory(playerIndex)),
+            isFirstOrLast: IsWallExhaustion ? (bool?)null : (_discardHistory.Discards[(int)playerIndex].Count == 0 && IsUninterruptedHistory(playerIndex)),
             isRiichi: IsRiichi(playerIndex) ? (_riichis[(int)playerIndex]!.IsDaburu ? (bool?)null : true) : false,
             isIppatsu: IsIppatsu(playerIndex)
         ));
@@ -1715,8 +1680,8 @@ public class RoundPivot
     private bool IsIppatsu(PlayerIndices playerIndex)
     {
         return IsRiichi(playerIndex)
-            && _discards[(int)playerIndex].Count > 0
-            && ReferenceEquals(_discards[(int)playerIndex][^1], _riichis[(int)playerIndex]!.Tile)
+            && _discardHistory.Discards[(int)playerIndex].Count > 0
+            && ReferenceEquals(_discardHistory.Discards[(int)playerIndex][^1], _riichis[(int)playerIndex]!.Tile)
             && IsUninterruptedHistory(playerIndex);
     }
 
@@ -1757,7 +1722,7 @@ public class RoundPivot
 
         foreach (var i in Enum.GetValues<PlayerIndices>())
         {
-            var fullTerminalsOrHonors = _discards[(int)i].All(t => t.IsHonorOrTerminal);
+            var fullTerminalsOrHonors = _discardHistory.Discards[(int)i].All(t => t.IsHonorOrTerminal);
             var noPlayerStealing = _hands[(int)i].IsConcealed;
             var noOpponentStealing = !_hands.Where(h => _hands.IndexOf(h) != (int)i).Any(h => h.DeclaredCombinations.Any(c => c.StolenFrom == Game.GetPlayerCurrentWind(i)));
             if (fullTerminalsOrHonors && noPlayerStealing && noOpponentStealing)

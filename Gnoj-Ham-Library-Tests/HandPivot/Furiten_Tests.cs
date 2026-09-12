@@ -32,20 +32,27 @@ public class Furiten_Tests
     private static (TilePivot waitLow, TilePivot waitHigh) WinningTiles(IReadOnlyList<TilePivot> tilesSet)
         => (TilePivot.GetTile(tilesSet, Families.Bamboo, number: 1), TilePivot.GetTile(tilesSet, Families.Bamboo, number: 4));
 
-    private static List<List<TilePivot>> VirtualDiscardsField(RoundPivot round)
-        => (List<List<TilePivot>>)typeof(RoundPivot)
-            .GetField("_virtualDiscards", BindingFlags.NonPublic | BindingFlags.Instance)!
+    // RoundPivot delegates all discard-tracking state to DiscardHistoryPivot; reflect into that
+    // collaborator first, then into its own private fields.
+    private static DiscardHistoryPivot DiscardHistory(RoundPivot round)
+        => (DiscardHistoryPivot)typeof(RoundPivot)
+            .GetField("_discardHistory", BindingFlags.NonPublic | BindingFlags.Instance)!
             .GetValue(round)!;
+
+    private static List<List<TilePivot>> VirtualDiscardsField(RoundPivot round)
+        => (List<List<TilePivot>>)typeof(DiscardHistoryPivot)
+            .GetField("_virtualDiscards", BindingFlags.NonPublic | BindingFlags.Instance)!
+            .GetValue(DiscardHistory(round))!;
 
     private static Dictionary<PlayerIndices, int> LastOwnDiscardRankField(RoundPivot round, PlayerIndices playerIndex)
-        => ((List<Dictionary<PlayerIndices, int>>)typeof(RoundPivot)
+        => ((List<Dictionary<PlayerIndices, int>>)typeof(DiscardHistoryPivot)
             .GetField("_lastOwnDiscardOpponentsVirtualRank", BindingFlags.NonPublic | BindingFlags.Instance)!
-            .GetValue(round)!)[(int)playerIndex];
+            .GetValue(DiscardHistory(round))!)[(int)playerIndex];
 
     private static List<PlayerIndices> PlayerIndexHistoryField(RoundPivot round)
-        => (List<PlayerIndices>)typeof(RoundPivot)
+        => (List<PlayerIndices>)typeof(DiscardHistoryPivot)
             .GetField("_playerIndexHistory", BindingFlags.NonPublic | BindingFlags.Instance)!
-            .GetValue(round)!;
+            .GetValue(DiscardHistory(round))!;
 
     private static RoundPivot NewRound()
         => new GamePivot(RulePivot.Default, PlayerPivot.BuildPlayers(null), new Random(1)).Round;

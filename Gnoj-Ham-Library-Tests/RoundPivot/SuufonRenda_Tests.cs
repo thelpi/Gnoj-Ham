@@ -18,15 +18,20 @@ public class SuufonRenda_Tests
             },
             PlayerPivot.BuildPlayers(null), new Random(1)).Round;
 
-    private static List<List<TilePivot>> DiscardsField(RoundPivot round)
-        => (List<List<TilePivot>>)typeof(RoundPivot)
-            .GetField("_discards", BindingFlags.NonPublic | BindingFlags.Instance)!
+    private static DiscardHistoryPivot DiscardHistory(RoundPivot round)
+        => (DiscardHistoryPivot)typeof(RoundPivot)
+            .GetField("_discardHistory", BindingFlags.NonPublic | BindingFlags.Instance)!
             .GetValue(round)!;
 
+    private static List<List<TilePivot>> DiscardsField(RoundPivot round)
+        => (List<List<TilePivot>>)typeof(DiscardHistoryPivot)
+            .GetField("_discards", BindingFlags.NonPublic | BindingFlags.Instance)!
+            .GetValue(DiscardHistory(round))!;
+
     private static List<PlayerIndices> HistoryField(RoundPivot round)
-        => (List<PlayerIndices>)typeof(RoundPivot)
+        => (List<PlayerIndices>)typeof(DiscardHistoryPivot)
             .GetField("_playerIndexHistory", BindingFlags.NonPublic | BindingFlags.Instance)!
-            .GetValue(round)!;
+            .GetValue(DiscardHistory(round))!;
 
     // Simulates all four players discarding "tile" as their first, uninterrupted discard.
     private static void SetFirstDiscards(RoundPivot round, TilePivot tile)
