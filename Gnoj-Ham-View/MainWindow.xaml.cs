@@ -533,9 +533,14 @@ public partial class MainWindow : Window
         RefreshPlayerTurnStyle();
 
         var compensationTile = _game.Round.CallKan(_humanPlayerIndex, tile);
+        if (compensationTile == null)
+        {
+            throw new InvalidOperationException("CallKan returned null: the kan call was not actually possible.");
+        }
+
         InvokeOverlay(CallTypes.Kan, _humanPlayerIndex);
 
-        RunAutoPlay(humanKanCompensation: (compensationTile!, previousPlayerIndex));
+        RunAutoPlay(humanKanCompensation: (compensationTile, previousPlayerIndex));
     }
 
     #endregion General orchestration

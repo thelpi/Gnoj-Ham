@@ -262,7 +262,12 @@ public class RoundPivot
         (PlayerIndices, TilePivot?, PlayerIndices?)? kanInProgress = null;
         if (humanKanCompensation.HasValue)
         {
-            kanInProgress = (Game.HumanPlayerIndex!.Value, humanKanCompensation.Value.compensationTile, humanKanCompensation.Value.previousPlayerIndex);
+            if (!Game.HumanPlayerIndex.HasValue)
+            {
+                throw new InvalidOperationException("A human kan compensation was supplied, but this game has no human player.");
+            }
+
+            kanInProgress = (Game.HumanPlayerIndex.Value, humanKanCompensation.Value.compensationTile, humanKanCompensation.Value.previousPlayerIndex);
         }
 
         var result = new AutoPlayResultPivot();
@@ -1418,7 +1423,7 @@ public class RoundPivot
         RiichiChoicesNotifier?.Invoke(new RiichiChoicesNotifierEventArgs(riichiTiles));
         if (riichiTiles.Count > 0)
         {
-            var adviseRiichi = Game.Ruleset.DiscardTip && _cpuManagers[CurrentPlayerIndex].RiichiDecision() != null;
+            var adviseRiichi = Game.Ruleset.DiscardTip && _cpuManagers[CurrentPlayerIndex].RiichiDecision(riichiTiles) != null;
             HumanCallNotifier?.Invoke(new HumanCallNotifierEventArgs { Call = CallTypes.Riichi, RiichiAdvised = adviseRiichi });
             return null;
         }
