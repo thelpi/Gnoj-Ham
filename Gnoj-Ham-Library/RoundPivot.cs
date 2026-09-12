@@ -126,6 +126,20 @@ public class RoundPivot
     internal bool IsKyuushuKyuuhai { get; private set; }
 
     /// <summary>
+    /// Inferred; indicates if four kans have been declared by at least two different players
+    /// ("suukaikan" abortive draw). If all four kans come from a single player, the round continues
+    /// instead, to give them a chance at the "suukantsu" yakuman.
+    /// </summary>
+    internal bool IsSuukaikan
+    {
+        get
+        {
+            var kanCountsByPlayer = _hands.Select(h => h.DeclaredCombinations.Count(c => c.IsSquare)).ToList();
+            return kanCountsByPlayer.Sum() == 4 && kanCountsByPlayer.Count(c => c > 0) > 1;
+        }
+    }
+
+    /// <summary>
     /// Inferred; count of visible doras.
     /// </summary>
     public int VisibleDorasCount => 1 + (4 - _compensationTiles.Count);
@@ -322,7 +336,9 @@ public class RoundPivot
 
             // 2bis - "suucha riichi": all four players are riichi, and nobody called ron on the
             // discard which completed the fourth riichi; the round ends as an abortive draw.
-            if (IsSuuchaRiichi)
+            // "suukaikan": four kans declared by at least two different players, and nobody called
+            // ron on the discard following the fourth kan; same abortive draw outcome.
+            if (IsSuuchaRiichi || IsSuukaikan)
             {
                 result.EndOfRound = true;
                 return result;
@@ -1060,7 +1076,7 @@ public class RoundPivot
         var turnWind = false;
         var ryuukyoku = true;
         var displayUraDoraTiles = false;
-        var isAbortiveDraw = IsSuuchaRiichi || IsKyuushuKyuuhai;
+        var isAbortiveDraw = IsSuuchaRiichi || IsKyuushuKyuuhai || IsSuukaikan;
 
         var winners = isAbortiveDraw
             ? new List<PlayerIndices>()
