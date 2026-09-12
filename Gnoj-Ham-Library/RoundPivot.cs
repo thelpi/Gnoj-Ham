@@ -14,6 +14,15 @@ public class RoundPivot
     private TilePivot? _closedKanInProgress;
     private TilePivot? _openedKanInProgress;
     private bool _waitForDiscard;
+    // Whether the most recently called kan was open (daiminkan or shouminkan) rather than a genuine
+    // ankan - set by CallKan, consumed once by ResolveKanDoraReveal right after the chankan window.
+    private bool _lastKanWasOpen;
+    // Dora indicators actually revealed so far (starts at 1, the initial indicator).
+    private int _visibleDorasCount = 1;
+    // Open-kan dora reveals confirmed past the chankan window but still withheld until the discard
+    // that follows them - real rule: ankan reveals its dora immediately, an open kan (daiminkan or
+    // shouminkan) only after the resulting discard (and never at all if won by rinshan kaihou first).
+    private int _pendingOpenKanDoraReveals;
     private readonly DiscardHistoryPivot _discardHistory;
     private readonly List<TilePivot> _wallTiles;
     private readonly List<HandPivot> _hands;
@@ -165,9 +174,11 @@ public class RoundPivot
     }
 
     /// <summary>
-    /// Inferred; count of visible doras.
+    /// Inferred; count of visible doras. An ankan reveals its indicator immediately; an open kan
+    /// (daiminkan or shouminkan) only once the discard that follows it happens (see
+    /// <see cref="ResolveKanDoraReveal"/> and the pending-reveal flush in <see cref="Discard(TilePivot)"/>).
     /// </summary>
-    public int VisibleDorasCount => 1 + (4 - _compensationTiles.Count);
+    public int VisibleDorasCount => _visibleDorasCount;
 
     /// <summary>
     /// All tiles from the treasure (concealed or not).
@@ -533,9 +544,32 @@ public class RoundPivot
             _stealingInProgress = true;
         }
 
+        // A genuine ankan is the only "own turn" kan that isn't an upgrade of an existing pon
+        // (fromPreviousPon == null); every other case (shouminkan, or the "else" branch above which
+        // is always a daiminkan) is an open kan for dora-reveal-timing purposes.
+        _lastKanWasOpen = !(isClosedKan && fromPreviousPon == null);
+
         _waitForDiscard = true;
 
         return PickCompensationTile(isClosedKan);
+    }
+
+    /// <summary>
+    /// Confirms that the most recently called kan (see <see cref="CallKan"/>) survived the chankan
+    /// window (nobody called ron on it): reveals its dora indicator immediately if it was a genuine
+    /// ankan, or queues the reveal until the discard that follows it if it was an open kan (daiminkan
+    /// or shouminkan) - see <see cref="VisibleDorasCount"/>.
+    /// </summary>
+    internal void ResolveKanDoraReveal()
+    {
+        if (_lastKanWasOpen)
+        {
+            _pendingOpenKanDoraReveals++;
+        }
+        else
+        {
+            _visibleDorasCount++;
+        }
     }
 
     /// <summary>
@@ -590,6 +624,17 @@ public class RoundPivot
         _openedKanInProgress = null;
         _waitForDiscard = false;
         CurrentPlayerIndex = CurrentPlayerIndex.RelativePlayerIndex(1);
+
+        // An open kan's dora indicator stays hidden until precisely this moment (see
+        // ResolveKanDoraReveal); the notifier is re-raised here purely so the UI, which only redraws
+        // the dora panel from that event, catches up on a reveal that didn't happen at kan time.
+        if (_pendingOpenKanDoraReveals > 0)
+        {
+            _visibleDorasCount += _pendingOpenKanDoraReveals;
+            _pendingOpenKanDoraReveals = 0;
+            ReadyToCallNotifier?.Invoke(new ReadyToCallNotifierEventArgs { Call = CallTypes.Kan });
+        }
+
         return true;
     }
 

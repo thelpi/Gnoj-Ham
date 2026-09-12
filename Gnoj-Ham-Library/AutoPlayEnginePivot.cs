@@ -88,9 +88,14 @@ internal class AutoPlayEnginePivot
             }
 
             // 3 - notify the UI of the kan
-            // it's done here (and not right after the kan) to not display new dora too soon
+            // it's done here (and not right after the kan) because this is the first point where we
+            // know the kan wasn't chankan'd. ResolveKanDoraReveal reveals the new dora right away for
+            // an ankan, but only queues it (until the discard that follows) for an open kan - real
+            // rule: an ankan's indicator flips immediately, a daiminkan/shouminkan's only after the
+            // resulting discard (and never at all if the round ends on rinshan kaihou first).
             if (kanInProgress.HasValue)
             {
+                _round.ResolveKanDoraReveal();
                 _round.RaiseReadyToCallNotifier(new ReadyToCallNotifierEventArgs { Call = CallTypes.Kan, PotentialPreviousPlayerIndex = kanInProgress.Value.Item3 });
             }
 
