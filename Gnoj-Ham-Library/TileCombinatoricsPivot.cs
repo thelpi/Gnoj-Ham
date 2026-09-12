@@ -405,6 +405,16 @@ internal static class TileCombinatoricsPivot
                 {
                     combinations.Add(new TileComboPivot(tiles[j - 3], tiles[j - 2], tiles[j - 1]));
                 }
+                else if (count == 5)
+                {
+                    // Only reachable when probing tenpai on a hand that already holds all four copies
+                    // of its own wait: every tile value is tried as a candidate completion regardless
+                    // of how many are already in hand, so this run momentarily represents five copies
+                    // of the same honor - split as a triplet plus the completing pair (never a real,
+                    // standing hand: at most four copies of a tile exist).
+                    combinations.Add(new TileComboPivot(tiles[j - 5], tiles[j - 4], tiles[j - 3]));
+                    combinations.Add(new TileComboPivot(tiles[j - 2], tiles[j - 1]));
+                }
                 currentV = getValue(t);
                 count = 1;
             }
@@ -422,6 +432,11 @@ internal static class TileCombinatoricsPivot
                 else if (count == 3)
                 {
                     combinations.Add(new TileComboPivot(tiles[j - 3], tiles[j - 2], tiles[j - 1]));
+                }
+                else if (count == 5)
+                {
+                    combinations.Add(new TileComboPivot(tiles[j - 5], tiles[j - 4], tiles[j - 3]));
+                    combinations.Add(new TileComboPivot(tiles[j - 2], tiles[j - 1]));
                 }
             }
         }

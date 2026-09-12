@@ -5,7 +5,6 @@ Points notés en cours de route, pas traités tout de suite.
 ## Règles
 
 - [ ] Yakuman "doubles" non modélisés (Suuankou tanki, Kokushi 13 tuiles, Chuuren Poutou pur) : tout yakuman vaut 13 fans fixe dans `YakuPivot.cs`.
-- [ ] `RoundPivot.IsTenpai` : edge case si les 4 exemplaires de la tuile d'attente sont déjà en main (règle incertaine, pas implémentée) — `RoundPivot.cs:896`.
 
 ## Moteur (Gnoj-Ham-Library)
 
