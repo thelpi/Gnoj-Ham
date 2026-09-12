@@ -4,7 +4,6 @@ Points notés en cours de route, pas traités tout de suite.
 
 ## Moteur (Gnoj-Ham-Library)
 
-- [ ] `RoundPivot` : classe trop grosse, plusieurs responsabilités mélangées (pas de `partial class`, à voir autrement). `HandPivot` traité (combinatoire extraite vers `TileCombinatoricsPivot`).
 - [ ] `PlayerSavePivot` : sauvegarde JSON non chiffrée (`// TODO decrypt` déjà dans le code).
 - [ ] `PlayerSavePivot` : la classe elle-même est qualifiée d'"abomination" dans le code (mélange sérialisation/stats/état) — `PlayerSavePivot.cs:5`.
 - [ ] `RulePivot.cs:5` : séparer les règles de la config (debug mode, tips...) — jamais fait.
