@@ -1141,13 +1141,14 @@ public class RoundPivot
             {
                 var phand = _hands[(int)pIndex];
 
-                // in case of multiple rons; the winning player closest to east win the prize
-                var winnerHonba = honbaPoints;
-                if (ronPlayerIndex.HasValue && winners.Count > 1
-                    && Game.GetPlayerCurrentWind(pIndex) != winners.Min(Game.GetPlayerCurrentWind))
-                {
-                    winnerHonba = 0;
-                }
+                // In case of multiple simultaneous ron, only the winner closest to the discarder
+                // (going around the table starting right after them) collects the honba and the
+                // pending riichi sticks; the other winner(s) get their hand value only. Doesn't apply
+                // to simultaneous nagashi mangan winners: there's no discarder to compare against.
+                var isClosestWinnerOnMultipleRon = !ronPlayerIndex.HasValue || winners.Count <= 1
+                    || IsClosestWinnerToDiscarder(pIndex, ronPlayerIndex.Value, winners);
+
+                var winnerHonba = isClosestWinnerOnMultipleRon ? honbaPoints : 0;
 
                 // In case of ron, fix the "LatestPick" property of the winning hand
                 if (ronPlayerIndex.HasValue)
@@ -1202,21 +1203,7 @@ public class RoundPivot
 
                 var basePoints = east + (notEast * 2);
 
-                var riichiPart = Game.PendingRiichiCount * ScoreTools.RIICHI_COST;
-
-                // In case of ron with multiple winners, only the one who comes right next to "ronPlayerIndex" takes the stack of riichi.
-                // Doesn't apply to simultaneous nagashi mangan winners: there's no discarder to compare against.
-                if (ronPlayerIndex.HasValue && winners.Count > 1)
-                {
-                    for (var i = 1; i <= 3; i++)
-                    {
-                        var nextPlayerId = ronPlayerIndex!.Value.RelativePlayerIndex(i);
-                        if (winners.Contains(nextPlayerId) && pIndex != nextPlayerId)
-                        {
-                            riichiPart = 0;
-                        }
-                    }
-                }
+                var riichiPart = isClosestWinnerOnMultipleRon ? Game.PendingRiichiCount * ScoreTools.RIICHI_COST : 0;
 
                 playerInfos.Add(new EndOfRoundInformationsPivot.PlayerInformationsPivot(
                     pIndex, Game.IsHuman(pIndex), fanCount, fuCount, phand, basePoints + riichiPart + winnerHonba,
@@ -1239,34 +1226,25 @@ public class RoundPivot
                 }
             }
 
-            // Note : "liablePlayersLost" is empty in case of tsumo transformed into ron.
-            if (liablePlayersLost.Count > 0)
+            // Note : "liablePlayersLost" is empty in case of tsumo transformed into ron. A liable
+            // player can never be "ronPlayerIndex" itself (that case is nulled out earlier, as "no
+            // consequence"), so "eastOrLoserLostCumul" - accumulated only from non-liable shares -
+            // already reflects exactly what the discarder owes; no further adjustment is needed here.
+            foreach (var liablePlayerId in liablePlayersLost.Keys)
             {
-                var pointsNotOnRonPlayer = 0;
-                foreach (var liablePlayerId in liablePlayersLost.Keys)
+                if (playerInfos.Any(pi => pi.Index == liablePlayerId))
                 {
-                    pointsNotOnRonPlayer += liablePlayerId != ronPlayerIndex!.Value ? liablePlayersLost[liablePlayerId] : 0;
-                    if (playerInfos.Any(pi => pi.Index == liablePlayerId))
-                    {
-                        playerInfos.First(pi => pi.Index == liablePlayerId).AddPoints(liablePlayersLost[liablePlayerId]);
-                    }
-                    else
-                    {
-                        playerInfos.Add(new EndOfRoundInformationsPivot.PlayerInformationsPivot(
-                            liablePlayerId, Game.IsHuman(liablePlayerId), liablePlayersLost[liablePlayerId] - honbaPoints));
-                    }
-                }
-                if (playerInfos.Any(pi => pi.Index == ronPlayerIndex!.Value))
-                {
-                    playerInfos.First(pi => pi.Index == ronPlayerIndex!.Value).AddPoints(-pointsNotOnRonPlayer);
+                    playerInfos.First(pi => pi.Index == liablePlayerId).AddPoints(liablePlayersLost[liablePlayerId]);
                 }
                 else
                 {
+                    // Only the discarder pays honba: a liable player's share is never affected by it.
                     playerInfos.Add(new EndOfRoundInformationsPivot.PlayerInformationsPivot(
-                        ronPlayerIndex!.Value, Game.IsHuman(ronPlayerIndex.Value), eastOrLoserLostCumul - pointsNotOnRonPlayer));
+                        liablePlayerId, Game.IsHuman(liablePlayerId), liablePlayersLost[liablePlayerId]));
                 }
             }
-            else if (ronPlayerIndex.HasValue)
+
+            if (ronPlayerIndex.HasValue)
             {
                 playerInfos.Add(new EndOfRoundInformationsPivot.PlayerInformationsPivot(
                     ronPlayerIndex.Value, Game.IsHuman(ronPlayerIndex.Value), eastOrLoserLostCumul - honbaPoints));
@@ -1293,6 +1271,29 @@ public class RoundPivot
 
         return new EndOfRoundInformationsPivot(ryuukyoku, turnWind, displayUraDoraTiles, playerInfos, Game.HonbaCountBeforeScoring,
             Game.PendingRiichiCount, DoraIndicatorTiles, UraDoraIndicatorTiles, VisibleDorasCount);
+    }
+
+    /// <summary>
+    /// In case of multiple simultaneous ron, only one winner collects the honba and the pending
+    /// riichi sticks: the one seated closest to the discarder, going around the table starting right
+    /// after them.
+    /// </summary>
+    /// <param name="candidate">The candidate winner.</param>
+    /// <param name="discarder">The discarder (<c>ronPlayerIndex</c>).</param>
+    /// <param name="winners">Every winner of this ron.</param>
+    /// <returns><c>True</c> if <paramref name="candidate"/> is the one who collects them.</returns>
+    internal static bool IsClosestWinnerToDiscarder(PlayerIndices candidate, PlayerIndices discarder, IReadOnlyList<PlayerIndices> winners)
+    {
+        for (var i = 1; i <= 3; i++)
+        {
+            var closerWinner = discarder.RelativePlayerIndex(i);
+            if (winners.Contains(closerWinner))
+            {
+                return closerWinner == candidate;
+            }
+        }
+
+        return false;
     }
 
     /// <summary>
