@@ -6,7 +6,6 @@ Points notés en cours de route, pas traités tout de suite.
 
 - [ ] Yakuman "doubles" non modélisés (Suuankou tanki, Kokushi 13 tuiles, Chuuren Poutou pur) : tout yakuman vaut 13 fans fixe dans `YakuPivot.cs`.
 - [ ] `RoundPivot.IsTenpai` : edge case si les 4 exemplaires de la tuile d'attente sont déjà en main (règle incertaine, pas implémentée) — `RoundPivot.cs:896`.
-- [ ] Suufon Renda (4 mêmes vents défaussés au premier tour, sans appel) : à ajouter en option désactivable (non appliquée en compétition européenne).
 
 ## Moteur (Gnoj-Ham-Library)
 

@@ -41,14 +41,18 @@ public partial class IntroWindow : Window
             MessageBox.Show($"Une erreur est survenue pendant le chargement du fichier de statistiques du joueur ; les statistiques ne seront pas sauvegardées.\n\nDétails de l'erreur :\n{error}", "Gnoj-Ham - Avertissement");
         }
 
-        var ruleset = new RulePivot((InitialPointsRules)CbbPointsRule.SelectedIndex,
-            (EndOfGameRules)CbbEndOfGameRule.SelectedIndex,
-            ChkUseRedDoras.IsChecked == true,
-            ChkUseNagashiMangan.IsChecked == true,
-            ChkDebugMode.IsChecked == true,
-            ChkDiscardTip.IsChecked == true,
-            ChkUseMultipleYakumans.IsChecked == true,
-            ChkUseKazoeYakuman.IsChecked == true);
+        var ruleset = new RulePivot
+        {
+            InitialPointsRule = (InitialPointsRules)CbbPointsRule.SelectedIndex,
+            EndOfGameRule = (EndOfGameRules)CbbEndOfGameRule.SelectedIndex,
+            UseRedDoras = ChkUseRedDoras.IsChecked == true,
+            UseNagashiMangan = ChkUseNagashiMangan.IsChecked == true,
+            DebugMode = ChkDebugMode.IsChecked == true,
+            DiscardTip = ChkDiscardTip.IsChecked == true,
+            UseMultipleYakumans = ChkUseMultipleYakumans.IsChecked == true,
+            UseKazoeYakuman = ChkUseKazoeYakuman.IsChecked == true,
+            UseSuufonRenda = ChkUseSuufonRenda.IsChecked == true
+        };
 
         if (ChkFourCpus.IsChecked == true)
         {
@@ -80,6 +84,7 @@ public partial class IntroWindow : Window
         ChkUseNagashiMangan.IsChecked = RulePivot.Default.UseNagashiMangan;
         ChkUseMultipleYakumans.IsChecked = RulePivot.Default.UseMultipleYakumans;
         ChkUseKazoeYakuman.IsChecked = RulePivot.Default.UseKazoeYakuman;
+        ChkUseSuufonRenda.IsChecked = RulePivot.Default.UseSuufonRenda;
 
         // Options as rules
         ChkDiscardTip.IsChecked = RulePivot.Default.DiscardTip;

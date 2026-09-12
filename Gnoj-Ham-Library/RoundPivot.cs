@@ -140,6 +140,34 @@ public class RoundPivot
     }
 
     /// <summary>
+    /// Inferred; indicates if all four players discarded the same wind tile on their first,
+    /// uninterrupted turn ("suufon renda" abortive draw). Optional rule, off by default (not used in
+    /// European competition rules).
+    /// </summary>
+    internal bool IsSuufonRenda
+    {
+        get
+        {
+            if (!Game.Ruleset.UseSuufonRenda)
+            {
+                return false;
+            }
+
+            // "_playerIndexHistory.Count" only ever equals the total discard count when no call
+            // (pon / chii / kan) has happened yet: any call clears it. Requiring both to be 4 pins
+            // this down to exactly "four discards, first turn each, nothing called in between".
+            if (_playerIndexHistory.Count != 4 || _discards.Sum(d => d.Count) != 4)
+            {
+                return false;
+            }
+
+            var firstDiscardedWind = _discards[0][0];
+            return firstDiscardedWind.Family == Families.Wind
+                && _discards.All(d => d[0].Family == Families.Wind && d[0].Wind == firstDiscardedWind.Wind);
+        }
+    }
+
+    /// <summary>
     /// Inferred; count of visible doras.
     /// </summary>
     public int VisibleDorasCount => 1 + (4 - _compensationTiles.Count);
@@ -338,7 +366,9 @@ public class RoundPivot
             // discard which completed the fourth riichi; the round ends as an abortive draw.
             // "suukaikan": four kans declared by at least two different players, and nobody called
             // ron on the discard following the fourth kan; same abortive draw outcome.
-            if (IsSuuchaRiichi || IsSuukaikan)
+            // "suufon renda" (optional rule): the fourth player's first-turn discard matches the
+            // other three, and nobody called ron on it; same abortive draw outcome.
+            if (IsSuuchaRiichi || IsSuukaikan || IsSuufonRenda)
             {
                 result.EndOfRound = true;
                 return result;
@@ -1076,7 +1106,7 @@ public class RoundPivot
         var turnWind = false;
         var ryuukyoku = true;
         var displayUraDoraTiles = false;
-        var isAbortiveDraw = IsSuuchaRiichi || IsKyuushuKyuuhai || IsSuukaikan;
+        var isAbortiveDraw = IsSuuchaRiichi || IsKyuushuKyuuhai || IsSuukaikan || IsSuufonRenda;
 
         var winners = isAbortiveDraw
             ? new List<PlayerIndices>()

@@ -1,4 +1,4 @@
-﻿using Gnoj_Ham_Library.Enums;
+using Gnoj_Ham_Library.Enums;
 
 namespace Gnoj_Ham_Library;
 
@@ -7,30 +7,6 @@ namespace Gnoj_Ham_Library;
 /// </summary>
 public class RulePivot : IEquatable<RulePivot>
 {
-    /// <remarks>
-    /// Constructor.
-    /// </remarks>
-    /// <param name="initialPointsRule"><see cref="InitialPointsRule"/>.</param>
-    /// <param name="endOfGameRule"><see cref="EndOfGameRule"/>.</param>
-    /// <param name="useRedDoras"><see cref="UseRedDoras"/>.</param>
-    /// <param name="useNagashiMangan"><see cref="UseNagashiMangan"/>.</param>
-    /// <param name="debugMode"><see cref="DebugMode"/>.</param>
-    /// <param name="discardTip"><see cref="DiscardTip"/>.</param>
-    /// <param name="useMultipleYakumans"><see cref="UseMultipleYakumans"/>.</param>
-    /// <param name="useKazoeYakuman"><see cref="UseKazoeYakuman"/>.</param>
-    public RulePivot(InitialPointsRules initialPointsRule, EndOfGameRules endOfGameRule, bool useRedDoras, bool useNagashiMangan, bool debugMode, bool discardTip,
-        bool useMultipleYakumans = true, bool useKazoeYakuman = true)
-    {
-        InitialPointsRule = initialPointsRule;
-        EndOfGameRule = endOfGameRule;
-        UseRedDoras = useRedDoras;
-        UseNagashiMangan = useNagashiMangan;
-        DebugMode = debugMode;
-        DiscardTip = discardTip;
-        UseMultipleYakumans = useMultipleYakumans;
-        UseKazoeYakuman = useKazoeYakuman;
-    }
-
     #region Static properties
 
     // do not use directly
@@ -43,7 +19,13 @@ public class RulePivot : IEquatable<RulePivot>
     {
         get
         {
-            _default ??= new RulePivot(InitialPointsRules.K25, EndOfGameRules.EnchousenAndTobi, true, true, false, false);
+            _default ??= new RulePivot
+            {
+                InitialPointsRule = InitialPointsRules.K25,
+                EndOfGameRule = EndOfGameRules.EnchousenAndTobi,
+                UseRedDoras = true,
+                UseNagashiMangan = true
+            };
 
             return _default;
         }
@@ -56,42 +38,48 @@ public class RulePivot : IEquatable<RulePivot>
     /// <summary>
     /// Initial points rule.
     /// </summary>
-    public InitialPointsRules InitialPointsRule { get; }
+    public required InitialPointsRules InitialPointsRule { get; init; }
 
     /// <summary>
     /// End of game rule.
     /// </summary>
-    public EndOfGameRules EndOfGameRule { get; }
+    public required EndOfGameRules EndOfGameRule { get; init; }
 
     /// <summary>
     /// Use of red doras.
     /// </summary>
-    public bool UseRedDoras { get; }
+    public bool UseRedDoras { get; init; }
 
     /// <summary>
     /// Use of <see cref="YakuPivot.NagashiMangan"/>.
     /// </summary>
-    public bool UseNagashiMangan { get; }
+    public bool UseNagashiMangan { get; init; }
 
     /// <summary>
     /// Use debug mode.
     /// </summary>
-    public bool DebugMode { get; }
+    public bool DebugMode { get; init; }
 
     /// <summary>
     /// Use discard tip.
     /// </summary>
-    public bool DiscardTip { get; }
+    public bool DiscardTip { get; init; }
 
     /// <summary>
     /// Allows stacking the value of several distinct yakumans made in the same hand (otherwise, only one counts).
     /// </summary>
-    public bool UseMultipleYakumans { get; }
+    public bool UseMultipleYakumans { get; init; } = true;
 
     /// <summary>
     /// Allows "kazoe yakuman": a hand reaching 13+ fans without an actual yakuman is scored as one (otherwise, it's capped at "sanbaiman").
     /// </summary>
-    public bool UseKazoeYakuman { get; }
+    public bool UseKazoeYakuman { get; init; } = true;
+
+    /// <summary>
+    /// Allows "suufon renda" (four identical wind discards on the first, uninterrupted turn): abortive draw.
+    /// Not used in European competition rules, hence off by default.
+    /// </summary>
+    public bool UseSuufonRenda { get; init; }
 
     #endregion Embedded properties
 
@@ -118,7 +106,8 @@ public class RulePivot : IEquatable<RulePivot>
             && other.DebugMode == DebugMode
             && other.DiscardTip == DiscardTip
             && other.UseMultipleYakumans == UseMultipleYakumans
-            && other.UseKazoeYakuman == UseKazoeYakuman;
+            && other.UseKazoeYakuman == UseKazoeYakuman
+            && other.UseSuufonRenda == UseSuufonRenda;
     }
 
     public override bool Equals(object? obj)
@@ -128,7 +117,17 @@ public class RulePivot : IEquatable<RulePivot>
 
     public override int GetHashCode()
     {
-        return HashCode.Combine(UseNagashiMangan, InitialPointsRule, EndOfGameRule, UseRedDoras, DebugMode, DiscardTip, UseMultipleYakumans, UseKazoeYakuman);
+        var hash = new HashCode();
+        hash.Add(UseNagashiMangan);
+        hash.Add(InitialPointsRule);
+        hash.Add(EndOfGameRule);
+        hash.Add(UseRedDoras);
+        hash.Add(DebugMode);
+        hash.Add(DiscardTip);
+        hash.Add(UseMultipleYakumans);
+        hash.Add(UseKazoeYakuman);
+        hash.Add(UseSuufonRenda);
+        return hash.ToHashCode();
     }
 
     #endregion IEquatable implementation
