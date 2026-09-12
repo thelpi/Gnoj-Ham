@@ -20,14 +20,15 @@ public class BasicCpuManagerPivot : CpuManagerBasePivot
 
     protected override TilePivot DiscardDecisionInternal(
         IReadOnlyList<TilePivot> concealedTiles,
-        List<TilePivot> discardableTiles)
+        List<TilePivot> discardableTiles,
+        IReadOnlyList<TilePivot>? knownTenpaiDiscardChoices)
     {
         var deadTiles = Round.DeadTilesFromIndexPointOfView(Round.CurrentPlayerIndex);
 
         var (tilesSafety, stopCurrentHand) = ComputeTilesSafety(discardableTiles, deadTiles);
 
         // tenpai: let's go anyway...
-        var tenpaiPotentialDiscards = Round.ExtractDiscardChoicesFromTenpai(Round.CurrentPlayerIndex);
+        var tenpaiPotentialDiscards = knownTenpaiDiscardChoices ?? Round.ExtractDiscardChoicesFromTenpai(Round.CurrentPlayerIndex);
         if (tenpaiPotentialDiscards.Count > 0)
         {
             return GetBestDiscardFromList(tenpaiPotentialDiscards, tilesSafety, stopCurrentHand);
@@ -253,25 +254,37 @@ public class BasicCpuManagerPivot : CpuManagerBasePivot
         // computes once
         var tenpaiOpponentIndexes = GetTenpaiOpponentIndexes(Round.CurrentPlayerIndex);
 
+        // Precomputed once per opponent (not once per candidate tile): every safety check below only
+        // ever reads the opponent's discard pile, which doesn't change while we're evaluating it here.
+        var opponentSummaries = tenpaiOpponentIndexes.ToDictionary(i => i, i => new OpponentDiscardSummary(Round.GetDiscard(i)));
+
         var stopCurrentHand = false;
         foreach (var tile in discardableTiles)
         {
             tilesSafety.Add(tile, new List<TileSafety>(3));
+
+            // Also opponent-independent, and also constant across the whole tile loop, but cheap
+            // enough that a per-tile computation (rather than per-tile-per-opponent) is good enough.
+            var honorIsolatedAndVisible = tile.IsHonor
+                && deadTiles.Count(t => t == tile) == 4
+                && deadTiles.GroupBy(t => t).Any(g => g.Key != tile && g.Key.IsHonorOrTerminal && g.Count() > 3);
+
             foreach (var i in Enum.GetValues<PlayerIndices>().Where(i => i != Round.CurrentPlayerIndex))
             {
                 // stop the building of the hand is opponent is riichi or has 3 or more combinations visible
                 if (tenpaiOpponentIndexes.Contains(i))
                 {
                     stopCurrentHand = true;
-                    if (IsGuaranteedSafe(tile, i, deadTiles))
+                    var summary = opponentSummaries[i];
+                    if (summary.Tiles.Contains(tile) || honorIsolatedAndVisible)
                     {
                         tilesSafety[tile].Add(TileSafety.Safe);
                     }
-                    else if (IsOutsiderSuji(tile, i) || IsDoubleInsiderSuji(tile, i) || IsMaxedFamilyInDiscard(tile, i))
+                    else if (summary.IsOutsiderSuji(tile, MiddleNumbers) || summary.IsDoubleInsiderSuji(tile) || summary.IsMaxedFamily(tile))
                     {
                         tilesSafety[tile].Add(TileSafety.QuiteSafe);
                     }
-                    else if (IsInsiderSuji(tile, i) || tile.IsHonorOrTerminal)
+                    else if (summary.IsInsiderSuji(tile, MiddleNumbers) || tile.IsHonorOrTerminal)
                     {
                         tilesSafety[tile].Add(TileSafety.QuiteUnsafe);
                     }
@@ -293,6 +306,56 @@ public class BasicCpuManagerPivot : CpuManagerBasePivot
         }
 
         return (tilesSafety.OrderBy(t => t.Value.Sum(s => (int)s)).Select(t => (t.Key, t.Value.Sum(s => (int)s))).ToList(), stopCurrentHand);
+    }
+
+    // Precomputed summary of one opponent's discard pile, so every per-candidate-tile safety check
+    // below is an O(1) lookup instead of a fresh LINQ scan of the discard list every time.
+    // Reproduces exactly CpuManagerBasePivot.IsGuaranteedSafe/IsInsiderSuji/IsOutsiderSuji/
+    // IsDoubleInsiderSuji/GetSujisFromDiscard and this class's own IsMaxedFamilyInDiscard, which are
+    // left untouched (still used verbatim by anything outside this one hot path).
+    private sealed class OpponentDiscardSummary
+    {
+        internal HashSet<TilePivot> Tiles { get; } = new();
+        private readonly Dictionary<Families, HashSet<byte>> _numbersByFamily = new();
+        private readonly Dictionary<Families, int> _countByFamily = new();
+
+        internal OpponentDiscardSummary(IReadOnlyList<TilePivot> discard)
+        {
+            foreach (var tile in discard)
+            {
+                Tiles.Add(tile);
+
+                if (!_numbersByFamily.TryGetValue(tile.Family, out var numbers))
+                {
+                    numbers = new HashSet<byte>();
+                    _numbersByFamily[tile.Family] = numbers;
+                }
+                numbers.Add(tile.Number);
+
+                _countByFamily[tile.Family] = _countByFamily.GetValueOrDefault(tile.Family) + 1;
+            }
+        }
+
+        private bool HasNumber(Families family, int number)
+            => number is >= 1 and <= 9 && _numbersByFamily.TryGetValue(family, out var numbers) && numbers.Contains((byte)number);
+
+        internal bool IsInsiderSuji(TilePivot tile, int[] middleNumbers)
+            => !tile.IsHonor && (
+                (HasNumber(tile.Family, tile.Number + 3) && !middleNumbers.Contains(tile.Number + 3))
+                || (HasNumber(tile.Family, tile.Number - 3) && !middleNumbers.Contains(tile.Number - 3)));
+
+        internal bool IsOutsiderSuji(TilePivot tile, int[] middleNumbers)
+            => !tile.IsHonor && (
+                (HasNumber(tile.Family, tile.Number + 3) && middleNumbers.Contains(tile.Number + 3))
+                || (HasNumber(tile.Family, tile.Number - 3) && middleNumbers.Contains(tile.Number - 3)));
+
+        internal bool IsDoubleInsiderSuji(TilePivot tile)
+            => !tile.IsHonor && HasNumber(tile.Family, tile.Number + 3) && HasNumber(tile.Family, tile.Number - 3);
+
+        internal bool IsMaxedFamily(TilePivot tile)
+            => !tile.IsHonor
+                && _countByFamily.GetValueOrDefault(tile.Family) >= 9
+                && _numbersByFamily.TryGetValue(tile.Family, out var numbers) && numbers.Count >= 3;
     }
 
     private List<PlayerIndices> GetTenpaiOpponentIndexes(PlayerIndices playerIndex)

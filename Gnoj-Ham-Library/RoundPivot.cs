@@ -824,11 +824,7 @@ public class RoundPivot
     /// <returns>Tiles the player can discard; empty list if riichi is impossible.</returns>
     internal IReadOnlyList<TilePivot> CanCallRiichi()
     {
-        if (!_waitForDiscard
-            || IsRiichi(CurrentPlayerIndex)
-            || !_hands[(int)CurrentPlayerIndex].IsConcealed
-            || _wallTiles.Count < 4
-            || Game.Players[(int)CurrentPlayerIndex].CurrentGamePoints < ScoreTools.RIICHI_COST)
+        if (!CanConsiderRiichi())
         {
             return new List<TilePivot>();
         }
@@ -836,6 +832,18 @@ public class RoundPivot
         // TODO: if already 3 riichi calls, what to do ?
 
         return ExtractDiscardChoicesFromTenpai(CurrentPlayerIndex);
+    }
+
+    // Guards of CanCallRiichi that don't require computing ExtractDiscardChoicesFromTenpai: whenever
+    // this is false, the current player's tenpai status was never actually checked (open hand, already
+    // riichi, not enough wall/points...), as opposed to "checked and found not tenpai".
+    private bool CanConsiderRiichi()
+    {
+        return _waitForDiscard
+            && !IsRiichi(CurrentPlayerIndex)
+            && _hands[(int)CurrentPlayerIndex].IsConcealed
+            && _wallTiles.Count >= 4
+            && Game.Players[(int)CurrentPlayerIndex].CurrentGamePoints >= ScoreTools.RIICHI_COST;
     }
 
     /// <summary>
@@ -1371,14 +1379,21 @@ public class RoundPivot
 
         kanInProgress = null;
 
-        var riichiTile = _cpuManagers[CurrentPlayerIndex].RiichiDecision();
+        // Computed at most once per pick: the riichi eligibility check and, if riichi isn't called,
+        // the discard-to-stay-tenpai check right below ask the exact same question ("what can I
+        // discard and remain tenpai?") on the exact same, still-unchanged hand. Null means the
+        // question was never actually asked (open hand, already riichi, not enough wall/points...),
+        // as opposed to "asked and the answer is empty" - only the latter is safe to reuse as-is.
+        var tenpaiDiscardChoices = CanConsiderRiichi() ? ExtractDiscardChoicesFromTenpai(CurrentPlayerIndex) : null;
+
+        var riichiTile = _cpuManagers[CurrentPlayerIndex].RiichiDecision(tenpaiDiscardChoices);
         if (riichiTile != null)
         {
             CallRiichi(riichiTile, sleepTime);
             return false;
         }
 
-        Discard(_cpuManagers[CurrentPlayerIndex].DiscardDecision(), sleepTime);
+        Discard(_cpuManagers[CurrentPlayerIndex].DiscardDecision(tenpaiDiscardChoices), sleepTime);
         return false;
     }
 

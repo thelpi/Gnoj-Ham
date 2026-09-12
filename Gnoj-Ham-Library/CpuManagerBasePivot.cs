@@ -26,8 +26,13 @@ public abstract class CpuManagerBasePivot
     /// <summary>
     /// Computes the best tile to discard for the current player.
     /// </summary>
+    /// <param name="knownTenpaiDiscardChoices">
+    /// Optional; the result of <see cref="RoundPivot.ExtractDiscardChoicesFromTenpai"/> for the current
+    /// player, if it was already computed moments earlier against this same, still-unchanged hand
+    /// (e.g. by a preceding riichi eligibility check). <c>Null</c> (default) computes it fresh.
+    /// </param>
     /// <returns>The tile to discard.</returns>
-    public TilePivot DiscardDecision()
+    public TilePivot DiscardDecision(IReadOnlyList<TilePivot>? knownTenpaiDiscardChoices = null)
     {
         var concealedTiles = Round.GetHand(Round.CurrentPlayerIndex).ConcealedTiles;
 
@@ -38,16 +43,21 @@ public abstract class CpuManagerBasePivot
 
         return discardableTiles.Count == 1
             ? discardableTiles[0]
-            : DiscardDecisionInternal(concealedTiles, discardableTiles);
+            : DiscardDecisionInternal(concealedTiles, discardableTiles, knownTenpaiDiscardChoices);
     }
 
     /// <summary>
     /// Checks if the current player can call 'Riichi' and computes the decision to do so.
     /// </summary>
+    /// <param name="knownRiichiChoices">
+    /// Optional; the result of <see cref="RoundPivot.CanCallRiichi"/> for the current player, if it was
+    /// already computed moments earlier against this same, still-unchanged hand. <c>Null</c> (default)
+    /// computes it fresh.
+    /// </param>
     /// <returns>The tile to discard if 'Riichi' is called; <c>Null</c> otherwise.</returns>
-    public TilePivot? RiichiDecision()
+    public TilePivot? RiichiDecision(IReadOnlyList<TilePivot>? knownRiichiChoices = null)
     {
-        var riichiTiles = Round.CanCallRiichi();
+        var riichiTiles = knownRiichiChoices ?? Round.CanCallRiichi();
 
         return riichiTiles.Count == 0
             ? null
@@ -117,7 +127,7 @@ public abstract class CpuManagerBasePivot
 
     #region Protected logic to override
 
-    protected abstract TilePivot DiscardDecisionInternal(IReadOnlyList<TilePivot> concealedTiles, List<TilePivot> discardableTiles);
+    protected abstract TilePivot DiscardDecisionInternal(IReadOnlyList<TilePivot> concealedTiles, List<TilePivot> discardableTiles, IReadOnlyList<TilePivot>? knownTenpaiDiscardChoices);
 
     protected abstract TilePivot RiichiDecisionInternal(IReadOnlyList<TilePivot> riichiTiles);
 
