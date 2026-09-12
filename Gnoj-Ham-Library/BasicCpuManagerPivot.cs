@@ -42,8 +42,12 @@ public class BasicCpuManagerPivot : CpuManagerBasePivot
         var tilesGroup =
             concealedTiles
                 .GroupBy(t => t)
+                // once committed to honitsu/chinitsu (see _itsuFamily), tiles from any other family
+                // are the very first to go: they can no longer be turned into a call (Pon/Kan/Chii
+                // are all gated on this same family), so they're pure dead weight from here on.
+                .OrderByDescending(t => !_itsuFamily.HasValue || t.Key.Family == _itsuFamily)
                 // keeps brelan/square
-                .OrderByDescending(t =>
+                .ThenByDescending(t =>
                 {
                     var count = t.Count();
                     return count > 2 ? count : 0;
@@ -191,22 +195,53 @@ public class BasicCpuManagerPivot : CpuManagerBasePivot
             return null;
         }
 
+        var concealedTiles = Round.GetHand(Round.CurrentPlayerIndex).ConcealedTiles;
+        var discardedTile = Round.GetDiscard(Round.PreviousPlayerIndex)[^1];
+
         TilePivot? tileChoice = null;
+        var bestCost = int.MaxValue;
         foreach (var tileKey in chiiTiles)
         {
-            var m2 = Round.GetHand(Round.CurrentPlayerIndex).ConcealedTiles.Any(t => t.Family == tileKey.Family && t.Number == tileKey.Number - 2);
-            var m1 = Round.GetHand(Round.CurrentPlayerIndex).ConcealedTiles.Any(t => t.Family == tileKey.Family && t.Number == tileKey.Number - 1);
-            var m0 = Round.GetHand(Round.CurrentPlayerIndex).ConcealedTiles.Any(t => t == tileKey);
-            var p1 = Round.GetHand(Round.CurrentPlayerIndex).ConcealedTiles.Any(t => t.Family == tileKey.Family && t.Number == tileKey.Number + 1);
-            var p2 = Round.GetHand(Round.CurrentPlayerIndex).ConcealedTiles.Any(t => t.Family == tileKey.Family && t.Number == tileKey.Number + 2);
+            var m2 = concealedTiles.Any(t => t.Family == tileKey.Family && t.Number == tileKey.Number - 2);
+            var m1 = concealedTiles.Any(t => t.Family == tileKey.Family && t.Number == tileKey.Number - 1);
+            var m0 = concealedTiles.Any(t => t == tileKey);
+            var p1 = concealedTiles.Any(t => t.Family == tileKey.Family && t.Number == tileKey.Number + 1);
+            var p2 = concealedTiles.Any(t => t.Family == tileKey.Family && t.Number == tileKey.Number + 2);
 
-            if (!((m2 && m1 && m0) || (m1 && m0 && p1) || (m0 && p1 && p2)))
+            if ((m2 && m1 && m0) || (m1 && m0 && p1) || (m0 && p1 && p2))
             {
+                // would break a run already complete in hand: never worth it
+                continue;
+            }
+
+            // among several valid sequences, prefer the one that sacrifices the least valuable pair
+            // of tiles from the concealed hand (the discarded tile itself costs nothing, it's free).
+            // "tileKey" is only ever discard-2, discard-1 or discard+1 (see CanCallChii): the other
+            // hand tile of the sequence is deduced from that same offset.
+            var companionNumber = tileKey.Number - discardedTile.Number == -1
+                ? tileKey.Number + 2
+                : tileKey.Number + 1;
+            var companion = concealedTiles.First(t => t.Family == tileKey.Family && t.Number == companionNumber);
+            var cost = TileKeepValue(tileKey) + TileKeepValue(companion);
+
+            if (cost < bestCost)
+            {
+                bestCost = cost;
                 tileChoice = tileKey;
             }
         }
 
         return tileChoice;
+    }
+
+    // Rough "worth keeping" score for a tile about to be spent on a chii call: doras are the obvious
+    // loss, and a tile already paired in hand has follow-up potential (yakuhai, toitoi, extra brelan)
+    // that a lone sequence tile doesn't.
+    private int TileKeepValue(TilePivot tile)
+    {
+        var dorasValue = Round.GetDoraCount(tile) + (tile.IsRedDora ? 1 : 0);
+        var pairValue = Round.GetHand(Round.CurrentPlayerIndex).ConcealedTiles.Count(t => t == tile) > 1 ? 1 : 0;
+        return dorasValue + pairValue;
     }
 
     #region Private methods
