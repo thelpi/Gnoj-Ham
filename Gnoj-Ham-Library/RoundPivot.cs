@@ -1068,256 +1068,7 @@ public class RoundPivot
     /// <returns>An instance of <see cref="EndOfRoundInformationsPivot"/>.</returns>
     internal EndOfRoundInformationsPivot EndOfRound(PlayerIndices? ronPlayerIndex)
     {
-        var turnWind = false;
-        var ryuukyoku = true;
-        var displayUraDoraTiles = false;
-        var isAbortiveDraw = IsSuuchaRiichi || IsKyuushuKyuuhai || IsSuukaikan || IsSuufonRenda;
-
-        var winners = isAbortiveDraw
-            ? new List<PlayerIndices>()
-            : _hands.Where(h => h.IsComplete).Select(w => (PlayerIndices)_hands.IndexOf(w)).ToList();
-
-        if (winners.Count == 0 && !isAbortiveDraw && Game.Ruleset.UseNagashiMangan)
-        {
-            var iNagashiList = CheckForNagashiMangan();
-            if (iNagashiList.Count > 0)
-            {
-                winners.AddRange(iNagashiList);
-            }
-        }
-
-        var playerInfos = new List<EndOfRoundInformationsPivot.PlayerInformationsPivot>(4);
-
-        // Abortive draw (e.g. suucha riichi): no tenpai/noten payment, dealer always repeats (renchan),
-        // riichi sticks carry over (handled by the caller through the "Ryuukyoku" flag), honba still
-        // increments (also handled by the caller).
-        if (isAbortiveDraw)
-        {
-            // turnWind stays false: the dealer is not affected by an abortive draw.
-        }
-        // Ryuukyoku (no winner).
-        else if (winners.Count == 0)
-        {
-            var tenpaiPlayersIndex = Enum.GetValues<PlayerIndices>().Where(i => IsTenpai(i, null)).ToList();
-            var notTenpaiPlayersIndex = Enum.GetValues<PlayerIndices>().Except(tenpaiPlayersIndex).ToList();
-
-            // Wind turns if East is not tenpai.
-            turnWind = notTenpaiPlayersIndex.Any(tpi => Game.GetPlayerCurrentWind(tpi) == Winds.East);
-
-            var (tenpai, nonTenpai) = ScoreTools.GetRyuukyokuPoints(tenpaiPlayersIndex.Count);
-
-            tenpaiPlayersIndex.ForEach(i =>
-                playerInfos.Add(new EndOfRoundInformationsPivot.PlayerInformationsPivot
-                {
-                    Index = i,
-                    IsCpu = Game.IsCpu(i),
-                    Hand = _hands[(int)i],
-                    PointsGain = tenpai,
-                    HandPointsGain = tenpai
-                }));
-            notTenpaiPlayersIndex.ForEach(i =>
-                playerInfos.Add(new EndOfRoundInformationsPivot.PlayerInformationsPivot { Index = i, IsCpu = Game.IsCpu(i), PointsGain = nonTenpai }));
-        }
-        else
-        {
-            turnWind = !winners.Any(w => Game.GetPlayerCurrentWind(w) == Winds.East);
-
-            // Why this list ? Consider the following :
-            // - Player 1 and 2 ron on player 3
-            // - Player 1 is "Daisangen"
-            // - Player 2 is "Daisuushii"
-            // - Player 4 is liable for player 1
-            // - Player 1 is liable for player 2
-            // In that case :
-            // - P1 pays half of P2 yakuman
-            // - P4 pays half of P1 yakuman
-            // - P3 pays half of both yakuman
-            var liablePlayersLost = new Dictionary<PlayerIndices, int>();
-
-            // These two are negative points.
-            var eastOrLoserLostCumul = 0;
-            var notEastLostCumul = 0;
-            var honbaPoints = ScoreTools.GetHonbaPoints(Game.HonbaCountBeforeScoring);
-
-            foreach (var pIndex in winners)
-            {
-                var phand = _hands[(int)pIndex];
-
-                // In case of multiple simultaneous ron, only the winner closest to the discarder
-                // (going around the table starting right after them) collects the honba and the
-                // pending riichi sticks; the other winner(s) get their hand value only. Doesn't apply
-                // to simultaneous nagashi mangan winners: there's no discarder to compare against.
-                var isClosestWinnerOnMultipleRon = !ronPlayerIndex.HasValue || winners.Count <= 1
-                    || IsClosestWinnerToDiscarder(pIndex, ronPlayerIndex.Value, winners);
-
-                var winnerHonba = isClosestWinnerOnMultipleRon ? honbaPoints : 0;
-
-                // In case of ron, fix the "LatestPick" property of the winning hand
-                if (ronPlayerIndex.HasValue)
-                {
-                    phand.SetFromRon(_discardHistory.Discards[(int)ronPlayerIndex.Value][^1]);
-                }
-
-                PlayerIndices? liablePlayerId = null;
-                if (phand.Yakus!.Contains(YakuPivot.Daisangen)
-                    && phand.DeclaredCombinations.Count(c => c.Family == Families.Dragon) == 3
-                    && phand.DeclaredCombinations.Last(c => c.Family == Families.Dragon).StolenFrom.HasValue)
-                {
-                    liablePlayerId = Game.GetPlayerIndexByCurrentWind(phand.DeclaredCombinations.Last(c => c.Family == Families.Dragon).StolenFrom!.Value);
-                }
-                else if (phand.Yakus!.Contains(YakuPivot.Daisuushii)
-                    && phand.DeclaredCombinations.Count(c => c.Family == Families.Wind) == 4
-                    && phand.DeclaredCombinations.Last(c => c.Family == Families.Wind).StolenFrom.HasValue)
-                {
-                    liablePlayerId = Game.GetPlayerIndexByCurrentWind(phand.DeclaredCombinations.Last(c => c.Family == Families.Wind).StolenFrom!.Value);
-                }
-
-                var isRiichi = phand.Yakus!.Contains(YakuPivot.Riichi) || phand.Yakus!.Contains(YakuPivot.DaburuRiichi);
-
-                var dorasCount = phand.AllTiles.Sum(GetDoraCount);
-                var uraDorasCount = isRiichi ? phand.AllTiles.Sum(GetUraDoraCount) : 0;
-                var redDorasCount = phand.AllTiles.Count(t => t.IsRedDora);
-
-                if (isRiichi)
-                {
-                    displayUraDoraTiles = true;
-                }
-
-                var fanCount = ScoreTools.GetFanCount(phand.Yakus!, phand.IsConcealed, Game.Ruleset.UseMultipleYakumans, Game.Ruleset.UseKazoeYakuman, Game.Ruleset.UseDoubleYakuman, dorasCount, uraDorasCount, redDorasCount);
-                var fuCount = ScoreTools.GetFuCount(phand, !ronPlayerIndex.HasValue, Game.DominantWind, Game.GetPlayerCurrentWind(pIndex));
-
-                if (liablePlayerId.HasValue)
-                {
-                    if (!ronPlayerIndex.HasValue)
-                    {
-                        // Sekinin barai : transforms the tsumo into a ron on the liable player.
-                        ronPlayerIndex = liablePlayerId;
-                        liablePlayerId = null;
-                    }
-                    else if (ronPlayerIndex.Value == liablePlayerId.Value)
-                    {
-                        // Sekinin barai : no consequence as ron player and liable player are the same.
-                        liablePlayerId = null;
-                    }
-                }
-
-                var (east, notEast) = ScoreTools.GetPoints(fanCount, fuCount, !ronPlayerIndex.HasValue, Game.GetPlayerCurrentWind(pIndex));
-
-                var basePoints = east + (notEast * 2);
-
-                var riichiPart = isClosestWinnerOnMultipleRon ? Game.PendingRiichiCount * ScoreTools.RIICHI_COST : 0;
-
-                playerInfos.Add(new EndOfRoundInformationsPivot.PlayerInformationsPivot
-                {
-                    Index = pIndex,
-                    IsCpu = Game.IsCpu(pIndex),
-                    FanCount = fanCount,
-                    FuCount = fuCount,
-                    Hand = phand,
-                    PointsGain = basePoints + riichiPart + winnerHonba,
-                    DoraCount = dorasCount,
-                    UraDoraCount = uraDorasCount,
-                    RedDoraCount = redDorasCount,
-                    HandPointsGain = basePoints
-                });
-
-                notEastLostCumul -= notEast;
-
-                // If there's is a liable player (only in a case of ron on other player than the one liable)...
-                if (liablePlayerId.HasValue)
-                {
-                    liablePlayersLost.TryAdd(liablePlayerId.Value, 0);
-                    // ... he takes half of the points from the ron player for this hand.
-                    eastOrLoserLostCumul -= east / 2;
-                    liablePlayersLost[liablePlayerId.Value] -= east / 2;
-                }
-                else
-                {
-                    // Otherwise, the ron player takes all.
-                    eastOrLoserLostCumul -= east;
-                }
-            }
-
-            // Note : "liablePlayersLost" is empty in case of tsumo transformed into ron. A liable
-            // player can never be "ronPlayerIndex" itself (that case is nulled out earlier, as "no
-            // consequence"), so "eastOrLoserLostCumul" - accumulated only from non-liable shares -
-            // already reflects exactly what the discarder owes; no further adjustment is needed here.
-            foreach (var liablePlayerId in liablePlayersLost.Keys)
-            {
-                if (playerInfos.Any(pi => pi.Index == liablePlayerId))
-                {
-                    playerInfos.First(pi => pi.Index == liablePlayerId).AddPoints(liablePlayersLost[liablePlayerId]);
-                }
-                else
-                {
-                    // Only the discarder pays honba: a liable player's share is never affected by it.
-                    playerInfos.Add(new EndOfRoundInformationsPivot.PlayerInformationsPivot
-                    {
-                        Index = liablePlayerId,
-                        IsCpu = Game.IsCpu(liablePlayerId),
-                        PointsGain = liablePlayersLost[liablePlayerId]
-                    });
-                }
-            }
-
-            if (ronPlayerIndex.HasValue)
-            {
-                playerInfos.Add(new EndOfRoundInformationsPivot.PlayerInformationsPivot
-                {
-                    Index = ronPlayerIndex.Value,
-                    IsCpu = Game.IsCpu(ronPlayerIndex.Value),
-                    PointsGain = eastOrLoserLostCumul - honbaPoints
-                });
-            }
-            else
-            {
-                foreach (var pIndex in Enum.GetValues<PlayerIndices>())
-                {
-                    if (!winners.Contains(pIndex))
-                    {
-                        playerInfos.Add(new EndOfRoundInformationsPivot.PlayerInformationsPivot
-                        {
-                            Index = pIndex,
-                            IsCpu = Game.IsCpu(pIndex),
-                            PointsGain = (Game.GetPlayerCurrentWind(pIndex) == Winds.East ? eastOrLoserLostCumul : notEastLostCumul) - (honbaPoints / 3)
-                        });
-                    }
-                }
-            }
-
-            ryuukyoku = false;
-        }
-
-        foreach (var p in playerInfos)
-        {
-            Game.Players[(int)p.Index].AddPoints(p.PointsGain);
-        }
-
-        return new EndOfRoundInformationsPivot(ryuukyoku, turnWind, displayUraDoraTiles, playerInfos, Game.HonbaCountBeforeScoring,
-            Game.PendingRiichiCount, DoraIndicatorTiles, UraDoraIndicatorTiles, VisibleDorasCount);
-    }
-
-    /// <summary>
-    /// In case of multiple simultaneous ron, only one winner collects the honba and the pending
-    /// riichi sticks: the one seated closest to the discarder, going around the table starting right
-    /// after them.
-    /// </summary>
-    /// <param name="candidate">The candidate winner.</param>
-    /// <param name="discarder">The discarder (<c>ronPlayerIndex</c>).</param>
-    /// <param name="winners">Every winner of this ron.</param>
-    /// <returns><c>True</c> if <paramref name="candidate"/> is the one who collects them.</returns>
-    internal static bool IsClosestWinnerToDiscarder(PlayerIndices candidate, PlayerIndices discarder, IReadOnlyList<PlayerIndices> winners)
-    {
-        for (var i = 1; i <= 3; i++)
-        {
-            var closerWinner = discarder.RelativePlayerIndex(i);
-            if (winners.Contains(closerWinner))
-            {
-                return closerWinner == candidate;
-            }
-        }
-
-        return false;
+        return new EndOfRoundCalculatorPivot(this).Compute(ronPlayerIndex);
     }
 
     /// <summary>
@@ -1336,6 +1087,13 @@ public class RoundPivot
     /// <param name="t">The dora tile.</param>
     /// <returns>Dora count.</returns>
     internal int GetDoraCount(TilePivot t) => GetDoraCountInternal(t, DoraIndicatorTiles);
+
+    /// <summary>
+    /// Gets dora count if the specified tile is an uradora.
+    /// </summary>
+    /// <param name="t">The dora tile.</param>
+    /// <returns>Ura-dora count.</returns>
+    internal int GetUraDoraCount(TilePivot t) => GetDoraCountInternal(t, UraDoraIndicatorTiles);
 
     #endregion Internal methods
 
@@ -1715,40 +1473,11 @@ public class RoundPivot
         return tiles;
     }
 
-    // Checks for players with nagashi mangan.
-    private List<PlayerIndices> CheckForNagashiMangan()
-    {
-        var playerIndexList = new List<PlayerIndices>(4);
-
-        foreach (var i in Enum.GetValues<PlayerIndices>())
-        {
-            var fullTerminalsOrHonors = _discardHistory.Discards[(int)i].All(t => t.IsHonorOrTerminal);
-            var noPlayerStealing = _hands[(int)i].IsConcealed;
-            var noOpponentStealing = !_hands.Where(h => _hands.IndexOf(h) != (int)i).Any(h => h.DeclaredCombinations.Any(c => c.StolenFrom == Game.GetPlayerCurrentWind(i)));
-            if (fullTerminalsOrHonors && noPlayerStealing && noOpponentStealing)
-            {
-                _hands[(int)i].SetYakus(new WinContextPivot());
-                playerIndexList.Add(i);
-            }
-        }
-
-        if (playerIndexList.Count > 1)
-        {
-            // Atama-hane: only the winner closest to the dealer (turn order East -> South -> West -> North) is kept.
-            playerIndexList = new List<PlayerIndices> { playerIndexList.OrderBy(i => (int)Game.GetPlayerCurrentWind(i)).First() };
-        }
-
-        return playerIndexList;
-    }
-
     // Gets the count of dora for specified tile
     private int GetDoraCountInternal(TilePivot t, IReadOnlyList<TilePivot> doraIndicators)
     {
         return doraIndicators.Take(VisibleDorasCount).Count(t.IsDoraNext);
     }
-
-    // Gets dora count if the specified tile is an uradora
-    private int GetUraDoraCount(TilePivot t) => GetDoraCountInternal(t, UraDoraIndicatorTiles);
 
     #endregion Private methods
 }
