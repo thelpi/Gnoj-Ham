@@ -29,3 +29,4 @@ Points notés en cours de route, pas traités tout de suite.
 - [ ] `MainWindow.xaml.cs:813` : contenu de tooltip à extraire en ressource plutôt qu'en dur.
 - [ ] `MainWindow.SetWallsLength` (ligne 1035) : constante `WallTileSizeRate` dépendante de la taille du conteneur définie côté vue, couplage fragile.
 - [ ] `MainWindow.SetWallsLength` (ligne 1049) : les murs sont entièrement reconstruits à chaque fois au lieu d'une mise à jour incrémentale.
+- [ ] `IntroWindow` : `Height` fixe calée à la main sur l'onglet le plus grand (`Règles` actuellement) — jamais trouvé comment faire suivre dynamiquement la fenêtre à la taille de l'onglet sélectionné en WPF ; à resynchroniser manuellement à chaque fois qu'un onglet grossit.

@@ -11,7 +11,7 @@
         Title="Gnoj-Hame - Nouvelle partie">
     <!-- Fixed Width and Height:
     Width should adjust the left of button Start with checkbox above.
-    Height should display the bottom line of the tallest TabItem (currently "Règles", 7 rows).
+    Height should match the tallest TabItem (currently "Règles", 7 rows) - keep in sync by hand.
     -->
     <DockPanel Margin="5">
         <DockPanel DockPanel.Dock="Bottom" Margin="0, 10, 0, 0">
