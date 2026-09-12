@@ -86,6 +86,13 @@ public class RoundPivot
     public CpuManagerBasePivot? Advisor => Game.HumanPlayerIndex.HasValue ? _cpuManagers[Game.HumanPlayerIndex.Value] : null;
 
     /// <summary>
+    /// Gets the CPU decisions manager of the specified player.
+    /// </summary>
+    /// <param name="playerIndex">Player index.</param>
+    /// <returns>Instance of <see cref="CpuManagerBasePivot"/>.</returns>
+    internal CpuManagerBasePivot CpuManager(PlayerIndices playerIndex) => _cpuManagers[playerIndex];
+
+    /// <summary>
     /// Inferred; indicates if the current player is the human player.
     /// </summary>
     public bool IsHumanPlayer => Game.IsHuman(CurrentPlayerIndex);
@@ -216,6 +223,14 @@ public class RoundPivot
     /// </summary>
     public event Action<RiichiChoicesNotifierEventArgs>? RiichiChoicesNotifier;
 
+    // Raise methods for AutoPlayEnginePivot: a field-like event can only be invoked from within the
+    // declaring type, so the engine (a separate class) needs these trampolines to fire them itself.
+    internal void RaiseHumanCallNotifier(HumanCallNotifierEventArgs args) => HumanCallNotifier?.Invoke(args);
+    internal void RaiseDiscardTileNotifier(DiscardTileNotifierEventArgs args) => DiscardTileNotifier?.Invoke(args);
+    internal void RaiseCallNotifier(CallNotifierEventArgs args) => CallNotifier?.Invoke(args);
+    internal void RaiseReadyToCallNotifier(ReadyToCallNotifierEventArgs args) => ReadyToCallNotifier?.Invoke(args);
+    internal void RaiseRiichiChoicesNotifier(RiichiChoicesNotifierEventArgs args) => RiichiChoicesNotifier?.Invoke(args);
+
     #endregion Events
 
     #region Constructors
@@ -294,194 +309,7 @@ public class RoundPivot
         (TilePivot compensationTile, PlayerIndices? previousPlayerIndex)? humanKanCompensation,
         int sleepTime)
     {
-        (PlayerIndices, TilePivot?, PlayerIndices?)? kanInProgress = null;
-        if (humanKanCompensation.HasValue)
-        {
-            if (!Game.HumanPlayerIndex.HasValue)
-            {
-                throw new InvalidOperationException("A human kan compensation was supplied, but this game has no human player.");
-            }
-
-            kanInProgress = (Game.HumanPlayerIndex.Value, humanKanCompensation.Value.compensationTile, humanKanCompensation.Value.previousPlayerIndex);
-        }
-
-        var result = new AutoPlayResultPivot();
-        var isFirstTurn = true;
-        while (!cancellationToken.IsCancellationRequested)
-        {
-            // 0 - after one loop, there is no human decline remaining
-            if (!isFirstTurn)
-            {
-                declinedHumanCall = false;
-            }
-            isFirstTurn = false;
-
-            // 1 - checks if human (we have not checked yet) can call "ron"; the loop ends if it's the case
-            // does not check Ron if we come in with a human kan in progress
-            if (Game.HumanPlayerIndex.HasValue && !humanKanCompensation.HasValue && !declinedHumanCall && !humanRonPending && CanCallRon(Game.HumanPlayerIndex.Value))
-            {
-                HumanCallNotifier?.Invoke(new HumanCallNotifierEventArgs { Call = CallTypes.Ron });
-                if (autoCallMahjong)
-                {
-                    result.HumanCall = (Game.HumanPlayerIndex.Value, CallTypes.Ron);
-                }
-                else
-                {
-                    DiscardTileNotifier?.Invoke(new DiscardTileNotifierEventArgs());
-                }
-                return result;
-            }
-
-            // 2 - this code runs after every human ron check has been made
-            // the loop ends, with the "EndOfRound" marker, if any "ron" call is made
-            if (CheckOpponensRonCall(humanRonPending))
-            {
-                result.EndOfRound = true;
-                result.RonPlayerId = kanInProgress.HasValue ? kanInProgress.Value.Item1 : PreviousPlayerIndex;
-                if (kanInProgress.HasValue)
-                {
-                    UndoPickCompensationTile();
-                }
-                return result;
-            }
-
-            // 2bis - "suucha riichi": all four players are riichi, and nobody called ron on the
-            // discard which completed the fourth riichi; the round ends as an abortive draw.
-            // "suukaikan": four kans declared by at least two different players, and nobody called
-            // ron on the discard following the fourth kan; same abortive draw outcome.
-            // "suufon renda" (optional rule): the fourth player's first-turn discard matches the
-            // other three, and nobody called ron on it; same abortive draw outcome.
-            if (IsSuuchaRiichi || IsSuukaikan || IsSuufonRenda)
-            {
-                result.EndOfRound = true;
-                return result;
-            }
-
-            // 3 - notify the UI of the kan
-            // it's done here (and not right after the kan) to not display new dora too soon
-            if (kanInProgress.HasValue)
-            {
-                ReadyToCallNotifier?.Invoke(new ReadyToCallNotifierEventArgs { Call = CallTypes.Kan, PotentialPreviousPlayerIndex = kanInProgress.Value.Item3 });
-            }
-
-            // 3bis - if we start the loop with a human kan in progress, go to 12
-            if (!humanKanCompensation.HasValue)
-            {
-                // 4 - checks "pon" and "kan" calls for human player, except if declined
-                if (Game.HumanPlayerIndex.HasValue && !declinedHumanCall && CanCallPonOrKan(Game.HumanPlayerIndex.Value, out var isSelfKan))
-                {
-                    if (!isSelfKan)
-                    {
-                        DiscardTileNotifier?.Invoke(new DiscardTileNotifierEventArgs());
-                    }
-                    return result;
-                }
-
-                // 5 - "kan" call from non-human players
-                // the loop starts over
-                var kanExit = false;
-                foreach (var pi in Enum.GetValues<PlayerIndices>().Where(Game.IsCpu))
-                {
-                    var (_, kanDecision) = _cpuManagers[pi].KanDecision(pi, false);
-                    if (kanDecision != null)
-                    {
-                        var previousPlayerIndex = PreviousPlayerIndex;
-                        var compensationTile = OpponentBeginCallKan(pi, kanDecision, false);
-                        kanInProgress = (pi, compensationTile, previousPlayerIndex);
-                        kanExit = true;
-                        break;
-                    }
-                }
-                if (kanExit)
-                {
-                    continue;
-                }
-
-                // 6 - "pon" call from non-human players
-                // the loop starts over
-                var ponExit = false;
-                foreach (var pi in Enum.GetValues<PlayerIndices>().Where(Game.IsCpu))
-                {
-                    if (_cpuManagers[pi].PonDecision(pi))
-                    {
-                        PonCall(pi, sleepTime);
-                        ponExit = true;
-                        break;
-                    }
-                }
-                if (ponExit)
-                {
-                    continue;
-                }
-
-                // 7 - checks "chii" call for current player (human)
-                // exits the loop to let the UI suggests the call
-                if (IsHumanPlayer && !declinedHumanCall && CanCallChii().Count > 0)
-                {
-                    DiscardTileNotifier?.Invoke(new DiscardTileNotifierEventArgs());
-                    return result;
-                }
-
-                // 8 - checks "chii" call for current player (non-human)
-                // the loop starts over
-                var (_, chiiTilePick) = _cpuManagers[CurrentPlayerIndex].ChiiDecision();
-                if (chiiTilePick != null)
-                {
-                    ChiiCall(chiiTilePick, sleepTime);
-                    continue;
-                }
-
-                // 9 - there is a "kan" call in progress by non-human player
-                // several things can happen:
-                // - tsumo from the caller (ends the loop)
-                // - another "kan" call
-                // - nothing special : checks "riichi" call and discard
-                // note: in any case the loop starts over
-                if (kanInProgress != null)
-                {
-                    if (OpponentAfterPick(ref kanInProgress, sleepTime))
-                    {
-                        result.EndOfRound = true;
-                        return result;
-                    }
-                    continue;
-                }
-
-                // 10 - no more tiles to work with
-                // ends the loop
-                if (IsWallExhaustion)
-                {
-                    result.EndOfRound = true;
-                    return result;
-                }
-
-                // 11 - the current player picks a tile
-                AutoPick();
-            }
-
-            // 12 - consequence of a pick:
-            // - for human player:
-            //      - checks for tsumo (auto or manual)
-            //      - checks for riichi
-            //      - checks for auto discard
-            // - for non human player, checks for tsumo, kan and riichi
-            if (IsHumanPlayer)
-            {
-                var call = HumanAutoPlay(autoCallMahjong, sleepTime);
-                if (call.HasValue)
-                {
-                    result.HumanCall = (CurrentPlayerIndex, call.Value);
-                }
-                return result;
-            }
-            else if (OpponentAfterPick(ref kanInProgress, sleepTime))
-            {
-                result.EndOfRound = true;
-                return result;
-            }
-        }
-
-        return result;
+        return new AutoPlayEnginePivot(this).Run(cancellationToken, declinedHumanCall, humanRonPending, autoCallMahjong, humanKanCompensation, sleepTime);
     }
 
     /// <summary>
@@ -897,7 +725,7 @@ public class RoundPivot
     // Guards of CanCallRiichi that don't require computing ExtractDiscardChoicesFromTenpai: whenever
     // this is false, the current player's tenpai status was never actually checked (open hand, already
     // riichi, not enough wall/points...), as opposed to "checked and found not tenpai".
-    private bool CanConsiderRiichi()
+    internal bool CanConsiderRiichi()
     {
         return _waitForDiscard
             && !IsRiichi(CurrentPlayerIndex)
@@ -1100,7 +928,7 @@ public class RoundPivot
     #region Private methods
 
     // Checks if a priority call can be made by the specified player.
-    private bool CanCallPonOrKan(PlayerIndices playerIndex, out bool isSelfKan)
+    internal bool CanCallPonOrKan(PlayerIndices playerIndex, out bool isSelfKan)
     {
         isSelfKan = _waitForDiscard;
         return CanCallKan(playerIndex).Count > 0 || CanCallPon(playerIndex);
@@ -1122,23 +950,7 @@ public class RoundPivot
         _waitForDiscard = true;
     }
 
-    private bool CheckOpponensRonCall(bool humanRonPending)
-    {
-        var atLeastOneRon = humanRonPending;
-        foreach (var pi in Enum.GetValues<PlayerIndices>().Where(Game.IsCpu))
-        {
-            var ronCalled = _cpuManagers[pi].RonDecision(pi, atLeastOneRon);
-            if (ronCalled)
-            {
-                atLeastOneRon = true;
-                CallNotifier?.Invoke(new CallNotifierEventArgs { Action = CallTypes.Ron, PlayerIndex = pi });
-            }
-        }
-
-        return atLeastOneRon;
-    }
-
-    private TilePivot? OpponentBeginCallKan(PlayerIndices playerId, TilePivot kanTilePick, bool concealedKan)
+    internal TilePivot? OpponentBeginCallKan(PlayerIndices playerId, TilePivot kanTilePick, bool concealedKan)
     {
         TurnChangeNotifier?.Invoke(new TurnChangeNotifierEventArgs());
 
@@ -1150,7 +962,7 @@ public class RoundPivot
         return compensationTile;
     }
 
-    private void AutoPick()
+    internal void AutoPick()
     {
         TurnChangeNotifier?.Invoke(new TurnChangeNotifierEventArgs());
 
@@ -1159,7 +971,7 @@ public class RoundPivot
         PickNotifier?.Invoke(new PickNotifierEventArgs());
     }
 
-    private void ChiiCall(TilePivot chiiTilePick, int sleepTime)
+    internal void ChiiCall(TilePivot chiiTilePick, int sleepTime)
     {
         TurnChangeNotifier?.Invoke(new TurnChangeNotifierEventArgs());
 
@@ -1178,7 +990,7 @@ public class RoundPivot
         }
     }
 
-    private void PonCall(PlayerIndices playerIndex, int sleepTime)
+    internal void PonCall(PlayerIndices playerIndex, int sleepTime)
     {
         TurnChangeNotifier?.Invoke(new TurnChangeNotifierEventArgs());
 
@@ -1201,7 +1013,7 @@ public class RoundPivot
         }
     }
 
-    private void Discard(TilePivot tile, int sleepTime)
+    internal void Discard(TilePivot tile, int sleepTime)
     {
         if (!IsHumanPlayer)
         {
@@ -1215,54 +1027,7 @@ public class RoundPivot
         }
     }
 
-    private bool OpponentAfterPick(ref (PlayerIndices, TilePivot?, PlayerIndices?)? kanInProgress, int sleepTime)
-    {
-        var tsumoDecision = _cpuManagers[CurrentPlayerIndex].TsumoDecision(kanInProgress != null);
-        if (tsumoDecision)
-        {
-            CallNotifier?.Invoke(new CallNotifierEventArgs { Action = CallTypes.Tsumo, PlayerIndex = CurrentPlayerIndex });
-            return true;
-        }
-
-        // Computed at most once per pick: the riichi eligibility check and, if riichi isn't called,
-        // the discard-to-stay-tenpai check right below ask the exact same question ("what can I
-        // discard and remain tenpai?") on the exact same, still-unchanged hand. Null means the
-        // question was never actually asked (open hand, already riichi, not enough wall/points...),
-        // as opposed to "asked and the answer is empty" - only the latter is safe to reuse as-is.
-        var tenpaiDiscardChoices = CanConsiderRiichi() ? ExtractDiscardChoicesFromTenpai(CurrentPlayerIndex) : null;
-
-        // A first-turn kokushi-tenpai hand also satisfies CanCallKyuushuKyuuhai, but a real tenpai
-        // shape (daburu riichi, ippatsu, pressure on opponents' discards) always takes priority over
-        // aborting the round.
-        if ((tenpaiDiscardChoices == null || tenpaiDiscardChoices.Count == 0) && _cpuManagers[CurrentPlayerIndex].KyuushuKyuuhaiDecision())
-        {
-            CallKyuushuKyuuhai();
-            CallNotifier?.Invoke(new CallNotifierEventArgs { Action = CallTypes.KyuushuKyuuhai, PlayerIndex = CurrentPlayerIndex });
-            return true;
-        }
-
-        var (_, kanTile) = _cpuManagers[CurrentPlayerIndex].KanDecision(CurrentPlayerIndex, true);
-        if (kanTile != null)
-        {
-            var compensationTile = OpponentBeginCallKan(CurrentPlayerIndex, kanTile, true);
-            kanInProgress = (CurrentPlayerIndex, compensationTile, null);
-            return false;
-        }
-
-        kanInProgress = null;
-
-        var riichiTile = _cpuManagers[CurrentPlayerIndex].RiichiDecision(tenpaiDiscardChoices);
-        if (riichiTile != null)
-        {
-            CallRiichi(riichiTile, sleepTime);
-            return false;
-        }
-
-        Discard(_cpuManagers[CurrentPlayerIndex].DiscardDecision(tenpaiDiscardChoices), sleepTime);
-        return false;
-    }
-
-    private void CallRiichi(TilePivot tile, int sleepTime)
+    internal void CallRiichi(TilePivot tile, int sleepTime)
     {
         if (!IsHumanPlayer)
         {
@@ -1277,47 +1042,8 @@ public class RoundPivot
         }
     }
 
-    private CallTypes? HumanAutoPlay(bool autoCallMahjong, int sleepTime)
-    {
-        if (CanCallTsumo(false))
-        {
-            HumanCallNotifier?.Invoke(new HumanCallNotifierEventArgs { Call = CallTypes.Tsumo });
-            return autoCallMahjong ? CallTypes.Tsumo : default(CallTypes?);
-        }
-
-        var riichiTiles = CanCallRiichi();
-        RiichiChoicesNotifier?.Invoke(new RiichiChoicesNotifierEventArgs(riichiTiles));
-        if (riichiTiles.Count > 0)
-        {
-            // A first-turn tenpai hand (even a kokushi musou one, which also satisfies
-            // CanCallKyuushuKyuuhai) is a real offensive opportunity - daburu riichi, ippatsu,
-            // pressure on opponents' discards - not a reason to abort the round. Riichi always
-            // takes priority when both are legally available.
-            var adviseRiichi = Game.Ruleset.DiscardTip && _cpuManagers[CurrentPlayerIndex].RiichiDecision(riichiTiles) != null;
-            HumanCallNotifier?.Invoke(new HumanCallNotifierEventArgs { Call = CallTypes.Riichi, RiichiAdvised = adviseRiichi });
-            return null;
-        }
-        else if (CanCallKyuushuKyuuhai())
-        {
-            HumanCallNotifier?.Invoke(new HumanCallNotifierEventArgs { Call = CallTypes.KyuushuKyuuhai });
-            return null;
-        }
-        else if (HumanCanAutoDiscard())
-        {
-            // Not a real CPU sleep: the auto-discard by human player is considered as such
-            Thread.Sleep(sleepTime);
-            return CallTypes.NoCall;
-        }
-        else
-        {
-            HumanCallNotifier?.Invoke(new HumanCallNotifierEventArgs { Call = CallTypes.NoCall });
-        }
-
-        return null;
-    }
-
     // Undoes the pick of a compensation tile after a kan.
-    private void UndoPickCompensationTile()
+    internal void UndoPickCompensationTile()
     {
         var compensationTile = _closedKanInProgress ?? _openedKanInProgress;
         if (compensationTile == null)

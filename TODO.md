@@ -11,6 +11,8 @@ Points notés en cours de route, pas traités tout de suite.
 - [ ] `RoundPivot.cs:1272` : l'ordre de vérification des Ron CPU peut marginalement influencer la décision.
 - [ ] `RoundPivot.cs:310` : timing de la notification Kan (affichage dora) signalé comme potentiellement pas parfait, pas creusé.
 - [ ] `ScoreTools.ComputeUma` : une seule règle d'uma gérée, pas de configuration alternative.
+- [ ] `BasicCpuManagerPivot._itsuFamily` : verrouillé par `PonDecisionInternal`/`KanDecisionInternal`/`ChiiDecisionInternal` mais totalement ignoré par `DiscardDecisionInternal`, qui peut donc défausser les tuiles de la famille honitsu engagée pendant que les autres familles restent bloquées pour les calls — main potentiellement sabotée par ses deux propres logiques. Correction volontairement reportée (casserait les scores exacts des golden-seed tests d'`AutoPlay_Tests.cs`).
+- [ ] `BasicCpuManagerPivot.ChiiDecisionInternal` (boucle sans `break`) : quand plusieurs séquences de chii sont valables, retient arbitrairement la dernière testée plutôt que la meilleure.
 
 ## Interface WPF (Gnoj-Ham-View)
 
