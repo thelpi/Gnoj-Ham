@@ -123,44 +123,46 @@ public class EndOfRoundInformationsPivot
     {
         #region Embedded properties
 
-        private readonly HandPivot? _hand;
-
+        /// <summary>
+        /// The player's hand, if relevant (<c>Null</c> for a losing or neutral player).
+        /// </summary>
+        internal HandPivot? Hand { get; init; }
         /// <summary>
         /// Indicates if CPU.
         /// </summary>
-        public bool IsCpu { get; }
+        public required bool IsCpu { get; init; }
         /// <summary>
         /// Index in <see cref="GamePivot.Players"/>.
         /// </summary>
-        public PlayerIndices Index { get; }
+        public required PlayerIndices Index { get; init; }
         /// <summary>
         /// Fan count.
         /// </summary>
-        public int FanCount { get; }
+        public int FanCount { get; init; }
         /// <summary>
         /// Fu count.
         /// </summary>
-        public int FuCount { get; }
+        public int FuCount { get; init; }
         /// <summary>
         /// The points gain from the hand itself (zero or positive).
         /// </summary>
-        public int HandPointsGain { get; }
+        public int HandPointsGain { get; init; }
         /// <summary>
         /// Points gain for this round (might be negative).
         /// </summary>
-        internal int PointsGain { get; private set; }
+        internal int PointsGain { get; set; }
         /// <summary>
         /// Dora count.
         /// </summary>
-        public int DoraCount { get; }
+        public int DoraCount { get; init; }
         /// <summary>
         /// Ura-dora count.
         /// </summary>
-        public int UraDoraCount { get; }
+        public int UraDoraCount { get; init; }
         /// <summary>
         /// Red dora count.
         /// </summary>
-        public int RedDoraCount { get; }
+        public int RedDoraCount { get; init; }
 
         #endregion Embedded properties
 
@@ -169,60 +171,19 @@ public class EndOfRoundInformationsPivot
         /// <summary>
         /// Inferred; list of yakus in the hand.
         /// </summary>
-        public IReadOnlyList<YakuPivot>? Yakus => _hand?.Yakus;
+        public IReadOnlyList<YakuPivot>? Yakus => Hand?.Yakus;
 
         /// <summary>
         /// Inferred; <c>True</c> if concealed hand; <c>False</c> otherwise.
         /// </summary>
-        public bool Concealed => _hand?.IsConcealed == true;
+        public bool Concealed => Hand?.IsConcealed == true;
 
         #endregion Inferred properties
-
-        #region Constructors
-
-        /// <summary>
-        /// Constructor when winning.
-        /// </summary>
-        /// <param name="index">The <see cref="Index"/> value.</param>
-        /// <param name="isCpu">The <see cref="IsCpu"/> value.</param>
-        /// <param name="fanCount">The <see cref="FanCount"/> value.</param>
-        /// <param name="fuCount">The <see cref="FuCount"/> value.</param>
-        /// <param name="hand">The <see cref="_hand"/> value.</param>
-        /// <param name="pointsGain">The <see cref="PointsGain"/> value.</param>
-        /// <param name="doraCount">The <see cref="DoraCount"/> value.</param>
-        /// <param name="uraDoraCount">The <see cref="UraDoraCount"/> value.</param>
-        /// <param name="redDoraCount">The <see cref="RedDoraCount"/> value.</param>
-        /// <param name="handPointsGain">The <see cref="HandPointsGain"/> value.</param>
-        internal PlayerInformationsPivot(PlayerIndices index, bool isCpu, int fanCount, int fuCount, HandPivot? hand,
-            int pointsGain, int doraCount, int uraDoraCount, int redDoraCount, int handPointsGain)
-        {
-            Index = index;
-            IsCpu = isCpu;
-            FanCount = fanCount;
-            FuCount = fuCount;
-            PointsGain = pointsGain;
-            DoraCount = doraCount;
-            UraDoraCount = uraDoraCount;
-            RedDoraCount = redDoraCount;
-            HandPointsGain = handPointsGain;
-            _hand = hand;
-        }
-
-        /// <summary>
-        /// Constructor when losing or neutral.
-        /// </summary>
-        /// <param name="index">The <see cref="Index"/> value.</param>
-        /// <param name="isCpu">The <see cref="IsCpu"/> value.</param>
-        /// <param name="pointsGain">The <see cref="PointsGain"/> value.</param>
-        internal PlayerInformationsPivot(PlayerIndices index, bool isCpu, int pointsGain)
-            : this(index, isCpu, 0, 0, null, pointsGain, 0, 0, 0, 0) { }
-
-        #endregion Constructors
 
         #region Public methods
 
         /// <summary>
-        /// Gets tiles from the hand (if <see cref="_hand"/> not <c>Null</c>) ordered for display on the score screen.
+        /// Gets tiles from the hand (if <see cref="Hand"/> not <c>Null</c>) ordered for display on the score screen.
         /// </summary>
         /// <returns>A list of tiles with additional information:
         /// <c>isLeaned</c> indicates if the tile should be displayed leaned.
@@ -230,17 +191,17 @@ public class EndOfRoundInformationsPivot
         /// </returns>
         public IReadOnlyList<(TilePivot tile, bool isLeaned, bool isWinPick)> GetFullHandForDisplay()
         {
-            if (_hand == null)
+            if (Hand == null)
             {
                 return new List<(TilePivot tile, bool isLeaned, bool isWinPick)>();
             }
 
             var results = new List<(TilePivot, bool, bool)>(14);
-            foreach (var t in _hand.AllTiles)
+            foreach (var t in Hand.AllTiles)
             {
-                if (!ReferenceEquals(t, _hand.LatestPick) || FanCount == 0)
+                if (!ReferenceEquals(t, Hand.LatestPick) || FanCount == 0)
                 {
-                    var leander = _hand.DeclaredCombinations.Any(c => ReferenceEquals(c.OpenTile, t));
+                    var leander = Hand.DeclaredCombinations.Any(c => ReferenceEquals(c.OpenTile, t));
                     results.Add((t, leander, false));
                 }
             }
@@ -248,7 +209,7 @@ public class EndOfRoundInformationsPivot
             // Displays the latest pick in last, only if it's a winning hand
             if (FanCount > 0)
             {
-                results.Add((_hand.LatestPick, false, true));
+                results.Add((Hand.LatestPick, false, true));
             }
 
             return results;

@@ -5,7 +5,7 @@ namespace Gnoj_Ham_Library;
 /// <summary>
 /// Represents a set of rules.
 /// </summary>
-public class RulePivot : IEquatable<RulePivot>
+public record RulePivot
 {
     #region Static properties
 
@@ -92,43 +92,4 @@ public class RulePivot : IEquatable<RulePivot>
     internal bool AreDefaultRules() => Equals(Default);
 
     #endregion Public methods
-
-    #region IEquatable implementation
-
-    /// <inheritdoc />
-    public bool Equals(RulePivot? other)
-    {
-        return other != null
-            && other.UseNagashiMangan == UseNagashiMangan
-            && other.InitialPointsRule == InitialPointsRule
-            && other.EndOfGameRule == EndOfGameRule
-            && other.UseRedDoras == UseRedDoras
-            && other.DebugMode == DebugMode
-            && other.DiscardTip == DiscardTip
-            && other.UseMultipleYakumans == UseMultipleYakumans
-            && other.UseKazoeYakuman == UseKazoeYakuman
-            && other.UseSuufonRenda == UseSuufonRenda;
-    }
-
-    public override bool Equals(object? obj)
-    {
-        return obj != null && Equals(obj as RulePivot);
-    }
-
-    public override int GetHashCode()
-    {
-        var hash = new HashCode();
-        hash.Add(UseNagashiMangan);
-        hash.Add(InitialPointsRule);
-        hash.Add(EndOfGameRule);
-        hash.Add(UseRedDoras);
-        hash.Add(DebugMode);
-        hash.Add(DiscardTip);
-        hash.Add(UseMultipleYakumans);
-        hash.Add(UseKazoeYakuman);
-        hash.Add(UseSuufonRenda);
-        return hash.ToHashCode();
-    }
-
-    #endregion IEquatable implementation
 }

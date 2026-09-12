@@ -1142,9 +1142,16 @@ public class RoundPivot
             var (tenpai, nonTenpai) = ScoreTools.GetRyuukyokuPoints(tenpaiPlayersIndex.Count);
 
             tenpaiPlayersIndex.ForEach(i =>
-                playerInfos.Add(new EndOfRoundInformationsPivot.PlayerInformationsPivot(i, Game.IsHuman(i), 0, 0, _hands[(int)i], tenpai, 0, 0, 0, tenpai)));
+                playerInfos.Add(new EndOfRoundInformationsPivot.PlayerInformationsPivot
+                {
+                    Index = i,
+                    IsCpu = Game.IsHuman(i),
+                    Hand = _hands[(int)i],
+                    PointsGain = tenpai,
+                    HandPointsGain = tenpai
+                }));
             notTenpaiPlayersIndex.ForEach(i =>
-                playerInfos.Add(new EndOfRoundInformationsPivot.PlayerInformationsPivot(i, Game.IsHuman(i), nonTenpai)));
+                playerInfos.Add(new EndOfRoundInformationsPivot.PlayerInformationsPivot { Index = i, IsCpu = Game.IsHuman(i), PointsGain = nonTenpai }));
         }
         else
         {
@@ -1235,9 +1242,19 @@ public class RoundPivot
 
                 var riichiPart = isClosestWinnerOnMultipleRon ? Game.PendingRiichiCount * ScoreTools.RIICHI_COST : 0;
 
-                playerInfos.Add(new EndOfRoundInformationsPivot.PlayerInformationsPivot(
-                    pIndex, Game.IsHuman(pIndex), fanCount, fuCount, phand, basePoints + riichiPart + winnerHonba,
-                    dorasCount, uraDorasCount, redDorasCount, basePoints));
+                playerInfos.Add(new EndOfRoundInformationsPivot.PlayerInformationsPivot
+                {
+                    Index = pIndex,
+                    IsCpu = Game.IsHuman(pIndex),
+                    FanCount = fanCount,
+                    FuCount = fuCount,
+                    Hand = phand,
+                    PointsGain = basePoints + riichiPart + winnerHonba,
+                    DoraCount = dorasCount,
+                    UraDoraCount = uraDorasCount,
+                    RedDoraCount = redDorasCount,
+                    HandPointsGain = basePoints
+                });
 
                 notEastLostCumul -= notEast;
 
@@ -1269,15 +1286,23 @@ public class RoundPivot
                 else
                 {
                     // Only the discarder pays honba: a liable player's share is never affected by it.
-                    playerInfos.Add(new EndOfRoundInformationsPivot.PlayerInformationsPivot(
-                        liablePlayerId, Game.IsHuman(liablePlayerId), liablePlayersLost[liablePlayerId]));
+                    playerInfos.Add(new EndOfRoundInformationsPivot.PlayerInformationsPivot
+                    {
+                        Index = liablePlayerId,
+                        IsCpu = Game.IsHuman(liablePlayerId),
+                        PointsGain = liablePlayersLost[liablePlayerId]
+                    });
                 }
             }
 
             if (ronPlayerIndex.HasValue)
             {
-                playerInfos.Add(new EndOfRoundInformationsPivot.PlayerInformationsPivot(
-                    ronPlayerIndex.Value, Game.IsHuman(ronPlayerIndex.Value), eastOrLoserLostCumul - honbaPoints));
+                playerInfos.Add(new EndOfRoundInformationsPivot.PlayerInformationsPivot
+                {
+                    Index = ronPlayerIndex.Value,
+                    IsCpu = Game.IsHuman(ronPlayerIndex.Value),
+                    PointsGain = eastOrLoserLostCumul - honbaPoints
+                });
             }
             else
             {
@@ -1285,8 +1310,12 @@ public class RoundPivot
                 {
                     if (!winners.Contains(pIndex))
                     {
-                        playerInfos.Add(new EndOfRoundInformationsPivot.PlayerInformationsPivot(
-                            pIndex, Game.IsHuman(pIndex), (Game.GetPlayerCurrentWind(pIndex) == Winds.East ? eastOrLoserLostCumul : notEastLostCumul) - (honbaPoints / 3)));
+                        playerInfos.Add(new EndOfRoundInformationsPivot.PlayerInformationsPivot
+                        {
+                            Index = pIndex,
+                            IsCpu = Game.IsHuman(pIndex),
+                            PointsGain = (Game.GetPlayerCurrentWind(pIndex) == Winds.East ? eastOrLoserLostCumul : notEastLostCumul) - (honbaPoints / 3)
+                        });
                     }
                 }
             }
