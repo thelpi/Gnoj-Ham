@@ -68,7 +68,7 @@ public class GamePivot
     /// <summary>
     /// Inferred; gets the player index which was the first <see cref="Winds.East"/>.
     /// </summary>
-    internal PlayerIndices FirstEastIndex => (PlayerIndices)Players.Select((p, i) => (p, i)).First(pi => pi.p.CurrentGameInitialWind == Winds.East).i; // TODO: gross
+    internal PlayerIndices FirstEastIndex => (PlayerIndices)Players.Select((p, i) => (p, i)).First(pi => pi.p.CurrentGameInitialWind == Winds.East).i;
 
     #endregion Properties
 

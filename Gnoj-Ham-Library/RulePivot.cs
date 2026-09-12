@@ -2,7 +2,6 @@
 
 namespace Gnoj_Ham_Library;
 
-// TODO: separate rule from config (debug mod, tips...)
 /// <summary>
 /// Represents a set of rules.
 /// </summary>

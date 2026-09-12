@@ -351,7 +351,6 @@ public partial class MainWindow : Window
             || BtnKan.Visibility == Visibility.Visible
             || BtnRon.Visibility == Visibility.Visible)
         {
-            // TODO: lazy
             // Cancels the Highlighting of the previous player discard
             FillDiscardPanel(_game.Round.PreviousPlayerIndex);
 
@@ -432,7 +431,6 @@ public partial class MainWindow : Window
                 }
                 else
                 {
-                    // TODO
                     var button = result.HumanCall.HasValue
                         ? (result.HumanCall.Value.call == CallTypes.NoCall
                             ? new PanelButton(PickPanel, 0)
@@ -810,7 +808,6 @@ public partial class MainWindow : Window
 
         StpDoras.SetDorasPanel(_game.Round.DoraIndicatorTiles, _game.Round.VisibleDorasCount);
         
-        // TODO: exract tooltip content in resource
         LblDominantWind.Content = _game.DominantWind.ToWindDisplay();
         LblDominantWind.ToolTip = $"Vent dominant : {_game.DominantWind.DisplayName()}";
         LblEastTurnCount.Content = $"{_game.EastRank}";
@@ -1032,7 +1029,6 @@ public partial class MainWindow : Window
             }
         }
 
-        // TODO: this is highly dependent on the size of container, defined directly in the view
         const double WallTileSizeRate = 0.2;
 
         // every tile to display in 4 walls
@@ -1046,7 +1042,6 @@ public partial class MainWindow : Window
 
             var wallPanel = this.FindName<StackPanel>(WallPanel, (PlayerIndices)iWall);
 
-            // TODO: lazy, walls are always rebuilt
             wallPanel.Children.Clear();
 
             for (var oneTile = 1; oneTile <= tilesCountForThisWall; oneTile++)

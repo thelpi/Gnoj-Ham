@@ -307,7 +307,6 @@ public class RoundPivot
 
             // 3 - notify the UI of the kan
             // it's done here (and not right after the kan) to not display new dora too soon
-            // TODO: it's probably not perfect
             if (kanInProgress.HasValue)
             {
                 ReadyToCallNotifier?.Invoke(new ReadyToCallNotifierEventArgs { Call = CallTypes.Kan, PotentialPreviousPlayerIndex = kanInProgress.Value.Item3 });
@@ -829,8 +828,6 @@ public class RoundPivot
             return new List<TilePivot>();
         }
 
-        // TODO: if already 3 riichi calls, what to do ?
-
         return ExtractDiscardChoicesFromTenpai(CurrentPlayerIndex);
     }
 
@@ -893,8 +890,6 @@ public class RoundPivot
     {
         var hand = _hands[(int)playerIndex];
 
-        // TODO : there're (maybe) specific rules about it:
-        // for instance, what if I have a single wait on tile "4 circle" but every tiles "4 circle" are already in my hand ?
         return hand.IsTenpai(_fullTilesList, tileToRemoveFromConcealed);
     }
 
@@ -1269,7 +1264,6 @@ public class RoundPivot
     private bool CheckOpponensRonCall(bool humanRonPending)
     {
         var atLeastOneRon = humanRonPending;
-        // TODO: very marginally, the order of players can impact decision
         foreach (var pi in Enum.GetValues<PlayerIndices>().Where(Game.IsCpu))
         {
             var ronCalled = _cpuManagers[pi].RonDecision(pi, atLeastOneRon);
@@ -1424,7 +1418,6 @@ public class RoundPivot
         RiichiChoicesNotifier?.Invoke(new RiichiChoicesNotifierEventArgs(riichiTiles));
         if (riichiTiles.Count > 0)
         {
-            // TODO: move to view!
             var adviseRiichi = Game.Ruleset.DiscardTip && _cpuManagers[CurrentPlayerIndex].RiichiDecision() != null;
             HumanCallNotifier?.Invoke(new HumanCallNotifierEventArgs { Call = CallTypes.Riichi, RiichiAdvised = adviseRiichi });
             return null;

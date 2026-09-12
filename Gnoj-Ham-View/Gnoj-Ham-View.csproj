@@ -23,7 +23,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="Notes.txt" />
     <None Remove="Resources\dragon_background.png" />
     <None Remove="Resources\gohome.png" />
     <None Remove="Resources\stick_100.png" />
@@ -44,7 +43,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Resource Include="Notes.txt" />
     <Resource Include="Resources\dragon_background.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Resource>

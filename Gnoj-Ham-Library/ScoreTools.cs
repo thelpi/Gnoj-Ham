@@ -293,7 +293,6 @@ internal static class ScoreTools
     /// <returns>Uma.</returns>
     internal static int ComputeUma(int rank)
     {
-        // TODO : manage more than one rule.
         return rank == 1 ? 15 : (rank == 2 ? 5 : (rank == 3 ? -5 : -15));
     }
 }

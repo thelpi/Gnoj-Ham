@@ -2,7 +2,6 @@
 
 namespace Gnoj_Ham_Library;
 
-// TODO: this class is an abomination
 /// <summary>
 /// Player save file
 /// </summary>
@@ -74,7 +73,6 @@ public class PlayerSavePivot
         {
             if (File.Exists(FullFileName))
             {
-                // TODO decrypt
                 using var stream = new FileStream(FullFileName, FileMode.Open, FileAccess.Read, FileShare.Read);
                 save = JsonSerializer.Deserialize<PlayerSavePivot>(stream)
                     ?? throw new InvalidOperationException("Le fichier de sauvegarde est vide ou invalide.");
