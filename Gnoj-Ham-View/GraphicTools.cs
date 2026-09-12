@@ -329,6 +329,33 @@ internal static class GraphicTools
     }
 
     /// <summary>
+    /// Transforms the enumeration <see cref="UmaRules"/> into a list of <see cref="string"/> (with matching index).
+    /// </summary>
+    /// <returns>List of strings ready for display.</returns>
+    internal static IReadOnlyList<string> GetUmaRuleDisplayValue()
+    {
+        var results = new List<string>();
+
+        foreach (var rule in Enum.GetValues<UmaRules>())
+        {
+            switch (rule)
+            {
+                case UmaRules.FiveTen:
+                    results.Add("5 / 10");
+                    break;
+                case UmaRules.TenTwenty:
+                    results.Add("10 / 20");
+                    break;
+                case UmaRules.Ema:
+                    results.Add("EMA (15 / 5)");
+                    break;
+            }
+        }
+
+        return results;
+    }
+
+    /// <summary>
     /// Computes the (french) name to display for the family.
     /// </summary>
     /// <param name="family">Family.</param>

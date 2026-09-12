@@ -21,6 +21,7 @@ public partial class IntroWindow : Window
 
         CbbEndOfGameRule.ItemsSource = GraphicTools.GetEndOfGameRuleDisplayValue();
         CbbPointsRule.ItemsSource = GraphicTools.GetInitialPointsRuleDisplayValue();
+        CbbUmaRule.ItemsSource = GraphicTools.GetUmaRuleDisplayValue();
         CbbChronoSpeed.ItemsSource = GraphicTools.GetChronoDisplayValues();
         CbbCpuSpeed.ItemsSource = GraphicTools.GetCpuSpeedDisplayValues();
         CbbDrivenDrawScenario.ItemsSource = GraphicTools.GetDrivenDrawScenarioDisplayValue();
@@ -52,7 +53,8 @@ public partial class IntroWindow : Window
             UseMultipleYakumans = ChkUseMultipleYakumans.IsChecked == true,
             UseKazoeYakuman = ChkUseKazoeYakuman.IsChecked == true,
             UseSuufonRenda = ChkUseSuufonRenda.IsChecked == true,
-            UseDoubleYakuman = ChkUseDoubleYakuman.IsChecked == true
+            UseDoubleYakuman = ChkUseDoubleYakuman.IsChecked == true,
+            UmaRule = (UmaRules)CbbUmaRule.SelectedIndex
         };
 
         if (ChkFourCpus.IsChecked == true)
@@ -87,6 +89,7 @@ public partial class IntroWindow : Window
         ChkUseKazoeYakuman.IsChecked = RulePivot.Default.UseKazoeYakuman;
         ChkUseSuufonRenda.IsChecked = RulePivot.Default.UseSuufonRenda;
         ChkUseDoubleYakuman.IsChecked = RulePivot.Default.UseDoubleYakuman;
+        CbbUmaRule.SelectedIndex = (int)RulePivot.Default.UmaRule;
 
         // Options as rules
         ChkDiscardTip.IsChecked = RulePivot.Default.DiscardTip;

@@ -137,4 +137,16 @@ public class ScoreTools_Tests
 
         Assert.True(fu > 0);
     }
+
+    [Theory]
+    [InlineData(UmaRules.FiveTen, 10, 5, -5, -10)]
+    [InlineData(UmaRules.TenTwenty, 20, 10, -10, -20)]
+    [InlineData(UmaRules.Ema, 15, 5, -5, -15)]
+    public void ComputeUma_EachRule_MatchesItsReferenceValues(UmaRules umaRule, int firstUma, int secondUma, int thirdUma, int fourthUma)
+    {
+        Assert.Equal(firstUma, ScoreTools.ComputeUma(1, umaRule));
+        Assert.Equal(secondUma, ScoreTools.ComputeUma(2, umaRule));
+        Assert.Equal(thirdUma, ScoreTools.ComputeUma(3, umaRule));
+        Assert.Equal(fourthUma, ScoreTools.ComputeUma(4, umaRule));
+    }
 }

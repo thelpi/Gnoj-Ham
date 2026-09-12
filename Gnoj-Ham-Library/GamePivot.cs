@@ -145,7 +145,7 @@ public class GamePivot
         var i = 1;
         foreach (var player in Players.OrderByDescending(p => p.CurrentGamePoints))
         {
-            playersOrdered.Add(new PlayerScorePivot(player, i, ScoreTools.ComputeUma(i), Ruleset.InitialPointsRule.GetInitialPointsFromRule()));
+            playersOrdered.Add(new PlayerScorePivot(player, i, ScoreTools.ComputeUma(i, Ruleset.UmaRule), Ruleset.InitialPointsRule.GetInitialPointsFromRule()));
             i++;
         }
 

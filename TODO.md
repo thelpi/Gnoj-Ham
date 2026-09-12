@@ -9,7 +9,6 @@ Points notés en cours de route, pas traités tout de suite.
 - [ ] `RulePivot.cs:5` : séparer les règles de la config (debug mode, tips...) — jamais fait.
 - [ ] `RoundPivot.cs:1272` : l'ordre de vérification des Ron CPU peut marginalement influencer la décision.
 - [ ] `RoundPivot.cs:310` : timing de la notification Kan (affichage dora) signalé comme potentiellement pas parfait, pas creusé.
-- [ ] `ScoreTools.ComputeUma` : une seule règle d'uma gérée, pas de configuration alternative.
 
 ## Interface WPF (Gnoj-Ham-View)
 

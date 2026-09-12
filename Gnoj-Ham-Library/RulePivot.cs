@@ -87,6 +87,11 @@ public record RulePivot
     /// </summary>
     public bool UseDoubleYakuman { get; init; } = true;
 
+    /// <summary>
+    /// The "uma" (rank bonus/malus) rule applied to the final score.
+    /// </summary>
+    public UmaRules UmaRule { get; init; } = UmaRules.FiveTen;
+
     #endregion Embedded properties
 
     #region Public methods

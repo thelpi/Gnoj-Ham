@@ -295,9 +295,17 @@ internal static class ScoreTools
     /// Computes uma at the specified rank.
     /// </summary>
     /// <param name="rank">The rank.</param>
+    /// <param name="umaRule">The uma rule (see <see cref="UmaRules"/>).</param>
     /// <returns>Uma.</returns>
-    internal static int ComputeUma(int rank)
+    internal static int ComputeUma(int rank, UmaRules umaRule)
     {
-        return rank == 1 ? 15 : (rank == 2 ? 5 : (rank == 3 ? -5 : -15));
+        var (first, second) = umaRule switch
+        {
+            UmaRules.TenTwenty => (20, 10),
+            UmaRules.Ema => (15, 5),
+            _ => (10, 5)
+        };
+
+        return rank == 1 ? first : (rank == 2 ? second : (rank == 3 ? -second : -first));
     }
 }
