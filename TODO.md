@@ -6,7 +6,6 @@ Points notés en cours de route, pas traités tout de suite.
 
 - [ ] `PlayerSavePivot` : sauvegarde JSON non chiffrée (`// TODO decrypt` déjà dans le code).
 - [ ] `PlayerSavePivot` : la classe elle-même est qualifiée d'"abomination" dans le code (mélange sérialisation/stats/état) — `PlayerSavePivot.cs:5`.
-- [ ] `RulePivot.cs:5` : séparer les règles de la config (debug mode, tips...) — jamais fait.
 - [ ] `RoundPivot.cs:1272` : l'ordre de vérification des Ron CPU peut marginalement influencer la décision.
 - [ ] `RoundPivot.cs:310` : timing de la notification Kan (affichage dora) signalé comme potentiellement pas parfait, pas creusé.
 

@@ -20,6 +20,7 @@ internal class AutoPlayEnginePivot
         bool declinedHumanCall,
         bool humanRonPending,
         bool autoCallMahjong,
+        bool discardTip,
         (TilePivot compensationTile, PlayerIndices? previousPlayerIndex)? humanKanCompensation,
         int sleepTime)
     {
@@ -196,7 +197,7 @@ internal class AutoPlayEnginePivot
             // - for non human player, checks for tsumo, kan and riichi
             if (_round.IsHumanPlayer)
             {
-                var call = HumanAutoPlay(autoCallMahjong, sleepTime);
+                var call = HumanAutoPlay(autoCallMahjong, discardTip, sleepTime);
                 if (call.HasValue)
                 {
                     result.HumanCall = (_round.CurrentPlayerIndex, call.Value);
@@ -278,7 +279,7 @@ internal class AutoPlayEnginePivot
         return false;
     }
 
-    private CallTypes? HumanAutoPlay(bool autoCallMahjong, int sleepTime)
+    private CallTypes? HumanAutoPlay(bool autoCallMahjong, bool discardTip, int sleepTime)
     {
         if (_round.CanCallTsumo(false))
         {
@@ -294,7 +295,7 @@ internal class AutoPlayEnginePivot
             // CanCallKyuushuKyuuhai) is a real offensive opportunity - daburu riichi, ippatsu,
             // pressure on opponents' discards - not a reason to abort the round. Riichi always
             // takes priority when both are legally available.
-            var adviseRiichi = _round.Game.Ruleset.DiscardTip && _round.CpuManager(_round.CurrentPlayerIndex).RiichiDecision(riichiTiles) != null;
+            var adviseRiichi = discardTip && _round.CpuManager(_round.CurrentPlayerIndex).RiichiDecision(riichiTiles) != null;
             _round.RaiseHumanCallNotifier(new HumanCallNotifierEventArgs { Call = CallTypes.Riichi, RiichiAdvised = adviseRiichi });
             return null;
         }

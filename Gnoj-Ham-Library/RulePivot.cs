@@ -56,16 +56,6 @@ public record RulePivot
     public bool UseNagashiMangan { get; init; }
 
     /// <summary>
-    /// Use debug mode.
-    /// </summary>
-    public bool DebugMode { get; init; }
-
-    /// <summary>
-    /// Use discard tip.
-    /// </summary>
-    public bool DiscardTip { get; init; }
-
-    /// <summary>
     /// Allows stacking the value of several distinct yakumans made in the same hand (otherwise, only one counts).
     /// </summary>
     public bool UseMultipleYakumans { get; init; } = true;

@@ -290,7 +290,7 @@ public class RoundPivot
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>Instance of <see cref="AutoPlayResultPivot"/>.</returns>>
     public AutoPlayResultPivot RunAutoPlay(CancellationToken cancellationToken)
-        => RunAutoPlay(cancellationToken, false, false, false, null, 0);
+        => RunAutoPlay(cancellationToken, false, false, false, false, null, 0);
 
     /// <summary>
     /// Starts and runs the auto player.
@@ -299,6 +299,7 @@ public class RoundPivot
     /// <param name="declinedHumanCall">Indicates that a potential call has been suggested to the human player and has been declined..</param>
     /// <param name="humanRonPending">Indicates that the human player has called 'Ron', but the same call by opponents has to be checked too.</param>
     /// <param name="autoCallMahjong">When enabled, if the human player can call 'Tsumo' or 'Ron', the call is automatically made.</param>
+    /// <param name="discardTip">When enabled, a riichi recommendation is computed for the human player.</param>
     /// <param name="sleepTime">The time to wait after any action (call or discard).</param>
     /// <returns>Instance of <see cref="AutoPlayResultPivot"/>.</returns>>
     public AutoPlayResultPivot RunAutoPlay(
@@ -306,10 +307,11 @@ public class RoundPivot
         bool declinedHumanCall,
         bool humanRonPending,
         bool autoCallMahjong,
+        bool discardTip,
         (TilePivot compensationTile, PlayerIndices? previousPlayerIndex)? humanKanCompensation,
         int sleepTime)
     {
-        return new AutoPlayEnginePivot(this).Run(cancellationToken, declinedHumanCall, humanRonPending, autoCallMahjong, humanKanCompensation, sleepTime);
+        return new AutoPlayEnginePivot(this).Run(cancellationToken, declinedHumanCall, humanRonPending, autoCallMahjong, discardTip, humanKanCompensation, sleepTime);
     }
 
     /// <summary>

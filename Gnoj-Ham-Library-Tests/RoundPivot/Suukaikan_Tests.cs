@@ -97,7 +97,7 @@ public class Suukaikan_Tests
         AddKan(round, PlayerIndices.Two, TilePivot.GetTile(tilesSet, Families.Bamboo, number: 1));
         AddKan(round, PlayerIndices.Three, TilePivot.GetTile(tilesSet, Families.Bamboo, number: 9));
 
-        var result = round.RunAutoPlay(new CancellationToken(), false, false, false, null, 0);
+        var result = round.RunAutoPlay(new CancellationToken(), false, false, false, false, null, 0);
 
         Assert.True(result.EndOfRound);
         Assert.Null(result.RonPlayerId);

@@ -67,7 +67,7 @@ public class SuuchaRiichi_Tests
         var round = new GamePivot(RulePivot.Default, PlayerPivot.BuildPlayers(null), new Random(1)).Round;
         SetAllPlayersRiichi(round);
 
-        var result = round.RunAutoPlay(new CancellationToken(), false, false, false, null, 0);
+        var result = round.RunAutoPlay(new CancellationToken(), false, false, false, false, null, 0);
 
         Assert.True(result.EndOfRound);
         Assert.Null(result.RonPlayerId);

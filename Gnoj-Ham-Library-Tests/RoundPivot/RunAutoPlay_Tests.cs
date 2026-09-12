@@ -15,6 +15,6 @@ public class RunAutoPlay_Tests
         var compensationTile = round.FullTilesList[0];
 
         Assert.Throws<InvalidOperationException>(() =>
-            round.RunAutoPlay(new CancellationToken(), false, false, false, (compensationTile, (PlayerIndices?)null), 0));
+            round.RunAutoPlay(new CancellationToken(), false, false, false, false, (compensationTile, (PlayerIndices?)null), 0));
     }
 }

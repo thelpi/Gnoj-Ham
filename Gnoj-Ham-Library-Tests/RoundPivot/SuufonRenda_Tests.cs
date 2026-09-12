@@ -127,7 +127,7 @@ public class SuufonRenda_Tests
         var tilesSet = TilePivot.GetCompleteSet(false);
         SetFirstDiscards(round, TilePivot.GetTile(tilesSet, Families.Wind, wind: Winds.East));
 
-        var result = round.RunAutoPlay(new CancellationToken(), false, false, false, null, 0);
+        var result = round.RunAutoPlay(new CancellationToken(), false, false, false, false, null, 0);
 
         Assert.True(result.EndOfRound);
         Assert.Null(result.RonPlayerId);

@@ -43,6 +43,7 @@ public partial class MainWindow : Window
     private IReadOnlyList<TilePivot>? _riichiTiles;
     private readonly CancellationTokenSource _cancellationTokenSource = new();
     private readonly CancellationToken _cancellationToken;
+    private readonly bool _debugMode;
 
     private const PlayerIndices _humanPlayerIndex = PlayerIndices.Zero;
 
@@ -53,9 +54,12 @@ public partial class MainWindow : Window
     /// <param name="ruleset">The ruleset.</param>
     /// <param name="save">Player save file.</param>
     /// <param name="drivenDraw">Optional; see <see cref="DrivenDrawPivot.Resolve(DrivenDrawScenarios, PlayerIndices)"/>. <c>Null</c> (default) for a normal, fully random draw.</param>
-    public MainWindow(string playerName, RulePivot ruleset, PlayerSavePivot save, Action<List<TilePivot>>? drivenDraw = null)
+    /// <param name="debugMode">Optional; reveals every hand instead of just the human player's. <c>False</c> (default).</param>
+    public MainWindow(string playerName, RulePivot ruleset, PlayerSavePivot save, Action<List<TilePivot>>? drivenDraw = null, bool debugMode = false)
     {
         InitializeComponent();
+
+        _debugMode = debugMode;
 
         _cancellationToken = _cancellationTokenSource.Token;
         this.FindControl(PlayerLabel, _humanPlayerIndex).Content = playerName;
@@ -419,6 +423,7 @@ public partial class MainWindow : Window
                 Convert.ToBoolean(argumentsList[0]),
                 Convert.ToBoolean(argumentsList[1]),
                 Properties.Settings.Default.AutoCallMahjong,
+                Properties.Settings.Default.DiscardTip,
                 ((TilePivot, PlayerIndices?)?)argumentsList[2],
                 ((CpuSpeedPivot)Properties.Settings.Default.CpuSpeed).ParseSpeed());
         };
@@ -655,7 +660,7 @@ public partial class MainWindow : Window
                 RoutedEventHandler? handler = isHuman && !_game.Round.IsRiichi(pIndex)
                     ? BtnDiscard_Click
                     : null;
-                panel.Children.Add(new TileButton(tile, handler, (AnglePivot)pIndex, !isHuman && !_game.Ruleset.DebugMode));
+                panel.Children.Add(new TileButton(tile, handler, (AnglePivot)pIndex, !isHuman && !_debugMode));
             }
         }
 
@@ -666,7 +671,7 @@ public partial class MainWindow : Window
                     pickTile,
                     _game.Round.IsHumanPlayer ? BtnDiscard_Click : null,
                     (AnglePivot)pIndex,
-                    !_game.Round.IsHumanPlayer && !_game.Ruleset.DebugMode
+                    !_game.Round.IsHumanPlayer && !_debugMode
                 )
             );
         }
@@ -946,7 +951,7 @@ public partial class MainWindow : Window
                 if (canCall)
                 {
                     BtnKan.Visibility = Visibility.Visible;
-                    if (_game.Ruleset.DiscardTip)
+                    if (Properties.Settings.Default.DiscardTip)
                     {
                         needAdvice = true;
                         if (decisionTile != null)
@@ -969,7 +974,7 @@ public partial class MainWindow : Window
                 if (canChii)
                 {
                     BtnChii.Visibility = Visibility.Visible;
-                    if (_game.Ruleset.DiscardTip)
+                    if (Properties.Settings.Default.DiscardTip)
                     {
                         needAdvice = true;
                         if (chiiChoice != null)
@@ -984,7 +989,7 @@ public partial class MainWindow : Window
             if (_game.Round.CanCallPon(_humanPlayerIndex))
             {
                 BtnPon.Visibility = Visibility.Visible;
-                if (_game.Ruleset.DiscardTip)
+                if (Properties.Settings.Default.DiscardTip)
                 {
                     needAdvice = true;
                     if (_game.Round.Advisor!.PonDecision(_humanPlayerIndex))
@@ -999,7 +1004,7 @@ public partial class MainWindow : Window
             if (canCall)
             {
                 BtnKan.Visibility = Visibility.Visible;
-                if (_game.Ruleset.DiscardTip)
+                if (Properties.Settings.Default.DiscardTip)
                 {
                     needAdvice = true;
                     if (decisionTile != null)
@@ -1193,7 +1198,7 @@ public partial class MainWindow : Window
     // Suggest a discard by changing the skin of a button
     private void SuggestDiscard()
     {
-        if (!_game.Ruleset.DiscardTip)
+        if (!Properties.Settings.Default.DiscardTip)
         {
             return;
         }

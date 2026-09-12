@@ -48,8 +48,6 @@ public partial class IntroWindow : Window
             EndOfGameRule = (EndOfGameRules)CbbEndOfGameRule.SelectedIndex,
             UseRedDoras = ChkUseRedDoras.IsChecked == true,
             UseNagashiMangan = ChkUseNagashiMangan.IsChecked == true,
-            DebugMode = ChkDebugMode.IsChecked == true,
-            DiscardTip = ChkDiscardTip.IsChecked == true,
             UseMultipleYakumans = ChkUseMultipleYakumans.IsChecked == true,
             UseKazoeYakuman = ChkUseKazoeYakuman.IsChecked == true,
             UseSuufonRenda = ChkUseSuufonRenda.IsChecked == true,
@@ -64,7 +62,7 @@ public partial class IntroWindow : Window
         else
         {
             var drivenDraw = DrivenDrawPivot.Resolve((DrivenDrawScenarios)CbbDrivenDrawScenario.SelectedIndex, PlayerIndices.Zero);
-            new MainWindow(TxtPlayerName.Text, ruleset, save, drivenDraw).ShowDialog();
+            new MainWindow(TxtPlayerName.Text, ruleset, save, drivenDraw, ChkDebugMode.IsChecked == true).ShowDialog();
         }
 
         // The configuration might be updated in-game.
@@ -91,15 +89,13 @@ public partial class IntroWindow : Window
         ChkUseDoubleYakuman.IsChecked = Settings.Default.UseDoubleYakuman;
         CbbUmaRule.SelectedIndex = Settings.Default.UmaRule;
 
-        // Options as rules
-        ChkDiscardTip.IsChecked = Settings.Default.DiscardTip;
-
         // Options
         TxtPlayerName.Text = Settings.Default.DefaultPlayerName;
         CbbChronoSpeed.SelectedIndex = Settings.Default.ChronoSpeed;
         CbbCpuSpeed.SelectedIndex = Settings.Default.CpuSpeed;
         ChkSounds.IsChecked = Settings.Default.PlaySounds;
         ChkAutoTsumoRon.IsChecked = Settings.Default.AutoCallMahjong;
+        ChkDiscardTip.IsChecked = Settings.Default.DiscardTip;
 
         // Dvelopment tools
         ChkDebugMode.IsChecked = false;
@@ -114,6 +110,7 @@ public partial class IntroWindow : Window
         Settings.Default.CpuSpeed = CbbCpuSpeed.SelectedIndex;
         Settings.Default.PlaySounds = ChkSounds.IsChecked == true;
         Settings.Default.AutoCallMahjong = ChkAutoTsumoRon.IsChecked == true;
+        Settings.Default.DiscardTip = ChkDiscardTip.IsChecked == true;
 
         Settings.Default.InitialPointsRule = CbbPointsRule.SelectedIndex;
         Settings.Default.EndOfGameRule = CbbEndOfGameRule.SelectedIndex;
@@ -124,7 +121,6 @@ public partial class IntroWindow : Window
         Settings.Default.UseSuufonRenda = ChkUseSuufonRenda.IsChecked == true;
         Settings.Default.UseDoubleYakuman = ChkUseDoubleYakuman.IsChecked == true;
         Settings.Default.UmaRule = CbbUmaRule.SelectedIndex;
-        Settings.Default.DiscardTip = ChkDiscardTip.IsChecked == true;
 
         Settings.Default.Save();
     }
