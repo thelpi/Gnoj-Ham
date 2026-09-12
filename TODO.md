@@ -6,6 +6,8 @@ Points notés en cours de route, pas traités tout de suite.
 
 - [ ] Yakuman "doubles" non modélisés (Suuankou tanki, Kokushi 13 tuiles, Chuuren Poutou pur) : tout yakuman vaut 13 fans fixe dans `YakuPivot.cs`.
 - [ ] `RoundPivot.IsTenpai` : edge case si les 4 exemplaires de la tuile d'attente sont déjà en main (règle incertaine, pas implémentée) — `RoundPivot.cs:896`.
+- [ ] Suufon Renda (4 mêmes vents défaussés au premier tour, sans appel) : à ajouter en option désactivable (non appliquée en compétition européenne).
+- [ ] Suukaikan (4 kans déclarés par au moins 2 joueurs différents) : abortive draw non implémentée.
 
 ## Moteur (Gnoj-Ham-Library)
 
@@ -13,7 +15,6 @@ Points notés en cours de route, pas traités tout de suite.
 - [ ] `PlayerSavePivot` : sauvegarde JSON non chiffrée (`// TODO decrypt` déjà dans le code).
 - [ ] `PlayerSavePivot` : la classe elle-même est qualifiée d'"abomination" dans le code (mélange sérialisation/stats/état) — `PlayerSavePivot.cs:5`.
 - [ ] `RulePivot.cs:5` : séparer les règles de la config (debug mode, tips...) — jamais fait.
-- [ ] `RoundPivot.cs:832` : que faire si 3 riichis sont déjà déclarés dans la manche ?
 - [ ] `RoundPivot.cs:1272` : l'ordre de vérification des Ron CPU peut marginalement influencer la décision.
 - [ ] `RoundPivot.cs:310` : timing de la notification Kan (affichage dora) signalé comme potentiellement pas parfait, pas creusé.
 - [ ] `ScoreTools.ComputeUma` : une seule règle d'uma gérée, pas de configuration alternative.

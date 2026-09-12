@@ -98,6 +98,16 @@ public abstract class CpuManagerBasePivot
     }
 
     /// <summary>
+    /// Checks if the current player can declare 'Kyuushu kyuuhai' and computes the decision to do so.
+    /// </summary>
+    /// <returns><c>True</c> if the declaration is made; <c>False</c> otherwise.</returns>
+    public bool KyuushuKyuuhaiDecision()
+    {
+        return Round.CanCallKyuushuKyuuhai()
+            && KyuushuKyuuhaiDecisionInternal();
+    }
+
+    /// <summary>
     /// Checks if the current player can call 'Chii' and computes the decision to do so.
     /// </summary>
     /// <returns>A tuple that indicates if chii is possible and, if that's the case, the first tile to use, in the sequence order, in the concealed hand of the player.</returns>
@@ -139,6 +149,13 @@ public abstract class CpuManagerBasePivot
     protected abstract bool PonDecisionInternal(PlayerIndices playerIndex);
 
     protected virtual bool TsumoDecisionInternal(bool isKanCompensation)
+    {
+        return true;
+    }
+
+    // Default: always declare when eligible. A 14-tile hand with nine different terminals/honours
+    // rarely develops into anything better than a low-odds kokushi musou attempt.
+    protected virtual bool KyuushuKyuuhaiDecisionInternal()
     {
         return true;
     }

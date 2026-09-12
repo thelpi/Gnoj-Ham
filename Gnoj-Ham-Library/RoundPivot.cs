@@ -116,6 +116,16 @@ public class RoundPivot
     internal bool IsWallExhaustion => WallTiles.Count == 0;
 
     /// <summary>
+    /// Inferred; indicates if all four players have declared riichi ("suucha riichi" abortive draw).
+    /// </summary>
+    internal bool IsSuuchaRiichi => _riichis.All(r => r != null);
+
+    /// <summary>
+    /// Indicates if "kyuushu kyuuhai" has been declared (see <see cref="CallKyuushuKyuuhai"/>).
+    /// </summary>
+    internal bool IsKyuushuKyuuhai { get; private set; }
+
+    /// <summary>
     /// Inferred; count of visible doras.
     /// </summary>
     public int VisibleDorasCount => 1 + (4 - _compensationTiles.Count);
@@ -307,6 +317,14 @@ public class RoundPivot
                 {
                     UndoPickCompensationTile();
                 }
+                return result;
+            }
+
+            // 2bis - "suucha riichi": all four players are riichi, and nobody called ron on the
+            // discard which completed the fourth riichi; the round ends as an abortive draw.
+            if (IsSuuchaRiichi)
+            {
+                result.EndOfRound = true;
                 return result;
             }
 
@@ -836,6 +854,35 @@ public class RoundPivot
         return ExtractDiscardChoicesFromTenpai(CurrentPlayerIndex);
     }
 
+    /// <summary>
+    /// Checks if the current player can declare "kyuushu kyuuhai" (nine different terminals/honours):
+    /// an optional abortive draw, only available on the player's own first turn, and only if nothing
+    /// (call or concealed kan) has interrupted the round since its very beginning.
+    /// </summary>
+    /// <returns><c>True</c> if the declaration is currently allowed; <c>False</c> otherwise.</returns>
+    internal bool CanCallKyuushuKyuuhai()
+    {
+        return _waitForDiscard
+            && _discards[(int)CurrentPlayerIndex].Count == 0
+            && IsUninterruptedHistory(CurrentPlayerIndex)
+            && _hands[(int)CurrentPlayerIndex].ConcealedTiles.Where(t => t.IsHonorOrTerminal).Distinct().Count() >= 9;
+    }
+
+    /// <summary>
+    /// Declares "kyuushu kyuuhai": ends the round immediately as an abortive draw.
+    /// </summary>
+    /// <returns><c>True</c> if the declaration succeeded; <c>False</c> otherwise (see <see cref="CanCallKyuushuKyuuhai"/>).</returns>
+    public bool CallKyuushuKyuuhai()
+    {
+        if (!CanCallKyuushuKyuuhai())
+        {
+            return false;
+        }
+
+        IsKyuushuKyuuhai = true;
+        return true;
+    }
+
     // Guards of CanCallRiichi that don't require computing ExtractDiscardChoicesFromTenpai: whenever
     // this is false, the current player's tenpai status was never actually checked (open hand, already
     // riichi, not enough wall/points...), as opposed to "checked and found not tenpai".
@@ -1013,10 +1060,13 @@ public class RoundPivot
         var turnWind = false;
         var ryuukyoku = true;
         var displayUraDoraTiles = false;
+        var isAbortiveDraw = IsSuuchaRiichi || IsKyuushuKyuuhai;
 
-        var winners = _hands.Where(h => h.IsComplete).Select(w => (PlayerIndices)_hands.IndexOf(w)).ToList();
+        var winners = isAbortiveDraw
+            ? new List<PlayerIndices>()
+            : _hands.Where(h => h.IsComplete).Select(w => (PlayerIndices)_hands.IndexOf(w)).ToList();
 
-        if (winners.Count == 0 && Game.Ruleset.UseNagashiMangan)
+        if (winners.Count == 0 && !isAbortiveDraw && Game.Ruleset.UseNagashiMangan)
         {
             var iNagashiList = CheckForNagashiMangan();
             if (iNagashiList.Count > 0)
@@ -1027,8 +1077,15 @@ public class RoundPivot
 
         var playerInfos = new List<EndOfRoundInformationsPivot.PlayerInformationsPivot>(4);
 
+        // Abortive draw (e.g. suucha riichi): no tenpai/noten payment, dealer always repeats (renchan),
+        // riichi sticks carry over (handled by the caller through the "Ryuukyoku" flag), honba still
+        // increments (also handled by the caller).
+        if (isAbortiveDraw)
+        {
+            // turnWind stays false: the dealer is not affected by an abortive draw.
+        }
         // Ryuukyoku (no winner).
-        if (winners.Count == 0)
+        else if (winners.Count == 0)
         {
             var tenpaiPlayersIndex = Enum.GetValues<PlayerIndices>().Where(i => IsTenpai(i, null)).ToList();
             var notTenpaiPlayersIndex = Enum.GetValues<PlayerIndices>().Except(tenpaiPlayersIndex).ToList();
@@ -1368,6 +1425,23 @@ public class RoundPivot
             return true;
         }
 
+        // Computed at most once per pick: the riichi eligibility check and, if riichi isn't called,
+        // the discard-to-stay-tenpai check right below ask the exact same question ("what can I
+        // discard and remain tenpai?") on the exact same, still-unchanged hand. Null means the
+        // question was never actually asked (open hand, already riichi, not enough wall/points...),
+        // as opposed to "asked and the answer is empty" - only the latter is safe to reuse as-is.
+        var tenpaiDiscardChoices = CanConsiderRiichi() ? ExtractDiscardChoicesFromTenpai(CurrentPlayerIndex) : null;
+
+        // A first-turn kokushi-tenpai hand also satisfies CanCallKyuushuKyuuhai, but a real tenpai
+        // shape (daburu riichi, ippatsu, pressure on opponents' discards) always takes priority over
+        // aborting the round.
+        if ((tenpaiDiscardChoices == null || tenpaiDiscardChoices.Count == 0) && _cpuManagers[CurrentPlayerIndex].KyuushuKyuuhaiDecision())
+        {
+            CallKyuushuKyuuhai();
+            CallNotifier?.Invoke(new CallNotifierEventArgs { Action = CallTypes.KyuushuKyuuhai, PlayerIndex = CurrentPlayerIndex });
+            return true;
+        }
+
         var (_, kanTile) = _cpuManagers[CurrentPlayerIndex].KanDecision(CurrentPlayerIndex, true);
         if (kanTile != null)
         {
@@ -1377,13 +1451,6 @@ public class RoundPivot
         }
 
         kanInProgress = null;
-
-        // Computed at most once per pick: the riichi eligibility check and, if riichi isn't called,
-        // the discard-to-stay-tenpai check right below ask the exact same question ("what can I
-        // discard and remain tenpai?") on the exact same, still-unchanged hand. Null means the
-        // question was never actually asked (open hand, already riichi, not enough wall/points...),
-        // as opposed to "asked and the answer is empty" - only the latter is safe to reuse as-is.
-        var tenpaiDiscardChoices = CanConsiderRiichi() ? ExtractDiscardChoicesFromTenpai(CurrentPlayerIndex) : null;
 
         var riichiTile = _cpuManagers[CurrentPlayerIndex].RiichiDecision(tenpaiDiscardChoices);
         if (riichiTile != null)
@@ -1423,8 +1490,17 @@ public class RoundPivot
         RiichiChoicesNotifier?.Invoke(new RiichiChoicesNotifierEventArgs(riichiTiles));
         if (riichiTiles.Count > 0)
         {
+            // A first-turn tenpai hand (even a kokushi musou one, which also satisfies
+            // CanCallKyuushuKyuuhai) is a real offensive opportunity - daburu riichi, ippatsu,
+            // pressure on opponents' discards - not a reason to abort the round. Riichi always
+            // takes priority when both are legally available.
             var adviseRiichi = Game.Ruleset.DiscardTip && _cpuManagers[CurrentPlayerIndex].RiichiDecision(riichiTiles) != null;
             HumanCallNotifier?.Invoke(new HumanCallNotifierEventArgs { Call = CallTypes.Riichi, RiichiAdvised = adviseRiichi });
+            return null;
+        }
+        else if (CanCallKyuushuKyuuhai())
+        {
+            HumanCallNotifier?.Invoke(new HumanCallNotifierEventArgs { Call = CallTypes.KyuushuKyuuhai });
             return null;
         }
         else if (HumanCanAutoDiscard())

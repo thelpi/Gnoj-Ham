@@ -30,6 +30,10 @@ public enum CallTypes
     /// </summary>
     Riichi,
     /// <summary>
+    /// Kyuushu kyuuhai (nine different terminals/honours, abortive draw).
+    /// </summary>
+    KyuushuKyuuhai,
+    /// <summary>
     /// No call (discard).
     /// </summary>
     NoCall

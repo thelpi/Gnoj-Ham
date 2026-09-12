@@ -264,6 +264,15 @@ public partial class MainWindow : Window
         }
     }
 
+    private void BtnKyuushuKyuuhai_Click(object sender, RoutedEventArgs e)
+    {
+        if (IsCurrentlyClickable() && _game.Round.CallKyuushuKyuuhai())
+        {
+            _overlayStoryboard.Completed += TriggerNewRoundAfterOverlayStoryboard;
+            InvokeOverlay(CallTypes.KyuushuKyuuhai, _humanPlayerIndex);
+        }
+    }
+
     private void BtnSkipCall_Click(object sender, RoutedEventArgs e)
     {
         CancelCallProcess();
@@ -789,6 +798,9 @@ public partial class MainWindow : Window
                             break;
                         case CallTypes.Tsumo:
                             BtnTsumo.Visibility = Visibility.Visible;
+                            break;
+                        case CallTypes.KyuushuKyuuhai:
+                            BtnKyuushuKyuuhai.Visibility = Visibility.Visible;
                             break;
                     }
                 }
