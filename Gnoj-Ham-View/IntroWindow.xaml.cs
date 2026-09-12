@@ -81,18 +81,18 @@ public partial class IntroWindow : Window
     private void LoadConfiguration()
     {
         // Rules
-        CbbPointsRule.SelectedIndex = (int)RulePivot.Default.InitialPointsRule;
-        CbbEndOfGameRule.SelectedIndex = (int)RulePivot.Default.EndOfGameRule;
-        ChkUseRedDoras.IsChecked = RulePivot.Default.UseRedDoras;
-        ChkUseNagashiMangan.IsChecked = RulePivot.Default.UseNagashiMangan;
-        ChkUseMultipleYakumans.IsChecked = RulePivot.Default.UseMultipleYakumans;
-        ChkUseKazoeYakuman.IsChecked = RulePivot.Default.UseKazoeYakuman;
-        ChkUseSuufonRenda.IsChecked = RulePivot.Default.UseSuufonRenda;
-        ChkUseDoubleYakuman.IsChecked = RulePivot.Default.UseDoubleYakuman;
-        CbbUmaRule.SelectedIndex = (int)RulePivot.Default.UmaRule;
+        CbbPointsRule.SelectedIndex = Settings.Default.InitialPointsRule;
+        CbbEndOfGameRule.SelectedIndex = Settings.Default.EndOfGameRule;
+        ChkUseRedDoras.IsChecked = Settings.Default.UseRedDoras;
+        ChkUseNagashiMangan.IsChecked = Settings.Default.UseNagashiMangan;
+        ChkUseMultipleYakumans.IsChecked = Settings.Default.UseMultipleYakumans;
+        ChkUseKazoeYakuman.IsChecked = Settings.Default.UseKazoeYakuman;
+        ChkUseSuufonRenda.IsChecked = Settings.Default.UseSuufonRenda;
+        ChkUseDoubleYakuman.IsChecked = Settings.Default.UseDoubleYakuman;
+        CbbUmaRule.SelectedIndex = Settings.Default.UmaRule;
 
         // Options as rules
-        ChkDiscardTip.IsChecked = RulePivot.Default.DiscardTip;
+        ChkDiscardTip.IsChecked = Settings.Default.DiscardTip;
 
         // Options
         TxtPlayerName.Text = Settings.Default.DefaultPlayerName;
@@ -114,6 +114,17 @@ public partial class IntroWindow : Window
         Settings.Default.CpuSpeed = CbbCpuSpeed.SelectedIndex;
         Settings.Default.PlaySounds = ChkSounds.IsChecked == true;
         Settings.Default.AutoCallMahjong = ChkAutoTsumoRon.IsChecked == true;
+
+        Settings.Default.InitialPointsRule = CbbPointsRule.SelectedIndex;
+        Settings.Default.EndOfGameRule = CbbEndOfGameRule.SelectedIndex;
+        Settings.Default.UseRedDoras = ChkUseRedDoras.IsChecked == true;
+        Settings.Default.UseNagashiMangan = ChkUseNagashiMangan.IsChecked == true;
+        Settings.Default.UseMultipleYakumans = ChkUseMultipleYakumans.IsChecked == true;
+        Settings.Default.UseKazoeYakuman = ChkUseKazoeYakuman.IsChecked == true;
+        Settings.Default.UseSuufonRenda = ChkUseSuufonRenda.IsChecked == true;
+        Settings.Default.UseDoubleYakuman = ChkUseDoubleYakuman.IsChecked == true;
+        Settings.Default.UmaRule = CbbUmaRule.SelectedIndex;
+        Settings.Default.DiscardTip = ChkDiscardTip.IsChecked == true;
 
         Settings.Default.Save();
     }

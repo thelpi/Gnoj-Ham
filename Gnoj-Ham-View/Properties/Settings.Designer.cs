@@ -82,5 +82,125 @@ namespace Gnoj_Ham_View.Properties {
                 this["ChronoSpeed"] = value;
             }
         }
+
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool UseRedDoras {
+            get {
+                return ((bool)(this["UseRedDoras"]));
+            }
+            set {
+                this["UseRedDoras"] = value;
+            }
+        }
+
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
+        public int InitialPointsRule {
+            get {
+                return ((int)(this["InitialPointsRule"]));
+            }
+            set {
+                this["InitialPointsRule"] = value;
+            }
+        }
+
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool UseNagashiMangan {
+            get {
+                return ((bool)(this["UseNagashiMangan"]));
+            }
+            set {
+                this["UseNagashiMangan"] = value;
+            }
+        }
+
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("3")]
+        public int EndOfGameRule {
+            get {
+                return ((int)(this["EndOfGameRule"]));
+            }
+            set {
+                this["EndOfGameRule"] = value;
+            }
+        }
+
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool UseMultipleYakumans {
+            get {
+                return ((bool)(this["UseMultipleYakumans"]));
+            }
+            set {
+                this["UseMultipleYakumans"] = value;
+            }
+        }
+
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool UseKazoeYakuman {
+            get {
+                return ((bool)(this["UseKazoeYakuman"]));
+            }
+            set {
+                this["UseKazoeYakuman"] = value;
+            }
+        }
+
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool UseSuufonRenda {
+            get {
+                return ((bool)(this["UseSuufonRenda"]));
+            }
+            set {
+                this["UseSuufonRenda"] = value;
+            }
+        }
+
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool UseDoubleYakuman {
+            get {
+                return ((bool)(this["UseDoubleYakuman"]));
+            }
+            set {
+                this["UseDoubleYakuman"] = value;
+            }
+        }
+
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
+        public int UmaRule {
+            get {
+                return ((int)(this["UmaRule"]));
+            }
+            set {
+                this["UmaRule"] = value;
+            }
+        }
+
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool DiscardTip {
+            get {
+                return ((bool)(this["DiscardTip"]));
+            }
+            set {
+                this["DiscardTip"] = value;
+            }
+        }
     }
 }
