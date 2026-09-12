@@ -1145,13 +1145,13 @@ public class RoundPivot
                 playerInfos.Add(new EndOfRoundInformationsPivot.PlayerInformationsPivot
                 {
                     Index = i,
-                    IsCpu = Game.IsHuman(i),
+                    IsCpu = Game.IsCpu(i),
                     Hand = _hands[(int)i],
                     PointsGain = tenpai,
                     HandPointsGain = tenpai
                 }));
             notTenpaiPlayersIndex.ForEach(i =>
-                playerInfos.Add(new EndOfRoundInformationsPivot.PlayerInformationsPivot { Index = i, IsCpu = Game.IsHuman(i), PointsGain = nonTenpai }));
+                playerInfos.Add(new EndOfRoundInformationsPivot.PlayerInformationsPivot { Index = i, IsCpu = Game.IsCpu(i), PointsGain = nonTenpai }));
         }
         else
         {
@@ -1245,7 +1245,7 @@ public class RoundPivot
                 playerInfos.Add(new EndOfRoundInformationsPivot.PlayerInformationsPivot
                 {
                     Index = pIndex,
-                    IsCpu = Game.IsHuman(pIndex),
+                    IsCpu = Game.IsCpu(pIndex),
                     FanCount = fanCount,
                     FuCount = fuCount,
                     Hand = phand,
@@ -1289,7 +1289,7 @@ public class RoundPivot
                     playerInfos.Add(new EndOfRoundInformationsPivot.PlayerInformationsPivot
                     {
                         Index = liablePlayerId,
-                        IsCpu = Game.IsHuman(liablePlayerId),
+                        IsCpu = Game.IsCpu(liablePlayerId),
                         PointsGain = liablePlayersLost[liablePlayerId]
                     });
                 }
@@ -1300,7 +1300,7 @@ public class RoundPivot
                 playerInfos.Add(new EndOfRoundInformationsPivot.PlayerInformationsPivot
                 {
                     Index = ronPlayerIndex.Value,
-                    IsCpu = Game.IsHuman(ronPlayerIndex.Value),
+                    IsCpu = Game.IsCpu(ronPlayerIndex.Value),
                     PointsGain = eastOrLoserLostCumul - honbaPoints
                 });
             }
@@ -1313,7 +1313,7 @@ public class RoundPivot
                         playerInfos.Add(new EndOfRoundInformationsPivot.PlayerInformationsPivot
                         {
                             Index = pIndex,
-                            IsCpu = Game.IsHuman(pIndex),
+                            IsCpu = Game.IsCpu(pIndex),
                             PointsGain = (Game.GetPlayerCurrentWind(pIndex) == Winds.East ? eastOrLoserLostCumul : notEastLostCumul) - (honbaPoints / 3)
                         });
                     }

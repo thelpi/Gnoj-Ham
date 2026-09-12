@@ -47,4 +47,27 @@ public class EndOfRound_Tests
             Assert.True(loserInfo.PointsGain < 0);
         }
     }
+
+    [Fact]
+    public void EndOfRound_HumanAndCpuPlayers_SetsIsCpuCorrectly()
+    {
+        // Regression: PlayerInformationsPivot.IsCpu used to be assigned from Game.IsHuman(...)
+        // (inverted). PlayerSavePivot.UpdateAndSave looks up "FirstOrDefault(_ => !_.IsCpu)" to find
+        // the human's own hand for stats tracking - with the inversion, it silently picked a CPU
+        // player's hand instead, corrupting the saved stats after every game played against CPUs.
+        var ruleset = RulePivot.Default with { UseNagashiMangan = false };
+        var game = new GamePivot("Me", ruleset, null, new Random(1));
+
+        var info = game.Round.EndOfRound(null);
+
+        Assert.Equal(4, info.PlayersInfo.Count);
+
+        var humanInfo = info.PlayersInfo.Single(pi => pi.Index == game.HumanPlayerIndex!.Value);
+        Assert.False(humanInfo.IsCpu);
+
+        foreach (var cpuInfo in info.PlayersInfo.Where(pi => pi.Index != game.HumanPlayerIndex!.Value))
+        {
+            Assert.True(cpuInfo.IsCpu);
+        }
+    }
 }
