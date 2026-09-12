@@ -162,7 +162,14 @@ public class HandPivot
 
         if (TileCombinatoricsPivot.IsThirteenOrphans(orderedConcealedTiles))
         {
-            var yakus = new List<YakuPivot> { YakuPivot.KokushiMusou };
+            // Double ("juusanmen"): before the winning tile, the hand already held all 13 different
+            // types with no duplicate yet - a wait on any of the 13 at once. Any other pre-win shape
+            // (a duplicate already formed, missing exactly one type) is the regular, single-tile wait.
+            var preWinTiles = new List<TilePivot>(orderedConcealedTiles);
+            preWinTiles.Remove(context.LatestTile!);
+            var isThirteenSidedWait = preWinTiles.Distinct().Count() == 13;
+
+            var yakus = new List<YakuPivot> { isThirteenSidedWait ? YakuPivot.KokushiMusouJuusanmen : YakuPivot.KokushiMusou };
             if (context.IsTenhou())
             {
                 yakus.Add(YakuPivot.Tenhou);

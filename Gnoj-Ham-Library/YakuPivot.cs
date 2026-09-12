@@ -57,9 +57,9 @@ public class YakuPivot
     /// </summary>
     public int ConcealedFanCount => FanCount + ConcealedBonusFanCount;
     /// <summary>
-    /// Inferred; indicates if the yaku is a yakuman (when concealed, at least).
+    /// Inferred; indicates if the yaku is a yakuman (when concealed, at least); includes double yakumans.
     /// </summary>
-    public bool IsYakuman => ConcealedFanCount == 13;
+    public bool IsYakuman => ConcealedFanCount >= 13;
 
     #endregion Inferred properties
 
@@ -97,6 +97,11 @@ public class YakuPivot
 
                 _yakus = new List<YakuPivot>
                 {
+                    // The duplicate (pair) tile is deliberately not last: SetYakus uses the Example's
+                    // own last tile as the winning one (self-draw), and winning on a tile that wasn't
+                    // yet duplicated is exactly the KokushiMusouJuusanmen (double) condition below -
+                    // ending on an already-unpaired unique tile keeps this Example illustrating the
+                    // regular, single-wait Kokushi musou.
                     new(KOKUSHI_MUSOU, "Treize orphelins", 0, "Une tuile de chaque dragon, vent et terminal (1 et 9), dont une paire.", 13, new List<TilePivot>
                     {
                         tiles.First(x => x.Family == Families.Caracter && x.Number == 1),
@@ -105,15 +110,20 @@ public class YakuPivot
                         tiles.First(x => x.Family == Families.Circle && x.Number == 9),
                         tiles.First(x => x.Family == Families.Bamboo && x.Number == 1),
                         tiles.First(x => x.Family == Families.Bamboo && x.Number == 9),
+                        tiles.First(x => x.Family == Families.Bamboo && x.Number == 9),
                         tiles.First(x => x.Wind == Winds.East),
                         tiles.First(x => x.Wind == Winds.South),
                         tiles.First(x => x.Wind == Winds.West),
                         tiles.First(x => x.Wind == Winds.North),
                         tiles.First(x => x.Dragon == Dragons.Red),
                         tiles.First(x => x.Dragon == Dragons.White),
-                        tiles.First(x => x.Dragon == Dragons.Green),
-                        tiles.First(x => x.Family == Families.Bamboo && x.Number == 9)
+                        tiles.First(x => x.Dragon == Dragons.Green)
                     }),
+                    // Optional rule (RulePivot.UseDoubleYakuman): completed by a tile that wasn't yet
+                    // duplicated in hand, i.e. a wait on all 13 types at once. No Example: the distinction
+                    // is about the pre-win hand shape, not a static tile list.
+                    new(KOKUSHI_MUSOU_JUUSANMEN, "Treize orphelins (attente sur treize faces)", 0,
+                        "Kokushi musou complété par une tuile qui n'était pas encore doublée en main (attente sur les 13 types à la fois). Yakuman double.", 26),
                     new(DAISANGEN, "Trois grands dragons", 13, "Un brelan (ou carré) de chaque dragon.", 0, new List<TilePivot>
                     {
                         tiles.First(x => x.Family == Families.Caracter && x.Number == 7),
@@ -131,6 +141,10 @@ public class YakuPivot
                         tiles.First(x => x.Family == Families.Circle && x.Number == 4),
                         tiles.First(x => x.Family == Families.Circle && x.Number == 4)
                     }),
+                    // The pair is deliberately not the last tile: SetYakus uses the Example's own last
+                    // tile as the winning one (self-draw), and a win on the pair is exactly the
+                    // SuuankouTanki (double) condition below - ending on a triplet tile instead keeps
+                    // this Example illustrating plain Suuankou.
                     new(SUUANKOU, "Quatre brelans cachés", 13, "Quatre brelans (ou carrés) cachés.", 0, new List<TilePivot>
                     {
                         tiles.First(x => x.Family == Families.Circle && x.Number == 6),
@@ -142,12 +156,14 @@ public class YakuPivot
                         tiles.First(x => x.Family == Families.Wind && x.Wind == Winds.East),
                         tiles.First(x => x.Family == Families.Wind && x.Wind == Winds.East),
                         tiles.First(x => x.Family == Families.Wind && x.Wind == Winds.East),
-                        tiles.First(x => x.Family == Families.Bamboo && x.Number == 1),
-                        tiles.First(x => x.Family == Families.Bamboo && x.Number == 1),
-                        tiles.First(x => x.Family == Families.Bamboo && x.Number == 1),
                         tiles.First(x => x.Family == Families.Bamboo && x.Number == 7),
-                        tiles.First(x => x.Family == Families.Bamboo && x.Number == 7)
+                        tiles.First(x => x.Family == Families.Bamboo && x.Number == 7),
+                        tiles.First(x => x.Family == Families.Bamboo && x.Number == 1),
+                        tiles.First(x => x.Family == Families.Bamboo && x.Number == 1),
+                        tiles.First(x => x.Family == Families.Bamboo && x.Number == 1)
                     }),
+                    new(SUUANKOU_TANKI, "Quatre brelans cachés, attente sur la paire", 26,
+                        "Suuankou complété par la tuile de la paire (attente tanki). Yakuman double."),
                     // Depending on rules, might count as double yakuman.
                     new(DAISUUSHII, "Quatre grands vents", 13, "Un brelan (ou carré) de chaque vent.", 0, new List<TilePivot>
                     {
@@ -234,6 +250,8 @@ public class YakuPivot
                         tiles.First(x => x.Family == Families.Caracter && x.Number == 9),
                         tiles.First(x => x.Family == Families.Caracter && x.Number == 9)
                     }),
+                    new(CHUUREN_POUTOU_JUNSEI, "Neuf portes pures", 0,
+                        "Chuuren poutou dont la main, avant la tuile gagnante, était exactement 1112345678999 (attente sur les 9 valeurs à la fois). Doit être caché. Yakuman double.", 26),
                     new(SUUKANTSU, "Quatre carrés", 13, "Quatre carrés déclarés (cachés ou non)."),
                     new(TENHOU, "Main du ciel", 0, "Main de départ valide pour le joueur en est.", 13),
                     new(CHIIHOU, "Main de la terre", 0, "Main de départ valide pour le joueur en sud, ouest ou nord.", 13),
@@ -552,6 +570,10 @@ public class YakuPivot
     /// </summary>
     public static readonly YakuPivot KokushiMusou = Yakus.First(y => y.Name == KOKUSHI_MUSOU);
     /// <summary>
+    /// Kokushi musou juusanmen (13-sided wait); double yakuman.
+    /// </summary>
+    public static readonly YakuPivot KokushiMusouJuusanmen = Yakus.First(y => y.Name == KOKUSHI_MUSOU_JUUSANMEN);
+    /// <summary>
     /// Daisangen; yakuman.
     /// </summary>
     public static readonly YakuPivot Daisangen = Yakus.First(y => y.Name == DAISANGEN);
@@ -559,6 +581,10 @@ public class YakuPivot
     /// Suuankou; yakuman.
     /// </summary>
     public static readonly YakuPivot Suuankou = Yakus.First(y => y.Name == SUUANKOU);
+    /// <summary>
+    /// Suuankou tanki (pair wait); double yakuman.
+    /// </summary>
+    public static readonly YakuPivot SuuankouTanki = Yakus.First(y => y.Name == SUUANKOU_TANKI);
     /// <summary>
     /// Shousuushii; yakuman.
     /// </summary>
@@ -583,6 +609,10 @@ public class YakuPivot
     /// Chuuren poutou; yakuman.
     /// </summary>
     public static readonly YakuPivot ChuurenPoutou = Yakus.First(y => y.Name == CHUUREN_POUTOU);
+    /// <summary>
+    /// Chuuren poutou junsei (pure, 9-sided wait); double yakuman.
+    /// </summary>
+    public static readonly YakuPivot ChuurenPoutouJunsei = Yakus.First(y => y.Name == CHUUREN_POUTOU_JUNSEI);
     /// <summary>
     /// Suukantsu; yakuman.
     /// </summary>
@@ -722,14 +752,17 @@ public class YakuPivot
     public const string RedDora = "Akadora";
 
     private const string KOKUSHI_MUSOU = "Kokushi musou";
+    private const string KOKUSHI_MUSOU_JUUSANMEN = "Kokushi musou juusanmen";
     private const string DAISANGEN = "Daisangen";
     private const string SUUANKOU = "Suuankou";
+    private const string SUUANKOU_TANKI = "Suuankou tanki";
     private const string SHOUSUUSHII = "Shousuushii";
     private const string DAISUUSHII = "Daisuushii";
     private const string TSUUIISOU = "Tsuuiisou";
     private const string RYUUIISOU = "Ryuuiisou";
     private const string CHINROUTOU = "Chinroutou";
     private const string CHUUREN_POUTOU = "Chuuren poutou";
+    private const string CHUUREN_POUTOU_JUNSEI = "Chuuren poutou junsei";
     private const string SUUKANTSU = "Suukantsu";
     private const string TENHOU = "Tenhou";
     private const string CHIIHOU = "Chiihou";
@@ -807,9 +840,13 @@ public class YakuPivot
             {
                 addYaku = combinationsSequence.Count(c => c.IsBrelanOrSquare && c.Family == Families.Dragon) == 3;
             }
-            else if (yaku == Suuankou)
+            else if (yaku == Suuankou || yaku == SuuankouTanki)
             {
-                addYaku = combinationsSequence.Count(c => c.IsBrelanOrSquare && c.IsConcealed && (!c.Tiles.Contains(context.LatestTile) || context.DrawType.IsSelfDraw())) == 4;
+                // Double (SuuankouTanki) when the winning tile completes the pair (a "tanki" wait)
+                // rather than one of the four triplets; mutually exclusive with the regular yaku.
+                var isSuuankouShape = combinationsSequence.Count(c => c.IsBrelanOrSquare && c.IsConcealed && (!c.Tiles.Contains(context.LatestTile) || context.DrawType.IsSelfDraw())) == 4;
+                var isTankiWait = isSuuankouShape && combinationsSequence.Any(c => c.IsPair && c.Tiles.Contains(context.LatestTile));
+                addYaku = yaku == SuuankouTanki ? isTankiWait : isSuuankouShape && !isTankiWait;
             }
             else if (yaku == Shousuushii)
             {
@@ -835,13 +872,27 @@ public class YakuPivot
             {
                 addYaku = combinationsSequence.All(c => c.IsTerminal);
             }
-            else if (yaku == ChuurenPoutou)
+            else if (yaku == ChuurenPoutou || yaku == ChuurenPoutouJunsei)
             {
                 if (combinationsSequence.All(c => c.IsConcealed)
                     && combinationsSequence.Select(c => c.Family).Distinct().Count() == 1)
                 {
-                    var numberPattern = string.Join(string.Empty, combinationsSequence.SelectMany(c => c.Tiles).Select(t => t.Number).OrderBy(i => i));
-                    addYaku = ChuurenPoutouCombinations.Contains(numberPattern);
+                    var allTiles = combinationsSequence.SelectMany(c => c.Tiles).ToList();
+                    var numberPattern = string.Join(string.Empty, allTiles.Select(t => t.Number).OrderBy(i => i));
+                    var isChuurenShape = ChuurenPoutouCombinations.Contains(numberPattern);
+
+                    // Pure ("junsei"): the hand, before the winning tile, was exactly 1112345678999 -
+                    // a wait on all 9 values at once. Any other pre-win arrangement that still lands
+                    // on a valid Chuuren pattern is a narrower (single-tile, at best) wait: regular.
+                    if (isChuurenShape)
+                    {
+                        var preWinTiles = new List<TilePivot>(allTiles);
+                        preWinTiles.Remove(context.LatestTile!);
+                        var preWinPattern = string.Join(string.Empty, preWinTiles.Select(t => t.Number).OrderBy(i => i));
+                        var isPureWait = preWinPattern == "1112345678999";
+
+                        addYaku = yaku == ChuurenPoutouJunsei ? isPureWait : !isPureWait;
+                    }
                 }
             }
             else if (yaku == Suukantsu)
@@ -856,9 +907,10 @@ public class YakuPivot
             {
                 addYaku = context.IsChiihou();
             }
-            else if (yaku == KokushiMusou)
+            else if (yaku == KokushiMusou || yaku == KokushiMusouJuusanmen)
             {
-                // Do nothing here, but prevents the exception below.
+                // Do nothing here (added directly in HandPivot.SetYakus, not from a combinations
+                // sequence), but prevents the exception below.
             }
             else
             {

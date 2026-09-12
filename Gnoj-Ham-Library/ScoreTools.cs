@@ -133,18 +133,23 @@ internal static class ScoreTools
     /// <param name="concealed"><c>True</c> if the hand is concealed; <c>False</c> otherwise.</param>
     /// <param name="allowMultipleYakumans"><see cref="RulePivot.UseMultipleYakumans"/>.</param>
     /// <param name="allowKazoeYakuman"><see cref="RulePivot.UseKazoeYakuman"/>.</param>
+    /// <param name="allowDoubleYakuman"><see cref="RulePivot.UseDoubleYakuman"/>.</param>
     /// <param name="dorasCount">Optionnal; doras count.</param>
     /// <param name="uraDorasCount">Optionnal; ura-doras count.</param>
     /// <param name="redDorasCount">Optionnal; red doras count.</param>
     /// <returns>The fan count.</returns>
-    internal static int GetFanCount(IReadOnlyList<YakuPivot> yakus, bool concealed, bool allowMultipleYakumans, bool allowKazoeYakuman,
+    internal static int GetFanCount(IReadOnlyList<YakuPivot> yakus, bool concealed, bool allowMultipleYakumans, bool allowKazoeYakuman, bool allowDoubleYakuman,
         int dorasCount = 0, int uraDorasCount = 0, int redDorasCount = 0)
     {
-        var yakumansCount = yakus.Count(y => (concealed ? y.ConcealedFanCount : y.FanCount) == 13);
+        var yakumanValues = yakus
+            .Where(y => y.IsYakuman)
+            .Select(y => (concealed ? y.ConcealedFanCount : y.FanCount))
+            .Select(v => allowDoubleYakuman ? v : Math.Min(v, 13))
+            .ToList();
 
-        if (yakumansCount > 0)
+        if (yakumanValues.Count > 0)
         {
-            return (allowMultipleYakumans ? yakumansCount : 1) * 13;
+            return allowMultipleYakumans ? yakumanValues.Sum() : yakumanValues.Max();
         }
 
         var initialFanCount = yakus.Sum(y => concealed ? y.ConcealedFanCount : y.FanCount) + dorasCount + uraDorasCount + redDorasCount;

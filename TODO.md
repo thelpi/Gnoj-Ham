@@ -2,10 +2,6 @@
 
 Points notés en cours de route, pas traités tout de suite.
 
-## Règles
-
-- [ ] Yakuman "doubles" non modélisés (Suuankou tanki, Kokushi 13 tuiles, Chuuren Poutou pur) : tout yakuman vaut 13 fans fixe dans `YakuPivot.cs`.
-
 ## Moteur (Gnoj-Ham-Library)
 
 - [ ] `RoundPivot` : classe trop grosse, plusieurs responsabilités mélangées (pas de `partial class`, à voir autrement). `HandPivot` traité (combinatoire extraite vers `TileCombinatoricsPivot`).

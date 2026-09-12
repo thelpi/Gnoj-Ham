@@ -51,7 +51,8 @@ public partial class IntroWindow : Window
             DiscardTip = ChkDiscardTip.IsChecked == true,
             UseMultipleYakumans = ChkUseMultipleYakumans.IsChecked == true,
             UseKazoeYakuman = ChkUseKazoeYakuman.IsChecked == true,
-            UseSuufonRenda = ChkUseSuufonRenda.IsChecked == true
+            UseSuufonRenda = ChkUseSuufonRenda.IsChecked == true,
+            UseDoubleYakuman = ChkUseDoubleYakuman.IsChecked == true
         };
 
         if (ChkFourCpus.IsChecked == true)
@@ -85,6 +86,7 @@ public partial class IntroWindow : Window
         ChkUseMultipleYakumans.IsChecked = RulePivot.Default.UseMultipleYakumans;
         ChkUseKazoeYakuman.IsChecked = RulePivot.Default.UseKazoeYakuman;
         ChkUseSuufonRenda.IsChecked = RulePivot.Default.UseSuufonRenda;
+        ChkUseDoubleYakuman.IsChecked = RulePivot.Default.UseDoubleYakuman;
 
         // Options as rules
         ChkDiscardTip.IsChecked = RulePivot.Default.DiscardTip;

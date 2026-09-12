@@ -243,4 +243,161 @@ public class YakuPivot_ContextDependent_Tests
 
         AssertYaku(hand, context, YakuPivot.Suukantsu);
     }
+
+    // Optional rule (RulePivot.UseDoubleYakuman): Suuankou tanki, Kokushi musou juusanmen and Chuuren
+    // poutou junsei. YakuPivot.GetYakus/HandPivot.SetYakus detect them unconditionally - the ruleset
+    // only decides, in ScoreTools.GetFanCount, whether their fan value is honored (26) or capped (13).
+
+    [Fact]
+    public void SuuankouTanki_IsDetectedWhenTheWinningTileCompletesThePair()
+    {
+        // Four concealed triplets (Circle1, Circle9, Bamboo1, Caracter2) + a pair (Bamboo9), self-draw
+        // on the second Bamboo9 (the pair): a tanki wait.
+        var tilesSet = TilePivot.GetCompleteSet(false);
+        var hand14 = new List<TilePivot>
+        {
+            TilePivot.GetTile(tilesSet, Families.Circle, number: 1),
+            TilePivot.GetTile(tilesSet, Families.Circle, number: 1),
+            TilePivot.GetTile(tilesSet, Families.Circle, number: 1),
+            TilePivot.GetTile(tilesSet, Families.Circle, number: 9),
+            TilePivot.GetTile(tilesSet, Families.Circle, number: 9),
+            TilePivot.GetTile(tilesSet, Families.Circle, number: 9),
+            TilePivot.GetTile(tilesSet, Families.Bamboo, number: 1),
+            TilePivot.GetTile(tilesSet, Families.Bamboo, number: 1),
+            TilePivot.GetTile(tilesSet, Families.Bamboo, number: 1),
+            TilePivot.GetTile(tilesSet, Families.Caracter, number: 2),
+            TilePivot.GetTile(tilesSet, Families.Caracter, number: 2),
+            TilePivot.GetTile(tilesSet, Families.Caracter, number: 2),
+            TilePivot.GetTile(tilesSet, Families.Bamboo, number: 9),
+            TilePivot.GetTile(tilesSet, Families.Bamboo, number: 9)
+        };
+
+        var hand = new HandPivot(hand14);
+        var context = new WinContextPivot(hand.LatestPick, DrawTypes.Wall, Winds.East, Winds.South);
+
+        AssertYaku(hand, context, YakuPivot.SuuankouTanki);
+        Assert.DoesNotContain(YakuPivot.Suuankou, hand.Yakus!);
+    }
+
+    [Fact]
+    public void Suuankou_IsNotDoubleWhenTheWinningTileCompletesATripletInstead()
+    {
+        // Same shape as above, but the last (winning) tile completes a triplet instead of the pair.
+        var tilesSet = TilePivot.GetCompleteSet(false);
+        var hand14 = new List<TilePivot>
+        {
+            TilePivot.GetTile(tilesSet, Families.Bamboo, number: 9),
+            TilePivot.GetTile(tilesSet, Families.Bamboo, number: 9),
+            TilePivot.GetTile(tilesSet, Families.Circle, number: 9),
+            TilePivot.GetTile(tilesSet, Families.Circle, number: 9),
+            TilePivot.GetTile(tilesSet, Families.Circle, number: 9),
+            TilePivot.GetTile(tilesSet, Families.Bamboo, number: 1),
+            TilePivot.GetTile(tilesSet, Families.Bamboo, number: 1),
+            TilePivot.GetTile(tilesSet, Families.Bamboo, number: 1),
+            TilePivot.GetTile(tilesSet, Families.Caracter, number: 2),
+            TilePivot.GetTile(tilesSet, Families.Caracter, number: 2),
+            TilePivot.GetTile(tilesSet, Families.Caracter, number: 2),
+            TilePivot.GetTile(tilesSet, Families.Circle, number: 1),
+            TilePivot.GetTile(tilesSet, Families.Circle, number: 1),
+            TilePivot.GetTile(tilesSet, Families.Circle, number: 1)
+        };
+
+        var hand = new HandPivot(hand14);
+        var context = new WinContextPivot(hand.LatestPick, DrawTypes.Wall, Winds.East, Winds.South);
+
+        AssertYaku(hand, context, YakuPivot.Suuankou);
+        Assert.DoesNotContain(YakuPivot.SuuankouTanki, hand.Yakus!);
+    }
+
+    [Fact]
+    public void KokushiMusouJuusanmen_IsDetectedOnAThirteenSidedWait()
+    {
+        // All 13 distinct terminal/honour types held, no duplicate yet: winning on the 14th (any of
+        // the 13 types) is a genuine 13-sided wait.
+        var tilesSet = TilePivot.GetCompleteSet(false);
+        var hand14 = new List<TilePivot>
+        {
+            TilePivot.GetTile(tilesSet, Families.Caracter, number: 1),
+            TilePivot.GetTile(tilesSet, Families.Caracter, number: 9),
+            TilePivot.GetTile(tilesSet, Families.Circle, number: 1),
+            TilePivot.GetTile(tilesSet, Families.Circle, number: 9),
+            TilePivot.GetTile(tilesSet, Families.Bamboo, number: 1),
+            TilePivot.GetTile(tilesSet, Families.Bamboo, number: 9),
+            TilePivot.GetTile(tilesSet, Families.Wind, wind: Winds.East),
+            TilePivot.GetTile(tilesSet, Families.Wind, wind: Winds.South),
+            TilePivot.GetTile(tilesSet, Families.Wind, wind: Winds.West),
+            TilePivot.GetTile(tilesSet, Families.Wind, wind: Winds.North),
+            TilePivot.GetTile(tilesSet, Families.Dragon, dragon: Dragons.Red),
+            TilePivot.GetTile(tilesSet, Families.Dragon, dragon: Dragons.White),
+            TilePivot.GetTile(tilesSet, Families.Dragon, dragon: Dragons.Green),
+            TilePivot.GetTile(tilesSet, Families.Dragon, dragon: Dragons.Green)
+        };
+
+        var hand = new HandPivot(hand14);
+        var context = new WinContextPivot(hand.LatestPick, DrawTypes.Wall, Winds.East, Winds.South);
+
+        AssertYaku(hand, context, YakuPivot.KokushiMusouJuusanmen);
+        Assert.DoesNotContain(YakuPivot.KokushiMusou, hand.Yakus!);
+    }
+
+    [Fact]
+    public void KokushiMusou_IsNotDoubleWhenAPairIsAlreadyFormedBeforeTheWin()
+    {
+        // A pair (Red dragon) is already formed before the win: a narrow, single-tile wait on the
+        // one missing type (Green dragon here).
+        var tilesSet = TilePivot.GetCompleteSet(false);
+        var hand14 = new List<TilePivot>
+        {
+            TilePivot.GetTile(tilesSet, Families.Caracter, number: 1),
+            TilePivot.GetTile(tilesSet, Families.Caracter, number: 9),
+            TilePivot.GetTile(tilesSet, Families.Circle, number: 1),
+            TilePivot.GetTile(tilesSet, Families.Circle, number: 9),
+            TilePivot.GetTile(tilesSet, Families.Bamboo, number: 1),
+            TilePivot.GetTile(tilesSet, Families.Bamboo, number: 9),
+            TilePivot.GetTile(tilesSet, Families.Wind, wind: Winds.East),
+            TilePivot.GetTile(tilesSet, Families.Wind, wind: Winds.South),
+            TilePivot.GetTile(tilesSet, Families.Wind, wind: Winds.West),
+            TilePivot.GetTile(tilesSet, Families.Wind, wind: Winds.North),
+            TilePivot.GetTile(tilesSet, Families.Dragon, dragon: Dragons.Red),
+            TilePivot.GetTile(tilesSet, Families.Dragon, dragon: Dragons.Red),
+            TilePivot.GetTile(tilesSet, Families.Dragon, dragon: Dragons.White),
+            TilePivot.GetTile(tilesSet, Families.Dragon, dragon: Dragons.Green)
+        };
+
+        var hand = new HandPivot(hand14);
+        var context = new WinContextPivot(hand.LatestPick, DrawTypes.Wall, Winds.East, Winds.South);
+
+        AssertYaku(hand, context, YakuPivot.KokushiMusou);
+        Assert.DoesNotContain(YakuPivot.KokushiMusouJuusanmen, hand.Yakus!);
+    }
+
+    [Fact]
+    public void ChuurenPoutouJunsei_IsDetectedOnAPureNineSidedWait()
+    {
+        // The hand, before the winning tile, is exactly 1112345678999: a wait on all 9 values at once.
+        var tilesSet = TilePivot.GetCompleteSet(false);
+        var hand14 = new List<TilePivot>
+        {
+            TilePivot.GetTile(tilesSet, Families.Caracter, number: 1),
+            TilePivot.GetTile(tilesSet, Families.Caracter, number: 1),
+            TilePivot.GetTile(tilesSet, Families.Caracter, number: 1),
+            TilePivot.GetTile(tilesSet, Families.Caracter, number: 2),
+            TilePivot.GetTile(tilesSet, Families.Caracter, number: 3),
+            TilePivot.GetTile(tilesSet, Families.Caracter, number: 4),
+            TilePivot.GetTile(tilesSet, Families.Caracter, number: 6),
+            TilePivot.GetTile(tilesSet, Families.Caracter, number: 7),
+            TilePivot.GetTile(tilesSet, Families.Caracter, number: 8),
+            TilePivot.GetTile(tilesSet, Families.Caracter, number: 9),
+            TilePivot.GetTile(tilesSet, Families.Caracter, number: 9),
+            TilePivot.GetTile(tilesSet, Families.Caracter, number: 9),
+            TilePivot.GetTile(tilesSet, Families.Caracter, number: 5),
+            TilePivot.GetTile(tilesSet, Families.Caracter, number: 5)
+        };
+
+        var hand = new HandPivot(hand14);
+        var context = new WinContextPivot(hand.LatestPick, DrawTypes.Wall, Winds.East, Winds.South);
+
+        AssertYaku(hand, context, YakuPivot.ChuurenPoutouJunsei);
+        Assert.DoesNotContain(YakuPivot.ChuurenPoutou, hand.Yakus!);
+    }
 }

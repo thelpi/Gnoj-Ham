@@ -77,9 +77,15 @@ public record RulePivot
 
     /// <summary>
     /// Allows "suufon renda" (four identical wind discards on the first, uninterrupted turn): abortive draw.
-    /// Not used in European competition rules, hence off by default.
+    /// Not used in European competition rules.
     /// </summary>
-    public bool UseSuufonRenda { get; init; }
+    public bool UseSuufonRenda { get; init; } = true;
+
+    /// <summary>
+    /// Allows "double yakuman" (Suuankou tanki, Kokushi musou on a 13-sided wait, Chuuren poutou pure):
+    /// worth twice a regular yakuman. Not used in European competition rules.
+    /// </summary>
+    public bool UseDoubleYakuman { get; init; } = true;
 
     #endregion Embedded properties
 
