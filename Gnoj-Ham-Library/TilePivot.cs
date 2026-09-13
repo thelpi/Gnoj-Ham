@@ -336,10 +336,10 @@ public class TilePivot : IEquatable<TilePivot>, IComparable<TilePivot>
     /// <summary>
     /// Computes the distance with the middle (<see cref="Number"/> 5). <c>0</c> if 5, <c>4</c> if 1 or 9.
     /// </summary>
-    /// <param name="honorINotMiddle">If enabled, Honor are 5; otherwise 0.</param>
+    /// <param name="honorIsNotMiddle">If enabled, Honor are 5; otherwise 0.</param>
     /// <returns>The distance.</returns>
-    internal int DistanceToMiddle(bool honorINotMiddle)
-        => !honorINotMiddle && Number == 0 ? 0 : Math.Abs(Number - 5);
+    internal int DistanceToMiddle(bool honorIsNotMiddle)
+        => !honorIsNotMiddle && Number == 0 ? 0 : Math.Abs(Number - 5);
 
     #endregion Public methods
 }

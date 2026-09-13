@@ -58,24 +58,18 @@ public class BasicCpuManagerPivot : CpuManagerBasePivot
                         || t.Key.Wind == Round.Game.DominantWind
                         || t.Key.Wind == Round.Game.GetPlayerCurrentWind(Round.CurrentPlayerIndex))
                     && deadTiles.Count(_ => _ == t.Key) < 2)
-                // keeps group of following numbers
-                .ThenByDescending(t =>
-                {
-                    var m2 = concealedTiles.Any(tb => tb.Family == t.Key.Family && tb.Number == t.Key.Number - 2);
-                    var m1 = concealedTiles.Any(tb => tb.Family == t.Key.Family && tb.Number == t.Key.Number - 1);
-                    var p1 = concealedTiles.Any(tb => tb.Family == t.Key.Family && tb.Number == t.Key.Number + 1);
-                    var p2 = concealedTiles.Any(tb => tb.Family == t.Key.Family && tb.Number == t.Key.Number + 2);
-
-                    return ((m1 ? 1 : 0) * 2) + ((p1 ? 1 : 0) * 2) + (p2 ? 1 : 0) + (m2 ? 1 : 0);
-                })
+                // keeps the best shape this tile takes part in: an open-ended ryanmen (e.g. 2-3, waits
+                // on two tile types) beats an ordinary pair (backup pair / shanpon / triplet potential),
+                // which itself beats a one-sided kanchan/penchan (e.g. 1-3 or 1-2, waits on a single
+                // tile type) or an isolated tile with no shape at all.
+                .ThenByDescending(t => TaatsuQuality(t.Key, concealedTiles))
                 // doras are better than "not dora"
                 .ThenByDescending(t => Round.GetDoraCount(t.Key) + (t.Key.IsRedDora ? 1 : 0))
-                // keeps pair
-                .ThenByDescending(t => t.Count())
                 // all things being equal, wind are the best to discard
                 .ThenBy(t => t.Key.Family == Families.Wind)
-                // all things being equal, the closer to side the better
-                .ThenBy(t => t.Key.DistanceToMiddle(false))
+                // all things being equal, the closer to side the better (an isolated honor counts as
+                // further from the middle than a terminal, matching GetBestDiscardFromList below)
+                .ThenBy(t => t.Key.DistanceToMiddle(true))
                 .Reverse();
 
         return tilesGroup.First(tg => discardableTiles.Contains(tg.Key)).Key;
@@ -232,6 +226,39 @@ public class BasicCpuManagerPivot : CpuManagerBasePivot
         }
 
         return tileChoice;
+    }
+
+    // Tiered "shape quality" for a tile value: an open-ended ryanmen (e.g. 2-3, waits on two tile
+    // types) beats an ordinary pair (backup pair / shanpon / triplet potential), which itself beats
+    // a one-sided kanchan/penchan (e.g. 1-3 or 1-2, waits on a single tile type), which beats an
+    // isolated tile with no shape at all.
+    private int TaatsuQuality(TilePivot key, IReadOnlyList<TilePivot> concealedTiles)
+    {
+        var m2 = concealedTiles.Any(t => t.Family == key.Family && t.Number == key.Number - 2);
+        var m1 = concealedTiles.Any(t => t.Family == key.Family && t.Number == key.Number - 1);
+        var p1 = concealedTiles.Any(t => t.Family == key.Family && t.Number == key.Number + 1);
+        var p2 = concealedTiles.Any(t => t.Family == key.Family && t.Number == key.Number + 2);
+
+        // a consecutive pair (n, n+1) is a ryanmen unless it sits on the 1-2 or 8-9 edge (penchan)
+        var ryanmenAsUpperTile = m1 && key.Number is >= 3 and <= 8;
+        var ryanmenAsLowerTile = p1 && key.Number is >= 2 and <= 7;
+
+        if (ryanmenAsUpperTile || ryanmenAsLowerTile)
+        {
+            return 3;
+        }
+
+        if (concealedTiles.Count(t => t == key) > 1)
+        {
+            return 2;
+        }
+
+        if (m1 || p1 || m2 || p2)
+        {
+            return 1;
+        }
+
+        return 0;
     }
 
     // Rough "worth keeping" score for a tile about to be spent on a chii call: doras are the obvious
