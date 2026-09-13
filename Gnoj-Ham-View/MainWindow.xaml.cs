@@ -20,6 +20,7 @@ public partial class MainWindow : Window
     public const string StyleHighlightTileResourceName = "StyleHighlightTile";
     public const string OverlayStoryboardResourceName = "StbHideOverlay";
     public const string WallTileSizeRateResourceName = "WallTileSizeRate";
+    public const string CallActionButtonStyleResourceName = "StyleCallActionButton";
 
     private string PickPanel => StpPickP0.Name[..^1];
     private string HandPanel => StpHandP0.Name[..^1];

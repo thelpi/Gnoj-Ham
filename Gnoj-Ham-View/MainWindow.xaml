@@ -21,6 +21,17 @@
             <Setter Property="Background" Value="DarkMagenta" />
         </Style>
         <sys:Double x:Key="{x:Static loc:MainWindow.WallTileSizeRateResourceName}">0.2</sys:Double>
+        <!-- Shared by the 7 call-action buttons below; Margin and Foreground are left inline since
+             they differ per button (BtnRiichi has no left margin; Foreground is code-driven for some). -->
+        <Style x:Key="{x:Static loc:MainWindow.CallActionButtonStyleResourceName}" TargetType="Button">
+            <Setter Property="FontWeight" Value="ExtraBold" />
+            <Setter Property="FontSize" Value="20" />
+            <Setter Property="Height" Value="36" />
+            <Setter Property="Width" Value="120" />
+            <Setter Property="Visibility" Value="Collapsed" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="HorizontalAlignment" Value="Center" />
+        </Style>
     </Window.Resources>
     <DockPanel Margin="5">
         <!-- Configuration expander -->
@@ -373,14 +384,14 @@
                         <SolidColorBrush Color="Black" Opacity="0.3" />
                     </Border.Background>
                     <StackPanel Orientation="Horizontal">
-                        <Button Name="BtnRiichi"    Content="RIICHI !"  FontWeight="ExtraBold" FontSize="20" Height="36" Width="120" Visibility="Collapsed" Margin="0, 0, 0, 0" Click="BtnRiichi_Click"    VerticalAlignment="Center" HorizontalAlignment="Center" />
-                        <Button Name="BtnKyuushuKyuuhai" Content="ABANDON !" FontWeight="ExtraBold" FontSize="20" Height="36" Width="120" Visibility="Collapsed" Margin="5, 0, 0, 0" Click="BtnKyuushuKyuuhai_Click" VerticalAlignment="Center" HorizontalAlignment="Center" Foreground="Red" />
-                        <Button Name="BtnTsumo"     Content="TSUMO !"   FontWeight="ExtraBold" FontSize="20" Height="36" Width="120" Visibility="Collapsed" Margin="5, 0, 0, 0" Click="BtnTsumo_Click"     VerticalAlignment="Center" HorizontalAlignment="Center" Foreground="Red" />
-                        <Button Name="BtnRon"       Content="RON !"     FontWeight="ExtraBold" FontSize="20" Height="36" Width="120" Visibility="Collapsed" Margin="5, 0, 0, 0" Click="BtnRon_Click"       VerticalAlignment="Center" HorizontalAlignment="Center" Foreground="Red" />
-                        <Button Name="BtnPon"       Content="PON !"     FontWeight="ExtraBold" FontSize="20" Height="36" Width="120" Visibility="Collapsed" Margin="5, 0, 0, 0" Click="BtnPon_Click"       VerticalAlignment="Center" HorizontalAlignment="Center" />
-                        <Button Name="BtnChii"      Content="CHII !"    FontWeight="ExtraBold" FontSize="20" Height="36" Width="120" Visibility="Collapsed" Margin="5, 0, 0, 0" Click="BtnChii_Click"      VerticalAlignment="Center" HorizontalAlignment="Center" />
-                        <Button Name="BtnKan"       Content="KAN !"     FontWeight="ExtraBold" FontSize="20" Height="36" Width="120" Visibility="Collapsed" Margin="5, 0, 0, 0" Click="BtnKan_Click"       VerticalAlignment="Center" HorizontalAlignment="Center" />
-                        <Button Name="BtnSkipCall"  Content="X"         FontWeight="ExtraBold" FontSize="20" Height="36" Width="120" Visibility="Collapsed" Margin="5, 0, 0, 0" Click="BtnSkipCall_Click"  VerticalAlignment="Center" HorizontalAlignment="Center" />
+                        <Button Name="BtnRiichi"    Content="RIICHI !"  Style="{StaticResource {x:Static loc:MainWindow.CallActionButtonStyleResourceName}}" Margin="0, 0, 0, 0" Click="BtnRiichi_Click" />
+                        <Button Name="BtnKyuushuKyuuhai" Content="ABANDON !" Style="{StaticResource {x:Static loc:MainWindow.CallActionButtonStyleResourceName}}" Margin="5, 0, 0, 0" Click="BtnKyuushuKyuuhai_Click" Foreground="Red" />
+                        <Button Name="BtnTsumo"     Content="TSUMO !"   Style="{StaticResource {x:Static loc:MainWindow.CallActionButtonStyleResourceName}}" Margin="5, 0, 0, 0" Click="BtnTsumo_Click" Foreground="Red" />
+                        <Button Name="BtnRon"       Content="RON !"     Style="{StaticResource {x:Static loc:MainWindow.CallActionButtonStyleResourceName}}" Margin="5, 0, 0, 0" Click="BtnRon_Click" Foreground="Red" />
+                        <Button Name="BtnPon"       Content="PON !"     Style="{StaticResource {x:Static loc:MainWindow.CallActionButtonStyleResourceName}}" Margin="5, 0, 0, 0" Click="BtnPon_Click" />
+                        <Button Name="BtnChii"      Content="CHII !"    Style="{StaticResource {x:Static loc:MainWindow.CallActionButtonStyleResourceName}}" Margin="5, 0, 0, 0" Click="BtnChii_Click" />
+                        <Button Name="BtnKan"       Content="KAN !"     Style="{StaticResource {x:Static loc:MainWindow.CallActionButtonStyleResourceName}}" Margin="5, 0, 0, 0" Click="BtnKan_Click" />
+                        <Button Name="BtnSkipCall"  Content="X"         Style="{StaticResource {x:Static loc:MainWindow.CallActionButtonStyleResourceName}}" Margin="5, 0, 0, 0" Click="BtnSkipCall_Click" />
                     </StackPanel>
                 </Border>
             </Grid>
