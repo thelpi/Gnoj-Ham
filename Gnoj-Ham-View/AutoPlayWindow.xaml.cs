@@ -15,7 +15,6 @@ public partial class AutoPlayWindow : Window
     private int _totalGamesCount;
     private IReadOnlyList<PlayerPivot>? _permanentCpuPlayers;
 
-    private readonly Dictionary<string, (int count, double sum)> _times = new(50);
     private readonly RulePivot _ruleset;
     private readonly CancellationTokenSource _cancellationTokenSource = new();
     private readonly CancellationToken _cancellationToken;
@@ -24,7 +23,6 @@ public partial class AutoPlayWindow : Window
     /// Constructor.
     /// </summary>
     /// <param name="ruleset">Instance of <see cref="RulePivot"/>.</param>
-    /// <param name="enableBenchmark">Enable benchmark.</param>
     public AutoPlayWindow(RulePivot ruleset)
     {
         InitializeComponent();
@@ -99,7 +97,6 @@ public partial class AutoPlayWindow : Window
         }
 
         _currentGameIndex = 0;
-        _times.Clear();
         _permanentCpuPlayers = PlayerPivot.BuildPlayers(null);
 
         WaitingPanel.Visibility = Visibility.Visible;
