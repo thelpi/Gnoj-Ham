@@ -266,7 +266,11 @@ public class BasicCpuManagerPivot : CpuManagerBasePivot
             return 1;
         }
 
-        return 0;
+        // an isolated dora is still worth a turn or two of hope (it stays worth its bonus han
+        // wherever it eventually lands), so it's not automatically the very worst tile to hold -
+        // just as disposable as any other weak, unconnected shape, no more.
+        var isDora = Round.GetDoraCount(key) > 0 || key.IsRedDora;
+        return isDora ? 1 : 0;
     }
 
     // Rough "worth keeping" score for a tile about to be spent on a chii call: doras are the obvious
