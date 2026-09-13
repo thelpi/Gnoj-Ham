@@ -12,5 +12,9 @@ public enum DrivenDrawScenarios
     /// <summary>
     /// The human player's starting hand already contains four "red dragon" tiles: a closed kan is declarable on their very first turn.
     /// </summary>
-    HumanInitialKan
+    HumanInitialKan,
+    /// <summary>
+    /// The human player's starting hand already contains four "red dragon" AND four "green dragon" tiles: two closed kans are declarable back to back on their very first turn.
+    /// </summary>
+    HumanTwoInitialKans
 }

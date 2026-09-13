@@ -21,6 +21,7 @@ public static class DrivenDrawPivot
         return scenario switch
         {
             DrivenDrawScenarios.HumanInitialKan => fullTilesList => GuaranteeInitialKan(fullTilesList, humanPlayerIndex),
+            DrivenDrawScenarios.HumanTwoInitialKans => fullTilesList => GuaranteeTwoInitialKans(fullTilesList, humanPlayerIndex),
             _ => null
         };
     }
@@ -36,16 +37,43 @@ public static class DrivenDrawPivot
     {
         var startIndex = (int)playerIndex * 13;
 
-        var redDragons = new List<TilePivot>(4);
+        var redDragons = ExtractQuad(fullTilesList, Dragons.Red);
+
+        fullTilesList.InsertRange(startIndex, redDragons);
+    }
+
+    /// <summary>
+    /// Rigs the wall so the specified player's starting hand already contains all four "red dragon"
+    /// AND all four "green dragon" tiles, guaranteeing two closed kans are declarable back to back
+    /// (the second right after the first's rinshan draw, before ever discarding) on their very first
+    /// turn - a manual way to exercise "two kans in a row" without hunting for a lucky seed.
+    /// </summary>
+    /// <param name="fullTilesList">The full shuffled wall (136 tiles), before it's dealt into hands.</param>
+    /// <param name="playerIndex">The player who should get both kan opportunities.</param>
+    internal static void GuaranteeTwoInitialKans(List<TilePivot> fullTilesList, PlayerIndices playerIndex)
+    {
+        var startIndex = (int)playerIndex * 13;
+
+        var redDragons = ExtractQuad(fullTilesList, Dragons.Red);
+        var greenDragons = ExtractQuad(fullTilesList, Dragons.Green);
+
+        fullTilesList.InsertRange(startIndex, redDragons.Concat(greenDragons));
+    }
+
+    // Pulls every copy of the specified dragon out of the wall (order-preserving from the end, like
+    // the original single-kan rigging), leaving fullTilesList with exactly 4 fewer tiles.
+    private static List<TilePivot> ExtractQuad(List<TilePivot> fullTilesList, Dragons dragon)
+    {
+        var quad = new List<TilePivot>(4);
         for (var i = fullTilesList.Count - 1; i >= 0; i--)
         {
-            if (fullTilesList[i].Family == Families.Dragon && fullTilesList[i].Dragon == Dragons.Red)
+            if (fullTilesList[i].Family == Families.Dragon && fullTilesList[i].Dragon == dragon)
             {
-                redDragons.Add(fullTilesList[i]);
+                quad.Add(fullTilesList[i]);
                 fullTilesList.RemoveAt(i);
             }
         }
 
-        fullTilesList.InsertRange(startIndex, redDragons);
+        return quad;
     }
 }

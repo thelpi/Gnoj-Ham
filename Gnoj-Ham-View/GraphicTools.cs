@@ -311,6 +311,9 @@ internal static class GraphicTools
                 case DrivenDrawScenarios.HumanInitialKan:
                     results.Add("Kan possible au 1er tour");
                     break;
+                case DrivenDrawScenarios.HumanTwoInitialKans:
+                    results.Add("2 Kans possibles au 1er tour");
+                    break;
             }
         }
 

@@ -16,10 +16,14 @@ public class AutoPlay_Tests
         { 5, new[] { ("CPU_0", 51300), ("CPU_3", 22200), ("CPU_2", 20700), ("CPU_1", 5800) } },
         // seed=57: natural simultaneous ron from two winners on the same discard
         { 57, new[] { ("CPU_0", 57900), ("CPU_3", 20500), ("CPU_1", 16400), ("CPU_2", 5200) } },
-        // seed=140: natural chain of 3 kans within a single round
+        // seed=140: natural chain of 3 kans within a single round (2 of them by PlayerIndices.Zero
+        // alone - also covers "the human seat does 2 kans in a row" in a natural, non-rigged game)
         { 140, new[] { ("CPU_0", 35600), ("CPU_3", 25400), ("CPU_2", 24200), ("CPU_1", 14800) } },
         // seed=189: natural yakuman win
-        { 189, new[] { ("CPU_2", 74400), ("CPU_0", 13000), ("CPU_3", 12900), ("CPU_1", -300) } }
+        { 189, new[] { ("CPU_2", 74400), ("CPU_0", 13000), ("CPU_3", 12900), ("CPU_1", -300) } },
+        // seed=87: natural chain of 2 kans by a single non-zero player (PlayerIndices.Three) within
+        // a single round - "a CPU does 2 kans in a row" (as opposed to seed=140's PlayerIndices.Zero)
+        { 87, new[] { ("CPU_2", 37400), ("CPU_1", 23900), ("CPU_3", 19600), ("CPU_0", 19100) } }
     };
 
     [Theory]
@@ -33,6 +37,7 @@ public class AutoPlay_Tests
     [InlineData(57)]
     [InlineData(140)]
     [InlineData(189)]
+    [InlineData(87)]
     public void AutoPlay_GeneratesExpectedRound(int seed)
     {
         var random = new Random(seed);
