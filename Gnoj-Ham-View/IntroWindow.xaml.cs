@@ -130,6 +130,19 @@ public partial class IntroWindow : Window
         LoadConfiguration();
     }
 
+    private void BtnResetRulesToDefault_Click(object sender, RoutedEventArgs e)
+    {
+        CbbPointsRule.SelectedIndex = (int)RulePivot.Default.InitialPointsRule;
+        CbbEndOfGameRule.SelectedIndex = (int)RulePivot.Default.EndOfGameRule;
+        ChkUseRedDoras.IsChecked = RulePivot.Default.UseRedDoras;
+        ChkUseNagashiMangan.IsChecked = RulePivot.Default.UseNagashiMangan;
+        ChkUseMultipleYakumans.IsChecked = RulePivot.Default.UseMultipleYakumans;
+        ChkUseKazoeYakuman.IsChecked = RulePivot.Default.UseKazoeYakuman;
+        ChkUseSuufonRenda.IsChecked = RulePivot.Default.UseSuufonRenda;
+        ChkUseDoubleYakuman.IsChecked = RulePivot.Default.UseDoubleYakuman;
+        CbbUmaRule.SelectedIndex = (int)RulePivot.Default.UmaRule;
+    }
+
     private void HlkAbout_Click(object sender, RoutedEventArgs e)
     {
         MessageBox.Show("Bientôt !", "Gnoj-Ham - Information");

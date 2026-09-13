@@ -7,14 +7,14 @@
         WindowStartupLocation="CenterScreen"
         Background="Gainsboro"
         Width="345"
-        Height="412"
+        Height="442"
         Title="Gnoj-Hame - Nouvelle partie">
     <!-- Fixed Width:
     Width should adjust the left of button Start with checkbox above.
     -->
     <DockPanel Margin="5">
         <DockPanel DockPanel.Dock="Bottom" Margin="0, 10, 0, 0">
-            <Button DockPanel.Dock="Left" Width="75" Height="25" Content="Réinitialiser" Name="BtnReset" Click="BtnReset_Click" ToolTip="Réinitialise toutes les options à leur valeur par défaut." />
+            <Button DockPanel.Dock="Left" Width="75" Height="25" Content="Réinitialiser" Name="BtnReset" Click="BtnReset_Click" ToolTip="Recharge la dernière configuration sauvegardée (annule les changements non enregistrés de cette session)." />
             <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" HorizontalAlignment="Right">
                 <Button Width="75" Height="25" Content="Démarrer" Name="BtnStart" Click="BtnStart_Click" />
                 <Button Width="75" Height="25" Content="Quitter" Name="BtnQuit" Click="BtnQuit_Click" Margin="10, 0, 0, 0" />
@@ -68,6 +68,7 @@
                             <RowDefinition Height="30" />
                             <RowDefinition Height="30" />
                             <RowDefinition Height="30" />
+                            <RowDefinition Height="30" />
                         </Grid.RowDefinitions>
                         <Label Grid.Column="0" Grid.Row="0" HorizontalContentAlignment="Right" VerticalContentAlignment="Center" Content="Akadora" Grid.ColumnSpan="2" />
                         <Label Grid.Column="0" Grid.Row="1" HorizontalContentAlignment="Right" VerticalContentAlignment="Center" Content="Points au départ" Grid.ColumnSpan="2" />
@@ -100,6 +101,8 @@
                                   ToolTip="Suuankou tanki, Kokushi musou (attente sur les 13) et Chuuren poutou pur valent le double d'un Yakuman normal. Non utilisée en compétition européenne." />
                         <ComboBox Margin="5,2,0,2" Grid.Column="2" Grid.Row="8" Name="CbbUmaRule" Height="25" VerticalContentAlignment="Center" Grid.ColumnSpan="2"
                                   ToolTip="Bonus/malus de classement ajouté au score final selon le rang. '5 / 10' est la convention la plus répandue ; 'EMA' est la règle de compétition européenne." />
+                        <Button Grid.Row="9" Grid.Column="0" Grid.ColumnSpan="4" Height="25" Margin="0,2,0,0" Content="Valeurs par défaut" Name="BtnResetRulesToDefault" Click="BtnResetRulesToDefault_Click"
+                                ToolTip="Réinitialise les règles ci-dessus à leur vraie valeur par défaut, sans tenir compte de la dernière configuration sauvegardée." />
                     </Grid>
                 </TabItem>
                 <TabItem Name="DevelopmentTab" Header="Development">
