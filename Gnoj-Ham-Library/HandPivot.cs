@@ -309,12 +309,26 @@ public class HandPivot
     }
 
     /// <summary>
-    /// Tries to discard the specified tile.
+    /// Discards the specified tile.
     /// </summary>
-    /// <param name="tile">The tile to discard; should obviously be contained in <see cref="_concealedTiles"/>.</param>
+    /// <param name="tile">The tile to discard; must be contained in <see cref="_concealedTiles"/>.</param>
+    /// <exception cref="InvalidOperationException"><paramref name="tile"/> is not part of the concealed hand.</exception>
     internal void Discard(TilePivot tile)
     {
-        _concealedTiles.Remove(tile);
+        // Removes this exact instance, not just any tile that's "equal" to it: TilePivot equality
+        // ignores IsRedDora, so when a red and a plain copy of the same tile both sit in hand,
+        // List.Remove(tile) could silently take out the wrong one (e.g. discarding the plain tile
+        // client-side while the red dora actually disappears from the concealed hand).
+        var index = _concealedTiles.FindIndex(t => ReferenceEquals(t, tile));
+        if (index < 0)
+        {
+            // A silent no-op here would leave the caller (RoundPivot.Discard) advancing to the next
+            // player while this tile is still sitting in the hand - a desync that would only surface
+            // much later, far from its actual cause.
+            throw new InvalidOperationException("The tile to discard is not part of the concealed hand.");
+        }
+
+        _concealedTiles.RemoveAt(index);
     }
 
     /// <summary>

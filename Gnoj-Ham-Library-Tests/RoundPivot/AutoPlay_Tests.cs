@@ -15,9 +15,9 @@ public class AutoPlay_Tests
         // seed=5: natural abortive draw (ryuukyoku) somewhere in the game
         { 5, new[] { ("CPU_0", 51300), ("CPU_3", 22200), ("CPU_2", 20700), ("CPU_1", 5800) } },
         // seed=57: natural simultaneous ron from two winners on the same discard
-        { 57, new[] { ("CPU_0", 52100), ("CPU_3", 26300), ("CPU_1", 16400), ("CPU_2", 5200) } },
+        { 57, new[] { ("CPU_0", 57900), ("CPU_3", 20500), ("CPU_1", 16400), ("CPU_2", 5200) } },
         // seed=140: natural chain of 3 kans within a single round
-        { 140, new[] { ("CPU_0", 39600), ("CPU_2", 24200), ("CPU_3", 21400), ("CPU_1", 14800) } },
+        { 140, new[] { ("CPU_0", 35600), ("CPU_3", 25400), ("CPU_2", 24200), ("CPU_1", 14800) } },
         // seed=189: natural yakuman win
         { 189, new[] { ("CPU_2", 74400), ("CPU_0", 13000), ("CPU_3", 12900), ("CPU_1", -300) } }
     };
