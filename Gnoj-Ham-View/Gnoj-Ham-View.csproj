@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>net8.0-windows</TargetFramework>
+    <TargetFramework>net10.0-windows</TargetFramework>
     <RootNamespace>Gnoj_Ham_View</RootNamespace>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
@@ -34,9 +34,6 @@
     <Content Include="yade.ico" />
   </ItemGroup>
 
-  <ItemGroup>
-    <PackageReference Include="System.Drawing.Common" Version="8.0.7" />
-  </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Gnoj-Ham-Library\Gnoj-Ham-Library.csproj" />

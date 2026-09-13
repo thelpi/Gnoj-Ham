@@ -6,7 +6,7 @@ Points notés en cours de route, pas traités tout de suite.
 
 - [ ] `PlayerSavePivot` : sauvegarde JSON non chiffrée (`// TODO decrypt` déjà dans le code).
 - [ ] `PlayerSavePivot` : la classe elle-même est qualifiée d'"abomination" dans le code (mélange sérialisation/stats/état) — `PlayerSavePivot.cs:5`.
-- [ ] `RoundPivot.cs:1272` : l'ordre de vérification des Ron CPU peut marginalement influencer la décision.
+- [ ] `RoundPivot.cs:1272` : l'ordre de vérification des Ron CPU peut marginalement influencer la décision (méthode "CheckOpponensRonCall").
 
 ## Interface WPF (Gnoj-Ham-View)
 
