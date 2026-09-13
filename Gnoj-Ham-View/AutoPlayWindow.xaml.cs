@@ -75,11 +75,20 @@ public partial class AutoPlayWindow : Window
         }
         else
         {
-            // if we are in south (or post-south) : +50%
-            var currentGameProgression = _game.DominantWind == Winds.East ? 0 : 0.5;
-
-            // +12.5% for each "East" turn (it's not really accurate as a player can keep "East" several turns)
-            currentGameProgression += (_game.EastRank - 1) * 0.125;
+            // East, South, West, North: up to 4 possible wind phases in a single game (the last two
+            // only happen under the "Enchousen" rule, when nobody reaches the target score by the end
+            // of South). South/West/North used to all be treated as the same "second half" with
+            // EastRank resetting to 1 at each transition, so entering an Enchousen extension made the
+            // estimate drop back down instead of moving forward - this indexes the wind itself too, so
+            // it only ever increases.
+            var windPhaseIndex = _game.DominantWind switch
+            {
+                Winds.East => 0,
+                Winds.South => 1,
+                Winds.West => 2,
+                _ => 3 // Winds.North
+            };
+            var currentGameProgression = (windPhaseIndex * 4 + (_game.EastRank - 1)) / 16.0;
 
             // adds to th current value (based on number of games)
             PgbGames.Value = (_currentGameIndex / (double)_totalGamesCount) + (currentGameProgression * (1 / (double)_totalGamesCount));
