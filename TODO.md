@@ -2,6 +2,10 @@
 
 Points notés en cours de route, pas traités tout de suite.
 
+## Moteur (Gnoj-Ham-Library)
+
+- [ ] `BasicCpuManagerPivot` : aucune anticipation (décisions purement locales/heuristiques) alors que le moteur est un simulateur parfait déjà disponible — une recherche Monte Carlo/expectimax à quelques coups d'avance pourrait renforcer le CPU sans aller jusqu'au RL/deep learning complet.
+
 ## Interface WPF (Gnoj-Ham-View)
 
 - [ ] `BackgroundWorker` (MainWindow + AutoPlayWindow) daté, à migrer vers `async`/`await` + `Task` — chantier à part, risque de régression, pas un fix ponctuel.
