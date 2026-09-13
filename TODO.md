@@ -4,8 +4,7 @@ Points notés en cours de route, pas traités tout de suite.
 
 ## Moteur (Gnoj-Ham-Library)
 
-- [ ] `PlayerSavePivot` : sauvegarde JSON non chiffrée (`// TODO decrypt` déjà dans le code).
-- [ ] `PlayerSavePivot` : la classe mélange toujours 3 responsabilités (DTO persisté, I/O fichier, logique de mise à jour des stats) — le reste de l'"abomination" (bug de désérialisation JSON, `[Serializable]` mort, `InProgressGame` mort, chemin fabriqué à la main) a été corrigé.
+- [ ] `PlayerSaveStorage` (Gnoj-Ham-View) : sauvegarde JSON non chiffrée.
 
 ## Interface WPF (Gnoj-Ham-View)
 

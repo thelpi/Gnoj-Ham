@@ -35,7 +35,7 @@ public partial class IntroWindow : Window
 
         Hide();
 
-        var (save, error) = PlayerSavePivot.GetOrCreateSave();
+        var (stats, error) = PlayerSaveStorage.Load();
 
         if (!string.IsNullOrWhiteSpace(error))
         {
@@ -62,7 +62,7 @@ public partial class IntroWindow : Window
         else
         {
             var drivenDraw = DrivenDrawPivot.Resolve((DrivenDrawScenarios)CbbDrivenDrawScenario.SelectedIndex, PlayerIndices.Zero);
-            new MainWindow(TxtPlayerName.Text, ruleset, save, drivenDraw, ChkDebugMode.IsChecked == true).ShowDialog();
+            new MainWindow(TxtPlayerName.Text, ruleset, stats, drivenDraw, ChkDebugMode.IsChecked == true).ShowDialog();
         }
 
         // The configuration might be updated in-game.
@@ -142,13 +142,13 @@ public partial class IntroWindow : Window
 
     private void HlkPlayerStats_Click(object sender, RoutedEventArgs e)
     {
-        var (save, error) = PlayerSavePivot.GetOrCreateSave();
+        var (stats, error) = PlayerSaveStorage.Load();
 
         if (!string.IsNullOrWhiteSpace(error))
         {
             MessageBox.Show($"Une erreur est survenue pendant le chargement du fichier de statistiques du joueur ; les statistiques seront vides.\n\nDétails de l'erreur :\n{error}", "Gnoj-Ham - Avertissement");
         }
 
-        new PlayerSaveStatsWindow(save).ShowDialog();
+        new PlayerSaveStatsWindow(stats).ShowDialog();
     }
 }

@@ -43,7 +43,7 @@ public class AutoPlay_Tests
         while (true)
         {
             var result = game.Round.RunAutoPlay(new CancellationToken());
-            var (endOfRoundInfo, _) = game.NextRound(result.RonPlayerId);
+            var endOfRoundInfo = game.NextRound(result.RonPlayerId);
 
             if (endOfRoundInfo.EndOfGame)
             {

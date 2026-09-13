@@ -9,8 +9,14 @@ public class GamePivot
 {
     #region Properties
 
-    private readonly PlayerSavePivot? _save;
     private readonly Random _random;
+    private readonly PlayerStatisticsPivot? _stats;
+
+    /// <summary>
+    /// Player statistics for this game; <c>Null</c> unless the ruleset is the default one and there's a human player
+    /// (statistics aren't tracked for custom rulesets or human-less games).
+    /// </summary>
+    public PlayerStatisticsPivot? Stats => Ruleset.AreDefaultRules() && HumanPlayerIndex.HasValue ? _stats : null;
 
     /// <summary>
     /// Human player index (if any).
@@ -77,18 +83,18 @@ public class GamePivot
     /// </summary>
     /// <param name="humanPlayerName">Human player name.</param>
     /// <param name="ruleset">Ruleset for the game.</param>
-    /// <param name="save">Player save stats.</param>
+    /// <param name="stats">Player statistics, loaded/persisted by the caller; <see cref="Stats"/>.</param>
     /// <param name="random">Randomizer instance.</param>
     /// <param name="drivenDraw">Optional; see <see cref="DrivenDrawPivot.Resolve(DrivenDrawScenarios, PlayerIndices)"/>. <c>Null</c> (default) for a normal, fully random draw.</param>
-    /// <exception cref="ArgumentNullException"><paramref name="save"/> is <c>Null</c> while ruleset is default.</exception>
-    public GamePivot(string humanPlayerName, RulePivot ruleset, PlayerSavePivot? save, Random random, Action<List<TilePivot>>? drivenDraw = null)
+    /// <exception cref="ArgumentNullException"><paramref name="stats"/> is <c>Null</c> while ruleset is default.</exception>
+    public GamePivot(string humanPlayerName, RulePivot ruleset, PlayerStatisticsPivot? stats, Random random, Action<List<TilePivot>>? drivenDraw = null)
     {
-        if (ruleset.AreDefaultRules() && save == null)
+        if (ruleset.AreDefaultRules() && stats == null)
         {
-            throw new ArgumentNullException(nameof(save));
+            throw new ArgumentNullException(nameof(stats));
         }
 
-        _save = save;
+        _stats = stats;
 
         var players = PlayerPivot.BuildPlayers((PlayerIndices.Zero, humanPlayerName));
         PlayerPivot.SetPlayersForNewGame(players, ruleset.InitialPointsRule, random);
@@ -157,8 +163,8 @@ public class GamePivot
     /// <see cref="Round"/> stays <c>Null</c> at the end of the game.
     /// </summary>
     /// <param name="ronPlayerIndex">The player index on who the call has been made; <c>Null</c> if tsumo or ryuukyoku.</param>
-    /// <returns>An instance of <see cref="EndOfRoundInformationsPivot"/> and potentiel error on save of statistics.</returns>
-    public (EndOfRoundInformationsPivot endOfRoundInformation, string? error) NextRound(PlayerIndices? ronPlayerIndex)
+    /// <returns>An instance of <see cref="EndOfRoundInformationsPivot"/>. If <see cref="Stats"/> isn't <c>Null</c>, it has already been updated with this round's outcome; persisting it is the caller's responsibility.</returns>
+    public EndOfRoundInformationsPivot NextRound(PlayerIndices? ronPlayerIndex)
     {
         var endOfRoundInformations = Round.EndOfRound(ronPlayerIndex);
 
@@ -245,11 +251,10 @@ public class GamePivot
         Round = new RoundPivot(this, EastIndex, _random);
 
     Exit:
-        string? error = null;
-        if (Ruleset.AreDefaultRules() && HumanPlayerIndex.HasValue)
+        if (Stats != null)
         {
-            var humanPlayer = Players[(int)HumanPlayerIndex.Value];
-            error = _save!.UpdateAndSave(endOfRoundInformations,
+            var humanPlayer = Players[(int)HumanPlayerIndex!.Value];
+            Stats.ApplyRoundResult(endOfRoundInformations,
                 ronPlayerIndex.HasValue,
                 humanIsRiichi,
                 humanIsConcealed,
@@ -257,7 +262,7 @@ public class GamePivot
                 humanPlayer.CurrentGamePoints);
         }
 
-        return (endOfRoundInformations, error);
+        return endOfRoundInformations;
     }
 
     /// <summary>

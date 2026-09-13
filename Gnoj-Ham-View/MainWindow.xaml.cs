@@ -52,10 +52,10 @@ public partial class MainWindow : Window
     /// </summary>
     /// <param name="playerName">Human player name.</param>
     /// <param name="ruleset">The ruleset.</param>
-    /// <param name="save">Player save file.</param>
+    /// <param name="stats">Player statistics.</param>
     /// <param name="drivenDraw">Optional; see <see cref="DrivenDrawPivot.Resolve(DrivenDrawScenarios, PlayerIndices)"/>. <c>Null</c> (default) for a normal, fully random draw.</param>
     /// <param name="debugMode">Optional; reveals every hand instead of just the human player's. <c>False</c> (default).</param>
-    public MainWindow(string playerName, RulePivot ruleset, PlayerSavePivot save, Action<List<TilePivot>>? drivenDraw = null, bool debugMode = false)
+    public MainWindow(string playerName, RulePivot ruleset, PlayerStatisticsPivot stats, Action<List<TilePivot>>? drivenDraw = null, bool debugMode = false)
     {
         InitializeComponent();
 
@@ -64,7 +64,7 @@ public partial class MainWindow : Window
         _cancellationToken = _cancellationTokenSource.Token;
         this.FindControl(PlayerLabel, _humanPlayerIndex).Content = playerName;
 
-        _game = new GamePivot(playerName, ruleset, save, new Random(), drivenDraw);
+        _game = new GamePivot(playerName, ruleset, stats, new Random(), drivenDraw);
         _tickSound = new System.Media.SoundPlayer(Properties.Resources.tick);
 
         _overlayStoryboard = (FindResource(OverlayStoryboardResourceName) as Storyboard)!;
@@ -333,14 +333,14 @@ public partial class MainWindow : Window
 
     private void HlkPlayerStats_Click(object sender, RoutedEventArgs e)
     {
-        var (save, error) = PlayerSavePivot.GetOrCreateSave();
+        var (stats, error) = PlayerSaveStorage.Load();
 
         if (!string.IsNullOrWhiteSpace(error))
         {
             MessageBox.Show($"Une erreur est survenue pendant le chargement du fichier de statistiques du joueur ; les statistiques seront vides.\n\nDétails de l'erreur :\n{error}", "Gnoj-Ham - Avertissement");
         }
 
-        new PlayerSaveStatsWindow(save).ShowDialog();
+        new PlayerSaveStatsWindow(stats).ShowDialog();
     }
 
     #endregion Configuration
@@ -459,11 +459,15 @@ public partial class MainWindow : Window
     // Proceeds to new round.
     private void NewRound(PlayerIndices? ronPlayerIndex)
     {
-        var (endOfRoundInfo, error) = _game.NextRound(ronPlayerIndex);
+        var endOfRoundInfo = _game.NextRound(ronPlayerIndex);
 
-        if (!string.IsNullOrWhiteSpace(error))
+        if (_game.Stats != null)
         {
-            MessageBox.Show($"Une erreur est survenue pendant la sauvegarde du fichier de statistiques du joueur.\n\nDétails de l'erreur :\n{error}", "Gnoj-Ham - Avertissement");
+            var error = PlayerSaveStorage.Save(_game.Stats);
+            if (!string.IsNullOrWhiteSpace(error))
+            {
+                MessageBox.Show($"Une erreur est survenue pendant la sauvegarde du fichier de statistiques du joueur.\n\nDétails de l'erreur :\n{error}", "Gnoj-Ham - Avertissement");
+            }
         }
 
         new ScoreWindow(_game.Players.ToList(), endOfRoundInfo).ShowDialog();

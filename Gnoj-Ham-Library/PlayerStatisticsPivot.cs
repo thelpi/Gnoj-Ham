@@ -1,17 +1,12 @@
-using System.Text.Json;
 using System.Text.Json.Serialization;
 
 namespace Gnoj_Ham_Library;
 
 /// <summary>
-/// Player save file
+/// Player statistics, accumulated over games. Persistence is handled outside of this class.
 /// </summary>
-public class PlayerSavePivot
+public class PlayerStatisticsPivot
 {
-    private const string SAVE_FILE_NAME = "save_file.dat";
-
-    private static string FullFileName => Path.Combine(Environment.CurrentDirectory, SAVE_FILE_NAME);
-
     /// <summary>
     /// Date of the first game (with at least one round completed).
     /// </summary>
@@ -69,47 +64,7 @@ public class PlayerSavePivot
     public int OpenedHandCount { get; private set; }
 
     /// <summary>
-    /// Gets or creates the player save file.
-    /// </summary>
-    /// <returns>Player save file.</returns>
-    public static (PlayerSavePivot save, string? error) GetOrCreateSave()
-    {
-        var save = new PlayerSavePivot();
-
-        try
-        {
-            if (File.Exists(FullFileName))
-            {
-                using var stream = new FileStream(FullFileName, FileMode.Open, FileAccess.Read, FileShare.Read);
-                save = JsonSerializer.Deserialize<PlayerSavePivot>(stream)
-                    ?? throw new InvalidOperationException("Le fichier de sauvegarde est vide ou invalide.");
-            }
-        }
-        catch (Exception ex)
-        {
-            return (save, ex.Message);
-        }
-
-        return (save, null);
-    }
-
-    private string? SavePlayerFile()
-    {
-        try
-        {
-            using var stream = new FileStream(FullFileName, FileMode.Create, FileAccess.Write, FileShare.None);
-            JsonSerializer.Serialize(stream, this);
-        }
-        catch (Exception ex)
-        {
-            return ex.Message;
-        }
-
-        return null;
-    }
-
-    /// <summary>
-    /// Updates the statistics with the outcome of a round (and, if applicable, the end of the game), then saves the file.
+    /// Updates the statistics with the outcome of a round (and, if applicable, the end of the game).
     /// </summary>
     /// <param name="endOfRoundInformations">The end-of-round outcome.</param>
     /// <param name="isRon">Indicates the human player won by ron (as opposed to tsumo); irrelevant if the human player didn't win.</param>
@@ -117,8 +72,7 @@ public class PlayerSavePivot
     /// <param name="humanIsConcealed">Indicates the human player's hand was still concealed at the end of the round.</param>
     /// <param name="scoreIndexPosition">The human player's rank at the end of the game; irrelevant if the game isn't over.</param>
     /// <param name="meScore">The human player's current points; irrelevant if the game isn't over.</param>
-    /// <returns>An error message if the save failed; <c>Null</c> otherwise.</returns>
-    internal string? UpdateAndSave(EndOfRoundInformationsPivot endOfRoundInformations,
+    internal void ApplyRoundResult(EndOfRoundInformationsPivot endOfRoundInformations,
         bool isRon, bool humanIsRiichi, bool humanIsConcealed, int scoreIndexPosition, int meScore)
     {
         var now = DateTime.Now;
@@ -154,8 +108,5 @@ public class PlayerSavePivot
             LastGame = now;
             ++GameCount;
         }
-
-        // save at each round (so rounds on given up games are kept)
-        return SavePlayerFile();
     }
 }
