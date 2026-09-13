@@ -1,12 +1,14 @@
 using System.IO;
+using System.Security.Cryptography;
 using System.Text.Json;
 using Gnoj_Ham_Library;
 
 namespace Gnoj_Ham_View;
 
 /// <summary>
-/// Reads and writes <see cref="PlayerStatisticsPivot"/> to/from the local save file. Pure file I/O -
-/// knows nothing about mahjong.
+/// Reads and writes <see cref="PlayerStatisticsPivot"/> to/from the local save file, encrypted with
+/// Windows DPAPI (tied to the current Windows user account - no key management needed). Pure file
+/// I/O - knows nothing about mahjong.
 /// </summary>
 internal static class PlayerSaveStorage
 {
@@ -26,8 +28,20 @@ internal static class PlayerSaveStorage
         {
             if (File.Exists(FullFileName))
             {
-                using var stream = new FileStream(FullFileName, FileMode.Open, FileAccess.Read, FileShare.Read);
-                stats = JsonSerializer.Deserialize<PlayerStatisticsPivot>(stream)
+                var fileBytes = File.ReadAllBytes(FullFileName);
+
+                byte[] jsonBytes;
+                try
+                {
+                    jsonBytes = ProtectedData.Unprotect(fileBytes, null, DataProtectionScope.CurrentUser);
+                }
+                catch (CryptographicException)
+                {
+                    // Pre-encryption save file (plain JSON): read as-is; Save will re-encrypt it next time.
+                    jsonBytes = fileBytes;
+                }
+
+                stats = JsonSerializer.Deserialize<PlayerStatisticsPivot>(jsonBytes)
                     ?? throw new InvalidOperationException("Le fichier de sauvegarde est vide ou invalide.");
             }
         }
@@ -40,7 +54,7 @@ internal static class PlayerSaveStorage
     }
 
     /// <summary>
-    /// Saves the player statistics to the save file.
+    /// Saves the player statistics to the save file, encrypted.
     /// </summary>
     /// <param name="stats">Player statistics.</param>
     /// <returns>An error message if the save failed; <c>Null</c> otherwise.</returns>
@@ -48,8 +62,9 @@ internal static class PlayerSaveStorage
     {
         try
         {
-            using var stream = new FileStream(FullFileName, FileMode.Create, FileAccess.Write, FileShare.None);
-            JsonSerializer.Serialize(stream, stats);
+            var jsonBytes = JsonSerializer.SerializeToUtf8Bytes(stats);
+            var encryptedBytes = ProtectedData.Protect(jsonBytes, null, DataProtectionScope.CurrentUser);
+            File.WriteAllBytes(FullFileName, encryptedBytes);
         }
         catch (Exception ex)
         {

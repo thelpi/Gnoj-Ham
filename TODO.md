@@ -2,10 +2,6 @@
 
 Points notés en cours de route, pas traités tout de suite.
 
-## Moteur (Gnoj-Ham-Library)
-
-- [ ] `PlayerSaveStorage` (Gnoj-Ham-View) : sauvegarde JSON non chiffrée.
-
 ## Interface WPF (Gnoj-Ham-View)
 
 - [ ] `BackgroundWorker` (MainWindow + AutoPlayWindow) daté, à migrer vers `async`/`await` + `Task` — chantier à part, risque de régression, pas un fix ponctuel.
