@@ -45,7 +45,8 @@ public class BasicCpuManagerPivot : CpuManagerBasePivot
                 // once committed to honitsu/chinitsu (see _itsuFamily), tiles from any other family
                 // are the very first to go: they can no longer be turned into a call (Pon/Kan/Chii
                 // are all gated on this same family), so they're pure dead weight from here on.
-                .OrderByDescending(t => !_itsuFamily.HasValue || t.Key.Family == _itsuFamily)
+                // Honors are exempt: honitsu allows the chosen suit plus any honor.
+                .OrderByDescending(t => !_itsuFamily.HasValue || t.Key.Family == _itsuFamily || t.Key.IsHonor)
                 // keeps brelan/square
                 .ThenByDescending(t =>
                 {

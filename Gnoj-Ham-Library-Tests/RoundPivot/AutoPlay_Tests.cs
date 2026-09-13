@@ -11,7 +11,7 @@ public class AutoPlay_Tests
         { 999999, new[] { ("CPU_3", 46900), ("CPU_0", 30100), ("CPU_1", 15500), ("CPU_2", 7500) } },
         { 123456, new[] { ("CPU_1", 35600), ("CPU_3", 27500), ("CPU_0", 20100), ("CPU_2", 16800) } },
         { 789456, new[] { ("CPU_1", 37400), ("CPU_0", 27200), ("CPU_3", 20100), ("CPU_2", 15300) } },
-        { 187543, new[] { ("CPU_1", 35600), ("CPU_0", 21500), ("CPU_2", 21500), ("CPU_3", 21400) } },
+        { 187543, new[] { ("CPU_3", 58700), ("CPU_1", 28800), ("CPU_0", 21800), ("CPU_2", -9300) } },
         // seed=5: natural abortive draw (ryuukyoku) somewhere in the game
         { 5, new[] { ("CPU_2", 46600), ("CPU_3", 22400), ("CPU_1", 16600), ("CPU_0", 14400) } },
         // seed=57: natural simultaneous ron from multiple winners on the same discard (3 winners)
