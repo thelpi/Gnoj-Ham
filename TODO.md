@@ -9,4 +9,3 @@ Points notés en cours de route, pas traités tout de suite.
 ## Interface WPF (Gnoj-Ham-View)
 
 - [ ] Pas de MVVM, accès aux contrôles par reconstruction de nom (`GraphicTools.FindName<T>`) — fragile aux renommages XAML ; `FindName` peut renvoyer `null` sans revérification (`GraphicTools.cs:150`).
-- [ ] Les overlays s'empilent de façon bizarre.

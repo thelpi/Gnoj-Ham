@@ -240,6 +240,7 @@ public partial class MainWindow : Window
     {
         if (IsCurrentlyClickable())
         {
+            GrdOverlayCanCall.Visibility = Visibility.Collapsed;
             _overlayStoryboard.Completed += TriggerHumanRonAfterOverlayStoryboard;
             InvokeOverlay(CallTypes.Ron, _humanPlayerIndex);
         }
@@ -249,6 +250,7 @@ public partial class MainWindow : Window
     {
         if (IsCurrentlyClickable())
         {
+            GrdOverlayCanCall.Visibility = Visibility.Collapsed;
             _overlayStoryboard.Completed += TriggerNewRoundAfterOverlayStoryboard;
             InvokeOverlay(CallTypes.Tsumo, _humanPlayerIndex);
         }
@@ -258,6 +260,7 @@ public partial class MainWindow : Window
     {
         if (IsCurrentlyClickable())
         {
+            GrdOverlayCanCall.Visibility = Visibility.Collapsed;
             _overlayStoryboard.Completed += TriggerRiichiChoiceAfterOverlayStoryboard;
             InvokeOverlay(CallTypes.Riichi, _humanPlayerIndex);
         }
@@ -267,6 +270,7 @@ public partial class MainWindow : Window
     {
         if (IsCurrentlyClickable() && _game.Round.CallKyuushuKyuuhai())
         {
+            GrdOverlayCanCall.Visibility = Visibility.Collapsed;
             _overlayStoryboard.Completed += TriggerNewRoundAfterOverlayStoryboard;
             InvokeOverlay(CallTypes.KyuushuKyuuhai, _humanPlayerIndex);
         }
@@ -588,6 +592,35 @@ public partial class MainWindow : Window
         });
     }
 
+    // Runs the given action once any in-progress call announcement overlay has fully finished
+    // playing (or immediately if none is playing), so the player decision overlay never appears
+    // stacked on top of it - e.g. a kan chain, where the second kan's decision could otherwise pop
+    // up before the first kan's announcement has finished disappearing.
+    // Uses its own timer (matching the announcement's fixed duration) rather than the storyboard's
+    // own Completed event, which is already relied upon elsewhere (Ron/Tsumo/Riichi/Kyuushu Kyuuhai)
+    // for a one-shot, self-unsubscribing purpose - piling another consumer onto that same shared
+    // event risks subtle ordering/interruption issues between unrelated features.
+    private void RunAfterCallAnnouncement(Action action)
+    {
+        if (GrdOverlayCall.Visibility == Visibility.Visible)
+        {
+            var timer = new System.Windows.Threading.DispatcherTimer
+            {
+                Interval = TimeSpan.FromMilliseconds(CpuSpeedPivot.S500.ParseSpeed())
+            };
+            timer.Tick += (sender, e) =>
+            {
+                timer.Stop();
+                action();
+            };
+            timer.Start();
+        }
+        else
+        {
+            action();
+        }
+    }
+
     // Fix dimensions of the window and every panels (when it's required).
     private void FixWindowDimensions()
     {
@@ -761,11 +794,11 @@ public partial class MainWindow : Window
         };
         _game.Round.HumanCallNotifier += e =>
         {
-            Button? autoButtonOnTimer = null;
             Dispatcher.Invoke(() =>
             {
                 if (e.Call == CallTypes.NoCall)
                 {
+                    Button? autoButtonOnTimer = null;
                     var panel = this.FindPanel(PickPanel, _humanPlayerIndex);
                     if (panel.Children.Count > 0)
                     {
@@ -775,33 +808,37 @@ public partial class MainWindow : Window
                     {
                         MessageBox.Show("Le panel de réception de la pioche est vide !", "Gnoj-Ham - Warning", MessageBoxButton.OK);
                     }
+                    ActivateTimer(autoButtonOnTimer);
                 }
                 else
                 {
-                    GrdOverlayCanCall.Visibility = Visibility.Visible;
-                    BtnSkipCall.Visibility = Visibility.Visible;
-                    switch (e.Call)
+                    RunAfterCallAnnouncement(() =>
                     {
-                        case CallTypes.Riichi:
-                            BtnRiichi.Visibility = Visibility.Visible;
-                            if (e.RiichiAdvised)
-                                BtnRiichi.Foreground = Brushes.DarkMagenta;
-                            else
-                                BtnSkipCall.Foreground = Brushes.DarkMagenta;
-                            break;
-                        case CallTypes.Ron:
-                            BtnRon.Visibility = Visibility.Visible;
-                            break;
-                        case CallTypes.Tsumo:
-                            BtnTsumo.Visibility = Visibility.Visible;
-                            break;
-                        case CallTypes.KyuushuKyuuhai:
-                            BtnKyuushuKyuuhai.Visibility = Visibility.Visible;
-                            break;
-                    }
+                        GrdOverlayCanCall.Visibility = Visibility.Visible;
+                        BtnSkipCall.Visibility = Visibility.Visible;
+                        switch (e.Call)
+                        {
+                            case CallTypes.Riichi:
+                                BtnRiichi.Visibility = Visibility.Visible;
+                                if (e.RiichiAdvised)
+                                    BtnRiichi.Foreground = Brushes.DarkMagenta;
+                                else
+                                    BtnSkipCall.Foreground = Brushes.DarkMagenta;
+                                break;
+                            case CallTypes.Ron:
+                                BtnRon.Visibility = Visibility.Visible;
+                                break;
+                            case CallTypes.Tsumo:
+                                BtnTsumo.Visibility = Visibility.Visible;
+                                break;
+                            case CallTypes.KyuushuKyuuhai:
+                                BtnKyuushuKyuuhai.Visibility = Visibility.Visible;
+                                break;
+                        }
+                        ActivateTimer(null);
+                    });
                 }
             });
-            ActivateTimer(autoButtonOnTimer);
         };
         _game.Round.CallNotifier += e =>
         {
@@ -1019,9 +1056,12 @@ public partial class MainWindow : Window
             || BtnPon.Visibility == Visibility.Visible
             || BtnKan.Visibility == Visibility.Visible)
         {
-            BtnSkipCall.Visibility = Visibility.Visible;
-            GrdOverlayCanCall.Visibility = Visibility.Visible;
-            ActivateTimer(null);
+            RunAfterCallAnnouncement(() =>
+            {
+                BtnSkipCall.Visibility = Visibility.Visible;
+                GrdOverlayCanCall.Visibility = Visibility.Visible;
+                ActivateTimer(null);
+            });
         }
     }
 
