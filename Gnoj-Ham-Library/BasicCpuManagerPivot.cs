@@ -7,6 +7,10 @@ namespace Gnoj_Ham_Library;
 /// </summary>
 public class BasicCpuManagerPivot : CpuManagerBasePivot
 {
+    // the 13 distinct tile kinds a kokushi musou needs: 1 and 9 of each suit, plus every honor.
+    private static readonly IReadOnlyList<TilePivot> KokushiKinds =
+        TilePivot.GetCompleteSet(false).Where(t => t.IsHonorOrTerminal).Distinct().ToList();
+
     /// <summary>
     /// Constructor.
     /// </summary>
@@ -14,6 +18,60 @@ public class BasicCpuManagerPivot : CpuManagerBasePivot
     internal BasicCpuManagerPivot(RoundPivot round)
         : base(round)
     { }
+
+    // A bare-minimum 9-or-10-kinds start is too speculative to chase over just restarting the deal.
+    // From 11 kinds on (kokushi shanten 1 or better, counting a possible pair among them), the hand
+    // is worth pursuing instead - see CloseToKokushi, which then takes over the discard priority.
+    protected override bool KyuushuKyuuhaiDecisionInternal()
+    {
+        var kindsCount = Round.GetHand(Round.CurrentPlayerIndex).ConcealedTiles
+            .Where(t => t.IsHonorOrTerminal).Distinct().Count();
+        return kindsCount <= 10;
+    }
+
+    // Whether the hand is worth prioritizing for kokushi musou: enough distinct terminal/honor kinds
+    // held (same bar as declining Kyuushu Kyuuhai - see KyuushuKyuuhaiDecisionInternal), AND every
+    // one of the 13 needed kinds still theoretically reachable (not entirely exhausted among tiles
+    // visible to us: discards, melds, dora indicators). Recomputed fresh from the current hand and
+    // dead tiles every time it's needed, so the pursuit drops on its own once it stops making sense -
+    // no persisted "commitment" flag to go stale (same reasoning as CloseToHonitsuFamily).
+    private static bool CloseToKokushi(IReadOnlyList<TilePivot> concealedTiles, IReadOnlyList<TilePivot> deadTiles)
+    {
+        var heldKinds = concealedTiles.Where(t => t.IsHonorOrTerminal).Distinct().ToList();
+        if (heldKinds.Count < 11)
+        {
+            return false;
+        }
+
+        return KokushiKinds.All(k => heldKinds.Contains(k) || deadTiles.Count(t => t == k) < 4);
+    }
+
+    // Dedicated discard logic for an active kokushi musou pursuit (see CloseToKokushi): a special
+    // hand shape where none of the normal shape-based criteria (taatsu, triplets, honitsu family...)
+    // make sense - they're built around forming sequences/triplets/one pair per group, whereas kokushi
+    // only ever wants exactly one copy of each of the 13 kinds plus a single pair. Folding it into
+    // that same generic scoring chain would let it misfire (e.g. the "keeps brelan" criterion would
+    // protect a 3rd copy of a wind over a still-needed lone kind), so it's kept fully independent.
+    private static TilePivot KokushiDiscardDecision(IReadOnlyList<TilePivot> concealedTiles, List<TilePivot> discardableTiles)
+    {
+        // simple (non-honor/terminal) tiles are pure dead weight for kokushi: always discard first.
+        var simple = discardableTiles.FirstOrDefault(t => !t.IsHonorOrTerminal);
+        if (simple != null)
+        {
+            return simple;
+        }
+
+        // every held tile is honor/terminal: trim the most redundant kind first (a 3rd copy of a
+        // wind, or - failing that - one of several pairs, since only one pair is ever useful), never
+        // a still-lone kind, which is exactly the coverage kokushi is trying to build.
+        var mostRedundant = concealedTiles
+            .GroupBy(t => t)
+            .Where(g => g.Count() >= 2)
+            .OrderByDescending(g => g.Count())
+            .First();
+
+        return discardableTiles.First(t => t == mostRedundant.Key);
+    }
 
     protected override TilePivot DiscardDecisionInternal(
         IReadOnlyList<TilePivot> concealedTiles,
@@ -34,6 +92,13 @@ public class BasicCpuManagerPivot : CpuManagerBasePivot
         if (stopCurrentHand)
         {
             return tilesSafety[0].tile;
+        }
+
+        // kokushi musou pursuit is a special hand shape that plays by entirely different rules from
+        // here on - see KokushiDiscardDecision for why it's kept independent of the chain below.
+        if (CloseToKokushi(concealedTiles, deadTiles))
+        {
+            return KokushiDiscardDecision(concealedTiles, discardableTiles);
         }
 
         var itsuFamily = CloseToHonitsuFamily(concealedTiles);
