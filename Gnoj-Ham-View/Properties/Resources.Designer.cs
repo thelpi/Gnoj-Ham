@@ -488,5 +488,23 @@ namespace Gnoj_Ham_View.Properties {
                 return ((byte[])(obj));
             }
         }
+
+        /// <summary>
+        ///   Recherche une chaîne localisée semblable à Vent dominant : {0}.
+        /// </summary>
+        internal static string DominantWindTooltipFormat {
+            get {
+                return ResourceManager.GetString("DominantWindTooltipFormat", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Recherche une chaîne localisée semblable à N° de tour en {0}.
+        /// </summary>
+        internal static string EastTurnCountTooltipFormat {
+            get {
+                return ResourceManager.GetString("EastTurnCountTooltipFormat", resourceCulture);
+            }
+        }
     }
 }

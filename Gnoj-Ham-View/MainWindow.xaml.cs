@@ -835,9 +835,9 @@ public partial class MainWindow : Window
         StpDoras.SetDorasPanel(_game.Round.DoraIndicatorTiles, _game.Round.VisibleDorasCount);
         
         LblDominantWind.Content = _game.DominantWind.ToWindDisplay();
-        LblDominantWind.ToolTip = $"Vent dominant : {_game.DominantWind.DisplayName()}";
+        LblDominantWind.ToolTip = string.Format(Properties.Resources.DominantWindTooltipFormat, _game.DominantWind.DisplayName());
         LblEastTurnCount.Content = $"{_game.EastRank}";
-        LblEastTurnCount.ToolTip = $"N° de tour en {_game.DominantWind.DisplayName()}";
+        LblEastTurnCount.ToolTip = string.Format(Properties.Resources.EastTurnCountTooltipFormat, _game.DominantWind.DisplayName());
         
         TxtHonba.Text = _game.HonbaCount.ToString();
         TxtPendingRiichi.Text = _game.PendingRiichiCount.ToString();
