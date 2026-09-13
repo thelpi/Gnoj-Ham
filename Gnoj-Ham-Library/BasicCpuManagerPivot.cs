@@ -7,9 +7,6 @@ namespace Gnoj_Ham_Library;
 /// </summary>
 public class BasicCpuManagerPivot : CpuManagerBasePivot
 {
-    // indicates an honiisou (or chiniisou) in progress
-    private Families? _itsuFamily;
-
     /// <summary>
     /// Constructor.
     /// </summary>
@@ -39,14 +36,18 @@ public class BasicCpuManagerPivot : CpuManagerBasePivot
             return tilesSafety[0].tile;
         }
 
+        var itsuFamily = CloseToHonitsuFamily(concealedTiles);
+
         var tilesGroup =
             concealedTiles
                 .GroupBy(t => t)
-                // once committed to honitsu/chinitsu (see _itsuFamily), tiles from any other family
-                // are the very first to go: they can no longer be turned into a call (Pon/Kan/Chii
-                // are all gated on this same family), so they're pure dead weight from here on.
-                // Honors are exempt: honitsu allows the chosen suit plus any honor.
-                .OrderByDescending(t => !_itsuFamily.HasValue || t.Key.Family == _itsuFamily || t.Key.IsHonor)
+                // once close to honitsu/chinitsu (see CloseToHonitsuFamily), tiles from any other
+                // family are the very first to go: they can no longer be turned into a call (Pon/Kan/
+                // Chii are all gated on this same family), so they're pure dead weight from here on.
+                // Honors are exempt: honitsu allows the chosen suit plus any honor. Recomputed fresh
+                // from the current hand every time (see CloseToHonitsuFamily), so a hand that drifts
+                // away from honitsu stops being treated as one, instead of staying locked in forever.
+                .OrderByDescending(t => !itsuFamily.HasValue || t.Key.Family == itsuFamily || t.Key.IsHonor)
                 // keeps brelan/square
                 .ThenByDescending(t =>
                 {
@@ -100,8 +101,11 @@ public class BasicCpuManagerPivot : CpuManagerBasePivot
 
         var tenpaiOpponentIndexes = GetTenpaiOpponentIndexes(playerIndex);
 
+        // >= 66% of one family or honor
+        var closeToHonitsuFamily = CloseToHonitsuFamily(hand.ConcealedTiles);
+
         // if the hand is already opened and no opponent tenpai: takes it
-        if (!hand.IsConcealed && tenpaiOpponentIndexes.Count == 0 && (!_itsuFamily.HasValue || _itsuFamily == tile.Family))
+        if (!hand.IsConcealed && tenpaiOpponentIndexes.Count == 0 && (!closeToHonitsuFamily.HasValue || closeToHonitsuFamily == tile.Family))
         {
             return true;
         }
@@ -129,12 +133,6 @@ public class BasicCpuManagerPivot : CpuManagerBasePivot
         var hasValuablePair = hand.ConcealedTiles.GroupBy(_ => _)
             .Any(_ => _.Count() >= 2 && _.Key != tile && IsDragonOrValuableWind(_.Key, valuableWinds));
 
-        // >= 66% of one family or honor
-        var closeToHonitsuFamily = new Families?[] { Families.Bamboo, Families.Caracter, Families.Circle }
-            .FirstOrDefault(f => hand.ConcealedTiles.Count(t => t.Family == f || t.IsHonor) > 9);
-
-        _itsuFamily ??= closeToHonitsuFamily;
-
         return hasValuablePair
             || (dorasCount + redDorasCount) > 0
             || closeToHonitsuFamily.HasValue
@@ -158,13 +156,15 @@ public class BasicCpuManagerPivot : CpuManagerBasePivot
             return null;
         }
 
+        var closeToHonitsuFamily = CloseToHonitsuFamily(Round.GetHand(playerIndex).ConcealedTiles);
+
         foreach (var tile in kanPossibilities)
         {
             // Call the kan if :
             // - it's a concealed one
             // - the hand is already open
             if (concealed
-                || (!Round.GetHand(playerIndex).IsConcealed && (!_itsuFamily.HasValue || _itsuFamily == tile.Family)))
+                || (!Round.GetHand(playerIndex).IsConcealed && (!closeToHonitsuFamily.HasValue || closeToHonitsuFamily == tile.Family)))
             {
                 return tile;
             }
@@ -182,10 +182,11 @@ public class BasicCpuManagerPivot : CpuManagerBasePivot
         // - Nobody is tenpai
         // - if a honiisou or better is in progress, tile to chii should be of this family
         var tenpaiOppenentIndexes = GetTenpaiOpponentIndexes(Round.CurrentPlayerIndex);
+        var closeToHonitsuFamily = CloseToHonitsuFamily(Round.GetHand(Round.CurrentPlayerIndex).ConcealedTiles);
 
         if (Round.GetHand(Round.CurrentPlayerIndex).IsConcealed
             || tenpaiOppenentIndexes.Count > 0
-            || (_itsuFamily.HasValue && _itsuFamily != chiiTiles[0].Family))
+            || (closeToHonitsuFamily.HasValue && closeToHonitsuFamily != chiiTiles[0].Family))
         {
             return null;
         }
@@ -228,6 +229,16 @@ public class BasicCpuManagerPivot : CpuManagerBasePivot
 
         return tileChoice;
     }
+
+    // Whether the hand is close (>= 66%, honors included either way) to a single-family push
+    // (honitsu/chinitsu), and if so, which family. Recomputed fresh from the current hand every
+    // time it's needed (Pon/Kan/Chii calls and discard priority), rather than memoized once and
+    // kept for the rest of the round: a hand that only looked honitsu-shaped for a moment (e.g. a
+    // pile of unrelated honors that get discarded the very next turn) shouldn't stay "committed"
+    // long after the tiles that triggered it are gone.
+    private static Families? CloseToHonitsuFamily(IReadOnlyList<TilePivot> concealedTiles)
+        => new Families?[] { Families.Bamboo, Families.Caracter, Families.Circle }
+            .FirstOrDefault(f => concealedTiles.Count(t => t.Family == f || t.IsHonor) > 9);
 
     // Tiered "shape quality" for a tile value: a tile already locked into a complete run beats
     // everything else (breaking a finished group is always a step backwards), then an open-ended
