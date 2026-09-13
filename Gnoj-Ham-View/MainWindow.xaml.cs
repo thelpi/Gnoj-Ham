@@ -40,6 +40,7 @@ public partial class MainWindow : Window
     private bool _autoPlayRunning;
     private readonly Storyboard _overlayStoryboard;
     private bool _waitForDecision;
+    private bool _kanAdvised;
     private IReadOnlyList<TilePivot>? _riichiTiles;
     private readonly CancellationTokenSource _cancellationTokenSource = new();
     private readonly CancellationToken _cancellationToken;
@@ -928,6 +929,7 @@ public partial class MainWindow : Window
 
         var needAdvice = false;
         var advised = false;
+        _kanAdvised = false;
 
         if (preDiscard)
         {
@@ -946,7 +948,7 @@ public partial class MainWindow : Window
                         if (decisionTile != null)
                         {
                             BtnKan.Foreground = Brushes.DarkMagenta;
-                            advised = true;
+                            _kanAdvised = true;
                         }
                     }
                 }
@@ -999,11 +1001,13 @@ public partial class MainWindow : Window
                     if (decisionTile != null)
                     {
                         BtnKan.Foreground = Brushes.DarkMagenta;
-                        advised = true;
+                        _kanAdvised = true;
                     }
                 }
             }
         }
+
+        advised |= _kanAdvised;
 
         if (needAdvice && !advised)
         {
@@ -1189,6 +1193,13 @@ public partial class MainWindow : Window
     {
         if (!Properties.Settings.Default.DiscardTip)
         {
+            return;
+        }
+
+        if (_kanAdvised)
+        {
+            // A kan call is already the advised action here: suggesting a discard on top of it
+            // would contradict that advice (the two are mutually exclusive for this turn).
             return;
         }
 
