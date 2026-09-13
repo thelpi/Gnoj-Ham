@@ -19,6 +19,7 @@ public partial class MainWindow : Window
     private const string WINDOW_TITLE = "Gnoj-Ham";
     public const string StyleHighlightTileResourceName = "StyleHighlightTile";
     public const string OverlayStoryboardResourceName = "StbHideOverlay";
+    public const string WallTileSizeRateResourceName = "WallTileSizeRate";
 
     private string PickPanel => StpPickP0.Name[..^1];
     private string HandPanel => StpHandP0.Name[..^1];
@@ -1044,7 +1045,7 @@ public partial class MainWindow : Window
             }
         }
 
-        const double WallTileSizeRate = 0.2;
+        var wallTileSizeRate = (double)FindResource(WallTileSizeRateResourceName);
 
         // every tile to display in 4 walls
         // two tile stacked so we need half the count
@@ -1061,7 +1062,7 @@ public partial class MainWindow : Window
 
             for (var oneTile = 1; oneTile <= tilesCountForThisWall; oneTile++)
             {
-                wallPanel.Children.Add(new TileButton(null, null, iWall % 2 == 0 ? AnglePivot.A0 : AnglePivot.A90, true, WallTileSizeRate));
+                wallPanel.Children.Add(new TileButton(null, null, iWall % 2 == 0 ? AnglePivot.A0 : AnglePivot.A90, true, wallTileSizeRate));
             }
 
             tilesExpectedCoeff--;

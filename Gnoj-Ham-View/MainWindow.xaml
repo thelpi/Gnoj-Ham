@@ -4,6 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:loc="clr-namespace:Gnoj_Ham_View"
+        xmlns:sys="clr-namespace:System;assembly=mscorlib"
         mc:Ignorable="d"
         Background="Gainsboro"
         WindowStartupLocation="CenterScreen"
@@ -19,6 +20,7 @@
         <Style x:Key="{x:Static loc:MainWindow.StyleHighlightTileResourceName}" TargetType="Button">
             <Setter Property="Background" Value="DarkMagenta" />
         </Style>
+        <sys:Double x:Key="{x:Static loc:MainWindow.WallTileSizeRateResourceName}">0.2</sys:Double>
     </Window.Resources>
     <DockPanel Margin="5">
         <!-- Configuration expander -->
@@ -345,7 +347,7 @@
                     </StackPanel>
                     <Label Grid.Row="4" Grid.RowSpan="2" Grid.Column="4" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="20" Name="LblWallTilesLeft" ToolTip="Tuiles restantes dans le mur." />
                     <!-- Four walls -->
-                    <!-- Any change on dimensions here should impact the "WallTileSizeRate" value on the code behind -->
+                    <!-- Any change on dimensions here should impact the "WallTileSizeRate" resource value above -->
                     <Border BorderBrush="#d8d6c8" BorderThickness="0.5" Width="154" Height="13" Grid.Row="0" Grid.Column="1" Grid.ColumnSpan="4">
                         <StackPanel HorizontalAlignment="Right" Name="PnlWall2" Orientation="Horizontal" />
                     </Border>
