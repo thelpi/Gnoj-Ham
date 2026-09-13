@@ -228,16 +228,24 @@ public class BasicCpuManagerPivot : CpuManagerBasePivot
         return tileChoice;
     }
 
-    // Tiered "shape quality" for a tile value: an open-ended ryanmen (e.g. 2-3, waits on two tile
-    // types) beats an ordinary pair (backup pair / shanpon / triplet potential), which itself beats
-    // a one-sided kanchan/penchan (e.g. 1-3 or 1-2, waits on a single tile type), which beats an
-    // isolated tile with no shape at all.
+    // Tiered "shape quality" for a tile value: a tile already locked into a complete run beats
+    // everything else (breaking a finished group is always a step backwards), then an open-ended
+    // ryanmen (e.g. 2-3, waits on two tile types), then an ordinary pair (backup pair / shanpon /
+    // triplet potential), then a one-sided kanchan/penchan (e.g. 1-3 or 1-2, waits on a single tile
+    // type), then an isolated tile with no shape at all.
     private int TaatsuQuality(TilePivot key, IReadOnlyList<TilePivot> concealedTiles)
     {
         var m2 = concealedTiles.Any(t => t.Family == key.Family && t.Number == key.Number - 2);
         var m1 = concealedTiles.Any(t => t.Family == key.Family && t.Number == key.Number - 1);
         var p1 = concealedTiles.Any(t => t.Family == key.Family && t.Number == key.Number + 1);
         var p2 = concealedTiles.Any(t => t.Family == key.Family && t.Number == key.Number + 2);
+
+        // already the tail, middle or head of a complete run in hand - breaking it up would undo
+        // finished work, so it outranks every still-incomplete shape below.
+        if ((m2 && m1) || (m1 && p1) || (p1 && p2))
+        {
+            return 4;
+        }
 
         // a consecutive pair (n, n+1) is a ryanmen unless it sits on the 1-2 or 8-9 edge (penchan)
         var ryanmenAsUpperTile = m1 && key.Number is >= 3 and <= 8;
