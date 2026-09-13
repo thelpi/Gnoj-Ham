@@ -1,4 +1,5 @@
 ﻿using System.Windows;
+using System.Windows.Controls;
 
 namespace Gnoj_Ham_View;
 
@@ -8,6 +9,13 @@ namespace Gnoj_Ham_View;
 public partial class App : Application
 {
     private const double MinimalHeightResolution = 1024;
+
+    static App()
+    {
+        ToolTipService.InitialShowDelayProperty.OverrideMetadata(
+            typeof(FrameworkElement),
+            new FrameworkPropertyMetadata(50));
+    }
 
     private void Application_Startup(object sender, StartupEventArgs e)
     {
