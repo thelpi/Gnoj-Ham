@@ -5,7 +5,8 @@ Points notés en cours de route, pas traités tout de suite.
 ## Moteur (Gnoj-Ham-Library)
 
 - [ ] `BasicCpuManagerPivot` : aucune anticipation (décisions purement locales/heuristiques) alors que le moteur est un simulateur parfait déjà disponible — une recherche Monte Carlo/expectimax à quelques coups d'avance pourrait renforcer le CPU sans aller jusqu'au RL/deep learning complet.
-- [ ] `BasicCpuManagerPivot` : aucune prise en compte du furiten dans les décisions (défausse, riichi) — seule la règle est appliquée a posteriori au moment d'un Ron (`HandPivot.CancelYakusIfFuriten`). Fréquence réelle à mesurer (scan de parties simulées) avant de juger si un correctif est utile.
+- [ ] `BasicCpuManagerPivot` : aucune prise en compte du furiten dans les décisions (défausse, riichi) — seule la règle est appliquée a posteriori au moment d'un Ron (`HandPivot.CancelYakusIfFuriten`). Mesuré par scan (150 parties simulées, 1573 manches) : ~7% des manches voient au moins un joueur passer tenpai-furiten à un moment donné (110/1573) — pas un cas marginal, un correctif semble utile.
+- [ ] `BasicCpuManagerPivot.DiscardDecisionInternal` : la chiitoitsu (7 paires) n'a pas de logique de défausse dédiée, comme le kokushi musou vient d'en recevoir une (`KokushiDiscardDecision`) — la grille générale la dessert probablement de la même façon (ex. le critère "garde brelan/carré" est activement néfaste pour une main en 7 paires, où un 3ème exemplaire est un poids mort).
 
 ## Interface WPF (Gnoj-Ham-View)
 
