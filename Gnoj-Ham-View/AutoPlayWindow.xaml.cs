@@ -10,10 +10,15 @@ namespace Gnoj_Ham_View;
 /// </summary>
 public partial class AutoPlayWindow : Window
 {
+    // Used as the estimated rounds-per-game before any game in this batch has actually completed.
+    private const double DefaultEstimatedRoundsPerGame = 10;
+
     private GamePivot? _game;
     private int _currentGameIndex;
     private int _totalGamesCount;
     private IReadOnlyList<PlayerPivot>? _permanentCpuPlayers;
+    private int _roundsPlayedInCurrentGame;
+    private int _roundsPlayedAcrossCompletedGames;
 
     private readonly RulePivot _ruleset;
     private readonly CancellationTokenSource _cancellationTokenSource = new();
@@ -42,6 +47,7 @@ public partial class AutoPlayWindow : Window
         if (newGame)
         {
             _game = new GamePivot(_ruleset, _permanentCpuPlayers!, new Random());
+            _roundsPlayedInCurrentGame = 0;
         }
 
         var result = await Task.Run(() => _game!.Round.RunAutoPlay(_cancellationToken));
@@ -52,13 +58,15 @@ public partial class AutoPlayWindow : Window
         }
 
         var endOfRoundInfo = _game!.NextRound(result.RonPlayerId);
+        _roundsPlayedInCurrentGame++;
 
         if (endOfRoundInfo.EndOfGame)
         {
             _game.ComputeCurrentRanking();
+            _roundsPlayedAcrossCompletedGames += _roundsPlayedInCurrentGame;
 
             _currentGameIndex++;
-            PgbGames.Value = _currentGameIndex / (double)_totalGamesCount;
+            SetProgress(_currentGameIndex / (double)_totalGamesCount);
             if (_currentGameIndex < _totalGamesCount)
             {
                 RunAutoPlay(true);
@@ -75,26 +83,27 @@ public partial class AutoPlayWindow : Window
         }
         else
         {
-            // East, South, West, North: up to 4 possible wind phases in a single game (the last two
-            // only happen under the "Enchousen" rule, when nobody reaches the target score by the end
-            // of South). South/West/North used to all be treated as the same "second half" with
-            // EastRank resetting to 1 at each transition, so entering an Enchousen extension made the
-            // estimate drop back down instead of moving forward - this indexes the wind itself too, so
-            // it only ever increases.
-            var windPhaseIndex = _game.DominantWind switch
-            {
-                Winds.East => 0,
-                Winds.South => 1,
-                Winds.West => 2,
-                _ => 3 // Winds.North
-            };
-            var currentGameProgression = (windPhaseIndex * 4 + (_game.EastRank - 1)) / 16.0;
+            // Estimates progress through the current (still in-progress) game as its round count
+            // against the average rounds-per-game observed so far in this batch (a fixed fallback
+            // before any game has completed) - much finer-grained than reasoning about wind phases,
+            // and naturally handles Enchousen extensions without any special-casing. Capped short of
+            // 100% since it's only an estimate: the game isn't actually over yet.
+            var averageRoundsPerGame = _currentGameIndex > 0
+                ? _roundsPlayedAcrossCompletedGames / (double)_currentGameIndex
+                : DefaultEstimatedRoundsPerGame;
+            var currentGameProgression = Math.Min(0.95, _roundsPlayedInCurrentGame / averageRoundsPerGame);
 
-            // adds to th current value (based on number of games)
-            PgbGames.Value = (_currentGameIndex / (double)_totalGamesCount) + (currentGameProgression * (1 / (double)_totalGamesCount));
+            SetProgress((_currentGameIndex / (double)_totalGamesCount) + (currentGameProgression / (double)_totalGamesCount));
 
             RunAutoPlay(false);
         }
+    }
+
+    // The rounds-per-game estimate isn't exact, so a game running longer than average could make it
+    // dip relative to the previous update - this keeps the bar from ever visibly going backwards.
+    private void SetProgress(double value)
+    {
+        PgbGames.Value = Math.Max(PgbGames.Value, value);
     }
 
     private void BtnStart_Click(object sender, RoutedEventArgs e)
@@ -106,7 +115,9 @@ public partial class AutoPlayWindow : Window
         }
 
         _currentGameIndex = 0;
+        _roundsPlayedAcrossCompletedGames = 0;
         _permanentCpuPlayers = PlayerPivot.BuildPlayers(null);
+        PgbGames.Value = 0;
 
         WaitingPanel.Visibility = Visibility.Visible;
         ActionPanel.Visibility = Visibility.Collapsed;
