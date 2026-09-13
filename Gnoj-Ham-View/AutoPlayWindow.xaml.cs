@@ -11,7 +11,6 @@ namespace Gnoj_Ham_View;
 public partial class AutoPlayWindow : Window
 {
     private GamePivot? _game;
-    private readonly BackgroundWorker _autoPlay;
     private int _currentGameIndex;
     private int _totalGamesCount;
     private IReadOnlyList<PlayerPivot>? _permanentCpuPlayers;
@@ -30,13 +29,6 @@ public partial class AutoPlayWindow : Window
     {
         InitializeComponent();
 
-        _autoPlay = new BackgroundWorker
-        {
-            WorkerReportsProgress = true,
-            WorkerSupportsCancellation = false
-        };
-        InitializeAutoPlayWorker();
-
         _ruleset = ruleset;
         _cancellationToken = _cancellationTokenSource.Token;
     }
@@ -46,72 +38,56 @@ public partial class AutoPlayWindow : Window
         _cancellationTokenSource.Cancel();
     }
 
-    // Starts the background worker.
-    private void RunAutoPlay(bool newGame)
+    // Runs the CPU auto-play off the UI thread, then applies its result back on the UI thread.
+    private async void RunAutoPlay(bool newGame)
     {
         if (newGame)
         {
             _game = new GamePivot(_ruleset, _permanentCpuPlayers!, new Random());
         }
-        _autoPlay.RunWorkerAsync();
-    }
 
-    // Initializes a background worker which orchestrates the CPU actions.
-    private void InitializeAutoPlayWorker()
-    {
-        _autoPlay.DoWork += delegate (object? sender, DoWorkEventArgs evt)
+        var result = await Task.Run(() => _game!.Round.RunAutoPlay(_cancellationToken));
+
+        if (_cancellationToken.IsCancellationRequested)
         {
-            var result = _game!.Round.RunAutoPlay(_cancellationToken);
-            evt.Result = result.RonPlayerId;
-        };
-        _autoPlay.RunWorkerCompleted += delegate (object? sender, RunWorkerCompletedEventArgs evt)
+            return;
+        }
+
+        var endOfRoundInfo = _game!.NextRound(result.RonPlayerId);
+
+        if (endOfRoundInfo.EndOfGame)
         {
-            if (evt.Error != null)
+            _game.ComputeCurrentRanking();
+
+            _currentGameIndex++;
+            PgbGames.Value = _currentGameIndex / (double)_totalGamesCount;
+            if (_currentGameIndex < _totalGamesCount)
             {
-                // Without this, evt.Result stays null and gets silently treated as a ryuukyoku
-                // (ronPlayerIndex: null) below instead of surfacing the real exception.
-                throw evt.Error;
+                RunAutoPlay(true);
             }
-
-            if (!_cancellationToken.IsCancellationRequested)
+            else
             {
-                var endOfRoundInfo = _game!.NextRound((PlayerIndices?)evt.Result);
+                ScoresList.ItemsSource = _permanentCpuPlayers;
 
-                if (endOfRoundInfo.EndOfGame)
-                {
-                    _game.ComputeCurrentRanking();
-
-                    _currentGameIndex++;
-                    PgbGames.Value = _currentGameIndex / (double)_totalGamesCount;
-                    if (_currentGameIndex < _totalGamesCount)
-                    {
-                        RunAutoPlay(true);
-                    }
-                    else
-                    {
-                        ScoresList.ItemsSource = _permanentCpuPlayers;
-
-                        WaitingPanel.Visibility = Visibility.Collapsed;
-                        ActionPanel.Visibility = Visibility.Visible;
-                        ScoresList.Visibility = Visibility.Visible;
-                        WindowState = WindowState.Maximized;
-                    }
-                }
-                else
-                {
-                    // if we are in south (or post-south) : +50%
-                    var currentGameProgression = _game.DominantWind == Winds.East ? 0 : 0.5;
-
-                    // +12.5% for each "East" turn (it's not really accurate as a player can keep "East" several turns)
-                    currentGameProgression += (_game.EastRank - 1) * 0.125;
-
-                    // adds to th current value (based on number of games)
-                    PgbGames.Value = (_currentGameIndex / (double)_totalGamesCount) + (currentGameProgression * (1 / (double)_totalGamesCount));
-
-                    RunAutoPlay(false);
-                }
+                WaitingPanel.Visibility = Visibility.Collapsed;
+                ActionPanel.Visibility = Visibility.Visible;
+                ScoresList.Visibility = Visibility.Visible;
+                WindowState = WindowState.Maximized;
             }
-        };
+        }
+        else
+        {
+            // if we are in south (or post-south) : +50%
+            var currentGameProgression = _game.DominantWind == Winds.East ? 0 : 0.5;
+
+            // +12.5% for each "East" turn (it's not really accurate as a player can keep "East" several turns)
+            currentGameProgression += (_game.EastRank - 1) * 0.125;
+
+            // adds to th current value (based on number of games)
+            PgbGames.Value = (_currentGameIndex / (double)_totalGamesCount) + (currentGameProgression * (1 / (double)_totalGamesCount));
+
+            RunAutoPlay(false);
+        }
     }
 
     private void BtnStart_Click(object sender, RoutedEventArgs e)

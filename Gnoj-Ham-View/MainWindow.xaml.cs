@@ -37,7 +37,7 @@ public partial class MainWindow : Window
     private readonly System.Media.SoundPlayer _tickSound;
     private System.Timers.Timer? _timer;
     private System.Timers.ElapsedEventHandler? _currentTimerHandler;
-    private readonly BackgroundWorker _autoPlay;
+    private bool _autoPlayRunning;
     private readonly Storyboard _overlayStoryboard;
     private bool _waitForDecision;
     private IReadOnlyList<TilePivot>? _riichiTiles;
@@ -77,13 +77,6 @@ public partial class MainWindow : Window
         FixWindowDimensions();
 
         NewRoundRefresh();
-
-        _autoPlay = new BackgroundWorker
-        {
-            WorkerReportsProgress = false,
-            WorkerSupportsCancellation = false
-        };
-        InitializeAutoPlayWorker();
 
         BindConfiguration();
 
@@ -352,7 +345,7 @@ public partial class MainWindow : Window
     // call buttons has been proposed and rejected
     private void CancelCallProcess()
     {
-        if (_autoPlay.IsBusy || _waitForDecision)
+        if (_autoPlayRunning || _waitForDecision)
         {
             return;
         }
@@ -411,51 +404,6 @@ public partial class MainWindow : Window
         }
     }
 
-    // Initializes a background worker which orchestrates the CPU actions.
-    private void InitializeAutoPlayWorker()
-    {
-        _autoPlay.DoWork += delegate (object? sender, DoWorkEventArgs evt)
-        {
-            var argumentsList = (evt.Argument as object?[])!;
-
-            evt.Result = _game.Round.RunAutoPlay(
-                _cancellationToken,
-                Convert.ToBoolean(argumentsList[0]),
-                Convert.ToBoolean(argumentsList[1]),
-                Properties.Settings.Default.AutoCallMahjong,
-                Properties.Settings.Default.DiscardTip,
-                ((TilePivot, PlayerIndices?)?)argumentsList[2],
-                ((CpuSpeedPivot)Properties.Settings.Default.CpuSpeed).ParseSpeed());
-        };
-        _autoPlay.RunWorkerCompleted += delegate (object? sender, RunWorkerCompletedEventArgs evt)
-        {
-            if (evt.Error != null)
-            {
-                // Surfaces the real exception instead of the NullReferenceException that would
-                // otherwise come from casting the (null) evt.Result below.
-                throw evt.Error;
-            }
-
-            if (!_cancellationToken.IsCancellationRequested)
-            {
-                var result = (AutoPlayResultPivot)evt.Result!;
-                if (result.EndOfRound)
-                {
-                    NewRound(result.RonPlayerId);
-                }
-                else
-                {
-                    var button = result.HumanCall.HasValue
-                        ? (result.HumanCall.Value.call == CallTypes.NoCall
-                            ? new PanelButton(PickPanel, 0)
-                            : new PanelButton($"{ActionButton}{result.HumanCall.Value.call}", -1))
-                        : null;
-                    RaiseButtonClickEvent(button);
-                }
-            }
-        };
-    }
-
     // Proceeds to new round.
     private void NewRound(PlayerIndices? ronPlayerIndex)
     {
@@ -484,12 +432,49 @@ public partial class MainWindow : Window
         }
     }
 
-    // Starts the background worker.
-    private void RunAutoPlay(bool skipCurrentAction = false, bool humanRonPending = false, (TilePivot compensationTile, PlayerIndices? previousPlayerIndex)? humanKanCompensation = null)
+    // Runs the CPU auto-play off the UI thread, then applies its result back on the UI thread.
+    private async void RunAutoPlay(bool skipCurrentAction = false, bool humanRonPending = false, (TilePivot compensationTile, PlayerIndices? previousPlayerIndex)? humanKanCompensation = null)
     {
-        if (!_autoPlay.IsBusy)
+        if (_autoPlayRunning)
         {
-            _autoPlay.RunWorkerAsync(new object?[] { skipCurrentAction, humanRonPending, humanKanCompensation });
+            return;
+        }
+
+        _autoPlayRunning = true;
+        AutoPlayResultPivot result;
+        try
+        {
+            result = await Task.Run(() => _game.Round.RunAutoPlay(
+                _cancellationToken,
+                skipCurrentAction,
+                humanRonPending,
+                Properties.Settings.Default.AutoCallMahjong,
+                Properties.Settings.Default.DiscardTip,
+                humanKanCompensation,
+                ((CpuSpeedPivot)Properties.Settings.Default.CpuSpeed).ParseSpeed()));
+        }
+        finally
+        {
+            _autoPlayRunning = false;
+        }
+
+        if (_cancellationToken.IsCancellationRequested)
+        {
+            return;
+        }
+
+        if (result.EndOfRound)
+        {
+            NewRound(result.RonPlayerId);
+        }
+        else
+        {
+            var button = result.HumanCall.HasValue
+                ? (result.HumanCall.Value.call == CallTypes.NoCall
+                    ? new PanelButton(PickPanel, 0)
+                    : new PanelButton($"{ActionButton}{result.HumanCall.Value.call}", -1))
+                : null;
+            RaiseButtonClickEvent(button);
         }
     }
 
@@ -1102,7 +1087,7 @@ public partial class MainWindow : Window
     // Checks if the button clicked was ready.
     private bool IsCurrentlyClickable()
     {
-        var isCurrentlyClickable = !_autoPlay.IsBusy;
+        var isCurrentlyClickable = !_autoPlayRunning;
 
         if (isCurrentlyClickable)
         {
