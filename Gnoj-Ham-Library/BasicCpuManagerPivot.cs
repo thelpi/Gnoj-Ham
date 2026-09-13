@@ -73,6 +73,94 @@ public class BasicCpuManagerPivot : CpuManagerBasePivot
         return discardableTiles.First(t => t == mostRedundant.Key);
     }
 
+    // Worth prioritizing chiitoitsu (seven pairs): at least 5 distinct pairs already, not building
+    // toward toitoi/sanankou instead (2+ triplets - a triplet is dead weight here, a third copy can
+    // never become a second distinct pair), fewer than 3 complete sequences found in an alternate,
+    // non-pair reading of the same tiles (a hand that reads just as well as a near-complete normal
+    // hand shouldn't be pulled toward chiitoitsu instead), and not already shaped for iipeikou (two
+    // identical sequences), which chiitoitsu can't coexist with either. A hand exactly at 6 pairs is
+    // tenpai already (handled upstream by the normal tenpai branch) - this only ever matters for the
+    // non-tenpai case, so 5 is the meaningful bar here. Recomputed fresh from the current hand every
+    // time it's needed, same reasoning as CloseToHonitsuFamily and CloseToKokushi.
+    private static bool CloseToChiitoitsu(IReadOnlyList<TilePivot> concealedTiles)
+    {
+        var pairsCount = concealedTiles.GroupBy(t => t).Count(g => g.Count() >= 2);
+        if (pairsCount < 5)
+        {
+            return false;
+        }
+
+        var triplesCount = concealedTiles.GroupBy(t => t).Count(g => g.Count() >= 3);
+        if (triplesCount >= 2)
+        {
+            return false;
+        }
+
+        var (completeSuitesCount, hasIipeikou) = CountCompleteSuites(concealedTiles);
+        return completeSuitesCount < 3 && !hasIipeikou;
+    }
+
+    // Greedy, non-overlapping count of complete sequences per suit family, reading the hand's tiles
+    // as runs rather than pairs - plus whether two of those sequences turn out identical (the shape
+    // iipeikou needs, which chiitoitsu can't share tiles with either).
+    private static (int count, bool hasDuplicate) CountCompleteSuites(IReadOnlyList<TilePivot> concealedTiles)
+    {
+        var foundSuites = new List<(Families family, byte start)>();
+
+        foreach (var family in new[] { Families.Caracter, Families.Circle, Families.Bamboo })
+        {
+            var remaining = concealedTiles.Where(t => t.Family == family).Select(t => t.Number).OrderBy(n => n).ToList();
+            for (byte n = 1; n <= 7; n++)
+            {
+                while (remaining.Contains(n) && remaining.Contains((byte)(n + 1)) && remaining.Contains((byte)(n + 2)))
+                {
+                    remaining.Remove(n);
+                    remaining.Remove((byte)(n + 1));
+                    remaining.Remove((byte)(n + 2));
+                    foundSuites.Add((family, n));
+                }
+            }
+        }
+
+        return (foundSuites.Count, foundSuites.GroupBy(f => f).Any(g => g.Count() >= 2));
+    }
+
+    // Dedicated discard logic for an active chiitoitsu pursuit (see CloseToChiitoitsu): like kokushi,
+    // a special shape the generic criteria don't fit - a triplet is actively harmful here (a 3rd
+    // copy can never count as a second pair), and taatsu/ryanmen shape is irrelevant.
+    private static TilePivot ChiitoitsuDiscardDecision(IReadOnlyList<TilePivot> concealedTiles, List<TilePivot> discardableTiles, IReadOnlyList<TilePivot> deadTiles)
+    {
+        // a 3rd (or 4th) copy of an already-paired kind is dead weight: it can never become a second
+        // distinct pair, so it's always the first to go.
+        var overPaired = concealedTiles.GroupBy(t => t).Where(g => g.Count() >= 3).OrderByDescending(g => g.Count()).FirstOrDefault();
+        if (overPaired != null)
+        {
+            return discardableTiles.First(t => t == overPaired.Key);
+        }
+
+        // otherwise, every held tile is either a genuine pair (keep) or a still-lone single: discard
+        // the single with the fewest remaining live copies elsewhere - it's the least likely to ever
+        // actually pair up.
+        var singles = concealedTiles.GroupBy(t => t).Where(g => g.Count() == 1).Select(g => g.Key).ToList();
+        if (singles.Count > 0)
+        {
+            var worst = singles.OrderBy(k => 3 - deadTiles.Count(t => t == k)).First();
+            return discardableTiles.First(t => t == worst);
+        }
+
+        // every kind already paired (would mean a complete/won hand): shouldn't happen here, but
+        // stay safe rather than throw.
+        return discardableTiles[0];
+    }
+
+    // True while either kokushi musou or chiitoitsu is being pursued (see CloseToKokushi and
+    // CloseToChiitoitsu): both require a fully concealed hand, so no Pon/Chii/Kan call should ever
+    // be accepted while either is in play - even a concealed kan, which would still burn two tiles
+    // that could have gone toward two other needed kinds (kokushi), or is outright illegal for
+    // chiitoitsu (which forbids any group of four identical tiles).
+    private static bool PursuingClosedHandOnly(IReadOnlyList<TilePivot> concealedTiles, IReadOnlyList<TilePivot> deadTiles)
+        => CloseToKokushi(concealedTiles, deadTiles) || CloseToChiitoitsu(concealedTiles);
+
     protected override TilePivot DiscardDecisionInternal(
         IReadOnlyList<TilePivot> concealedTiles,
         List<TilePivot> discardableTiles,
@@ -94,11 +182,17 @@ public class BasicCpuManagerPivot : CpuManagerBasePivot
             return tilesSafety[0].tile;
         }
 
-        // kokushi musou pursuit is a special hand shape that plays by entirely different rules from
-        // here on - see KokushiDiscardDecision for why it's kept independent of the chain below.
+        // kokushi musou and chiitoitsu pursuits are special hand shapes that play by entirely
+        // different rules from here on - see KokushiDiscardDecision/ChiitoitsuDiscardDecision for why
+        // they're kept independent of the chain below.
         if (CloseToKokushi(concealedTiles, deadTiles))
         {
             return KokushiDiscardDecision(concealedTiles, discardableTiles);
+        }
+
+        if (CloseToChiitoitsu(concealedTiles))
+        {
+            return ChiitoitsuDiscardDecision(concealedTiles, discardableTiles, deadTiles);
         }
 
         var itsuFamily = CloseToHonitsuFamily(concealedTiles);
@@ -164,6 +258,12 @@ public class BasicCpuManagerPivot : CpuManagerBasePivot
 
         var hand = Round.GetHand(playerIndex);
 
+        // pursuing kokushi or chiitoitsu requires staying fully concealed - never break it for a pon.
+        if (hand.IsConcealed && PursuingClosedHandOnly(hand.ConcealedTiles, Round.DeadTilesFromIndexPointOfView(playerIndex)))
+        {
+            return false;
+        }
+
         var tenpaiOpponentIndexes = GetTenpaiOpponentIndexes(playerIndex);
 
         // >= 66% of one family or honor
@@ -218,6 +318,15 @@ public class BasicCpuManagerPivot : CpuManagerBasePivot
         if (!meIsTenpai && GetTenpaiOpponentIndexes(playerIndex).Count > 0)
         {
             // riichi or opponents close to win: no call
+            return null;
+        }
+
+        // pursuing kokushi or chiitoitsu requires staying fully concealed - never break it for a kan,
+        // not even a concealed one: it still burns two tiles that could cover two other kokushi kinds,
+        // and is outright illegal for chiitoitsu (no group of four identical tiles allowed).
+        if (Round.GetHand(playerIndex).IsConcealed
+            && PursuingClosedHandOnly(Round.GetHand(playerIndex).ConcealedTiles, Round.DeadTilesFromIndexPointOfView(playerIndex)))
+        {
             return null;
         }
 

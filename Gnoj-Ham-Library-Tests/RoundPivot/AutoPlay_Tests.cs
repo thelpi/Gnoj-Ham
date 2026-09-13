@@ -6,24 +6,24 @@ public class AutoPlay_Tests
 {
     private readonly Dictionary<int, (string pName, int points)[]> _expected = new()
     {
-        { 1000, new[] { ("CPU_0", 35900), ("CPU_2", 30800), ("CPU_3", 25300), ("CPU_1", 8000) } },
-        { 666, new[] { ("CPU_0", 45500), ("CPU_1", 24000), ("CPU_3", 17500), ("CPU_2", 13000) } },
-        { 999999, new[] { ("CPU_2", 47600), ("CPU_1", 40800), ("CPU_3", 12600), ("CPU_0", -1000) } },
-        { 123456, new[] { ("CPU_1", 37600), ("CPU_0", 25400), ("CPU_2", 21900), ("CPU_3", 15100) } },
-        { 789456, new[] { ("CPU_1", 35800), ("CPU_0", 27200), ("CPU_3", 20700), ("CPU_2", 16300) } },
-        { 187543, new[] { ("CPU_3", 60000), ("CPU_1", 34000), ("CPU_0", 16600), ("CPU_2", -10600) } },
+        { 1000, new[] { ("CPU_0", 33800), ("CPU_2", 26200), ("CPU_3", 23400), ("CPU_1", 16600) } },
+        { 666, new[] { ("CPU_0", 55400), ("CPU_1", 37200), ("CPU_3", 5800), ("CPU_2", 1600) } },
+        { 999999, new[] { ("CPU_3", 40900), ("CPU_1", 27900), ("CPU_2", 24500), ("CPU_0", 6700) } },
+        { 123456, new[] { ("CPU_1", 44200), ("CPU_0", 25600), ("CPU_3", 20000), ("CPU_2", 10200) } },
+        { 789456, new[] { ("CPU_1", 38100), ("CPU_0", 22100), ("CPU_3", 20600), ("CPU_2", 19200) } },
+        { 187543, new[] { ("CPU_3", 60600), ("CPU_1", 29600), ("CPU_0", 18800), ("CPU_2", -9000) } },
         // seed=5: natural abortive draw (ryuukyoku) somewhere in the game
-        { 5, new[] { ("CPU_2", 33300), ("CPU_0", 29900), ("CPU_1", 27400), ("CPU_3", 9400) } },
+        { 5, new[] { ("CPU_0", 58900), ("CPU_3", 22800), ("CPU_2", 18900), ("CPU_1", -600) } },
         // seed=57: natural simultaneous ron from multiple winners on the same discard
-        { 57, new[] { ("CPU_0", 38300), ("CPU_3", 31400), ("CPU_2", 22900), ("CPU_1", 7400) } },
-        // seed=415: natural chain of 2 kans by PlayerIndices.Zero alone within a single round (round 5)
+        { 57, new[] { ("CPU_3", 44500), ("CPU_0", 30300), ("CPU_1", 16400), ("CPU_2", 8800) } },
+        // seed=183: natural chain of 2 kans by PlayerIndices.Zero alone within a single round (round 7)
         // - covers "the human seat does several kans in a row" in a natural, non-rigged game
-        { 415, new[] { ("CPU_3", 39800), ("CPU_0", 33300), ("CPU_1", 13500), ("CPU_2", 13400) } },
-        // seed=345: natural yakuman win (PlayerIndices.Two)
-        { 345, new[] { ("CPU_2", 90000), ("CPU_1", 21400), ("CPU_3", 300), ("CPU_0", -11700) } },
+        { 183, new[] { ("CPU_0", 45700), ("CPU_2", 22500), ("CPU_3", 18800), ("CPU_1", 13000) } },
+        // seed=742: natural yakuman win (PlayerIndices.One)
+        { 742, new[] { ("CPU_1", 68000), ("CPU_0", 26000), ("CPU_2", 9000), ("CPU_3", -3000) } },
         // seed=638: natural chain of 2 kans by a single non-zero player (PlayerIndices.Two, round 5)
-        // within a single round - "a CPU does 2 kans in a row" (as opposed to seed=415's PlayerIndices.Zero)
-        { 638, new[] { ("CPU_2", 46400), ("CPU_1", 29400), ("CPU_3", 23500), ("CPU_0", 700) } }
+        // within a single round - "a CPU does 2 kans in a row" (as opposed to seed=183's PlayerIndices.Zero)
+        { 638, new[] { ("CPU_2", 47500), ("CPU_1", 29700), ("CPU_3", 22800), ("CPU_0", 0) } }
     };
 
     [Theory]
@@ -35,8 +35,8 @@ public class AutoPlay_Tests
     [InlineData(187543)]
     [InlineData(5)]
     [InlineData(57)]
-    [InlineData(415)]
-    [InlineData(345)]
+    [InlineData(183)]
+    [InlineData(742)]
     [InlineData(638)]
     public void AutoPlay_GeneratesExpectedRound(int seed)
     {
