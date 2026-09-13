@@ -1,4 +1,4 @@
-﻿<Window x:Class="Gnoj_Ham_View.IntroWindow"
+<Window x:Class="Gnoj_Ham_View.IntroWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -18,6 +18,23 @@
     so the window settles at that height regardless of which tab ends up selected. No more manual
     Height resync needed when a tab's content grows.
     -->
+    <Window.Resources>
+        <!-- Every label in this window is a right-aligned row caption; every combo box and check box
+             share the same row sizing/alignment. Three combo boxes in the "Règles" tab still set their
+             own Margin explicitly (they need extra vertical padding their row height doesn't give them). -->
+        <Style TargetType="Label">
+            <Setter Property="HorizontalContentAlignment" Value="Right" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+        </Style>
+        <Style TargetType="ComboBox">
+            <Setter Property="Height" Value="25" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+        </Style>
+        <Style TargetType="CheckBox">
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="Margin" Value="5, 0, 0, 0" />
+        </Style>
+    </Window.Resources>
     <DockPanel Margin="5">
         <DockPanel DockPanel.Dock="Bottom" Margin="0, 10, 0, 0">
             <Button DockPanel.Dock="Left" Width="75" Height="25" Content="Réinitialiser" Name="BtnReset" Click="BtnReset_Click" ToolTip="Recharge la dernière configuration sauvegardée (annule les changements non enregistrés de cette session)." />
@@ -42,18 +59,18 @@
                             <RowDefinition Height="30" />
                             <RowDefinition Height="30" />
                         </Grid.RowDefinitions>
-                        <Label Grid.Column="0" Grid.Row="0" HorizontalContentAlignment="Right" VerticalContentAlignment="Center" Content="Nom du joueur" />
-                        <Label Grid.Column="0" Grid.Row="1" HorizontalContentAlignment="Right" VerticalContentAlignment="Center" Content="Chrono" />
-                        <Label Grid.Column="0" Grid.Row="2" HorizontalContentAlignment="Right" VerticalContentAlignment="Center" Content="Vitesse des adversaires" />
-                        <Label Grid.Column="0" Grid.Row="3" HorizontalContentAlignment="Right" VerticalContentAlignment="Center" Content="Sons" />
-                        <Label Grid.Column="0" Grid.Row="4" HorizontalContentAlignment="Right" VerticalContentAlignment="Center" Content="Victoire automatique" />
-                        <Label Grid.Column="0" Grid.Row="5" HorizontalContentAlignment="Right" VerticalContentAlignment="Center" Content="Assistance à la décision" />
+                        <Label Grid.Column="0" Grid.Row="0" Content="Nom du joueur" />
+                        <Label Grid.Column="0" Grid.Row="1" Content="Chrono" />
+                        <Label Grid.Column="0" Grid.Row="2" Content="Vitesse des adversaires" />
+                        <Label Grid.Column="0" Grid.Row="3" Content="Sons" />
+                        <Label Grid.Column="0" Grid.Row="4" Content="Victoire automatique" />
+                        <Label Grid.Column="0" Grid.Row="5" Content="Assistance à la décision" />
                         <TextBox Margin="5, 0, 0, 0" Grid.Column="1" Grid.Row="0" Name="TxtPlayerName" Height="25" VerticalContentAlignment="Center" />
-                        <ComboBox Margin="5, 0, 0, 0" Grid.Column="1" Grid.Row="1" Name="CbbChronoSpeed" Height="25" VerticalContentAlignment="Center" ToolTip="Temps maximal pour prendre une décision." />
-                        <ComboBox Margin="5, 0, 0, 0" Grid.Column="1" Grid.Row="2" Name="CbbCpuSpeed" Height="25" VerticalContentAlignment="Center" />
-                        <CheckBox Margin="5, 0, 0, 0" Grid.Column="1" Grid.Row="3" Name="ChkSounds" VerticalAlignment="Center" />
-                        <CheckBox Margin="5, 0, 0, 0" Grid.Column="1" Grid.Row="4" Name="ChkAutoTsumoRon" VerticalAlignment="Center" ToolTip="Les appels 'Ron' et 'Tsumo' sont réalisés automatiquement dés que possible." />
-                        <CheckBox Margin="5, 0, 0, 0" Grid.Column="1" Grid.Row="5" Name="ChkDiscardTip" VerticalAlignment="Center" ToolTip="Une assistance visuelle est fournie pour choisir la 'meilleure' décision à chaque action." />
+                        <ComboBox Margin="5, 0, 0, 0" Grid.Column="1" Grid.Row="1" Name="CbbChronoSpeed" ToolTip="Temps maximal pour prendre une décision." />
+                        <ComboBox Margin="5, 0, 0, 0" Grid.Column="1" Grid.Row="2" Name="CbbCpuSpeed" />
+                        <CheckBox Grid.Column="1" Grid.Row="3" Name="ChkSounds" />
+                        <CheckBox Grid.Column="1" Grid.Row="4" Name="ChkAutoTsumoRon" ToolTip="Les appels 'Ron' et 'Tsumo' sont réalisés automatiquement dés que possible." />
+                        <CheckBox Grid.Column="1" Grid.Row="5" Name="ChkDiscardTip" ToolTip="Une assistance visuelle est fournie pour choisir la 'meilleure' décision à chaque action." />
                     </Grid>
                 </TabItem>
                 <TabItem Header="Règles">
@@ -76,19 +93,19 @@
                             <RowDefinition Height="30" />
                             <RowDefinition Height="30" />
                         </Grid.RowDefinitions>
-                        <Label Grid.Column="0" Grid.Row="0" HorizontalContentAlignment="Right" VerticalContentAlignment="Center" Content="Akadora" Grid.ColumnSpan="2" />
-                        <Label Grid.Column="0" Grid.Row="1" HorizontalContentAlignment="Right" VerticalContentAlignment="Center" Content="Points au départ" Grid.ColumnSpan="2" />
-                        <Label Grid.Column="0" Grid.Row="2" HorizontalContentAlignment="Right" VerticalContentAlignment="Center" Content="Nagashi mangan" Grid.ColumnSpan="2" />
-                        <Label Grid.Column="0" Grid.Row="3" HorizontalContentAlignment="Right" VerticalContentAlignment="Center" Content="Règles de fin de partie" Grid.ColumnSpan="2" />
-                        <Label Grid.Column="0" Grid.Row="4" HorizontalContentAlignment="Right" VerticalContentAlignment="Center" Content="Yakumans multiples" Grid.ColumnSpan="2" />
-                        <Label Grid.Column="0" Grid.Row="5" HorizontalContentAlignment="Right" VerticalContentAlignment="Center" Content="Yakuman au compte" Grid.ColumnSpan="2" />
-                        <Label Grid.Column="0" Grid.Row="6" HorizontalContentAlignment="Right" VerticalContentAlignment="Center" Content="Suufon renda" Grid.ColumnSpan="2" />
-                        <Label Grid.Column="0" Grid.Row="7" HorizontalContentAlignment="Right" VerticalContentAlignment="Center" Content="Yakumans doubles" Grid.ColumnSpan="2" />
-                        <Label Grid.Column="0" Grid.Row="8" HorizontalContentAlignment="Right" VerticalContentAlignment="Center" Content="Uma" Grid.ColumnSpan="2" />
-                        <CheckBox Margin="5,0,0,0" Grid.Column="2" Name="ChkUseRedDoras" VerticalAlignment="Center" Grid.ColumnSpan="2" />
-                        <ComboBox Margin="5,2,0,2" Grid.Column="2" Grid.Row="1" Name="CbbPointsRule" Height="25" VerticalContentAlignment="Center" Grid.ColumnSpan="2" />
-                        <CheckBox Margin="5,0,0,0" Grid.Column="2" Grid.Row="2" Name="ChkUseNagashiMangan" VerticalAlignment="Center" Grid.ColumnSpan="2" />
-                        <ComboBox Margin="5,2,0,2" Grid.Column="2" Grid.Row="3" Name="CbbEndOfGameRule" Height="25" VerticalContentAlignment="Center" Grid.ColumnSpan="2">
+                        <Label Grid.Column="0" Grid.Row="0" Content="Akadora" Grid.ColumnSpan="2" />
+                        <Label Grid.Column="0" Grid.Row="1" Content="Points au départ" Grid.ColumnSpan="2" />
+                        <Label Grid.Column="0" Grid.Row="2" Content="Nagashi mangan" Grid.ColumnSpan="2" />
+                        <Label Grid.Column="0" Grid.Row="3" Content="Règles de fin de partie" Grid.ColumnSpan="2" />
+                        <Label Grid.Column="0" Grid.Row="4" Content="Yakumans multiples" Grid.ColumnSpan="2" />
+                        <Label Grid.Column="0" Grid.Row="5" Content="Yakuman au compte" Grid.ColumnSpan="2" />
+                        <Label Grid.Column="0" Grid.Row="6" Content="Suufon renda" Grid.ColumnSpan="2" />
+                        <Label Grid.Column="0" Grid.Row="7" Content="Yakumans doubles" Grid.ColumnSpan="2" />
+                        <Label Grid.Column="0" Grid.Row="8" Content="Uma" Grid.ColumnSpan="2" />
+                        <CheckBox Grid.Column="2" Name="ChkUseRedDoras" Grid.ColumnSpan="2" />
+                        <ComboBox Margin="5,2,0,2" Grid.Column="2" Grid.Row="1" Name="CbbPointsRule" Grid.ColumnSpan="2" />
+                        <CheckBox Grid.Column="2" Grid.Row="2" Name="ChkUseNagashiMangan" Grid.ColumnSpan="2" />
+                        <ComboBox Margin="5,2,0,2" Grid.Column="2" Grid.Row="3" Name="CbbEndOfGameRule" Grid.ColumnSpan="2">
                             <ComboBox.ToolTip>
                                 <TextBlock>
                 - Oorasu: la partie s'arrête après 'Sud 4' ; pas de banqueroute.<LineBreak/>
@@ -97,15 +114,15 @@
                                 </TextBlock>
                             </ComboBox.ToolTip>
                         </ComboBox>
-                        <CheckBox Margin="5,0,0,0" Grid.Column="2" Grid.Row="4" Name="ChkUseMultipleYakumans" VerticalAlignment="Center" Grid.ColumnSpan="2"
+                        <CheckBox Grid.Column="2" Grid.Row="4" Name="ChkUseMultipleYakumans" Grid.ColumnSpan="2"
                                   ToolTip="Cumule la valeur de plusieurs Yakumans distincts obtenus dans la même main (sinon, un seul compte)." />
-                        <CheckBox Margin="5,0,0,0" Grid.Column="2" Grid.Row="5" Name="ChkUseKazoeYakuman" VerticalAlignment="Center" Grid.ColumnSpan="2"
+                        <CheckBox Grid.Column="2" Grid.Row="5" Name="ChkUseKazoeYakuman" Grid.ColumnSpan="2"
                                   ToolTip="Une main atteignant 13 fans sans Yakuman est comptée comme un Yakuman (sinon, elle est plafonnée à 12 fans)." />
-                        <CheckBox Margin="5,0,0,0" Grid.Column="2" Grid.Row="6" Name="ChkUseSuufonRenda" VerticalAlignment="Center" Grid.ColumnSpan="2"
+                        <CheckBox Grid.Column="2" Grid.Row="6" Name="ChkUseSuufonRenda" Grid.ColumnSpan="2"
                                   ToolTip="Arrêt abortif de la manche si les 4 joueurs défaussent le même vent à leur premier tour, sans appel. Non utilisée en compétition européenne." />
-                        <CheckBox Margin="5,0,0,0" Grid.Column="2" Grid.Row="7" Name="ChkUseDoubleYakuman" VerticalAlignment="Center" Grid.ColumnSpan="2"
+                        <CheckBox Grid.Column="2" Grid.Row="7" Name="ChkUseDoubleYakuman" Grid.ColumnSpan="2"
                                   ToolTip="Suuankou tanki, Kokushi musou (attente sur les 13) et Chuuren poutou pur valent le double d'un Yakuman normal. Non utilisée en compétition européenne." />
-                        <ComboBox Margin="5,2,0,2" Grid.Column="2" Grid.Row="8" Name="CbbUmaRule" Height="25" VerticalContentAlignment="Center" Grid.ColumnSpan="2"
+                        <ComboBox Margin="5,2,0,2" Grid.Column="2" Grid.Row="8" Name="CbbUmaRule" Grid.ColumnSpan="2"
                                   ToolTip="Bonus/malus de classement ajouté au score final selon le rang. '5 / 10' est la convention la plus répandue ; 'EMA' est la règle de compétition européenne." />
                         <Button Grid.Row="9" Grid.Column="0" Grid.ColumnSpan="4" Height="25" Margin="0,2,0,0" Content="Valeurs par défaut" Name="BtnResetRulesToDefault" Click="BtnResetRulesToDefault_Click"
                                 ToolTip="Réinitialise les règles ci-dessus à leur vraie valeur par défaut, sans tenir compte de la dernière configuration sauvegardée." />
@@ -122,12 +139,12 @@
                             <RowDefinition Height="30" />
                             <RowDefinition Height="30" />
                         </Grid.RowDefinitions>
-                        <Label Grid.Column="0" Grid.Row="0" HorizontalContentAlignment="Right" VerticalContentAlignment="Center" Content="Debug mode" />
-                        <CheckBox Margin="5, 0, 0, 0" Grid.Column="1" Grid.Row="0" Name="ChkDebugMode" VerticalAlignment="Center" />
-                        <Label Grid.Column="0" Grid.Row="1" HorizontalContentAlignment="Right" VerticalContentAlignment="Center" Content="4 CPUs" />
-                        <CheckBox Margin="5, 0, 0, 0" Grid.Column="1" Grid.Row="1" Name="ChkFourCpus" VerticalAlignment="Center" />
-                        <Label Grid.Column="0" Grid.Row="2" HorizontalContentAlignment="Right" VerticalContentAlignment="Center" Content="Scénario de tirage" />
-                        <ComboBox Margin="5, 0, 0, 0" Grid.Column="1" Grid.Row="2" Name="CbbDrivenDrawScenario" Height="25" VerticalContentAlignment="Center"
+                        <Label Grid.Column="0" Grid.Row="0" Content="Debug mode" />
+                        <CheckBox Grid.Column="1" Grid.Row="0" Name="ChkDebugMode" />
+                        <Label Grid.Column="0" Grid.Row="1" Content="4 CPUs" />
+                        <CheckBox Grid.Column="1" Grid.Row="1" Name="ChkFourCpus" />
+                        <Label Grid.Column="0" Grid.Row="2" Content="Scénario de tirage" />
+                        <ComboBox Margin="5, 0, 0, 0" Grid.Column="1" Grid.Row="2" Name="CbbDrivenDrawScenario"
                                   ToolTip="Force une main de départ spécifique pour le joueur humain, afin de tester manuellement un scénario précis sans dépendre du hasard. Sans effet en mode '4 CPUs'." />
                     </Grid>
                 </TabItem>
