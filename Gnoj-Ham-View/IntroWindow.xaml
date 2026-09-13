@@ -7,10 +7,16 @@
         WindowStartupLocation="CenterScreen"
         Background="Gainsboro"
         Width="345"
-        Height="442"
+        SizeToContent="Height"
         Title="Gnoj-Hame - Nouvelle partie">
     <!-- Fixed Width:
     Width should adjust the left of button Start with checkbox above.
+
+    Height is automatic (SizeToContent="Height"). A TabControl only measures its currently-selected
+    tab though, so left alone the window would resize itself on every tab switch - IntroWindow's
+    constructor forces MainTabControl.MinHeight to the tallest tab's own natural height up front,
+    so the window settles at that height regardless of which tab ends up selected. No more manual
+    Height resync needed when a tab's content grows.
     -->
     <DockPanel Margin="5">
         <DockPanel DockPanel.Dock="Bottom" Margin="0, 10, 0, 0">
@@ -21,7 +27,7 @@
             </StackPanel>
         </DockPanel>
         <StackPanel Orientation="Vertical" DockPanel.Dock="Top">
-            <TabControl>
+            <TabControl Name="MainTabControl">
                 <TabItem Header="Options">
                     <Grid>
                         <Grid.ColumnDefinitions>

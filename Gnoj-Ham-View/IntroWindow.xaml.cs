@@ -1,4 +1,5 @@
 ﻿using System.Windows;
+using System.Windows.Controls;
 using Gnoj_Ham_Library;
 using Gnoj_Ham_Library.Enums;
 using Gnoj_Ham_View.Properties;
@@ -27,6 +28,19 @@ public partial class IntroWindow : Window
         CbbDrivenDrawScenario.ItemsSource = GraphicTools.GetDrivenDrawScenarioDisplayValue();
 
         LoadConfiguration();
+
+        // A TabControl only ever measures its currently-selected tab's content, so SizeToContent
+        // alone would make the window resize itself on every tab switch. Measuring every tab's own
+        // content up front and taking the tallest one settles the window at that height regardless
+        // of which tab ends up selected - no more manual Height resync when a tab's content grows.
+        MainTabControl.MinHeight = MainTabControl.Items
+            .OfType<TabItem>()
+            .Max(tab =>
+            {
+                var content = (FrameworkElement)tab.Content;
+                content.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
+                return content.DesiredSize.Height;
+            });
     }
 
     private void BtnStart_Click(object sender, RoutedEventArgs e)
