@@ -1,4 +1,5 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
+using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
 using Gnoj_Ham_Library;
@@ -11,21 +12,15 @@ namespace Gnoj_Ham_View;
 /// </summary>
 public partial class AutoPlayWindow : Window
 {
-    // Used as the estimated rounds-per-game before any game in this batch has actually completed.
-    private const double DefaultEstimatedRoundsPerGame = 10;
-
-    private GamePivot? _game;
-    private int _currentGameIndex;
     private int _totalGamesCount;
     private IReadOnlyList<PlayerPivot>? _permanentCpuPlayers;
     private IReadOnlyDictionary<PlayerIndices, Func<RoundPivot, CpuManagerBasePivot>>? _cpuManagerFactories;
-    private int _roundsPlayedInCurrentGame;
-    private int _roundsPlayedAcrossCompletedGames;
 
     private readonly RulePivot _ruleset;
     private readonly CancellationTokenSource _cancellationTokenSource = new();
     private readonly CancellationToken _cancellationToken;
     private readonly ComboBox[] _cpuPickers;
+    private readonly object _statsLock = new();
 
     /// <summary>
     /// Constructor.
@@ -52,71 +47,68 @@ public partial class AutoPlayWindow : Window
         _cancellationTokenSource.Cancel();
     }
 
-    // Runs the CPU auto-play off the UI thread, then applies its result back on the UI thread.
-    private async void RunAutoPlay(bool newGame)
+    // Plays every game of the batch to completion, several at a time (bounded by the machine's core
+    // count) off the UI thread. Each game runs on its own throwaway PlayerPivot set - sharing
+    // _permanentCpuPlayers directly across concurrently-running games would mean several games writing
+    // CurrentGamePoints at once - then its final ranking is committed onto _permanentCpuPlayers (the
+    // ones actually displayed and accumulating stats across the whole batch) under a lock, since
+    // several games can finish at nearly the same moment.
+    private async void RunBatch()
     {
-        if (newGame)
+        var completedGamesCount = 0;
+
+        var options = new ParallelOptions
         {
-            _game = new GamePivot(_ruleset, _permanentCpuPlayers!, new Random(), _cpuManagerFactories);
-            _roundsPlayedInCurrentGame = 0;
+            MaxDegreeOfParallelism = Environment.ProcessorCount,
+            CancellationToken = _cancellationToken
+        };
+
+        try
+        {
+            await Parallel.ForEachAsync(Enumerable.Range(0, _totalGamesCount), options, (_, cancellationToken) =>
+            {
+                var gamePlayers = PlayerPivot.BuildPlayers(null);
+                var game = new GamePivot(_ruleset, gamePlayers, new Random(), _cpuManagerFactories);
+
+                EndOfRoundInformationsPivot endOfRoundInfo;
+                do
+                {
+                    var result = game.Round.RunAutoPlay(cancellationToken);
+                    endOfRoundInfo = game.NextRound(result.RonPlayerId);
+                } while (!endOfRoundInfo.EndOfGame);
+
+                lock (_statsLock)
+                {
+                    game.ComputeCurrentRanking(_permanentCpuPlayers);
+                }
+
+                var done = Interlocked.Increment(ref completedGamesCount);
+                Dispatcher.Invoke(() => SetProgress(done / (double)_totalGamesCount));
+
+                return ValueTask.CompletedTask;
+            });
         }
-
-        var result = await Task.Run(() => _game!.Round.RunAutoPlay(_cancellationToken));
-
-        if (_cancellationToken.IsCancellationRequested)
+        catch (OperationCanceledException)
         {
+            // The window is closing: no UI left to update.
             return;
         }
 
-        var endOfRoundInfo = _game!.NextRound(result.RonPlayerId);
-        _roundsPlayedInCurrentGame++;
+        ScoresList.ItemsSource = _permanentCpuPlayers;
 
-        if (endOfRoundInfo.EndOfGame)
+        foreach (var picker in _cpuPickers)
         {
-            _game.ComputeCurrentRanking();
-            _roundsPlayedAcrossCompletedGames += _roundsPlayedInCurrentGame;
-
-            _currentGameIndex++;
-            SetProgress(_currentGameIndex / (double)_totalGamesCount);
-            if (_currentGameIndex < _totalGamesCount)
-            {
-                RunAutoPlay(true);
-            }
-            else
-            {
-                ScoresList.ItemsSource = _permanentCpuPlayers;
-
-                foreach (var picker in _cpuPickers)
-                {
-                    picker.IsEnabled = true;
-                }
-
-                WaitingPanel.Visibility = Visibility.Collapsed;
-                ActionPanel.Visibility = Visibility.Visible;
-                ScoresList.Visibility = Visibility.Visible;
-                WindowState = WindowState.Maximized;
-            }
+            picker.IsEnabled = true;
         }
-        else
-        {
-            // Estimates progress through the current (still in-progress) game as its round count
-            // against the average rounds-per-game observed so far in this batch (a fixed fallback
-            // before any game has completed) - much finer-grained than reasoning about wind phases,
-            // and naturally handles Enchousen extensions without any special-casing. Capped short of
-            // 100% since it's only an estimate: the game isn't actually over yet.
-            var averageRoundsPerGame = _currentGameIndex > 0
-                ? _roundsPlayedAcrossCompletedGames / (double)_currentGameIndex
-                : DefaultEstimatedRoundsPerGame;
-            var currentGameProgression = Math.Min(0.95, _roundsPlayedInCurrentGame / averageRoundsPerGame);
 
-            SetProgress((_currentGameIndex / (double)_totalGamesCount) + (currentGameProgression / (double)_totalGamesCount));
-
-            RunAutoPlay(false);
-        }
+        WaitingPanel.Visibility = Visibility.Collapsed;
+        ActionPanel.Visibility = Visibility.Visible;
+        ScoresList.Visibility = Visibility.Visible;
+        WindowState = WindowState.Maximized;
     }
 
-    // The rounds-per-game estimate isn't exact, so a game running longer than average could make it
-    // dip relative to the previous update - this keeps the bar from ever visibly going backwards.
+    // Games complete out of order once run in parallel, so this only ever moves forward in whole
+    // "one game done" steps rather than interpolating progress within any single still-running game.
     private void SetProgress(double value)
     {
         PgbGames.Value = Math.Max(PgbGames.Value, value);
@@ -129,9 +121,6 @@ public partial class AutoPlayWindow : Window
             MessageBox.Show("Invalid number of games!", "Gnoj-Ham - Error");
             return;
         }
-
-        _currentGameIndex = 0;
-        _roundsPlayedAcrossCompletedGames = 0;
 
         var factories = new Dictionary<PlayerIndices, Func<RoundPivot, CpuManagerBasePivot>>();
         var nameSuffixes = new Dictionary<PlayerIndices, string>();
@@ -155,6 +144,6 @@ public partial class AutoPlayWindow : Window
         WaitingPanel.Visibility = Visibility.Visible;
         ActionPanel.Visibility = Visibility.Collapsed;
         ScoresList.Visibility = Visibility.Collapsed;
-        RunAutoPlay(true);
+        RunBatch();
     }
 }

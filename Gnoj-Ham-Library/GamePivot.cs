@@ -152,18 +152,36 @@ public class GamePivot
     #region Public methods
 
     /// <summary>
-    /// Computes the rank and score of every players at the current state of the game.
+    /// Computes the rank and score of every player at the current state of the game, and records the
+    /// resulting score sheet - onto <paramref name="targetPlayers"/> if given, or onto this game's own
+    /// <see cref="Players"/> otherwise (the previous, only behavior).
     /// </summary>
+    /// <param name="targetPlayers">
+    /// Optional; players to record this game's score sheet onto instead of this game's own
+    /// <see cref="Players"/>, seat for seat (same <see cref="PlayerIndices"/> order) - e.g. for a batch
+    /// that plays several games in parallel on throwaway players (avoiding shared, concurrently-mutated
+    /// <see cref="PlayerPivot.CurrentGamePoints"/> across games) while still accumulating every game's
+    /// result onto the same four permanent <see cref="PlayerPivot"/> instances. <c>Null</c> (default)
+    /// preserves the original behavior. Must have the same count as <see cref="Players"/>.
+    /// </param>
     /// <returns>A list of player with score, order by ascending rank.</returns>
-    public IReadOnlyList<PlayerScorePivot> ComputeCurrentRanking()
+    /// <exception cref="ArgumentException"><paramref name="targetPlayers"/>'s count doesn't match <see cref="Players"/>'s.</exception>
+    public IReadOnlyList<PlayerScorePivot> ComputeCurrentRanking(IReadOnlyList<PlayerPivot>? targetPlayers = null)
     {
+        if (targetPlayers != null && targetPlayers.Count != Players.Count)
+        {
+            throw new ArgumentException("Must have the same count as this game's own Players.", nameof(targetPlayers));
+        }
+
         var playersOrdered = new List<PlayerScorePivot>(4);
 
-        var i = 1;
-        foreach (var player in Players.OrderByDescending(p => p.CurrentGamePoints))
+        var rank = 1;
+        foreach (var seatIndex in Enumerable.Range(0, Players.Count).OrderByDescending(i => Players[i].CurrentGamePoints))
         {
-            playersOrdered.Add(new PlayerScorePivot(player, i, ScoreTools.ComputeUma(i, Ruleset.UmaRule), Ruleset.InitialPointsRule.GetInitialPointsFromRule()));
-            i++;
+            var scoredPlayer = targetPlayers?[seatIndex] ?? Players[seatIndex];
+            playersOrdered.Add(new PlayerScorePivot(scoredPlayer, rank, ScoreTools.ComputeUma(rank, Ruleset.UmaRule),
+                Ruleset.InitialPointsRule.GetInitialPointsFromRule(), Players[seatIndex].CurrentGamePoints));
+            rank++;
         }
 
         return playersOrdered;
