@@ -178,6 +178,15 @@ internal static class ScoreTools
             return BASE_FU;
         }
 
+        if (hand.Yakus!.Any(y => y == YakuPivot.KokushiMusou || y == YakuPivot.KokushiMusouJuusanmen))
+        {
+            // Same situation as nagashi mangan above: kokushi musou doesn't decompose into normal
+            // combinations either (YakusCombinations stays null for it too - see HandPivot), and fu is
+            // irrelevant for any yakuman-level hand regardless (GetPoints never reads it once
+            // fanCount > 4, which every yakuman satisfies).
+            return BASE_FU;
+        }
+
         var fuCount =
             (hand.YakusCombinations!.Count(c => c.IsSquare && c.HasTerminalOrHonor) * HONOR_KAN_FU)
             + (hand.YakusCombinations!.Count(c => c.IsSquare && !c.HasTerminalOrHonor) * REGULAR_KAN_FU)

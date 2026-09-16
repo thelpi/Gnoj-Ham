@@ -40,6 +40,44 @@ public class ScoreTools_Tests
     }
 
     [Fact]
+    public void GetFuCount_KokushiMusouWin_DoesNotThrow()
+    {
+        // Regression test: found live in AutoPlayWindow once a CPU actually completed a kokushi musou.
+        // HandPivot.YakusCombinations stays null for kokushi musou (same as nagashi mangan - it doesn't
+        // decompose into normal run/triplet/pair combinations), but GetFuCount only special-cased
+        // nagashi mangan, so it fell through to hand.YakusCombinations!.Count(...) on a null reference.
+        var tilesSet = TilePivot.GetCompleteSet(false);
+        var kokushiTiles = new List<TilePivot>
+        {
+            TilePivot.GetTile(tilesSet, Families.Caracter, number: 9),
+            TilePivot.GetTile(tilesSet, Families.Circle, number: 1),
+            TilePivot.GetTile(tilesSet, Families.Circle, number: 9),
+            TilePivot.GetTile(tilesSet, Families.Bamboo, number: 1),
+            TilePivot.GetTile(tilesSet, Families.Bamboo, number: 9),
+            TilePivot.GetTile(tilesSet, Families.Wind, wind: Winds.East),
+            TilePivot.GetTile(tilesSet, Families.Wind, wind: Winds.South),
+            TilePivot.GetTile(tilesSet, Families.Wind, wind: Winds.West),
+            TilePivot.GetTile(tilesSet, Families.Wind, wind: Winds.North),
+            TilePivot.GetTile(tilesSet, Families.Dragon, dragon: Dragons.White),
+            TilePivot.GetTile(tilesSet, Families.Dragon, dragon: Dragons.Green),
+            TilePivot.GetTile(tilesSet, Families.Dragon, dragon: Dragons.Red),
+            TilePivot.GetTile(tilesSet, Families.Caracter, number: 1),
+            TilePivot.GetTile(tilesSet, Families.Caracter, number: 1), // duplicate, drawn last: the winning tile
+        };
+
+        var hand = new HandPivot(kokushiTiles);
+        var context = new WinContextPivot(kokushiTiles[^1], DrawTypes.Wall, Winds.East, Winds.East);
+        hand.SetYakus(context);
+
+        Assert.Contains(hand.Yakus!, y => y == YakuPivot.KokushiMusou || y == YakuPivot.KokushiMusouJuusanmen);
+        Assert.Null(hand.YakusCombinations);
+
+        var fu = ScoreTools.GetFuCount(hand, isTsumo: true, dominantWind: Winds.East, playerWind: Winds.East);
+
+        Assert.Equal(20, fu);
+    }
+
+    [Fact]
     public void GetFanCount_SingleYakuman_Returns13RegardlessOfMultipleYakumansSetting()
     {
         var yakus = new List<YakuPivot> { ArbitraryYakuman() };
