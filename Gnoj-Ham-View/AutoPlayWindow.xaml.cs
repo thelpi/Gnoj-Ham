@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel;
 using System.Windows;
+using System.Windows.Controls;
 using Gnoj_Ham_Library;
 using Gnoj_Ham_Library.Enums;
 
@@ -17,12 +18,14 @@ public partial class AutoPlayWindow : Window
     private int _currentGameIndex;
     private int _totalGamesCount;
     private IReadOnlyList<PlayerPivot>? _permanentCpuPlayers;
+    private IReadOnlyDictionary<PlayerIndices, Func<RoundPivot, CpuManagerBasePivot>>? _cpuManagerFactories;
     private int _roundsPlayedInCurrentGame;
     private int _roundsPlayedAcrossCompletedGames;
 
     private readonly RulePivot _ruleset;
     private readonly CancellationTokenSource _cancellationTokenSource = new();
     private readonly CancellationToken _cancellationToken;
+    private readonly ComboBox[] _cpuPickers;
 
     /// <summary>
     /// Constructor.
@@ -34,6 +37,14 @@ public partial class AutoPlayWindow : Window
 
         _ruleset = ruleset;
         _cancellationToken = _cancellationTokenSource.Token;
+
+        _cpuPickers = new[] { CmbCpu0, CmbCpu1, CmbCpu2, CmbCpu3 };
+        foreach (var picker in _cpuPickers)
+        {
+            picker.ItemsSource = CpuManagerCatalog.Implementations;
+            picker.DisplayMemberPath = "DisplayName";
+            picker.SelectedIndex = 0;
+        }
     }
 
     private void Window_Closing(object sender, CancelEventArgs e)
@@ -46,7 +57,7 @@ public partial class AutoPlayWindow : Window
     {
         if (newGame)
         {
-            _game = new GamePivot(_ruleset, _permanentCpuPlayers!, new Random());
+            _game = new GamePivot(_ruleset, _permanentCpuPlayers!, new Random(), _cpuManagerFactories);
             _roundsPlayedInCurrentGame = 0;
         }
 
@@ -74,6 +85,11 @@ public partial class AutoPlayWindow : Window
             else
             {
                 ScoresList.ItemsSource = _permanentCpuPlayers;
+
+                foreach (var picker in _cpuPickers)
+                {
+                    picker.IsEnabled = true;
+                }
 
                 WaitingPanel.Visibility = Visibility.Collapsed;
                 ActionPanel.Visibility = Visibility.Visible;
@@ -116,8 +132,25 @@ public partial class AutoPlayWindow : Window
 
         _currentGameIndex = 0;
         _roundsPlayedAcrossCompletedGames = 0;
-        _permanentCpuPlayers = PlayerPivot.BuildPlayers(null);
+
+        var factories = new Dictionary<PlayerIndices, Func<RoundPivot, CpuManagerBasePivot>>();
+        var nameSuffixes = new Dictionary<PlayerIndices, string>();
+        for (var i = 0; i < _cpuPickers.Length; i++)
+        {
+            var playerIndex = (PlayerIndices)i;
+            var option = (CpuManagerOption)_cpuPickers[i].SelectedItem;
+            factories[playerIndex] = round => (CpuManagerBasePivot)Activator.CreateInstance(option.Type, round)!;
+            nameSuffixes[playerIndex] = option.DisplayName;
+        }
+        _cpuManagerFactories = factories;
+        _permanentCpuPlayers = PlayerPivot.BuildPlayers(null, nameSuffixes);
+
         PgbGames.Value = 0;
+
+        foreach (var picker in _cpuPickers)
+        {
+            picker.IsEnabled = false;
+        }
 
         WaitingPanel.Visibility = Visibility.Visible;
         ActionPanel.Visibility = Visibility.Collapsed;

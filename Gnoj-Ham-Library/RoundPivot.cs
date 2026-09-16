@@ -256,7 +256,13 @@ public class RoundPivot
     /// Optional; a <see cref="DrivenDrawPivot"/> method to rig the wall for a specific manual-testing
     /// scenario. <c>Null</c> (default) for a normal, fully random draw.
     /// </param>
-    internal RoundPivot(GamePivot game, PlayerIndices firstPlayerIndex, Random random, Action<List<TilePivot>>? drivenDraw = null)
+    /// <param name="cpuManagerFactories">
+    /// Optional; per-seat override of which <see cref="CpuManagerBasePivot"/> implementation plays
+    /// that seat, for any seat present in the dictionary. A seat missing from the dictionary (or
+    /// <c>Null</c> altogether, the default) plays through the plain <see cref="BasicCpuManagerPivot"/>.
+    /// </param>
+    internal RoundPivot(GamePivot game, PlayerIndices firstPlayerIndex, Random random, Action<List<TilePivot>>? drivenDraw = null,
+        IReadOnlyDictionary<PlayerIndices, Func<RoundPivot, CpuManagerBasePivot>>? cpuManagerFactories = null)
     {
         Game = game;
 
@@ -282,13 +288,14 @@ public class RoundPivot
         _closedKanInProgress = null;
         _openedKanInProgress = null;
         _waitForDiscard = false;
-        _cpuManagers = new Dictionary<PlayerIndices, CpuManagerBasePivot>
+        var cpuManagers = new Dictionary<PlayerIndices, CpuManagerBasePivot>();
+        foreach (var i in Enumerable.Range(0, 4).Select(i => (PlayerIndices)i))
         {
-            { PlayerIndices.Zero, new BasicCpuManagerPivot(this) },
-            { PlayerIndices.One, new BasicCpuManagerPivot(this) },
-            { PlayerIndices.Two, new BasicCpuManagerPivot(this) },
-            { PlayerIndices.Three, new BasicCpuManagerPivot(this) }
-        };
+            cpuManagers[i] = cpuManagerFactories != null && cpuManagerFactories.TryGetValue(i, out var factory)
+                ? factory(this)
+                : new BasicCpuManagerPivot(this);
+        }
+        _cpuManagers = cpuManagers;
     }
 
     #endregion Constructors

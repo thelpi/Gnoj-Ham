@@ -15,7 +15,7 @@ public class BasicCpuManagerPivot : CpuManagerBasePivot
     /// Constructor.
     /// </summary>
     /// <param name="round">The <see cref="_round"/> value.</param>
-    internal BasicCpuManagerPivot(RoundPivot round)
+    public BasicCpuManagerPivot(RoundPivot round)
         : base(round)
     { }
 
@@ -618,7 +618,10 @@ public class BasicCpuManagerPivot : CpuManagerBasePivot
                 && _numbersByFamily.TryGetValue(tile.Family, out var numbers) && numbers.Count >= 3;
     }
 
-    private List<PlayerIndices> GetTenpaiOpponentIndexes(PlayerIndices playerIndex)
+    // Virtual so a variant (see NoDefenseCpuManagerPivot) can override "who looks dangerous" without
+    // touching every call site that reacts to it (ComputeTilesSafety's stopCurrentHand, and the
+    // defensive Pon/Kan/Chii declines below): they all funnel through this one method.
+    protected virtual List<PlayerIndices> GetTenpaiOpponentIndexes(PlayerIndices playerIndex)
         => Enum.GetValues<PlayerIndices>().Where(i => i != playerIndex && PlayerIsCloseToWin(i)).ToList();
 
     private bool PlayerIsCloseToWin(PlayerIndices i)

@@ -9,6 +9,16 @@
         Background="Gainsboro"
         Title="AutoPlayWindow" SizeToContent="WidthAndHeight">
     <StackPanel Margin="10" Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Center">
+        <StackPanel Name="CpuPickerPanel" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0, 0, 0, 5">
+            <Label Content="CPU 1:" />
+            <ComboBox Name="CmbCpu0" Width="100" Margin="0, 0, 10, 0" />
+            <Label Content="CPU 2:" />
+            <ComboBox Name="CmbCpu1" Width="100" Margin="0, 0, 10, 0" />
+            <Label Content="CPU 3:" />
+            <ComboBox Name="CmbCpu2" Width="100" Margin="0, 0, 10, 0" />
+            <Label Content="CPU 4:" />
+            <ComboBox Name="CmbCpu3" Width="100" />
+        </StackPanel>
         <StackPanel Name="ActionPanel" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
             <Label Content="Games count:" />
             <TextBox Text="10" Name="TxtGamesCount" VerticalContentAlignment="Center" Margin="0, 0, 5, 0" Width="25" HorizontalContentAlignment="Center" />

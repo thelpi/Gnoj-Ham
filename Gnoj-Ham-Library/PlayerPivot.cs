@@ -84,16 +84,24 @@ public class PlayerPivot
     /// Builds a collection of four players.
     /// </summary>
     /// <param name="humanPlayer">Human player information; <c>Null</c> if all players are CPU.</param>
+    /// <param name="cpuNameSuffixes">
+    /// Optional; for any CPU seat present in the dictionary, its display name gets suffixed with this
+    /// (e.g. "CPU_1 (no defense)") - meant to make a benchmark's scoreboard readable at a glance when
+    /// different seats play through different <see cref="CpuManagerBasePivot"/> implementations (see
+    /// <see cref="CpuManagerCatalog"/>). <c>Null</c> (default), or a seat missing from the dictionary,
+    /// leaves that seat's plain name untouched.
+    /// </param>
     /// <returns>Four players.</returns>
     public static IReadOnlyList<PlayerPivot> BuildPlayers(
-        (PlayerIndices index, string name)? humanPlayer)
+        (PlayerIndices index, string name)? humanPlayer,
+        IReadOnlyDictionary<PlayerIndices, string>? cpuNameSuffixes = null)
     {
         return Enum.GetValues<PlayerIndices>()
             .Select(i => new PlayerPivot(humanPlayer.HasValue && i == humanPlayer.Value.index
                 ? (string.IsNullOrWhiteSpace(humanPlayer.Value.name)
                     ? DEFAULT_HUMAN_NAME
                     : humanPlayer.Value.name.Trim())
-                : $"{CPU_NAME_PREFIX}{(int)i}"))
+                : $"{CPU_NAME_PREFIX}{(int)i}{(cpuNameSuffixes != null && cpuNameSuffixes.TryGetValue(i, out var suffix) ? $" ({suffix})" : string.Empty)}"))
             .ToList();
     }
 

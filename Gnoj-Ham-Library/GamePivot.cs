@@ -11,6 +11,7 @@ public class GamePivot
 
     private readonly Random _random;
     private readonly PlayerStatisticsPivot? _stats;
+    private readonly IReadOnlyDictionary<PlayerIndices, Func<RoundPivot, CpuManagerBasePivot>>? _cpuManagerFactories;
 
     /// <summary>
     /// Player statistics for this game; <c>Null</c> unless the ruleset is the default one and there's a human player
@@ -117,8 +118,17 @@ public class GamePivot
     /// <param name="ruleset">Ruleset for the game.</param>
     /// <param name="players">Four players.</param>
     /// <param name="random">Randomizer instance.</param>
+    /// <param name="cpuManagerFactories">
+    /// Optional; per-seat override of which <see cref="CpuManagerBasePivot"/> implementation plays
+    /// that seat, for any seat present in the dictionary - e.g. for benchmarking a variant against
+    /// three <see cref="BasicCpuManagerPivot"/> opponents over many unattended games. A seat missing
+    /// from the dictionary (or <c>Null</c> altogether, the default) plays through the plain
+    /// <see cref="BasicCpuManagerPivot"/>. Stays the same for every round of this game, including
+    /// after <see cref="NextRound"/>.
+    /// </param>
     /// <exception cref="ArgumentException">Four players are required.</exception>
-    public GamePivot(RulePivot ruleset, IReadOnlyList<PlayerPivot> players, Random random)
+    public GamePivot(RulePivot ruleset, IReadOnlyList<PlayerPivot> players, Random random,
+        IReadOnlyDictionary<PlayerIndices, Func<RoundPivot, CpuManagerBasePivot>>? cpuManagerFactories = null)
     {
         if (players.Count != 4)
         {
@@ -134,8 +144,9 @@ public class GamePivot
         EastIndex = FirstEastIndex;
         EastRank = 1;
         _random = random;
+        _cpuManagerFactories = cpuManagerFactories;
 
-        Round = new RoundPivot(this, EastIndex, random);
+        Round = new RoundPivot(this, EastIndex, random, cpuManagerFactories: cpuManagerFactories);
     }
 
     #region Public methods
@@ -248,7 +259,7 @@ public class GamePivot
             EastIndexTurnCount++;
         }
 
-        Round = new RoundPivot(this, EastIndex, _random);
+        Round = new RoundPivot(this, EastIndex, _random, cpuManagerFactories: _cpuManagerFactories);
 
     Exit:
         if (Stats != null)
