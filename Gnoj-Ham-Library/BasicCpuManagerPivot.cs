@@ -170,6 +170,15 @@ public class BasicCpuManagerPivot : CpuManagerBasePivot
 
         var (tilesSafety, stopCurrentHand) = ComputeTilesSafety(discardableTiles, deadTiles);
 
+        // Overridden by a stricter variant (see FullDefenseCpuManagerPivot) that folds outright the
+        // moment any opponent looks dangerous, even breaking an already-reached tenpai to do it -
+        // unlike the tenpai branch right below, which only ever trims its choice toward the safer of
+        // the tenpai-preserving discards, never abandons tenpai itself.
+        if (stopCurrentHand && AbandonsHandEvenIfTenpai)
+        {
+            return tilesSafety[0].tile;
+        }
+
         // tenpai: let's go anyway...
         var tenpaiPotentialDiscards = knownTenpaiDiscardChoices ?? Round.ExtractDiscardChoicesFromTenpai(Round.CurrentPlayerIndex);
         if (tenpaiPotentialDiscards.Count > 0)
@@ -623,6 +632,11 @@ public class BasicCpuManagerPivot : CpuManagerBasePivot
     // defensive Pon/Kan/Chii declines below): they all funnel through this one method.
     protected virtual List<PlayerIndices> GetTenpaiOpponentIndexes(PlayerIndices playerIndex)
         => Enum.GetValues<PlayerIndices>().Where(i => i != playerIndex && PlayerIsCloseToWin(i)).ToList();
+
+    // False here: a dangerous opponent only ever trims the discard choice toward safety (see
+    // DiscardDecisionInternal), never gives up an already-reached tenpai. Overridden by
+    // FullDefenseCpuManagerPivot to fold outright regardless of tenpai.
+    protected virtual bool AbandonsHandEvenIfTenpai => false;
 
     private bool PlayerIsCloseToWin(PlayerIndices i)
         => Round.IsRiichi(i) || Round.GetHand(i).DeclaredCombinations.Count > 2;

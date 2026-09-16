@@ -26,5 +26,6 @@ public static class CpuManagerCatalog
     {
         new(typeof(BasicCpuManagerPivot), "basic"),
         new(typeof(NoDefenseCpuManagerPivot), "no defense"),
+        new(typeof(FullDefenseCpuManagerPivot), "full defense"),
     };
 }
