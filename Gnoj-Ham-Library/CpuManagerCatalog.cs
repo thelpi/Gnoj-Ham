@@ -28,5 +28,6 @@ public static class CpuManagerCatalog
         new(typeof(NoDefenseCpuManagerPivot), "no defense"),
         new(typeof(FullDefenseCpuManagerPivot), "full defense"),
         new(typeof(BasicNoFuritenCpuManagerPivot), "basic no furiten"),
+        new(typeof(BasicNoWaitWidthCpuManagerPivot), "basic no wait width"),
     };
 }

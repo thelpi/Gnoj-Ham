@@ -183,7 +183,7 @@ public class BasicCpuManagerPivot : CpuManagerBasePivot
         var tenpaiPotentialDiscards = knownTenpaiDiscardChoices ?? Round.ExtractDiscardChoicesFromTenpai(Round.CurrentPlayerIndex);
         if (tenpaiPotentialDiscards.Count > 0)
         {
-            return GetBestDiscardFromList(PreferNonFuriten(tenpaiPotentialDiscards), tilesSafety, stopCurrentHand);
+            return GetBestDiscardFromList(PreferNonFuriten(tenpaiPotentialDiscards), tilesSafety, stopCurrentHand, deadTiles);
         }
 
         if (stopCurrentHand)
@@ -255,7 +255,7 @@ public class BasicCpuManagerPivot : CpuManagerBasePivot
 
         var (tilesSafety, stopCurrentHand) = ComputeTilesSafety(riichiTiles, deadTiles);
 
-        var tileSelected = GetBestDiscardFromList(PreferNonFuriten(riichiTiles), tilesSafety, stopCurrentHand);
+        var tileSelected = GetBestDiscardFromList(PreferNonFuriten(riichiTiles), tilesSafety, stopCurrentHand, deadTiles);
 
         return tileSelected;
     }
@@ -481,7 +481,7 @@ public class BasicCpuManagerPivot : CpuManagerBasePivot
     #region Private methods
 
     private TilePivot GetBestDiscardFromList(IReadOnlyList<TilePivot> tenpaiPotentialDiscards,
-        IReadOnlyList<(TilePivot tile, int unsafePoints)> tilesSafety, bool playsSafe)
+        IReadOnlyList<(TilePivot tile, int unsafePoints)> tilesSafety, bool playsSafe, IReadOnlyList<TilePivot> deadTiles)
     {
         if (tenpaiPotentialDiscards.Count == 1)
             return tenpaiPotentialDiscards[0];
@@ -496,6 +496,13 @@ public class BasicCpuManagerPivot : CpuManagerBasePivot
             : tenpaiPotentialDiscards
                 .OrderBy(dorasFunc)
                 .ThenBy(safetyFunc);
+
+        if (PrefersLiveWait)
+        {
+            var allTileKinds = Round.FullTilesList.Distinct().ToList();
+            orderedTiles = orderedTiles
+                .ThenByDescending(t => WaitLiveTileCount(t, deadTiles, allTileKinds));
+        }
 
         return orderedTiles
             .ThenByDescending(t => t.DistanceToMiddle(true))
@@ -644,6 +651,13 @@ public class BasicCpuManagerPivot : CpuManagerBasePivot
     // benchmark this fix's actual impact on win rate).
     protected virtual bool AvoidsFuriten => true;
 
+    // True here: among several discard choices that all keep (or reach) tenpai with tied safety/dora,
+    // this hand prefers the one leaving the wider and/or more live wait (e.g. a ryanmen whose tiles are
+    // still mostly undiscarded) over a narrower one already mostly dead - see WaitLiveTileCount, used
+    // as a tie-break in GetBestDiscardFromList. Overridden by BasicNoWaitWidthCpuManagerPivot to
+    // reproduce the original behavior (kept only to benchmark this fix's actual impact on win rate).
+    protected virtual bool PrefersLiveWait => true;
+
     // Whether discarding candidateDiscard would leave this player in (permanent) furiten: either an
     // earlier discard of theirs, or candidateDiscard itself (the classic "discard straight into your
     // own wait" trap), would complete the resulting hand. Deliberately checks only permanent furiten
@@ -668,6 +682,16 @@ public class BasicCpuManagerPivot : CpuManagerBasePivot
 
         var nonFuriten = choices.Where(t => !WouldBeFuriten(Round.CurrentPlayerIndex, t)).ToList();
         return nonFuriten.Count > 0 ? nonFuriten : choices;
+    }
+
+    // Sums, across every kind of tile that would complete the hand once candidateDiscard is thrown,
+    // how many copies are still live (not already visible in deadTiles) - out of 4 per kind. A wide
+    // ryanmen with both sides fully live scores up to 8; a kanchan with its only winning kind already
+    // 3/4 dead scores 1. Used as a tie-break: higher is a better wait to keep chasing.
+    private int WaitLiveTileCount(TilePivot candidateDiscard, IReadOnlyList<TilePivot> deadTiles, IReadOnlyList<TilePivot> allTileKinds)
+    {
+        var waitTiles = Round.GetHand(Round.CurrentPlayerIndex).GetWaitTiles(allTileKinds, candidateDiscard);
+        return waitTiles.Sum(w => 4 - deadTiles.Count(d => d == w));
     }
 
     private bool PlayerIsCloseToWin(PlayerIndices i)

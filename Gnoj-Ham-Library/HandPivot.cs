@@ -363,6 +363,27 @@ public class HandPivot
     }
 
     /// <summary>
+    /// Computes the actual wait once <paramref name="tileToRemoveFromConcealed"/> is discarded; hand
+    /// must contain <c>13</c> tiles once removed.
+    /// </summary>
+    /// <param name="candidateTiles">List of candidate tiles (one per distinct kind is enough).</param>
+    /// <param name="tileToRemoveFromConcealed">A tile to remove from the hand first.</param>
+    /// <returns>The subset of <paramref name="candidateTiles"/> that would complete the hand.</returns>
+    internal List<TilePivot> GetWaitTiles(IReadOnlyList<TilePivot> candidateTiles, TilePivot? tileToRemoveFromConcealed)
+    {
+        var concealedTilesCopy = ConcealedTiles;
+        if (tileToRemoveFromConcealed != null)
+        {
+            var concealedTilesCopyList = concealedTilesCopy.ToList();
+            var indexToRemove = concealedTilesCopyList.IndexOf(tileToRemoveFromConcealed);
+            concealedTilesCopyList.RemoveAt(indexToRemove);
+            concealedTilesCopy = concealedTilesCopyList;
+        }
+
+        return TileCombinatoricsPivot.GetWaitTiles(concealedTilesCopy, DeclaredCombinations, candidateTiles);
+    }
+
+    /// <summary>
     /// Sets <see cref="LatestPick"/> after a ron.
     /// </summary>
     /// <param name="ronTile">The ron tile.</param>

@@ -259,6 +259,23 @@ internal static class TileCombinatoricsPivot
         return false;
     }
 
+    /// <summary>
+    /// Computes the actual wait: every tile from <paramref name="candidateTiles"/> that would complete
+    /// the hand (which must have 13 tiles), unlike <see cref="IsTenpai"/> which only checks if any does.
+    /// </summary>
+    /// <param name="concealedTiles">Concealed tiles of the hand.</param>
+    /// <param name="combinations">Declared combinations of the hand.</param>
+    /// <param name="candidateTiles">List of candidate tiles (one per distinct kind is enough).</param>
+    /// <returns>The subset of <paramref name="candidateTiles"/> that would complete the hand.</returns>
+    internal static List<TilePivot> GetWaitTiles(IReadOnlyList<TilePivot> concealedTiles,
+        IReadOnlyList<TileComboPivot> combinations,
+        IReadOnlyList<TilePivot> candidateTiles)
+    {
+        var recursiveCache = new Dictionary<Families, (List<TilePivot> Tiles, List<List<TileComboPivot>> Result)>();
+
+        return candidateTiles.Where(sub => IsCompleteFull(concealedTiles, combinations, sub, false, recursiveCache)).ToList();
+    }
+
     // Gets every possible combinations from the given list of tiles
     // declaredCombinationsCount => -1 to not exit at first
     // concealedTiles have to be sorted

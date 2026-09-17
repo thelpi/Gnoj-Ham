@@ -7,15 +7,16 @@ public class AutoPlay_Tests
     private readonly Dictionary<int, (string pName, int points)[]> _expected = new()
     {
         { 1000, new[] { ("CPU_0", 33800), ("CPU_2", 26200), ("CPU_3", 23400), ("CPU_1", 16600) } },
-        { 666, new[] { ("CPU_0", 55400), ("CPU_1", 37200), ("CPU_3", 5800), ("CPU_2", 1600) } },
-        { 999999, new[] { ("CPU_3", 40900), ("CPU_1", 27900), ("CPU_2", 24500), ("CPU_0", 6700) } },
-        { 123456, new[] { ("CPU_1", 44200), ("CPU_0", 25600), ("CPU_3", 20000), ("CPU_2", 10200) } },
-        { 789456, new[] { ("CPU_1", 38100), ("CPU_0", 22100), ("CPU_3", 20600), ("CPU_2", 19200) } },
-        { 187543, new[] { ("CPU_3", 60600), ("CPU_1", 29600), ("CPU_0", 18800), ("CPU_2", -9000) } },
+        // rescored after the wait-width tie-break was added to BasicCpuManagerPivot.GetBestDiscardFromList
+        { 666, new[] { ("CPU_0", 52500), ("CPU_1", 43000), ("CPU_3", 2900), ("CPU_2", 1600) } },
+        { 999999, new[] { ("CPU_3", 47300), ("CPU_2", 24500), ("CPU_1", 18300), ("CPU_0", 9900) } },
+        { 123456, new[] { ("CPU_1", 34800), ("CPU_0", 28500), ("CPU_3", 21500), ("CPU_2", 15200) } },
+        { 789456, new[] { ("CPU_1", 37600), ("CPU_2", 36900), ("CPU_0", 15500), ("CPU_3", 10000) } },
+        { 187543, new[] { ("CPU_3", 55200), ("CPU_1", 29100), ("CPU_0", 25700), ("CPU_2", -10000) } },
         // seed=5: natural abortive draw (ryuukyoku) somewhere in the game
         { 5, new[] { ("CPU_0", 58900), ("CPU_3", 22800), ("CPU_2", 18900), ("CPU_1", -600) } },
-        // seed=8: natural simultaneous ron from multiple winners on the same discard
-        { 8, new[] { ("CPU_1", 32800), ("CPU_0", 29300), ("CPU_3", 19700), ("CPU_2", 18200) } },
+        // seed=8: natural simultaneous ron from multiple winners on the same discard (rescored, property re-verified)
+        { 8, new[] { ("CPU_0", 33600), ("CPU_1", 28700), ("CPU_2", 19300), ("CPU_3", 18400) } },
         // seed=183: natural chain of 2 kans by PlayerIndices.Zero alone within a single round (round 7)
         // - covers "the human seat does several kans in a row" in a natural, non-rigged game
         { 183, new[] { ("CPU_0", 45700), ("CPU_2", 22500), ("CPU_3", 18800), ("CPU_1", 13000) } },
