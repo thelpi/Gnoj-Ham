@@ -183,7 +183,7 @@ public class BasicCpuManagerPivot : CpuManagerBasePivot
         var tenpaiPotentialDiscards = knownTenpaiDiscardChoices ?? Round.ExtractDiscardChoicesFromTenpai(Round.CurrentPlayerIndex);
         if (tenpaiPotentialDiscards.Count > 0)
         {
-            return GetBestDiscardFromList(tenpaiPotentialDiscards, tilesSafety, stopCurrentHand);
+            return GetBestDiscardFromList(PreferNonFuriten(tenpaiPotentialDiscards), tilesSafety, stopCurrentHand);
         }
 
         if (stopCurrentHand)
@@ -255,7 +255,7 @@ public class BasicCpuManagerPivot : CpuManagerBasePivot
 
         var (tilesSafety, stopCurrentHand) = ComputeTilesSafety(riichiTiles, deadTiles);
 
-        var tileSelected = GetBestDiscardFromList(riichiTiles, tilesSafety, stopCurrentHand);
+        var tileSelected = GetBestDiscardFromList(PreferNonFuriten(riichiTiles), tilesSafety, stopCurrentHand);
 
         return tileSelected;
     }
@@ -637,6 +637,38 @@ public class BasicCpuManagerPivot : CpuManagerBasePivot
     // DiscardDecisionInternal), never gives up an already-reached tenpai. Overridden by
     // FullDefenseCpuManagerPivot to fold outright regardless of tenpai.
     protected virtual bool AbandonsHandEvenIfTenpai => false;
+
+    // True here: among several choices that all keep (or reach) tenpai, this hand actively steers away
+    // from ending its own turn in furiten - see PreferNonFuriten. Overridden by
+    // BasicNoFuritenCpuManagerPivot to reproduce the original, furiten-blind behavior (kept only to
+    // benchmark this fix's actual impact on win rate).
+    protected virtual bool AvoidsFuriten => true;
+
+    // Whether discarding candidateDiscard would leave this player in (permanent) furiten: either an
+    // earlier discard of theirs, or candidateDiscard itself (the classic "discard straight into your
+    // own wait" trap), would complete the resulting hand. Deliberately checks only permanent furiten
+    // (this player's own discard pile) - not temporary furiten (opponents' discards since this
+    // player's last turn), which depends on turn order and resolves itself by this player's own next
+    // discard anyway, for comparatively little gain against the added complexity.
+    private bool WouldBeFuriten(PlayerIndices playerIndex, TilePivot candidateDiscard)
+    {
+        var pastAndCandidateDiscards = Round.GetDiscard(playerIndex).Append(candidateDiscard).ToList();
+        return Round.GetHand(playerIndex).IsTenpai(pastAndCandidateDiscards, candidateDiscard);
+    }
+
+    // Prefers, among several discard choices that all keep (or reach) tenpai, the ones that don't
+    // leave this player in furiten - falls back to the full list when every choice would be furiten
+    // anyway (nothing to gain from filtering in that case, and the hand is no worse off either way).
+    private IReadOnlyList<TilePivot> PreferNonFuriten(IReadOnlyList<TilePivot> choices)
+    {
+        if (!AvoidsFuriten)
+        {
+            return choices;
+        }
+
+        var nonFuriten = choices.Where(t => !WouldBeFuriten(Round.CurrentPlayerIndex, t)).ToList();
+        return nonFuriten.Count > 0 ? nonFuriten : choices;
+    }
 
     private bool PlayerIsCloseToWin(PlayerIndices i)
         => Round.IsRiichi(i) || Round.GetHand(i).DeclaredCombinations.Count > 2;

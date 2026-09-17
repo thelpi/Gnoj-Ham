@@ -14,8 +14,8 @@ public class AutoPlay_Tests
         { 187543, new[] { ("CPU_3", 60600), ("CPU_1", 29600), ("CPU_0", 18800), ("CPU_2", -9000) } },
         // seed=5: natural abortive draw (ryuukyoku) somewhere in the game
         { 5, new[] { ("CPU_0", 58900), ("CPU_3", 22800), ("CPU_2", 18900), ("CPU_1", -600) } },
-        // seed=57: natural simultaneous ron from multiple winners on the same discard
-        { 57, new[] { ("CPU_3", 44500), ("CPU_0", 30300), ("CPU_1", 16400), ("CPU_2", 8800) } },
+        // seed=8: natural simultaneous ron from multiple winners on the same discard
+        { 8, new[] { ("CPU_1", 32800), ("CPU_0", 29300), ("CPU_3", 19700), ("CPU_2", 18200) } },
         // seed=183: natural chain of 2 kans by PlayerIndices.Zero alone within a single round (round 7)
         // - covers "the human seat does several kans in a row" in a natural, non-rigged game
         { 183, new[] { ("CPU_0", 45700), ("CPU_2", 22500), ("CPU_3", 18800), ("CPU_1", 13000) } },
@@ -34,7 +34,7 @@ public class AutoPlay_Tests
     [InlineData(789456)]
     [InlineData(187543)]
     [InlineData(5)]
-    [InlineData(57)]
+    [InlineData(8)]
     [InlineData(183)]
     [InlineData(742)]
     [InlineData(638)]
