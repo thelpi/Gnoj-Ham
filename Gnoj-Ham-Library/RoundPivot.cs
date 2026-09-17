@@ -821,7 +821,7 @@ public class RoundPivot
         SetYakus(playerIndex, tile, forKokushiOnly ? DrawTypes.OpponentKanCallConcealed : (isChanka ? DrawTypes.OpponentKanCallOpen : DrawTypes.OpponentDiscard));
 
         return _hands[(int)playerIndex].IsComplete
-            && !_hands[(int)playerIndex].CancelYakusIfFuriten(_discardHistory.Discards[(int)playerIndex], GetTilesFromVirtualDiscardsAtRank(playerIndex, tile))
+            && !_hands[(int)playerIndex].CancelYakusIfFuriten(_discardHistory.VirtualDiscards[(int)playerIndex], GetTilesFromVirtualDiscardsAtRank(playerIndex, tile))
             && !_hands[(int)playerIndex].CancelYakusIfTemporaryFuriten(GetTilesFromVirtualDiscardsSinceLastOwnDiscard(playerIndex, tile));
     }
 

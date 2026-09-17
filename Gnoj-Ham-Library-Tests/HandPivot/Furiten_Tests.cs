@@ -44,6 +44,11 @@ public class Furiten_Tests
             .GetField("_virtualDiscards", BindingFlags.NonPublic | BindingFlags.Instance)!
             .GetValue(DiscardHistory(round))!;
 
+    private static List<List<TilePivot>> DiscardsField(RoundPivot round)
+        => (List<List<TilePivot>>)typeof(DiscardHistoryPivot)
+            .GetField("_discards", BindingFlags.NonPublic | BindingFlags.Instance)!
+            .GetValue(DiscardHistory(round))!;
+
     private static Dictionary<PlayerIndices, int> LastOwnDiscardRankField(RoundPivot round, PlayerIndices playerIndex)
         => ((List<Dictionary<PlayerIndices, int>>)typeof(DiscardHistoryPivot)
             .GetField("_lastOwnDiscardOpponentsVirtualRank", BindingFlags.NonPublic | BindingFlags.Instance)!
@@ -183,6 +188,45 @@ public class Furiten_Tests
         var result = round.GetTilesFromVirtualDiscardsSinceLastOwnDiscard(PlayerIndices.Zero, liveTile);
 
         Assert.Contains(missedWinningTile, result);
+    }
+
+    #endregion
+
+    #region RoundPivot.CanCallRon (the actual bug: own permanent furiten must survive a call that removed the tile from the real, shrinking discard pile)
+
+    [Fact]
+    public void CanCallRon_OwnWinningTileWasDiscardedThenCalledAway_StillFuriten()
+    {
+        // PlayerIndex once discarded their own winning tile (e.g. as part of a since-changed hand
+        // shape); an opponent called it (pon/chii/kan), which removes it from the real, shrinking
+        // "_discards" pile (see DiscardHistoryPivot.TakeLastDiscard) but NOT from the append-only
+        // "_virtualDiscards" shadow. Permanent furiten must still apply: having discarded a winning
+        // tile once is irreversible, regardless of what an opponent later did with it.
+        var round = NewRound();
+        var yaku = YakuPivot.Yakus.First(y => y.Name == "Tanyao");
+        var example = yaku.Example!;
+        var winningTile = example[^1];
+
+        var hands = (List<HandPivot>)typeof(RoundPivot)
+            .GetField("_hands", BindingFlags.NonPublic | BindingFlags.Instance)!
+            .GetValue(round)!;
+        var playerIndex = round.CurrentPlayerIndex;
+        hands[(int)playerIndex] = new HandPivot(example.Take(example.Count - 1).ToList());
+
+        // The winning tile is now offered as a ron by the previous player's discard.
+        DiscardsField(round)[(int)round.PreviousPlayerIndex].Add(winningTile);
+
+        // PlayerIndex discarded this exact winning tile earlier themselves, but it was called away:
+        // present in the virtual (append-only) history, absent from the real (shrinking) one.
+        VirtualDiscardsField(round)[(int)playerIndex].Add(winningTile);
+
+        typeof(RoundPivot)
+            .GetField("_waitForDiscard", BindingFlags.NonPublic | BindingFlags.Instance)!
+            .SetValue(round, false);
+
+        var canCallRon = round.CanCallRon(playerIndex);
+
+        Assert.False(canCallRon);
     }
 
     #endregion
