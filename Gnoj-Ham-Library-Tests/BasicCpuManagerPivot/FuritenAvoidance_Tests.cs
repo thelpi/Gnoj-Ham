@@ -57,8 +57,15 @@ public class FuritenAvoidance_Tests
         TilePivot.GetTile(tilesSet, Families.Bamboo, number: 3),
     };
 
-    [Fact]
-    public void BasicCpuManagerPivot_AvoidsTheDiscardThatWouldLeaveItInFuriten()
+    // Policy (applies to every current and future BasicCpuManagerPivot subclass): a behavior added to
+    // the base class - like furiten avoidance - is inherited by every variant automatically, unless
+    // that variant deliberately opts out (as BasicNoFuritenCpuManagerPivot does below, for A/B
+    // measurement only). This theory locks that in for the two existing variants that must NOT opt out.
+    [Theory]
+    [InlineData(typeof(BasicCpuManagerPivot))]
+    [InlineData(typeof(NoDefenseCpuManagerPivot))]
+    [InlineData(typeof(FullDefenseCpuManagerPivot))]
+    public void FuritenProneVariants_AvoidTheDiscardThatWouldLeaveThemInFuriten(Type cpuManagerType)
     {
         var round = NewRound(1);
         var tilesSet = TilePivot.GetCompleteSet(false);
@@ -75,9 +82,10 @@ public class FuritenAvoidance_Tests
         var tenpaiChoices = round.ExtractDiscardChoicesFromTenpai(currentPlayer);
         Assert.Equal(new[] { bamboo2, bamboo3 }, tenpaiChoices.OrderBy(t => t.Number));
 
-        var basicChoice = new BasicCpuManagerPivot(round).DiscardDecision();
+        var cpuManager = (Gnoj_Ham_Library.BasicCpuManagerPivot)Activator.CreateInstance(cpuManagerType, round)!;
+        var choice = cpuManager.DiscardDecision();
 
-        Assert.Equal(bamboo3, basicChoice);
+        Assert.Equal(bamboo3, choice);
     }
 
     [Fact]
