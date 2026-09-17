@@ -960,7 +960,29 @@ public class RoundPivot
     /// <returns>Tiles enumeration.</returns>
     internal IReadOnlyList<TilePivot> DeadTilesFromIndexPointOfView(PlayerIndices playerIndex)
     {
-        return _fullTilesList.Except(GetConcealedTilesFromPlayerPointOfView(playerIndex)).ToList();
+        // A genuine multiset difference: Enumerable.Except would dedupe both sides, capping any kind
+        // at a single occurrence in the result even when several of its copies are actually dead. Every
+        // caller relies on counting up to 4 occurrences per kind (kabe safety, kokushi reachability,
+        // the chiitoitsu discard tie-break, wait liveness, ...), so that collapse would silently break
+        // all of them.
+        var remainingConcealedByKind = GetConcealedTilesFromPlayerPointOfView(playerIndex)
+            .GroupBy(t => t)
+            .ToDictionary(g => g.Key, g => g.Count());
+
+        var dead = new List<TilePivot>(_fullTilesList.Count);
+        foreach (var tile in _fullTilesList)
+        {
+            if (remainingConcealedByKind.TryGetValue(tile, out var remaining) && remaining > 0)
+            {
+                remainingConcealedByKind[tile] = remaining - 1;
+            }
+            else
+            {
+                dead.Add(tile);
+            }
+        }
+
+        return dead;
     }
 
     /// <summary>

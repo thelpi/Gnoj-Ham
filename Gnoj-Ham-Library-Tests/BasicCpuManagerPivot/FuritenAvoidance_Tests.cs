@@ -35,6 +35,23 @@ public class FuritenAvoidance_Tests
         discards[(int)playerIndex].Add(tile);
     }
 
+    // Tops up the (real, untouched) wall with extra concealed copies of the given tiles, so that -
+    // regardless of how this seed's actual deal happened to distribute the real 4 copies of each kind -
+    // DeadTilesFromIndexPointOfView reports 0 dead copies for them: a real discard removes a tile from
+    // its owner's ConcealedTiles (shrinking what's concealed), but AddToDiscard above only appends to
+    // the discard log and deliberately leaves hands/wall untouched (it exists purely to control furiten,
+    // which reads the discard log directly) - so it has no effect on dead-tile counts by itself.
+    private static void KeepFullyConcealed(RoundPivot round, params TilePivot[] tiles)
+    {
+        var wallTiles = (List<TilePivot>)typeof(RoundPivot)
+            .GetField("_wallTiles", BindingFlags.NonPublic | BindingFlags.Instance)!
+            .GetValue(round)!;
+        foreach (var tile in tiles)
+        {
+            wallTiles.AddRange(Enumerable.Repeat(tile, 4));
+        }
+    }
+
     // Builds a hand with exactly two tenpai-preserving discards, each leaving a different tanki
     // (single-tile) wait: 123m 456m 789m 123p are four complete RUNS already (a run, unlike a triplet,
     // can't be reinterpreted as "pair plus a discard" - no other tenpai reading sneaks in), so
@@ -76,6 +93,9 @@ public class FuritenAvoidance_Tests
         var currentPlayer = round.CurrentPlayerIndex;
         SetHand(round, currentPlayer, hand);
         SetWaitForDiscard(round, true);
+        // Keeps both waits equally fully-live, so the wait-width tie-break stays neutral and this
+        // scenario isolates furiten avoidance instead of being decided by wait-width first.
+        KeepFullyConcealed(round, bamboo2, bamboo3);
         // Already discarded 3s earlier this round: discarding 2s now (waiting on 3s) would be furiten.
         AddToDiscard(round, currentPlayer, bamboo3);
 
@@ -100,12 +120,17 @@ public class FuritenAvoidance_Tests
         var currentPlayer = round.CurrentPlayerIndex;
         SetHand(round, currentPlayer, hand);
         SetWaitForDiscard(round, true);
+        // Same as above: without this, the (correctly working) wait-width tie-break would already favor
+        // 3s on its own merits (its wait on 2s is more live than the other way around), coincidentally
+        // agreeing with furiten-avoidance and defeating the point of this test.
+        KeepFullyConcealed(round, bamboo2, bamboo3);
         AddToDiscard(round, currentPlayer, bamboo3);
 
-        // Same scenario as the fixed test above, but the original heuristic (no furiten awareness)
-        // picks 2s: with no dangerous opponent, it orders by dora (tied) then safety (tied) then
-        // descending distance-to-middle, and 2s (distance 3) beats 3s (distance 2) on that last tiebreak
-        // - it just happens to be the one that would leave this hand in furiten.
+        // Same scenario as the test above, but the original heuristic (no furiten awareness) picks 2s:
+        // with no dangerous opponent, it orders by dora (tied) then safety (tied) then wait-width (tied,
+        // thanks to KeepFullyConcealed) then descending distance-to-middle, and 2s (distance 3) beats 3s
+        // (distance 2) on that last tiebreak - it just happens to be the one that would leave this hand
+        // in furiten.
         var noFuritenChoice = new BasicNoFuritenCpuManagerPivot(round).DiscardDecision();
 
         Assert.Equal(bamboo2, noFuritenChoice);
