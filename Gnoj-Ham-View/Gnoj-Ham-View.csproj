@@ -37,6 +37,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Gnoj-Ham-Library\Gnoj-Ham-Library.csproj" />
+    <ProjectReference Include="..\Gnoj-Ham-ViewModel\Gnoj-Ham-ViewModel.csproj" />
   </ItemGroup>
 
   <ItemGroup>
