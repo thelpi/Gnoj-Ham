@@ -1225,10 +1225,10 @@ public partial class MainWindow : Window
     // Binds graphic elements with current configuration.
     private void BindConfiguration()
     {
-        CbbChrono.ItemsSource = GraphicTools.GetChronoDisplayValues();
+        CbbChrono.ItemsSource = DisplayTexts.GetChronoDisplayValues();
         CbbChrono.SelectedIndex = Properties.Settings.Default.ChronoSpeed;
 
-        CbbCpuSpeed.ItemsSource = GraphicTools.GetCpuSpeedDisplayValues();
+        CbbCpuSpeed.ItemsSource = DisplayTexts.GetCpuSpeedDisplayValues();
         CbbCpuSpeed.SelectedIndex = Properties.Settings.Default.CpuSpeed;
 
         ChkSounds.IsChecked = Properties.Settings.Default.PlaySounds;

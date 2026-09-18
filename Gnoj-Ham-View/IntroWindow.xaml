@@ -37,9 +37,9 @@
     </Window.Resources>
     <DockPanel Margin="5">
         <DockPanel DockPanel.Dock="Bottom" Margin="0, 10, 0, 0">
-            <Button DockPanel.Dock="Left" Width="75" Height="25" Content="Réinitialiser" Name="BtnReset" Click="BtnReset_Click" ToolTip="Recharge la dernière configuration sauvegardée (annule les changements non enregistrés de cette session)." />
+            <Button DockPanel.Dock="Left" Width="75" Height="25" Content="Réinitialiser" Command="{Binding ResetCommand}" ToolTip="Recharge la dernière configuration sauvegardée (annule les changements non enregistrés de cette session)." />
             <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" HorizontalAlignment="Right">
-                <Button Width="75" Height="25" Content="Démarrer" Name="BtnStart" Click="BtnStart_Click" />
+                <Button Width="75" Height="25" Content="Démarrer" Command="{Binding StartCommand}" />
                 <Button Width="75" Height="25" Content="Quitter" Name="BtnQuit" Click="BtnQuit_Click" Margin="10, 0, 0, 0" />
             </StackPanel>
         </DockPanel>
@@ -65,12 +65,12 @@
                         <Label Grid.Column="0" Grid.Row="3" Content="Sons" />
                         <Label Grid.Column="0" Grid.Row="4" Content="Victoire automatique" />
                         <Label Grid.Column="0" Grid.Row="5" Content="Assistance à la décision" />
-                        <TextBox Margin="5, 0, 0, 0" Grid.Column="1" Grid.Row="0" Name="TxtPlayerName" Height="25" VerticalContentAlignment="Center" />
-                        <ComboBox Margin="5, 0, 0, 0" Grid.Column="1" Grid.Row="1" Name="CbbChronoSpeed" ToolTip="Temps maximal pour prendre une décision." />
-                        <ComboBox Margin="5, 0, 0, 0" Grid.Column="1" Grid.Row="2" Name="CbbCpuSpeed" />
-                        <CheckBox Grid.Column="1" Grid.Row="3" Name="ChkSounds" />
-                        <CheckBox Grid.Column="1" Grid.Row="4" Name="ChkAutoTsumoRon" ToolTip="Les appels 'Ron' et 'Tsumo' sont réalisés automatiquement dés que possible." />
-                        <CheckBox Grid.Column="1" Grid.Row="5" Name="ChkDiscardTip" ToolTip="Une assistance visuelle est fournie pour choisir la 'meilleure' décision à chaque action." />
+                        <TextBox Margin="5, 0, 0, 0" Grid.Column="1" Grid.Row="0" Text="{Binding PlayerName, UpdateSourceTrigger=PropertyChanged}" Height="25" VerticalContentAlignment="Center" />
+                        <ComboBox Margin="5, 0, 0, 0" Grid.Column="1" Grid.Row="1" ItemsSource="{Binding ChronoSpeedChoices}" SelectedIndex="{Binding ChronoSpeedIndex}" ToolTip="Temps maximal pour prendre une décision." />
+                        <ComboBox Margin="5, 0, 0, 0" Grid.Column="1" Grid.Row="2" ItemsSource="{Binding CpuSpeedChoices}" SelectedIndex="{Binding CpuSpeedIndex}" />
+                        <CheckBox Grid.Column="1" Grid.Row="3" IsChecked="{Binding PlaySounds}" />
+                        <CheckBox Grid.Column="1" Grid.Row="4" IsChecked="{Binding AutoCallMahjong}" ToolTip="Les appels 'Ron' et 'Tsumo' sont réalisés automatiquement dés que possible." />
+                        <CheckBox Grid.Column="1" Grid.Row="5" IsChecked="{Binding DiscardTip}" ToolTip="Une assistance visuelle est fournie pour choisir la 'meilleure' décision à chaque action." />
                     </Grid>
                 </TabItem>
                 <TabItem Header="Règles">
@@ -102,10 +102,10 @@
                         <Label Grid.Column="0" Grid.Row="6" Content="Suufon renda" Grid.ColumnSpan="2" />
                         <Label Grid.Column="0" Grid.Row="7" Content="Yakumans doubles" Grid.ColumnSpan="2" />
                         <Label Grid.Column="0" Grid.Row="8" Content="Uma" Grid.ColumnSpan="2" />
-                        <CheckBox Grid.Column="2" Name="ChkUseRedDoras" Grid.ColumnSpan="2" />
-                        <ComboBox Margin="5,2,0,2" Grid.Column="2" Grid.Row="1" Name="CbbPointsRule" Grid.ColumnSpan="2" />
-                        <CheckBox Grid.Column="2" Grid.Row="2" Name="ChkUseNagashiMangan" Grid.ColumnSpan="2" />
-                        <ComboBox Margin="5,2,0,2" Grid.Column="2" Grid.Row="3" Name="CbbEndOfGameRule" Grid.ColumnSpan="2">
+                        <CheckBox Grid.Column="2" IsChecked="{Binding UseRedDoras}" Grid.ColumnSpan="2" />
+                        <ComboBox Margin="5,2,0,2" Grid.Column="2" Grid.Row="1" ItemsSource="{Binding PointsRuleChoices}" SelectedIndex="{Binding PointsRuleIndex}" Grid.ColumnSpan="2" />
+                        <CheckBox Grid.Column="2" Grid.Row="2" IsChecked="{Binding UseNagashiMangan}" Grid.ColumnSpan="2" />
+                        <ComboBox Margin="5,2,0,2" Grid.Column="2" Grid.Row="3" ItemsSource="{Binding EndOfGameRuleChoices}" SelectedIndex="{Binding EndOfGameRuleIndex}" Grid.ColumnSpan="2">
                             <ComboBox.ToolTip>
                                 <TextBlock>
                 - Oorasu: la partie s'arrête après 'Sud 4' ; pas de banqueroute.<LineBreak/>
@@ -114,17 +114,17 @@
                                 </TextBlock>
                             </ComboBox.ToolTip>
                         </ComboBox>
-                        <CheckBox Grid.Column="2" Grid.Row="4" Name="ChkUseMultipleYakumans" Grid.ColumnSpan="2"
+                        <CheckBox Grid.Column="2" Grid.Row="4" IsChecked="{Binding UseMultipleYakumans}" Grid.ColumnSpan="2"
                                   ToolTip="Cumule la valeur de plusieurs Yakumans distincts obtenus dans la même main (sinon, un seul compte)." />
-                        <CheckBox Grid.Column="2" Grid.Row="5" Name="ChkUseKazoeYakuman" Grid.ColumnSpan="2"
+                        <CheckBox Grid.Column="2" Grid.Row="5" IsChecked="{Binding UseKazoeYakuman}" Grid.ColumnSpan="2"
                                   ToolTip="Une main atteignant 13 fans sans Yakuman est comptée comme un Yakuman (sinon, elle est plafonnée à 12 fans)." />
-                        <CheckBox Grid.Column="2" Grid.Row="6" Name="ChkUseSuufonRenda" Grid.ColumnSpan="2"
+                        <CheckBox Grid.Column="2" Grid.Row="6" IsChecked="{Binding UseSuufonRenda}" Grid.ColumnSpan="2"
                                   ToolTip="Arrêt abortif de la manche si les 4 joueurs défaussent le même vent à leur premier tour, sans appel. Non utilisée en compétition européenne." />
-                        <CheckBox Grid.Column="2" Grid.Row="7" Name="ChkUseDoubleYakuman" Grid.ColumnSpan="2"
+                        <CheckBox Grid.Column="2" Grid.Row="7" IsChecked="{Binding UseDoubleYakuman}" Grid.ColumnSpan="2"
                                   ToolTip="Suuankou tanki, Kokushi musou (attente sur les 13) et Chuuren poutou pur valent le double d'un Yakuman normal. Non utilisée en compétition européenne." />
-                        <ComboBox Margin="5,2,0,2" Grid.Column="2" Grid.Row="8" Name="CbbUmaRule" Grid.ColumnSpan="2"
+                        <ComboBox Margin="5,2,0,2" Grid.Column="2" Grid.Row="8" ItemsSource="{Binding UmaRuleChoices}" SelectedIndex="{Binding UmaRuleIndex}" Grid.ColumnSpan="2"
                                   ToolTip="Bonus/malus de classement ajouté au score final selon le rang. '5 / 10' est la convention la plus répandue ; 'EMA' est la règle de compétition européenne." />
-                        <Button Grid.Row="9" Grid.Column="0" Grid.ColumnSpan="4" Height="25" Margin="0,2,0,0" Content="Valeurs par défaut" Name="BtnResetRulesToDefault" Click="BtnResetRulesToDefault_Click"
+                        <Button Grid.Row="9" Grid.Column="0" Grid.ColumnSpan="4" Height="25" Margin="0,2,0,0" Content="Valeurs par défaut" Command="{Binding ResetRulesToDefaultCommand}"
                                 ToolTip="Réinitialise les règles ci-dessus à leur vraie valeur par défaut, sans tenir compte de la dernière configuration sauvegardée." />
                     </Grid>
                 </TabItem>
@@ -140,24 +140,24 @@
                             <RowDefinition Height="30" />
                         </Grid.RowDefinitions>
                         <Label Grid.Column="0" Grid.Row="0" Content="Debug mode" />
-                        <CheckBox Grid.Column="1" Grid.Row="0" Name="ChkDebugMode" />
+                        <CheckBox Grid.Column="1" Grid.Row="0" IsChecked="{Binding DebugMode}" />
                         <Label Grid.Column="0" Grid.Row="1" Content="4 CPUs" />
-                        <CheckBox Grid.Column="1" Grid.Row="1" Name="ChkFourCpus" />
+                        <CheckBox Grid.Column="1" Grid.Row="1" IsChecked="{Binding FourCpus}" />
                         <Label Grid.Column="0" Grid.Row="2" Content="Scénario de tirage" />
-                        <ComboBox Margin="5, 0, 0, 0" Grid.Column="1" Grid.Row="2" Name="CbbDrivenDrawScenario"
+                        <ComboBox Margin="5, 0, 0, 0" Grid.Column="1" Grid.Row="2" ItemsSource="{Binding DrivenDrawScenarioChoices}" SelectedIndex="{Binding DrivenDrawScenarioIndex}"
                                   ToolTip="Force une main de départ spécifique pour le joueur humain, afin de tester manuellement un scénario précis sans dépendre du hasard. Sans effet en mode '4 CPUs'." />
                     </Grid>
                 </TabItem>
                 <TabItem Header="Plus d'infos...">
                     <StackPanel Orientation="Vertical">
                         <TextBlock HorizontalAlignment="Center" Margin="0, 10, 0, 0">
-                            <Hyperlink Name="HlkPlayerStats" Click="HlkPlayerStats_Click">Statistiques du joueur</Hyperlink>
+                            <Hyperlink Command="{Binding ShowPlayerStatsCommand}">Statistiques du joueur</Hyperlink>
                         </TextBlock>
                         <TextBlock HorizontalAlignment="Center" Margin="0, 10, 0, 0">
-                            <Hyperlink Name="HlkYakus" Click="HlkYakus_Click">Règles et lexique</Hyperlink>
+                            <Hyperlink Command="{Binding ShowRulesCommand}">Règles et lexique</Hyperlink>
                         </TextBlock>
                         <TextBlock HorizontalAlignment="Center" Margin="0, 10, 0, 10">
-                            <Hyperlink Name="HlkAbout" Click="HlkAbout_Click">A propos de Gnoj-Ham</Hyperlink>
+                            <Hyperlink Command="{Binding ShowAboutCommand}">A propos de Gnoj-Ham</Hyperlink>
                         </TextBlock>
                     </StackPanel>
                 </TabItem>

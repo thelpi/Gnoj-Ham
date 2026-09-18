@@ -13,4 +13,11 @@ public interface IDialogService
     /// <typeparam name="TViewModel">The view-model type.</typeparam>
     /// <param name="viewModel">The view-model to display.</param>
     void ShowDialog<TViewModel>(TViewModel viewModel) where TViewModel : class;
+
+    /// <summary>
+    /// Shows a message to the user, and returns once it is dismissed.
+    /// </summary>
+    /// <param name="message">The message.</param>
+    /// <param name="title">The window title.</param>
+    void ShowMessage(string message, string title);
 }

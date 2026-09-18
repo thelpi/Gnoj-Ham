@@ -33,7 +33,8 @@ public partial class App : Application
 
         try
         {
-            new IntroWindow(CreateDialogService()).ShowDialog();
+            var dialogs = CreateDialogService();
+            dialogs.ShowDialog(new IntroViewModel(new WpfUserSettings(), new FilePlayerStatisticsStorage(), dialogs, new WpfUiDispatcher()));
         }
         catch (Exception ex)
         {
@@ -52,6 +53,9 @@ public partial class App : Application
     private static WpfDialogService CreateDialogService()
     {
         var dialogs = new WpfDialogService();
+        dialogs.Register<IntroViewModel>(viewModel => new IntroWindow(viewModel));
+        dialogs.Register<AutoPlayViewModel>(viewModel => new AutoPlayWindow(viewModel));
+        dialogs.Register<HumanGameSetup>(setup => new MainWindow(dialogs, setup.PlayerName, setup.Ruleset, setup.Stats, setup.DrivenDraw, setup.DebugMode));
         dialogs.Register<RulesViewModel>(_ => new RulesWindow());
         dialogs.Register<PlayerSaveStatsViewModel>(_ => new PlayerSaveStatsWindow());
         dialogs.Register<ScoreViewModel>(_ => new ScoreWindow());

@@ -10,3 +10,5 @@ Points notés en cours de route, pas traités tout de suite.
 ## Interface WPF (Gnoj-Ham-View)
 
 - [ ] Pas de MVVM, accès aux contrôles par reconstruction de nom (`GraphicTools.FindName<T>`) — fragile aux renommages XAML ; `FindName` peut renvoyer `null` sans revérification (`GraphicTools.cs:150`).
+- [ ] `AutoPlayWindow` : le panneau « Games in progress... » et sa barre de progression sont visibles dès l'ouverture, avant tout Start — reproduit tel quel par `AutoPlayViewModel.IsWaitingPanelVisible`, à masquer à l'état `Idle`.
+- [ ] `ScoreWindow.xaml` : le séparateur sous la main d'un gagnant est une `Line` avec `Fill` mais sans `Stroke`, donc invisible depuis toujours — lui donner un `Stroke`, ou le retirer.

@@ -1,4 +1,4 @@
-﻿<Window x:Class="Gnoj_Ham_View.AutoPlayWindow"
+<Window x:Class="Gnoj_Ham_View.AutoPlayWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -7,28 +7,36 @@
         mc:Ignorable="d"
         WindowStartupLocation="CenterScreen"
         Background="Gainsboro"
-        Title="AutoPlayWindow" SizeToContent="WidthAndHeight">
+        Title="AutoPlayWindow" SizeToContent="WidthAndHeight"
+        Closing="Window_Closing">
     <StackPanel Margin="10" Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Center">
-        <StackPanel Name="CpuPickerPanel" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0, 0, 0, 5">
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0, 0, 0, 5">
             <Label Content="CPU 1:" />
-            <ComboBox Name="CmbCpu0" Width="100" Margin="0, 0, 10, 0" />
+            <ComboBox Width="100" Margin="0, 0, 10, 0" ItemsSource="{Binding CpuOptions}" DisplayMemberPath="DisplayName"
+                      SelectedItem="{Binding Seats[0].Selected}" IsEnabled="{Binding AreSeatsEditable}" />
             <Label Content="CPU 2:" />
-            <ComboBox Name="CmbCpu1" Width="100" Margin="0, 0, 10, 0" />
+            <ComboBox Width="100" Margin="0, 0, 10, 0" ItemsSource="{Binding CpuOptions}" DisplayMemberPath="DisplayName"
+                      SelectedItem="{Binding Seats[1].Selected}" IsEnabled="{Binding AreSeatsEditable}" />
             <Label Content="CPU 3:" />
-            <ComboBox Name="CmbCpu2" Width="100" Margin="0, 0, 10, 0" />
+            <ComboBox Width="100" Margin="0, 0, 10, 0" ItemsSource="{Binding CpuOptions}" DisplayMemberPath="DisplayName"
+                      SelectedItem="{Binding Seats[2].Selected}" IsEnabled="{Binding AreSeatsEditable}" />
             <Label Content="CPU 4:" />
-            <ComboBox Name="CmbCpu3" Width="100" />
+            <ComboBox Width="100" ItemsSource="{Binding CpuOptions}" DisplayMemberPath="DisplayName"
+                      SelectedItem="{Binding Seats[3].Selected}" IsEnabled="{Binding AreSeatsEditable}" />
         </StackPanel>
-        <StackPanel Name="ActionPanel" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center"
+                    Visibility="{Binding IsActionPanelVisible, Converter={StaticResource BooleanToVisibilityConverter}}">
             <Label Content="Games count:" />
-            <TextBox Text="10" Name="TxtGamesCount" VerticalContentAlignment="Center" Margin="0, 0, 5, 0" Width="25" HorizontalContentAlignment="Center" />
-            <Button Width="75" Height="25" Content="Start" Name="BtnStart" Click="BtnStart_Click" />
+            <TextBox Text="{Binding GamesCountText, UpdateSourceTrigger=PropertyChanged}" VerticalContentAlignment="Center" Margin="0, 0, 5, 0" Width="25" HorizontalContentAlignment="Center" />
+            <Button Width="75" Height="25" Content="Start" Command="{Binding StartCommand}" />
         </StackPanel>
-        <StackPanel Name="WaitingPanel" Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Center">
+        <StackPanel Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Center"
+                    Visibility="{Binding IsWaitingPanelVisible, Converter={StaticResource BooleanToVisibilityConverter}}">
             <Label Content="Games in progress..." HorizontalAlignment="Center" />
-            <ProgressBar Height="25" Width="250" Name="PgbGames" Maximum="1" />
+            <ProgressBar Height="25" Width="250" Maximum="1" Value="{Binding Progress, Mode=OneWay}" />
         </StackPanel>
-        <ListView Visibility="Collapsed" Name="ScoresList">
+        <ListView ItemsSource="{Binding Results}"
+                  Visibility="{Binding AreResultsVisible, Converter={StaticResource BooleanToVisibilityConverter}}">
             <ListView.View>
                 <GridView>
                     <GridViewColumn Header="Name">

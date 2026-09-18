@@ -33,4 +33,10 @@ internal sealed class WpfDialogService : IDialogService
         window.DataContext = viewModel;
         window.ShowDialog();
     }
+
+    /// <inheritdoc />
+    public void ShowMessage(string message, string title)
+    {
+        MessageBox.Show(message, title);
+    }
 }
