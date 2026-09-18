@@ -1,4 +1,4 @@
-﻿namespace Gnoj_Ham_View;
+﻿namespace Gnoj_Ham_ViewModel;
 
 /// <summary>
 /// Represents tile rotation (depending on the player).

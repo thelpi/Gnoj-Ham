@@ -1,9 +1,8 @@
-﻿using System.IO;
-using System.Windows;
+﻿using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
-using System.Windows.Media.Imaging;
 using Gnoj_Ham_Library;
+using Gnoj_Ham_ViewModel;
 
 namespace Gnoj_Ham_View;
 
@@ -32,14 +31,12 @@ public partial class TileButton : Button
 
         var rscName = concealed ? CONCEALED_TILE_RSC_NAME : tile!.ToResourceName();
 
-        var tileBitmap = Properties.Resources.ResourceManager.GetObject(rscName) as byte[];
-
         Height = angle == AnglePivot.A0 || angle == AnglePivot.A180 ? (TILE_HEIGHT * rate) : (TILE_WIDTH * rate);
         Width = angle == AnglePivot.A0 || angle == AnglePivot.A180 ? (TILE_WIDTH * rate) : (TILE_HEIGHT * rate);
 
         Content = new Image
         {
-            Source = ToBitmapImage(tileBitmap!),
+            Source = TileImages.Get(rscName),
             LayoutTransform = new RotateTransform(Convert.ToDouble(angle.ToString().Replace("A", string.Empty)))
         };
 
@@ -49,17 +46,5 @@ public partial class TileButton : Button
         {
             Click += handler;
         }
-    }
-
-    private static BitmapImage ToBitmapImage(byte[] bitmap)
-    {
-        var bitmapImage = new BitmapImage();
-        bitmapImage.BeginInit();
-        bitmapImage.StreamSource = new MemoryStream(bitmap);
-        bitmapImage.CacheOption = BitmapCacheOption.OnLoad;
-        bitmapImage.EndInit();
-        bitmapImage.Freeze();
-
-        return bitmapImage;
     }
 }

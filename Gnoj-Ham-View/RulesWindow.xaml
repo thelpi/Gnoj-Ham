@@ -261,7 +261,7 @@
         </TabItem>
         <TabItem Header="Liste de Yakus">
             <ScrollViewer PreviewMouseWheel="ScrollViewer_PreviewMouseWheel"  VerticalScrollBarVisibility="Auto" CanContentScroll="True">
-                <ListView Name="LstYakus" AlternationCount="2">
+                <ListView ItemsSource="{Binding Yakus}" AlternationCount="2">
                     <ListView.Resources>
                         <Style TargetType="ListViewItem">
                             <Setter Property="ItemsControl.Height" Value="40" />

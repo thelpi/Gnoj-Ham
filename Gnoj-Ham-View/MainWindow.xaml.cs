@@ -8,6 +8,8 @@ using System.Windows.Media.Animation;
 using Gnoj_Ham_Library;
 using Gnoj_Ham_Library.Enums;
 using Gnoj_Ham_Library.Events;
+using Gnoj_Ham_ViewModel;
+using Gnoj_Ham_ViewModel.Services;
 
 namespace Gnoj_Ham_View;
 
@@ -35,6 +37,7 @@ public partial class MainWindow : Window
     private string RiichiStickImage => RiichiStickP0.Name[..^1];
     private string ActionButton => BtnChii.Name[..BtnChii.Name.IndexOf(CallTypes.Chii.ToString())];
 
+    private readonly IDialogService _dialogs;
     private readonly GamePivot _game;
     private readonly System.Media.SoundPlayer _tickSound;
     private System.Timers.Timer? _timer;
@@ -53,15 +56,17 @@ public partial class MainWindow : Window
     /// <summary>
     /// Constructor.
     /// </summary>
+    /// <param name="dialogs">Opens the secondary windows (rules, statistics, score...).</param>
     /// <param name="playerName">Human player name.</param>
     /// <param name="ruleset">The ruleset.</param>
     /// <param name="stats">Player statistics.</param>
     /// <param name="drivenDraw">Optional; see <see cref="DrivenDrawPivot.Resolve(DrivenDrawScenarios, PlayerIndices)"/>. <c>Null</c> (default) for a normal, fully random draw.</param>
     /// <param name="debugMode">Optional; reveals every hand instead of just the human player's. <c>False</c> (default).</param>
-    public MainWindow(string playerName, RulePivot ruleset, PlayerStatisticsPivot stats, Action<List<TilePivot>>? drivenDraw = null, bool debugMode = false)
+    public MainWindow(IDialogService dialogs, string playerName, RulePivot ruleset, PlayerStatisticsPivot stats, Action<List<TilePivot>>? drivenDraw = null, bool debugMode = false)
     {
         InitializeComponent();
 
+        _dialogs = dialogs;
         _debugMode = debugMode;
 
         _cancellationToken = _cancellationTokenSource.Token;
@@ -289,7 +294,7 @@ public partial class MainWindow : Window
 
     private void HlkYakus_Click(object sender, RoutedEventArgs e)
     {
-        new RulesWindow().ShowDialog();
+        _dialogs.ShowDialog(new RulesViewModel());
     }
 
     private void HlkAbout_Click(object sender, RoutedEventArgs e)
@@ -340,7 +345,7 @@ public partial class MainWindow : Window
             MessageBox.Show($"Une erreur est survenue pendant le chargement du fichier de statistiques du joueur ; les statistiques seront vides.\n\nDétails de l'erreur :\n{error}", "Gnoj-Ham - Avertissement");
         }
 
-        new PlayerSaveStatsWindow(stats).ShowDialog();
+        _dialogs.ShowDialog(new PlayerSaveStatsViewModel(stats));
     }
 
     #endregion Configuration
@@ -425,11 +430,11 @@ public partial class MainWindow : Window
             }
         }
 
-        new ScoreWindow(_game.Players.ToList(), endOfRoundInfo).ShowDialog();
+        _dialogs.ShowDialog(new ScoreViewModel(_game.Players, endOfRoundInfo));
 
         if (endOfRoundInfo.EndOfGame)
         {
-            new EndOfGameWindow(_game).ShowDialog();
+            _dialogs.ShowDialog(new EndOfGameViewModel(_game.ComputeCurrentRanking()));
             Close();
         }
         else

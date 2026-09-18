@@ -3,6 +3,8 @@ using System.Windows.Controls;
 using Gnoj_Ham_Library;
 using Gnoj_Ham_Library.Enums;
 using Gnoj_Ham_View.Properties;
+using Gnoj_Ham_ViewModel;
+using Gnoj_Ham_ViewModel.Services;
 
 namespace Gnoj_Ham_View;
 
@@ -11,12 +13,17 @@ namespace Gnoj_Ham_View;
 /// </summary>
 public partial class IntroWindow : Window
 {
+    private readonly IDialogService _dialogs;
+
     /// <summary>
     /// Constructor.
     /// </summary>
-    public IntroWindow()
+    /// <param name="dialogs">Opens the secondary windows (rules, statistics...).</param>
+    public IntroWindow(IDialogService dialogs)
     {
         InitializeComponent();
+
+        _dialogs = dialogs;
 
         DevelopmentTab.Visibility = Visibility.Visible;
 
@@ -76,7 +83,7 @@ public partial class IntroWindow : Window
         else
         {
             var drivenDraw = DrivenDrawPivot.Resolve((DrivenDrawScenarios)CbbDrivenDrawScenario.SelectedIndex, PlayerIndices.Zero);
-            new MainWindow(TxtPlayerName.Text, ruleset, stats, drivenDraw, ChkDebugMode.IsChecked == true).ShowDialog();
+            new MainWindow(_dialogs, TxtPlayerName.Text, ruleset, stats, drivenDraw, ChkDebugMode.IsChecked == true).ShowDialog();
         }
 
         // The configuration might be updated in-game.
@@ -164,7 +171,7 @@ public partial class IntroWindow : Window
 
     private void HlkYakus_Click(object sender, RoutedEventArgs e)
     {
-        new RulesWindow().ShowDialog();
+        _dialogs.ShowDialog(new RulesViewModel());
     }
 
     private void HlkPlayerStats_Click(object sender, RoutedEventArgs e)
@@ -176,6 +183,6 @@ public partial class IntroWindow : Window
             MessageBox.Show($"Une erreur est survenue pendant le chargement du fichier de statistiques du joueur ; les statistiques seront vides.\n\nDétails de l'erreur :\n{error}", "Gnoj-Ham - Avertissement");
         }
 
-        new PlayerSaveStatsWindow(stats).ShowDialog();
+        _dialogs.ShowDialog(new PlayerSaveStatsViewModel(stats));
     }
 }

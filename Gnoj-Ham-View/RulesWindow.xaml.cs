@@ -2,7 +2,6 @@
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Documents;
-using Gnoj_Ham_Library;
 
 namespace Gnoj_Ham_View;
 
@@ -17,12 +16,6 @@ public partial class RulesWindow : Window
     public RulesWindow()
     {
         InitializeComponent();
-
-        LstYakus.ItemsSource = YakuPivot.Yakus
-            .Except(new[] { YakuPivot.NagashiMangan })
-            .OrderBy(x => x.ConcealedFanCount)
-            .ThenBy(x => x.FanCount)
-            .ThenBy(x => x.Name);
     }
 
     private void ScrollViewer_PreviewMouseWheel(object sender, System.Windows.Input.MouseWheelEventArgs e)

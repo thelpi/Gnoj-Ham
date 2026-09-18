@@ -1,5 +1,7 @@
 ﻿using System.Windows;
 using System.Windows.Controls;
+using Gnoj_Ham_View.Services;
+using Gnoj_Ham_ViewModel;
 
 namespace Gnoj_Ham_View;
 
@@ -31,7 +33,7 @@ public partial class App : Application
 
         try
         {
-            new IntroWindow().ShowDialog();
+            new IntroWindow(CreateDialogService()).ShowDialog();
         }
         catch (Exception ex)
         {
@@ -44,5 +46,16 @@ public partial class App : Application
             MessageBox.Show("Une erreur technique est survenue, entrainant l'arrêt de l'application.\r\nLes détails de l'erreur ont été copiées dans le presse-papier.\r\nMerci d'avance des les transmettre à l'équipe technique.", "Gnoj-Ham - Erreur");
             Environment.Exit(0);
         }
+    }
+
+    // Says which window displays which view-model.
+    private static WpfDialogService CreateDialogService()
+    {
+        var dialogs = new WpfDialogService();
+        dialogs.Register<RulesViewModel>(_ => new RulesWindow());
+        dialogs.Register<PlayerSaveStatsViewModel>(_ => new PlayerSaveStatsWindow());
+        dialogs.Register<ScoreViewModel>(_ => new ScoreWindow());
+        dialogs.Register<EndOfGameViewModel>(_ => new EndOfGameWindow());
+        return dialogs;
     }
 }
