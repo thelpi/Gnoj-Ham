@@ -545,6 +545,11 @@ public class BasicCpuManagerPivot : CpuManagerBasePivot
                 && deadTiles.Count(t => t == tile) == 4
                 && deadTiles.GroupBy(t => t).Any(g => g.Key != tile && g.Key.IsHonorOrTerminal && g.Count() > 3);
 
+            // Kabe (wall): every one of a numbered tile's 4 copies already visible to us means nobody
+            // holds or can draw one anymore - no shanpon, tanki, or either side of a ryanmen/kanchan/
+            // penchan resolving specifically on this kind is possible, regardless of who's dangerous.
+            var numberFullyDeadAndVisible = ReadsKabeForNumbers && !tile.IsHonor && deadTiles.Count(t => t == tile) == 4;
+
             foreach (var i in Enum.GetValues<PlayerIndices>().Where(i => i != Round.CurrentPlayerIndex))
             {
                 // stop the building of the hand is opponent is riichi or has 3 or more combinations visible
@@ -552,7 +557,7 @@ public class BasicCpuManagerPivot : CpuManagerBasePivot
                 {
                     stopCurrentHand = true;
                     var summary = opponentSummaries[i];
-                    if (summary.Tiles.Contains(tile) || honorIsolatedAndVisible)
+                    if (summary.Tiles.Contains(tile) || honorIsolatedAndVisible || numberFullyDeadAndVisible)
                     {
                         tilesSafety[tile].Add(TileSafety.Safe);
                     }
@@ -657,6 +662,15 @@ public class BasicCpuManagerPivot : CpuManagerBasePivot
     // as a tie-break in GetBestDiscardFromList. Overridden by BasicNoWaitWidthCpuManagerPivot to
     // reproduce the original behavior (kept only to benchmark this fix's actual impact on win rate).
     protected virtual bool PrefersLiveWait => true;
+
+    // True here: ComputeTilesSafety additionally treats a numbered tile as guaranteed-safe once every
+    // one of its 4 copies is already visible to us - nobody can be waiting on it (none left to hold or
+    // draw), the same "kabe" (wall) reasoning already applied to isolated honors there (see
+    // honorIsolatedAndVisible), just not gated on a second dead kind since kokushi musou - the reason
+    // for that extra gate on honors - doesn't involve numbered tiles beyond 1/9. Overridden by
+    // BasicNoNumberKabeCpuManagerPivot to reproduce the original behavior (kept only to benchmark this
+    // fix's actual impact on win rate).
+    protected virtual bool ReadsKabeForNumbers => true;
 
     // Whether discarding candidateDiscard would leave this player in (permanent) furiten: either an
     // earlier discard of theirs, or candidateDiscard itself (the classic "discard straight into your

@@ -29,5 +29,6 @@ public static class CpuManagerCatalog
         new(typeof(FullDefenseCpuManagerPivot), "full defense"),
         new(typeof(BasicNoFuritenCpuManagerPivot), "basic no furiten"),
         new(typeof(BasicNoWaitWidthCpuManagerPivot), "basic no wait width"),
+        new(typeof(BasicNoNumberKabeCpuManagerPivot), "basic no number kabe"),
     };
 }
