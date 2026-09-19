@@ -50,7 +50,7 @@ public class PlayerScorePivot
         Player = player;
         Rank = rank;
         Uma = uma;
-        Score = ((finalPoints - initialPoints) / 1000) + uma;
+        Score = ((finalPoints - initialPoints) / ScoreTools.SCORE_UNIT) + uma;
 
         Player.AddGameScore(this);
     }

@@ -219,6 +219,40 @@ public class TableViewModel_Tests
     }
 
     [Fact]
+    public void RefreshWalls_ConsumesTheWallsBackwardsRoundTheTableFromTheOneWhereTheWallIsOpened()
+    {
+        // Whatever the seat which opens the wall, and however far the round has gone.
+        var openings = new HashSet<PlayerIndices>();
+        for (var seed = 1; seed <= 40; seed++)
+        {
+            foreach (var game in new[] { NewGame(seed), PlayFirstRound(seed) })
+            {
+                var table = NewTable(game);
+                var round = game.Round;
+                openings.Add(round.WallOpeningIndex);
+                var stacks = (round.WallTiles.Count + round.AllTreasureTiles.Count) / 2;
+                var perWall = round.FullTilesList.Count / 8;
+
+                // The wall opened is the first to be consumed, then the one before it at the table, and so on.
+                var consumption = new List<PlayerIndices> { round.WallOpeningIndex };
+                for (var step = 1; step < 4; step++)
+                {
+                    consumption.Add(consumption[^1].RelativePlayerIndex(-1));
+                }
+
+                for (var step = 0; step < consumption.Count; step++)
+                {
+                    var wallsAfter = 3 - step;
+                    var expected = Math.Clamp(stacks - (perWall * wallsAfter), 0, perWall);
+                    Assert.Equal(expected, table.Walls[(int)consumption[step]].Count);
+                }
+            }
+        }
+
+        Assert.Equal(Enum.GetValues<PlayerIndices>().Length, openings.Count);
+    }
+
+    [Fact]
     public void RefreshWalls_ShrinksAsTheRoundGoesOn()
     {
         var game = NewGame(1);

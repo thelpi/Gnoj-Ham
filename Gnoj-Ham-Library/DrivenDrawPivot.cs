@@ -69,15 +69,15 @@ public static class DrivenDrawPivot
         var redDragons = ExtractQuad(fullTilesList, Dragons.Red);
 
         // Both insertions keep the wall the same size, and land in the two hands dealt.
-        fullTilesList.InsertRange(WallLayout.HandStart(playerIndex), redDragons.Take(3));
-        fullTilesList.Insert(WallLayout.HandStart(playerIndex.RelativePlayerIndex(-1)), redDragons[3]);
+        fullTilesList.InsertRange(WallLayout.HandStart(playerIndex), redDragons.Take(TilePivot.CopiesCount - 1));
+        fullTilesList.Insert(WallLayout.HandStart(playerIndex.RelativePlayerIndex(-1)), redDragons[TilePivot.CopiesCount - 1]);
     }
 
     // Pulls every copy of the specified dragon out of the wall (order-preserving from the end, like
     // the original single-kan rigging), leaving fullTilesList with exactly 4 fewer tiles.
     private static List<TilePivot> ExtractQuad(List<TilePivot> fullTilesList, Dragons dragon)
     {
-        var quad = new List<TilePivot>(4);
+        var quad = new List<TilePivot>(TilePivot.CopiesCount);
         for (var i = fullTilesList.Count - 1; i >= 0; i--)
         {
             if (fullTilesList[i].Family == Families.Dragon && fullTilesList[i].Dragon == dragon)

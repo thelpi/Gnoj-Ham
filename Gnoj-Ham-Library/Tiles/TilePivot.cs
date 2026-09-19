@@ -9,6 +9,26 @@ namespace Gnoj_Ham_Library;
 /// <seealso cref="IComparable{T}"/>
 public class TilePivot : IEquatable<TilePivot>, IComparable<TilePivot>
 {
+    /// <summary>
+    /// The copies of each tile in a set.
+    /// </summary>
+    internal const int CopiesCount = 4;
+
+    /// <summary>
+    /// The lowest number of a suit.
+    /// </summary>
+    internal const byte MinNumber = 1;
+
+    /// <summary>
+    /// The highest number of a suit.
+    /// </summary>
+    internal const byte MaxNumber = 9;
+
+    /// <summary>
+    /// The middle number of a suit, the one which is a red dora.
+    /// </summary>
+    internal const byte MiddleNumber = 5;
+
     #region Embedded properties
 
     // a unique code for a tile (consider this as the hashcode value)
@@ -49,7 +69,7 @@ public class TilePivot : IEquatable<TilePivot>, IComparable<TilePivot>
     /// <summary>
     /// Inferred; indicates if the instance is a terminal.
     /// </summary>
-    public bool IsTerminal => Number == 1 || Number == 9;
+    public bool IsTerminal => Number is MinNumber or MaxNumber;
     /// <summary>
     /// Inferred; indicates if the instance is an honor or a terminal.
     /// </summary>
@@ -186,7 +206,7 @@ public class TilePivot : IEquatable<TilePivot>, IComparable<TilePivot>
     /// <returns>A list of <see cref="TilePivot"/>.</returns>
     internal static IReadOnlyList<TilePivot> GetCompleteSet(bool withRedDoras = false)
     {
-        var tiles = new List<TilePivot>(136);
+        var tiles = new List<TilePivot>();
 
         foreach (var family in Enum.GetValues<Families>())
         {
@@ -194,7 +214,7 @@ public class TilePivot : IEquatable<TilePivot>, IComparable<TilePivot>
             {
                 foreach (var dragon in Enum.GetValues<Dragons>())
                 {
-                    for (var i = 0; i < 4; i++)
+                    for (var i = 0; i < CopiesCount; i++)
                     {
                         tiles.Add(new TilePivot(dragon));
                     }
@@ -204,7 +224,7 @@ public class TilePivot : IEquatable<TilePivot>, IComparable<TilePivot>
             {
                 foreach (var wind in Enum.GetValues<Winds>())
                 {
-                    for (var i = 0; i < 4; i++)
+                    for (var i = 0; i < CopiesCount; i++)
                     {
                         tiles.Add(new TilePivot(wind));
                     }
@@ -212,11 +232,11 @@ public class TilePivot : IEquatable<TilePivot>, IComparable<TilePivot>
             }
             else
             {
-                for (byte j = 1; j <= 9; j++)
+                for (byte j = MinNumber; j <= MaxNumber; j++)
                 {
-                    for (var i = 0; i < 4; i++)
+                    for (var i = 0; i < CopiesCount; i++)
                     {
-                        tiles.Add(new TilePivot(family, j, withRedDoras && j == 5 && i == 3));
+                        tiles.Add(new TilePivot(family, j, withRedDoras && j == MiddleNumber && i == CopiesCount - 1));
                     }
                 }
             }
@@ -303,7 +323,7 @@ public class TilePivot : IEquatable<TilePivot>, IComparable<TilePivot>
                                 : other.Wind.Value == Winds.South
                                     ? Wind!.Value == Winds.West
                                     : other.Wind.Value == Winds.West ? Wind!.Value == Winds.North : Wind!.Value == Winds.East,
-            _ => Number == (other.Number == 9 ? 1 : other.Number + 1),
+            _ => Number == (other.Number == MaxNumber ? MinNumber : other.Number + 1),
         };
     }
 
@@ -316,8 +336,8 @@ public class TilePivot : IEquatable<TilePivot>, IComparable<TilePivot>
     {
         return combo.IsSequence && combo.Tiles.Contains(this)
             && (
-                (combo.SequenceFirstNumber == 1 && combo.SequenceLastNumber == Number)
-                || (combo.SequenceLastNumber == 9 && combo.SequenceFirstNumber == Number)
+                (combo.SequenceFirstNumber == MinNumber && combo.SequenceLastNumber == Number)
+                || (combo.SequenceLastNumber == MaxNumber && combo.SequenceFirstNumber == Number)
             );
     }
 
@@ -334,12 +354,12 @@ public class TilePivot : IEquatable<TilePivot>, IComparable<TilePivot>
     }
 
     /// <summary>
-    /// Computes the distance with the middle (<see cref="Number"/> 5). <c>0</c> if 5, <c>4</c> if 1 or 9.
+    /// Computes the distance with the middle (<see cref="MiddleNumber"/>). <c>0</c> if the middle, <c>4</c> if a terminal.
     /// </summary>
     /// <param name="honorIsNotMiddle">If enabled, Honor are 5; otherwise 0.</param>
     /// <returns>The distance.</returns>
     internal int DistanceToMiddle(bool honorIsNotMiddle)
-        => !honorIsNotMiddle && Number == 0 ? 0 : Math.Abs(Number - 5);
+        => !honorIsNotMiddle && Number == 0 ? 0 : Math.Abs(Number - MiddleNumber);
 
     #endregion Public methods
 }

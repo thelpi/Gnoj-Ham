@@ -203,4 +203,42 @@ public class ScoreTools_Tests
         Assert.Equal(tenpai, tenpaiPoints);
         Assert.Equal(nonTenpai, nonTenpaiPoints);
     }
+
+    [Theory]
+    [InlineData(4, 40, 5)]
+    [InlineData(4, 110, 5)]
+    [InlineData(3, 70, 5)]
+    [InlineData(3, 110, 5)]
+    public void GetPoints_AHandOneFanShortWith40FuOrTwoWith70_IsAMangan(int fanCount, int fuCount, int equivalentFanCount)
+    {
+        foreach (var wind in new[] { Winds.East, Winds.South })
+        {
+            foreach (var tsumo in new[] { true, false })
+            {
+                Assert.Equal(
+                    ScoreTools.GetPoints(equivalentFanCount, 30, tsumo, wind),
+                    ScoreTools.GetPoints(fanCount, fuCount, tsumo, wind));
+            }
+        }
+    }
+
+    [Theory]
+    [InlineData(4, 30)]
+    [InlineData(3, 60)]
+    public void GetPoints_AHandJustBelowThoseFu_IsNotAMangan(int fanCount, int fuCount)
+    {
+        Assert.NotEqual(
+            ScoreTools.GetPoints(5, 30, false, Winds.South),
+            ScoreTools.GetPoints(fanCount, fuCount, false, Winds.South));
+    }
+
+    [Theory]
+    [InlineData(13, 8000)]
+    [InlineData(26, 16000)]
+    public void GetPoints_EachYakumanIsWorth8000ToEachOpponentAsBase(int fanCount, int base8000Multiple)
+    {
+        var (_, notEast) = ScoreTools.GetPoints(fanCount, 30, true, Winds.South);
+
+        Assert.Equal(base8000Multiple, notEast);
+    }
 }

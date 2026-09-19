@@ -118,13 +118,13 @@ internal class EndOfRoundCalculatorPivot
 
                 PlayerIndices? liablePlayerId = null;
                 if (phand.Yakus!.Contains(YakuPivot.Daisangen)
-                    && phand.DeclaredCombinations.Count(c => c.Family == Families.Dragon) == 3
+                    && phand.DeclaredCombinations.Count(c => c.Family == Families.Dragon) == Enum.GetValues<Dragons>().Length
                     && phand.DeclaredCombinations.Last(c => c.Family == Families.Dragon).StolenFrom.HasValue)
                 {
                     liablePlayerId = _round.Game.GetPlayerIndexByCurrentWind(phand.DeclaredCombinations.Last(c => c.Family == Families.Dragon).StolenFrom!.Value);
                 }
                 else if (phand.Yakus!.Contains(YakuPivot.Daisuushii)
-                    && phand.DeclaredCombinations.Count(c => c.Family == Families.Wind) == 4
+                    && phand.DeclaredCombinations.Count(c => c.Family == Families.Wind) == Enum.GetValues<Winds>().Length
                     && phand.DeclaredCombinations.Last(c => c.Family == Families.Wind).StolenFrom.HasValue)
                 {
                     liablePlayerId = _round.Game.GetPlayerIndexByCurrentWind(phand.DeclaredCombinations.Last(c => c.Family == Families.Wind).StolenFrom!.Value);
@@ -237,7 +237,7 @@ internal class EndOfRoundCalculatorPivot
                         {
                             Index = pIndex,
                             IsCpu = _round.Game.IsCpu(pIndex),
-                            PointsGain = (_round.Game.GetPlayerCurrentWind(pIndex) == Winds.East ? eastOrLoserLostCumul : notEastLostCumul) - (honbaPoints / 3)
+                            PointsGain = (_round.Game.GetPlayerCurrentWind(pIndex) == Winds.East ? eastOrLoserLostCumul : notEastLostCumul) - (honbaPoints / (GamePivot.PlayersCount - 1))
                         });
                     }
                 }

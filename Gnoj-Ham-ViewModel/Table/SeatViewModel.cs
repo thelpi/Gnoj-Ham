@@ -14,6 +14,9 @@ public sealed partial class SeatViewModel : ObservableObject
     private const int DiscardRowLength = 6;
     private const int DiscardRowsCount = 3;
 
+    // Points are shown in thousands.
+    private const int PointsPerK = 1000;
+
     private static readonly IReadOnlyList<TileViewModel> NoTiles = Array.Empty<TileViewModel>();
 
     private readonly GamePivot _game;
@@ -129,7 +132,7 @@ public sealed partial class SeatViewModel : ObservableObject
         var wind = _game.GetPlayerCurrentWind(Index);
 
         Name = player.Name;
-        Points = $"{player.CurrentGamePoints / 1000}k";
+        Points = $"{player.CurrentGamePoints / PointsPerK}k";
         WindText = wind.ToWindDisplay();
         WindToolTip = wind.DisplayName();
         HasRiichiStick = false;

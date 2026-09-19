@@ -43,7 +43,7 @@ public class BasicCpuManagerPivot : CpuManagerBasePivot
             return false;
         }
 
-        return KokushiKinds.All(k => heldKinds.Contains(k) || deadTiles.Count(t => t == k) < 4);
+        return KokushiKinds.All(k => heldKinds.Contains(k) || deadTiles.Count(t => t == k) < TilePivot.CopiesCount);
     }
 
     // Dedicated discard logic for an active kokushi musou pursuit (see CloseToKokushi): a special
@@ -144,7 +144,7 @@ public class BasicCpuManagerPivot : CpuManagerBasePivot
         var singles = concealedTiles.GroupBy(t => t).Where(g => g.Count() == 1).Select(g => g.Key).ToList();
         if (singles.Count > 0)
         {
-            var worst = singles.OrderBy(k => 3 - deadTiles.Count(t => t == k)).First();
+            var worst = singles.OrderBy(k => TilePivot.CopiesCount - 1 - deadTiles.Count(t => t == k)).First();
             return discardableTiles.First(t => t == worst);
         }
 
@@ -542,13 +542,13 @@ public class BasicCpuManagerPivot : CpuManagerBasePivot
             // Also opponent-independent, and also constant across the whole tile loop, but cheap
             // enough that a per-tile computation (rather than per-tile-per-opponent) is good enough.
             var honorIsolatedAndVisible = tile.IsHonor
-                && deadTiles.Count(t => t == tile) == 4
-                && deadTiles.GroupBy(t => t).Any(g => g.Key != tile && g.Key.IsHonorOrTerminal && g.Count() > 3);
+                && deadTiles.Count(t => t == tile) == TilePivot.CopiesCount
+                && deadTiles.GroupBy(t => t).Any(g => g.Key != tile && g.Key.IsHonorOrTerminal && g.Count() >= TilePivot.CopiesCount);
 
             // Kabe (wall): every one of a numbered tile's 4 copies already visible to us means nobody
             // holds or can draw one anymore - no shanpon, tanki, or either side of a ryanmen/kanchan/
             // penchan resolving specifically on this kind is possible, regardless of who's dangerous.
-            var numberFullyDeadAndVisible = ReadsKabeForNumbers && !tile.IsHonor && deadTiles.Count(t => t == tile) == 4;
+            var numberFullyDeadAndVisible = ReadsKabeForNumbers && !tile.IsHonor && deadTiles.Count(t => t == tile) == TilePivot.CopiesCount;
 
             foreach (var i in Enum.GetValues<PlayerIndices>().Where(i => i != Round.CurrentPlayerIndex))
             {
@@ -618,7 +618,7 @@ public class BasicCpuManagerPivot : CpuManagerBasePivot
         }
 
         private bool HasNumber(Families family, int number)
-            => number is >= 1 and <= 9 && _numbersByFamily.TryGetValue(family, out var numbers) && numbers.Contains((byte)number);
+            => number is >= TilePivot.MinNumber and <= TilePivot.MaxNumber && _numbersByFamily.TryGetValue(family, out var numbers) && numbers.Contains((byte)number);
 
         internal bool IsInsiderSuji(TilePivot tile, int[] middleNumbers)
             => !tile.IsHonor && (
@@ -705,7 +705,7 @@ public class BasicCpuManagerPivot : CpuManagerBasePivot
     private int WaitLiveTileCount(TilePivot candidateDiscard, IReadOnlyList<TilePivot> deadTiles, IReadOnlyList<TilePivot> allTileKinds)
     {
         var waitTiles = Round.GetHand(Round.CurrentPlayerIndex).GetWaitTiles(allTileKinds, candidateDiscard);
-        return waitTiles.Sum(w => 4 - deadTiles.Count(d => d == w));
+        return waitTiles.Sum(w => TilePivot.CopiesCount - deadTiles.Count(d => d == w));
     }
 
     private bool PlayerIsCloseToWin(PlayerIndices i)

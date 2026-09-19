@@ -20,7 +20,7 @@ public sealed class YakuRuleViewModel
             ? $"{yaku.FanCount} (+{yaku.ConcealedBonusFanCount})"
             : yaku.ConcealedFanCount.ToString();
 
-        if (yaku.ConcealedFanCount == 13 && yaku.FanCount == 0)
+        if (yaku.ConcealedFanCount == YakuPivot.YakumanFanCount && yaku.FanCount == 0)
         {
             ToolTip = "Yakuman. Main fermée uniquement.";
         }

@@ -180,9 +180,9 @@ public abstract class CpuManagerBasePivot
         return Round.GetDiscard(opponentPlayerIndex).Contains(tile) || (
             tile.IsHonor
             // honor that can't be paired by opponent
-            && povVisibleTiles.Count(t => t == tile) == 4
+            && povVisibleTiles.Count(t => t == tile) == TilePivot.CopiesCount
             // at least one other honor (or terminal) is fully inaccessible for opponent to make Kokushi-Musuou
-            && povVisibleTiles.GroupBy(t => t).Any(t => t.Key != tile && t.Key.IsHonorOrTerminal && t.Count() > 3)
+            && povVisibleTiles.GroupBy(t => t).Any(t => t.Key != tile && t.Key.IsHonorOrTerminal && t.Count() >= TilePivot.CopiesCount)
         );
     }
 

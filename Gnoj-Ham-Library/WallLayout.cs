@@ -12,7 +12,7 @@ internal sealed class WallLayout
     /// <summary>
     /// The tiles of a hand as it is dealt.
     /// </summary>
-    internal const int HandSize = 13;
+    internal const int HandSize = HandPivot.DealtSize;
 
     /// <summary>
     /// The most kans a round can see; the dead wall holds a tile for each to replace the tile taken.

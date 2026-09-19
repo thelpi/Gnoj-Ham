@@ -7,6 +7,21 @@ namespace Gnoj_Ham_Library;
 /// </summary>
 public class HandPivot
 {
+    /// <summary>
+    /// The melds (each counting for <see cref="TileComboPivot.MeldSize"/> tiles, even a kan) of a complete hand, besides its pair.
+    /// </summary>
+    internal const int MeldsCount = 4;
+
+    /// <summary>
+    /// The tiles of a complete hand.
+    /// </summary>
+    internal const int FullSize = (MeldsCount * TileComboPivot.MeldSize) + TileComboPivot.PairSize;
+
+    /// <summary>
+    /// The tiles of a hand as it is dealt: one less than a complete hand, which is once a tile is picked.
+    /// </summary>
+    internal const int DealtSize = FullSize - 1;
+
     #region Embedded properties
 
     private readonly List<TilePivot> _concealedTiles;
@@ -69,21 +84,21 @@ public class HandPivot
     }
 
     /// <summary>
-    /// Inferred; indicates if the hand, including openings, contains 14 tiles (4th tile from kans not included).
+    /// Inferred; indicates if the hand, including openings, holds a complete hand's tiles (4th tile from kans not included).
     /// </summary>
-    public bool IsFullHand => (_declaredCombinations.Count * 3) + _concealedTiles.Count == 14;
+    public bool IsFullHand => (_declaredCombinations.Count * TileComboPivot.MeldSize) + _concealedTiles.Count == FullSize;
 
     #endregion Inferred properties
 
     /// <summary>
     /// Constructor.
     /// </summary>
-    /// <param name="tiles">Initial list of <see cref="TilePivot"/> (13).</param>
+    /// <param name="tiles">Initial list of <see cref="TilePivot"/> (<see cref="DealtSize"/>).</param>
     internal HandPivot(IReadOnlyList<TilePivot> tiles)
     {
         LatestPick = tiles[tiles.Count - 1];
         _concealedTiles = tiles.OrderBy(t => t).ToList();
-        _declaredCombinations = new List<TileComboPivot>(4);
+        _declaredCombinations = new List<TileComboPivot>(MeldsCount);
     }
 
     /// <summary>
@@ -145,7 +160,7 @@ public class HandPivot
             concealedTiles.Add(context.LatestTile!);
         }
 
-        var tilesCount = concealedTiles.Count + (_declaredCombinations.Count * 3);
+        var tilesCount = concealedTiles.Count + (_declaredCombinations.Count * TileComboPivot.MeldSize);
 
         Yakus = null;
         YakusCombinations = null;
@@ -215,13 +230,13 @@ public class HandPivot
     internal void DeclareChii(TilePivot tile, Winds stolenFrom, int startNumber)
     {
         var tilesList = Enumerable
-            .Range(startNumber, 3)
+            .Range(startNumber, TileComboPivot.MeldSize)
             .Where(i => i != tile.Number)
             .Select(i => _concealedTiles.FirstOrDefault(t => t.Family == tile.Family && t.Number == i))
             .Where(t => t != null)
             .Select(t => t!);
 
-        CheckTilesForCallAndExtractCombo(tilesList, 2, tile, stolenFrom);
+        CheckTilesForCallAndExtractCombo(tilesList, TileComboPivot.MeldSize - 1, tile, stolenFrom);
     }
 
     /// <summary>
@@ -231,7 +246,7 @@ public class HandPivot
     /// <param name="stolenFrom">The wind which the tile has been stolen from.</param>
     internal void DeclarePon(TilePivot tile, Winds stolenFrom)
     {
-        CheckTilesForCallAndExtractCombo(_concealedTiles.Where(t => t == tile), 2, tile, stolenFrom);
+        CheckTilesForCallAndExtractCombo(_concealedTiles.Where(t => t == tile), TileComboPivot.MeldSize - 1, tile, stolenFrom);
     }
 
     /// <summary>
@@ -245,7 +260,7 @@ public class HandPivot
         if (fromOpenPon == null)
         {
             CheckTilesForCallAndExtractCombo(_concealedTiles.Where(t => t == tile),
-                stolenFrom.HasValue ? 3 : 4,
+                stolenFrom.HasValue ? TileComboPivot.KanSize - 1 : TileComboPivot.KanSize,
                 stolenFrom.HasValue ? tile : null,
                 stolenFrom
             );
@@ -270,7 +285,7 @@ public class HandPivot
     /// <param name="tile">The tile, from the current hand, to make a square from.</param>
     internal void DeclareKan(TilePivot tile)
     {
-        CheckTilesForCallAndExtractCombo(_concealedTiles.Where(t => t == tile), 4, null, null);
+        CheckTilesForCallAndExtractCombo(_concealedTiles.Where(t => t == tile), TileComboPivot.KanSize, null, null);
     }
 
     /// <summary>

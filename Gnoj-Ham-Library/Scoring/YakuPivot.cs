@@ -7,6 +7,11 @@ namespace Gnoj_Ham_Library;
 /// </summary>
 public class YakuPivot
 {
+    /// <summary>
+    /// The fan count of a yakuman.
+    /// </summary>
+    public const int YakumanFanCount = 13;
+
     #region Embedded properties
 
     private readonly List<YakuPivot> _upgrades;
@@ -25,7 +30,7 @@ public class YakuPivot
     public string Description { get; }
     /// <summary>
     /// Fan count;
-    /// <c>13</c> for yakuman;
+    /// <see cref="YakumanFanCount"/> for yakuman;
     /// <c>0</c> if the yaku must be concealed.
     /// </summary>
     public int FanCount { get; }
@@ -59,7 +64,7 @@ public class YakuPivot
     /// <summary>
     /// Inferred; indicates if the yaku is a yakuman (when concealed, at least); includes double yakumans.
     /// </summary>
-    public bool IsYakuman => ConcealedFanCount >= 13;
+    public bool IsYakuman => ConcealedFanCount >= YakumanFanCount;
 
     #endregion Inferred properties
 

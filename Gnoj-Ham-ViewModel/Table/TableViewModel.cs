@@ -11,8 +11,11 @@ namespace Gnoj_Ham_ViewModel;
 /// </summary>
 public sealed partial class TableViewModel : ObservableObject
 {
-    // The wall is fully displayed until the count of tiles left goes down to this.
-    private const int AlmostEmptyWallTilesCount = 4;
+    // The wall is fully displayed until the count of tiles left goes down to one draw for each player.
+    private static readonly int AlmostEmptyWallTilesCount = GamePivot.PlayersCount;
+
+    // Tiles of the walls are stacked two by two.
+    private const int TilesPerStack = 2;
 
     private static readonly IReadOnlyList<TileViewModel> NoTiles = Array.Empty<TileViewModel>();
 
@@ -185,29 +188,26 @@ public sealed partial class TableViewModel : ObservableObject
     /// </summary>
     public void RefreshWalls()
     {
-        // The order in which the walls are consumed; the index follows the player index.
-        var wallIndexes = new[] { 0, 3, 2, 1 };
-        for (var i = 1; i <= (int)_game.Round.WallOpeningIndex; i++)
+        // The order in which the walls are consumed: from the one of the player who opens the wall, going
+        // backwards round the table; a wall has the index of the player it is in front of.
+        var opening = _game.Round.WallOpeningIndex;
+        var consumptionOrder = GamePivot.PerPlayer(step => opening.RelativePlayerIndex(-(int)step));
+
+        // Every tile to display in the walls, and in each of them.
+        var wallTiles = (_game.Round.WallTiles.Count + _game.Round.AllTreasureTiles.Count) / TilesPerStack;
+        var tilesPerWall = _game.Round.FullTilesList.Count / (GamePivot.PlayersCount * TilesPerStack);
+
+        var walls = new IReadOnlyList<TileViewModel>[consumptionOrder.Count];
+        for (var step = 0; step < consumptionOrder.Count; step++)
         {
-            for (var j = 0; j < wallIndexes.Length; j++)
-            {
-                wallIndexes[j] = wallIndexes[j] == 3 ? 0 : wallIndexes[j] + 1;
-            }
-        }
+            // The tiles are consumed from the first wall: the walls after this one are full for as long as it goes.
+            var wallsAfter = consumptionOrder.Count - 1 - step;
+            var wall = (int)consumptionOrder[step];
 
-        // Every tile to display in the four walls; two tiles are stacked, so half the count is needed.
-        var wallTiles = (_game.Round.WallTiles.Count + _game.Round.AllTreasureTiles.Count) / 2;
-        var tilesPerWall = _game.Round.FullTilesList.Count / 8;
+            var tilesCountForThisWall = Math.Max(0, Math.Min(tilesPerWall, wallTiles - (tilesPerWall * wallsAfter)));
+            var angle = wall % 2 == 0 ? AnglePivot.A0 : AnglePivot.A90;
 
-        var walls = new IReadOnlyList<TileViewModel>[wallIndexes.Length];
-        var tilesExpectedCoeff = 3;
-        foreach (var iWall in wallIndexes)
-        {
-            var tilesCountForThisWall = Math.Max(0, Math.Min(tilesPerWall, wallTiles - (tilesPerWall * tilesExpectedCoeff)));
-            var angle = iWall % 2 == 0 ? AnglePivot.A0 : AnglePivot.A90;
-
-            walls[iWall] = Enumerable.Range(0, tilesCountForThisWall).Select(_ => TileViewModel.FaceDown(angle)).ToList();
-            tilesExpectedCoeff--;
+            walls[wall] = Enumerable.Range(0, tilesCountForThisWall).Select(_ => TileViewModel.FaceDown(angle)).ToList();
         }
 
         Walls = walls;

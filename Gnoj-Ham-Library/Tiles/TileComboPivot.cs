@@ -8,6 +8,21 @@ namespace Gnoj_Ham_Library;
 /// <seealso cref="IEquatable{T}"/>
 public class TileComboPivot : IEquatable<TileComboPivot>
 {
+    /// <summary>
+    /// The tiles of a pair.
+    /// </summary>
+    internal const int PairSize = 2;
+
+    /// <summary>
+    /// The tiles of a brelan or of a sequence.
+    /// </summary>
+    internal const int MeldSize = 3;
+
+    /// <summary>
+    /// The tiles of a square: every copy of a tile.
+    /// </summary>
+    internal const int KanSize = TilePivot.CopiesCount;
+
     #region Embedded properties
 
     private readonly TilePivot[] _tiles;
@@ -38,19 +53,19 @@ public class TileComboPivot : IEquatable<TileComboPivot>
     /// <summary>
     /// Inferred; indicates if the combination is a pair.
     /// </summary>
-    public bool IsPair => _tiles.Length == 2;
+    public bool IsPair => _tiles.Length == PairSize;
     /// <summary>
     /// Inferred; indicates if the combination is a brelan.
     /// </summary>
-    public bool IsBrelan => _tiles.Length == 3 && !IsSequence;
+    public bool IsBrelan => _tiles.Length == MeldSize && !IsSequence;
     /// <summary>
     /// Inferred; indicates if the combination is a square.
     /// </summary>
-    public bool IsSquare => _tiles.Length == 4;
+    public bool IsSquare => _tiles.Length == KanSize;
     /// <summary>
     /// Inferred; indicates if the combination is a sequence.
     /// </summary>
-    public bool IsSequence => _tiles.Length == 3 && _tiles[0].Number != _tiles[1].Number;
+    public bool IsSequence => _tiles.Length == MeldSize && _tiles[0].Number != _tiles[1].Number;
     /// <summary>
     /// Inferred; indicates if the combination is a brelan or a square.
     /// </summary>
@@ -68,11 +83,11 @@ public class TileComboPivot : IEquatable<TileComboPivot>
     /// Inferred; indicates if the combination is formed of terminals.
     /// </summary>
     /// <remarks><see cref="HasTerminal"/> is necessarily <c>True</c> in that case.</remarks>
-    public bool IsTerminal => !IsHonor && _tiles.All(t => t.Number == 1 || t.Number == 9);
+    public bool IsTerminal => !IsHonor && _tiles.All(t => t.IsTerminal);
     /// <summary>
     /// Inferred; indicates if the combination is formed with at least one terminal.
     /// </summary>
-    public bool HasTerminal => !IsHonor && _tiles.Any(t => t.Number == 1 || t.Number == 9);
+    public bool HasTerminal => !IsHonor && _tiles.Any(t => t.IsTerminal);
     /// <summary>
     /// Inferred; indicates if the combination is <see cref="HasTerminal"/> or <see cref="IsHonor"/>.
     /// </summary>
@@ -166,9 +181,9 @@ public class TileComboPivot : IEquatable<TileComboPivot>
     /// <returns>Hashcode of this instance.</returns>
     public override int GetHashCode()
     {
-        return _tiles.Length == 2
+        return _tiles.Length == PairSize
             ? Tuple.Create(_tiles[0], _tiles[1]).GetHashCode()
-            : _tiles.Length == 4
+            : _tiles.Length == KanSize
                 ? Tuple.Create(_tiles[0], _tiles[1], _tiles[2], _tiles[3]).GetHashCode()
                 : Tuple.Create(_tiles[0], _tiles[1], _tiles[2]).GetHashCode();
     }
@@ -213,7 +228,7 @@ public class TileComboPivot : IEquatable<TileComboPivot>
     /// <returns>The pair.</returns>
     internal static TileComboPivot BuildPair(TilePivot tile)
     {
-        return Build(tile, 2);
+        return Build(tile, PairSize);
     }
 
     /// <summary>
@@ -223,7 +238,7 @@ public class TileComboPivot : IEquatable<TileComboPivot>
     /// <returns>The brelan.</returns>
     internal static TileComboPivot BuildBrelan(TilePivot tile)
     {
-        return Build(tile, 3);
+        return Build(tile, MeldSize);
     }
 
     /// <summary>
@@ -233,7 +248,7 @@ public class TileComboPivot : IEquatable<TileComboPivot>
     /// <returns>The square.</returns>
     internal static TileComboPivot BuildSquare(TilePivot tile)
     {
-        return Build(tile, 4);
+        return Build(tile, KanSize);
     }
 
     // Builds a pair, brelan or square of the specified tile.
@@ -253,7 +268,7 @@ public class TileComboPivot : IEquatable<TileComboPivot>
     /// <returns><c>True</c> if concealed display; <c>False</c> otherwise.</returns>
     public bool IsConcealedDisplay(int i)
     {
-        return IsSquare && IsConcealed && i > 0 && i < 3;
+        return IsSquare && IsConcealed && i > 0 && i < KanSize - 1;
     }
 
     /// <summary>

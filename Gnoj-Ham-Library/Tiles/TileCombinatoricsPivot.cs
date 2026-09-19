@@ -63,7 +63,7 @@ internal static class TileCombinatoricsPivot
     /// <returns><c>True</c> if "Kokushi musou"; <c>False</c> otherwise.</returns>
     internal static bool IsThirteenOrphans(IReadOnlyList<TilePivot> tiles)
     {
-        if (tiles.Count != 14)
+        if (tiles.Count != HandPivot.FullSize)
         {
             return false;
         }
@@ -104,7 +104,7 @@ internal static class TileCombinatoricsPivot
     /// <returns><c>True</c> if "Chiitoitsu"; <c>False</c> otherwise.</returns>
     internal static bool IsSevenPairs(IReadOnlyList<TilePivot> tiles)
     {
-        if (tiles.Count != 14)
+        if (tiles.Count != HandPivot.FullSize)
         {
             return false;
         }
@@ -152,7 +152,7 @@ internal static class TileCombinatoricsPivot
         Dictionary<Families, (List<TilePivot> Tiles, List<List<TileComboPivot>> Result)>? recursiveCache = null)
     {
         // Every combinations are declared.
-        if (declaredCombinationsCount == 4)
+        if (declaredCombinationsCount == HandPivot.MeldsCount)
         {
             // The last two should form a pair.
             return concealedTiles[0] == concealedTiles[1];
@@ -165,7 +165,7 @@ internal static class TileCombinatoricsPivot
 
     private static bool CombinationSequenceIsValid(int declaredCombinationsCount, List<TileComboPivot> cs)
     {
-        if (cs.Count != 5 - declaredCombinationsCount)
+        if (cs.Count != HandPivot.MeldsCount + 1 - declaredCombinationsCount)
         {
             return false;
         }
@@ -194,7 +194,7 @@ internal static class TileCombinatoricsPivot
     internal static IReadOnlyList<List<TileComboPivot>> IsCompleteBasic(IReadOnlyList<TilePivot> concealedTiles, IReadOnlyList<TileComboPivot> declaredCombinations)
     {
         // Every combinations are declared.
-        if (declaredCombinations.Count == 4)
+        if (declaredCombinations.Count == HandPivot.MeldsCount)
         {
             return concealedTiles[0] == concealedTiles[1]
                 ? new List<List<TileComboPivot>>

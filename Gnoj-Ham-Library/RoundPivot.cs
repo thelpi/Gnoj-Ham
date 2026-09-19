@@ -141,7 +141,7 @@ public class RoundPivot
         get
         {
             var kanCountsByPlayer = _hands.Select(h => h.DeclaredCombinations.Count(c => c.IsSquare)).ToList();
-            return kanCountsByPlayer.Sum() == 4 && kanCountsByPlayer.Count(c => c > 0) > 1;
+            return kanCountsByPlayer.Sum() == WallLayout.MaxKans && kanCountsByPlayer.Count(c => c > 0) > 1;
         }
     }
 
@@ -393,7 +393,7 @@ public class RoundPivot
             && PreviousPlayerIndex != playerIndex
             && _discardHistory.Discards[(int)PreviousPlayerIndex].Count != 0
             && !_waitForDiscard && !IsRiichi(playerIndex)
-            && _hands[(int)playerIndex].ConcealedTiles.Where(t => t == _discardHistory.Discards[(int)PreviousPlayerIndex][^1]).Count() >= 2;
+            && _hands[(int)playerIndex].ConcealedTiles.Where(t => t == _discardHistory.Discards[(int)PreviousPlayerIndex][^1]).Count() >= TileComboPivot.MeldSize - 1;
     }
 
     /// <summary>
@@ -413,7 +413,7 @@ public class RoundPivot
             var kansFromConcealed =
                 _hands[(int)playerIndex].ConcealedTiles
                                         .GroupBy(t => t)
-                                        .Where(t => t.Count() == 4)
+                                        .Where(t => t.Count() == TileComboPivot.KanSize)
                                         .Select(t => t.Key)
                                         .Distinct();
 
@@ -449,7 +449,7 @@ public class RoundPivot
             }
 
             var referenceTileFromDiscard = _discardHistory.Discards[(int)PreviousPlayerIndex][^1];
-            return _hands[(int)playerIndex].ConcealedTiles.Where(t => t == referenceTileFromDiscard).Count() >= 3
+            return _hands[(int)playerIndex].ConcealedTiles.Where(t => t == referenceTileFromDiscard).Count() >= TileComboPivot.KanSize - 1
                 ? new List<TilePivot>
                 {
                     referenceTileFromDiscard
@@ -526,7 +526,7 @@ public class RoundPivot
             // Forces a decision, even if there're several possibilities.
             if (tileChoice == null)
             {
-                tileChoice = _hands[(int)playerIndex].ConcealedTiles.GroupBy(t => t).FirstOrDefault(t => t.Count() == 4)?.Key;
+                tileChoice = _hands[(int)playerIndex].ConcealedTiles.GroupBy(t => t).FirstOrDefault(t => t.Count() == TileComboPivot.KanSize)?.Key;
                 if (tileChoice == null)
                 {
                     tileChoice = _hands[(int)playerIndex].ConcealedTiles.First(t => _hands[(int)playerIndex].DeclaredCombinations.Any(c => c.IsBrelan && c.OpenTile == t));
@@ -850,12 +850,12 @@ public class RoundPivot
         var tiles = CanCallKan(playerId);
         if (concealed == true)
         {
-            tiles = tiles.Where(t => _hands[(int)playerId].ConcealedTiles.Count(ct => t == ct) == 4
+            tiles = tiles.Where(t => _hands[(int)playerId].ConcealedTiles.Count(ct => t == ct) == TileComboPivot.KanSize
                 || _hands[(int)playerId].DeclaredCombinations.Any(ct => ct.IsBrelan && t == ct.OpenTile)).ToList();
         }
         else if (concealed == false)
         {
-            tiles = tiles.Where(t => _hands[(int)playerId].ConcealedTiles.Count(ct => t == ct) == 3).ToList();
+            tiles = tiles.Where(t => _hands[(int)playerId].ConcealedTiles.Count(ct => t == ct) == TileComboPivot.KanSize - 1).ToList();
         }
 
         return tiles;
@@ -897,7 +897,7 @@ public class RoundPivot
                 }
                 else
                 {
-                    if (countRefT < 2)
+                    if (countRefT < TileComboPivot.PairSize)
                     {
                         singleCount++;
                         if (singleCount > 1)
@@ -910,7 +910,7 @@ public class RoundPivot
             j++;
             if (j == hand.ConcealedTiles.Count)
             {
-                if (countRefT < 2)
+                if (countRefT < TileComboPivot.PairSize)
                     singleCount++;
             }
         }

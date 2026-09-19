@@ -14,6 +14,9 @@ public sealed partial class TileViewModel : ObservableObject
     /// </summary>
     public const string ConcealedImageResourceName = "concealed";
 
+    private const int QuarterTurn = 90;
+    private const int FullTurn = 360;
+
     /// <summary>
     /// Constructor.
     /// </summary>
@@ -87,16 +90,11 @@ public sealed partial class TileViewModel : ObservableObject
     /// <summary>
     /// Inferred; the rotation in degrees.
     /// </summary>
-    public int AngleDegrees => Angle switch
-    {
-        AnglePivot.A0 => 0,
-        AnglePivot.A90 => 90,
-        AnglePivot.A180 => 180,
-        _ => 270,
-    };
+    /// <remarks>Each value of <see cref="AnglePivot"/> is a quarter turn less than the next one, from a full turn.</remarks>
+    public int AngleDegrees => (FullTurn - ((int)Angle * QuarterTurn)) % FullTurn;
 
     /// <summary>
-    /// Inferred; indicates if the tile lies on its side (its width and height are swapped).
+    /// Inferred; indicates if the tile lies on its side (its width and height are swapped): after a quarter turn, or three.
     /// </summary>
-    public bool IsSideways => Angle == AnglePivot.A90 || Angle == AnglePivot.A270;
+    public bool IsSideways => (int)Angle % 2 != 0;
 }

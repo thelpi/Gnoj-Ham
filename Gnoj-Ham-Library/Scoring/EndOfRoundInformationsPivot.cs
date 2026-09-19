@@ -196,7 +196,7 @@ public class EndOfRoundInformationsPivot
                 return new List<(TilePivot tile, bool isLeaned, bool isWinPick)>();
             }
 
-            var results = new List<(TilePivot, bool, bool)>(14);
+            var results = new List<(TilePivot, bool, bool)>(HandPivot.FullSize);
             foreach (var t in Hand.AllTiles)
             {
                 if (!ReferenceEquals(t, Hand.LatestPick) || FanCount == 0)

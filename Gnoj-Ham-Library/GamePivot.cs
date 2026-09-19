@@ -13,6 +13,12 @@ public class GamePivot
     public static readonly int PlayersCount = Enum.GetValues<PlayerIndices>().Length;
 
     /// <summary>
+    /// The points which win a game: once in the west or north wind it stops as soon as a player reaches them,
+    /// and with "enchousen" it goes on into the west wind for as long as nobody has.
+    /// </summary>
+    private const int TARGET_POINTS = 30000;
+
+    /// <summary>
     /// Builds one item for each player, in seat order.
     /// </summary>
     /// <typeparam name="T">The item type.</typeparam>
@@ -240,7 +246,7 @@ public class GamePivot
 
         if (DominantWind == Winds.West || DominantWind == Winds.North)
         {
-            if (!endOfRoundInformations.Ryuukyoku && Players.Any(p => p.CurrentGamePoints >= 30000))
+            if (!endOfRoundInformations.Ryuukyoku && Players.Any(p => p.CurrentGamePoints >= TARGET_POINTS))
             {
                 endOfRoundInformations.EndOfGame = true;
                 ClearPendingRiichi();
@@ -261,7 +267,7 @@ public class GamePivot
                 {
                     if (Ruleset.EndOfGameRule.EnchousenRuleApply()
                         && Ruleset.InitialPointsRule == InitialPointsRules.K25
-                        && Players.All(p => p.CurrentGamePoints < 30000))
+                        && Players.All(p => p.CurrentGamePoints < TARGET_POINTS))
                     {
                         DominantWind = Winds.West;
                     }

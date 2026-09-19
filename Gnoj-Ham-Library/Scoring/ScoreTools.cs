@@ -28,14 +28,23 @@ internal static class ScoreTools
     private const int BASE_FU = 20;
     private const int BASE_CONCEALED_RON_FU = 30;
 
+    // From this fan count the points no longer depend on the fu ("mangan"); below, the fu can make up for it:
+    // one fan short is enough with 40 fu, two fans short with 70 fu.
+    private const int MANGAN_FAN_COUNT = 5;
+    private const int MANGAN_FU_FOR_ONE_FAN_SHORT = 40;
+    private const int MANGAN_FU_FOR_TWO_FANS_SHORT = 70;
+
+    // The score of a player is counted in thousands of points.
+    internal const int SCORE_UNIT = 1000;
+
     // Minimal fan count / point lost by each opponent (x2 for east, or x3 for ron on a single player)
     private static readonly IReadOnlyDictionary<int, int> OVER_FOUR_FAN = new Dictionary<int, int>
     {
-        { 5, 2000 },
+        { MANGAN_FAN_COUNT, 2000 },
         { 6, 3000 },
         { 8, 4000 },
         { 11, 6000 },
-        { 13, 8000 },
+        { YakuPivot.YakumanFanCount, 8000 },
     };
 
     // Minimal fan count / Minimal fu count / points lost by the ron opponent / points lost by east if tsumo / points lost by others if tsumo
@@ -149,7 +158,7 @@ internal static class ScoreTools
         var yakumanValues = yakus
             .Where(y => y.IsYakuman)
             .Select(y => (concealed ? y.ConcealedFanCount : y.FanCount))
-            .Select(v => allowDoubleYakuman ? v : Math.Min(v, 13))
+            .Select(v => allowDoubleYakuman ? v : Math.Min(v, YakuPivot.YakumanFanCount))
             .ToList();
 
         if (yakumanValues.Count > 0)
@@ -159,7 +168,7 @@ internal static class ScoreTools
 
         var initialFanCount = yakus.Sum(y => concealed ? y.ConcealedFanCount : y.FanCount) + dorasCount + uraDorasCount + redDorasCount;
 
-        return initialFanCount >= 13 ? (allowKazoeYakuman ? 13 : 12) : initialFanCount;
+        return initialFanCount >= YakuPivot.YakumanFanCount ? (allowKazoeYakuman ? YakuPivot.YakumanFanCount : YakuPivot.YakumanFanCount - 1) : initialFanCount;
     }
 
     /// <summary>
@@ -241,18 +250,18 @@ internal static class ScoreTools
 
         var east = playerWind == Winds.East;
 
-        if ((fanCount == 4 && fuCount >= 40) || (fanCount == 3 && fuCount >= 70))
+        if ((fanCount == MANGAN_FAN_COUNT - 1 && fuCount >= MANGAN_FU_FOR_ONE_FAN_SHORT) || (fanCount == MANGAN_FAN_COUNT - 2 && fuCount >= MANGAN_FU_FOR_TWO_FANS_SHORT))
         {
-            fanCount = 5;
+            fanCount = MANGAN_FAN_COUNT;
         }
 
-        if (fanCount > 4)
+        if (fanCount >= MANGAN_FAN_COUNT)
         {
             var basePoints = OVER_FOUR_FAN.Last(k => k.Key <= fanCount).Value * (east ? 2 : 1);
             // in case of several yakumans.
-            if (fanCount > 13)
+            if (fanCount > YakuPivot.YakumanFanCount)
             {
-                basePoints += basePoints * ((fanCount - 13) / 13);
+                basePoints += basePoints * ((fanCount - YakuPivot.YakumanFanCount) / YakuPivot.YakumanFanCount);
             }
             if (isTsumo)
             {
