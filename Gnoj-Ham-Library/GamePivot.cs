@@ -91,7 +91,7 @@ public class GamePivot
     /// <summary>
     /// Inferred; gets the player index which was the first <see cref="Winds.East"/>.
     /// </summary>
-    internal PlayerIndices FirstEastIndex => (PlayerIndices)Enumerable.Range(0, Players.Count).First(i => Players[i].CurrentGameInitialWind == Winds.East);
+    internal PlayerIndices FirstEastIndex => Enum.GetValues<PlayerIndices>().First(i => Players[(int)i].CurrentGameInitialWind == Winds.East);
 
     #endregion Properties
 
@@ -192,11 +192,11 @@ public class GamePivot
         var playersOrdered = new List<PlayerScorePivot>(PlayersCount);
 
         var rank = 1;
-        foreach (var seatIndex in Enumerable.Range(0, Players.Count).OrderByDescending(i => Players[i].CurrentGamePoints))
+        foreach (var seat in Enum.GetValues<PlayerIndices>().OrderByDescending(p => Players[(int)p].CurrentGamePoints))
         {
-            var scoredPlayer = targetPlayers?[seatIndex] ?? Players[seatIndex];
+            var scoredPlayer = targetPlayers?[(int)seat] ?? Players[(int)seat];
             playersOrdered.Add(new PlayerScorePivot(scoredPlayer, rank, ScoreTools.ComputeUma(rank, Ruleset.UmaRule),
-                Ruleset.InitialPointsRule.GetInitialPointsFromRule(), Players[seatIndex].CurrentGamePoints));
+                Ruleset.InitialPointsRule.GetInitialPointsFromRule(), Players[(int)seat].CurrentGamePoints));
             rank++;
         }
 

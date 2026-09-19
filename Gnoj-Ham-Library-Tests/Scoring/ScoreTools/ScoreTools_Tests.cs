@@ -187,4 +187,20 @@ public class ScoreTools_Tests
         Assert.Equal(thirdUma, ScoreTools.ComputeUma(3, umaRule));
         Assert.Equal(fourthUma, ScoreTools.ComputeUma(4, umaRule));
     }
+
+    [Theory]
+    [InlineData(-1, 0, 0)]
+    [InlineData(0, 0, 0)]
+    [InlineData(1, 3000, -1000)]
+    [InlineData(2, 1500, -1500)]
+    [InlineData(3, 1000, -3000)]
+    [InlineData(4, 0, 0)]
+    [InlineData(5, 0, 0)]
+    public void GetRyuukyokuPoints_SharesA3000PointsPotBetweenTheTenpaiPlayers(int countTenpai, int tenpai, int nonTenpai)
+    {
+        var (tenpaiPoints, nonTenpaiPoints) = ScoreTools.GetRyuukyokuPoints(countTenpai);
+
+        Assert.Equal(tenpai, tenpaiPoints);
+        Assert.Equal(nonTenpai, nonTenpaiPoints);
+    }
 }

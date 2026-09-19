@@ -50,7 +50,9 @@ public class DisplayTexts_Tests
 
     [Theory]
     [InlineData(CpuSpeedPivot.S2000, 2000)]
+    [InlineData(CpuSpeedPivot.S1000, 1000)]
     [InlineData(CpuSpeedPivot.S500, 500)]
+    [InlineData(CpuSpeedPivot.S200, 200)]
     [InlineData(CpuSpeedPivot.S0, 0)]
     public void CpuSpeed_ParsesToMilliseconds(CpuSpeedPivot speed, int milliseconds)
     {

@@ -15,8 +15,6 @@ namespace Gnoj_Ham_ViewModel;
 /// </summary>
 public sealed partial class GameViewModel : ObservableObject, IHumanActions
 {
-    private const PlayerIndices HumanPlayerIndex = PlayerIndices.Zero;
-
     private readonly GamePivot _game;
     private readonly IDialogService _dialogs;
     private readonly IUserSettings _settings;
@@ -90,6 +88,9 @@ public sealed partial class GameViewModel : ObservableObject, IHumanActions
     internal GamePivot Game => _game;
 
     private HumanControlsViewModel Human => Table.Human;
+
+    // The seat the game gave to the human player.
+    private PlayerIndices HumanPlayerIndex => _game.HumanPlayerIndex!.Value;
 
     /// <summary>
     /// Starts the game: the CPUs play until the human player is needed.

@@ -12,7 +12,15 @@ public static class GameSpeedExtensions
     /// <returns>The integer value, in milliseconds.</returns>
     public static int ParseSpeed(this CpuSpeedPivot cpuSpeed)
     {
-        return Convert.ToInt32(cpuSpeed.ToString().Replace("S", string.Empty));
+        return cpuSpeed switch
+        {
+            CpuSpeedPivot.S2000 => 2000,
+            CpuSpeedPivot.S1000 => 1000,
+            CpuSpeedPivot.S500 => 500,
+            CpuSpeedPivot.S200 => 200,
+            CpuSpeedPivot.S0 => 0,
+            _ => throw new ArgumentOutOfRangeException(nameof(cpuSpeed), cpuSpeed, null),
+        };
     }
 
     /// <summary>

@@ -119,11 +119,16 @@ internal static class ScoreTools
     /// <returns>Points for tenpai players; Points for non-tenpai players.</returns>
     internal static (int tenpai, int nonTenpai) GetRyuukyokuPoints(int countTenpai)
     {
-        return countTenpai == 1
-            ? (TENPAI_BASE_POINTS * (GamePivot.PlayersCount - countTenpai), -TENPAI_BASE_POINTS)
-            : countTenpai == 2
-                ? (TENPAI_BASE_POINTS + (TENPAI_BASE_POINTS / countTenpai), -(TENPAI_BASE_POINTS + (TENPAI_BASE_POINTS / countTenpai)))
-                : countTenpai == 3 ? (TENPAI_BASE_POINTS, countTenpai * -TENPAI_BASE_POINTS) : (0, 0);
+        // Nothing changes hands when nobody, or everybody, is tenpai.
+        if (countTenpai <= 0 || countTenpai >= GamePivot.PlayersCount)
+        {
+            return (0, 0);
+        }
+
+        // The same pot is paid by the non-tenpai players, and shared between the tenpai players.
+        var pot = TENPAI_BASE_POINTS * (GamePivot.PlayersCount - 1);
+
+        return (pot / countTenpai, -pot / (GamePivot.PlayersCount - countTenpai));
     }
 
     /// <summary>
