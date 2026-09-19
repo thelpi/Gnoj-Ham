@@ -159,11 +159,16 @@ internal class AutoPlayEnginePivot
 
                 // 8 - checks "chii" call for current player (non-human)
                 // the loop starts over
-                var (_, chiiTilePick) = _round.CpuManager(_round.CurrentPlayerIndex).ChiiDecision();
-                if (chiiTilePick != null)
+                // A human player is never called for: the chii they have just declined (step 7 lets the
+                // UI suggest it, once) must not be made anyway on the advice of their own CPU manager.
+                if (!_round.IsHumanPlayer)
                 {
-                    _round.ChiiCall(chiiTilePick, sleepTime);
-                    continue;
+                    var (_, chiiTilePick) = _round.CpuManager(_round.CurrentPlayerIndex).ChiiDecision();
+                    if (chiiTilePick != null)
+                    {
+                        _round.ChiiCall(chiiTilePick, sleepTime);
+                        continue;
+                    }
                 }
 
                 // 9 - there is a "kan" call in progress by non-human player
