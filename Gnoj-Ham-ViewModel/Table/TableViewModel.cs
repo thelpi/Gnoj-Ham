@@ -29,7 +29,7 @@ public sealed partial class TableViewModel : ObservableObject
     /// <param name="revealAllHands"><c>True</c> to show the tiles of every seat face up.</param>
     /// <param name="settings">The user's settings.</param>
     /// <param name="humanActions">Carries out what the human player chooses.</param>
-    public TableViewModel(GamePivot game, PlayerIndices humanPlayerIndex, bool revealAllHands, IUserSettings settings, IHumanActions humanActions)
+    public TableViewModel(GamePivot game, PlayerIndices humanPlayerIndex, bool revealAllHands, UserSettings settings, IHumanActions humanActions)
     {
         _game = game;
 

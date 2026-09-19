@@ -17,7 +17,7 @@ public sealed partial class GameViewModel : ObservableObject, IHumanActions
 {
     private readonly GamePivot _game;
     private readonly IDialogService _dialogs;
-    private readonly IUserSettings _settings;
+    private readonly UserSettings _settings;
     private readonly IPlayerStatisticsStorage _storage;
     private readonly IUiDispatcher _dispatcher;
     private readonly IDelay _delay;
@@ -40,6 +40,7 @@ public sealed partial class GameViewModel : ObservableObject, IHumanActions
     /// <param name="setup">How the game is set up.</param>
     /// <param name="dialogs">Opens the secondary windows (rules, statistics, score...).</param>
     /// <param name="settings">The user's settings.</param>
+    /// <param name="settingsStorage">Where the user's settings are kept.</param>
     /// <param name="storage">Where the player statistics are kept.</param>
     /// <param name="dispatcher">Brings what the engine notifies, off the UI thread, back onto it.</param>
     /// <param name="delay">Waits, for the human decision timer.</param>
@@ -48,7 +49,8 @@ public sealed partial class GameViewModel : ObservableObject, IHumanActions
     public GameViewModel(
         HumanGameSetup setup,
         IDialogService dialogs,
-        IUserSettings settings,
+        UserSettings settings,
+        IUserSettingsStorage settingsStorage,
         IPlayerStatisticsStorage storage,
         IUiDispatcher dispatcher,
         IDelay delay,
@@ -65,7 +67,7 @@ public sealed partial class GameViewModel : ObservableObject, IHumanActions
 
         _game = new GamePivot(setup.PlayerName, setup.Ruleset, setup.Stats, setup.Random ?? new Random(), setup.DrivenDraw);
         Table = new TableViewModel(_game, HumanPlayerIndex, setup.DebugMode, settings, this);
-        Options = new GameOptionsViewModel(settings);
+        Options = new GameOptionsViewModel(settings, settingsStorage);
 
         NewRoundRefresh();
     }

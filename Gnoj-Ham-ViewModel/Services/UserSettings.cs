@@ -1,58 +1,55 @@
 namespace Gnoj_Ham_ViewModel.Services;
 
 /// <summary>
-/// The user's saved settings. Rules and speeds are stored as the index of the chosen value in its
+/// The user's settings, with the values used until they are changed. One instance is shared by every
+/// view-model, so a change made by one is seen by the others; <see cref="IUserSettingsStorage"/> keeps
+/// it between sessions. Rules and speeds are stored as the index of the chosen value in its
 /// enumeration (the same order the choice lists are displayed in).
 /// </summary>
-public interface IUserSettings
+public sealed class UserSettings
 {
     /// <summary>The default human player name.</summary>
-    string DefaultPlayerName { get; set; }
+    public string DefaultPlayerName { get; set; } = "Lpi";
 
     /// <summary>The human decision timer (see <see cref="ChronoPivot"/>).</summary>
-    int ChronoSpeed { get; set; }
+    public int ChronoSpeed { get; set; }
 
     /// <summary>The pause between CPU actions (see <see cref="CpuSpeedPivot"/>).</summary>
-    int CpuSpeed { get; set; }
+    public int CpuSpeed { get; set; } = 2;
 
     /// <summary>Indicates if sounds are played.</summary>
-    bool PlaySounds { get; set; }
+    public bool PlaySounds { get; set; } = true;
 
     /// <summary>Indicates if ron and tsumo are called automatically as soon as possible.</summary>
-    bool AutoCallMahjong { get; set; }
+    public bool AutoCallMahjong { get; set; } = true;
 
     /// <summary>Indicates if a visual help is given to choose the best decision.</summary>
-    bool DiscardTip { get; set; }
+    public bool DiscardTip { get; set; }
 
     /// <summary>The initial points rule.</summary>
-    int InitialPointsRule { get; set; }
+    public int InitialPointsRule { get; set; }
 
     /// <summary>The end of game rule.</summary>
-    int EndOfGameRule { get; set; }
+    public int EndOfGameRule { get; set; } = 3;
 
     /// <summary>Indicates if red doras are used.</summary>
-    bool UseRedDoras { get; set; }
+    public bool UseRedDoras { get; set; } = true;
 
     /// <summary>Indicates if nagashi mangan is used.</summary>
-    bool UseNagashiMangan { get; set; }
+    public bool UseNagashiMangan { get; set; } = true;
 
     /// <summary>Indicates if several distinct yakumans add up in the same hand.</summary>
-    bool UseMultipleYakumans { get; set; }
+    public bool UseMultipleYakumans { get; set; } = true;
 
     /// <summary>Indicates if a 13 fans hand without yakuman counts as a yakuman.</summary>
-    bool UseKazoeYakuman { get; set; }
+    public bool UseKazoeYakuman { get; set; } = true;
 
     /// <summary>Indicates if the suufon renda abortive draw is used.</summary>
-    bool UseSuufonRenda { get; set; }
+    public bool UseSuufonRenda { get; set; } = true;
 
     /// <summary>Indicates if double yakumans are used.</summary>
-    bool UseDoubleYakuman { get; set; }
+    public bool UseDoubleYakuman { get; set; } = true;
 
     /// <summary>The uma rule.</summary>
-    int UmaRule { get; set; }
-
-    /// <summary>
-    /// Persists the current values.
-    /// </summary>
-    void Save();
+    public int UmaRule { get; set; }
 }

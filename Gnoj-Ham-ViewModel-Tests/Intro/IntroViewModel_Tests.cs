@@ -2,13 +2,15 @@ using System.Text.Json;
 using Gnoj_Ham_Library;
 using Gnoj_Ham_Library.Enums;
 using Gnoj_Ham_ViewModel;
+using Gnoj_Ham_ViewModel.Services;
 using Gnoj_Ham_ViewModel_Tests.Fakes;
 
 namespace Gnoj_Ham_ViewModel_Tests;
 
 public class IntroViewModel_Tests
 {
-    private readonly FakeUserSettings _settings = new()
+    private readonly FakeUserSettingsStorage _settingsStorage = new();
+    private readonly UserSettings _settings = new()
     {
         DefaultPlayerName = "Lpi",
         ChronoSpeed = 1,
@@ -30,7 +32,7 @@ public class IntroViewModel_Tests
     private readonly FakeDialogService _dialogs = new();
 
     private IntroViewModel NewViewModel()
-        => new(_settings, _storage, _dialogs, new FakeUiDispatcher());
+        => new(_settings, _settingsStorage, _storage, _dialogs, new FakeUiDispatcher());
 
     [Fact]
     public void Creation_LoadsTheSavedConfiguration()
@@ -92,7 +94,7 @@ public class IntroViewModel_Tests
         Assert.True(viewModel.PlaySounds);
         Assert.Equal(2, viewModel.UmaRuleIndex);
         Assert.False(viewModel.DebugMode);
-        Assert.Equal(0, _settings.SaveCount);
+        Assert.Equal(0, _settingsStorage.SaveCount);
     }
 
     [Fact]
@@ -131,7 +133,7 @@ public class IntroViewModel_Tests
         Assert.Equal(4, _settings.CpuSpeed);
         Assert.True(_settings.UseSuufonRenda);
         Assert.Equal(3, _settings.EndOfGameRule);
-        Assert.Equal(1, _settings.SaveCount);
+        Assert.Equal(1, _settingsStorage.SaveCount);
     }
 
     [Fact]

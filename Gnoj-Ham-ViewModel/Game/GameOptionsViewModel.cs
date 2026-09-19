@@ -9,15 +9,18 @@ namespace Gnoj_Ham_ViewModel;
 /// </summary>
 public sealed partial class GameOptionsViewModel : ObservableObject
 {
-    private readonly IUserSettings _settings;
+    private readonly UserSettings _settings;
+    private readonly IUserSettingsStorage _storage;
 
     /// <summary>
     /// Constructor.
     /// </summary>
     /// <param name="settings">The user's settings.</param>
-    public GameOptionsViewModel(IUserSettings settings)
+    /// <param name="storage">Where the user's settings are kept.</param>
+    public GameOptionsViewModel(UserSettings settings, IUserSettingsStorage storage)
     {
         _settings = settings;
+        _storage = storage;
 
         // Read straight into the fields: what is read is not a change to save again.
         _chronoSpeedIndex = settings.ChronoSpeed;
@@ -66,7 +69,7 @@ public sealed partial class GameOptionsViewModel : ObservableObject
         if (value >= 0)
         {
             _settings.ChronoSpeed = value;
-            _settings.Save();
+            _storage.Save(_settings);
         }
     }
 
@@ -75,19 +78,19 @@ public sealed partial class GameOptionsViewModel : ObservableObject
         if (value >= 0)
         {
             _settings.CpuSpeed = value;
-            _settings.Save();
+            _storage.Save(_settings);
         }
     }
 
     partial void OnPlaySoundsChanged(bool value)
     {
         _settings.PlaySounds = value;
-        _settings.Save();
+        _storage.Save(_settings);
     }
 
     partial void OnAutoCallMahjongChanged(bool value)
     {
         _settings.AutoCallMahjong = value;
-        _settings.Save();
+        _storage.Save(_settings);
     }
 }

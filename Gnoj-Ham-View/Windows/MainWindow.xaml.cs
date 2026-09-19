@@ -23,13 +23,14 @@ public partial class MainWindow : Window
     /// <param name="setup">How the game is set up.</param>
     /// <param name="dialogs">Opens the secondary windows (rules, statistics, score...).</param>
     /// <param name="settings">The user's settings.</param>
+    /// <param name="settingsStorage">Where the user's settings are kept.</param>
     /// <param name="storage">Where the player statistics are kept.</param>
-    public MainWindow(HumanGameSetup setup, IDialogService dialogs, IUserSettings settings, IPlayerStatisticsStorage storage)
+    public MainWindow(HumanGameSetup setup, IDialogService dialogs, UserSettings settings, IUserSettingsStorage settingsStorage, IPlayerStatisticsStorage storage)
     {
         InitializeComponent();
 
         var animations = new WpfAnimationService(GrdOverlayCall, BtnOpponentCall, (Storyboard)FindResource(OverlayStoryboardResourceName));
-        _viewModel = new GameViewModel(setup, dialogs, settings, storage, new WpfUiDispatcher(), new TaskDelay(), animations, new WpfSoundService());
+        _viewModel = new GameViewModel(setup, dialogs, settings, settingsStorage, storage, new WpfUiDispatcher(), new TaskDelay(), animations, new WpfSoundService());
         _viewModel.CloseRequested += (sender, e) => Close();
         DataContext = _viewModel;
 

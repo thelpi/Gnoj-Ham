@@ -14,7 +14,8 @@ public class GameViewModel_Tests
     private const PlayerIndices Human = PlayerIndices.Zero;
 
     private readonly FakeDialogService _dialogs = new();
-    private readonly FakeUserSettings _settings = new() { CpuSpeed = (int)CpuSpeedPivot.S0 };
+    private readonly UserSettings _settings = new() { CpuSpeed = (int)CpuSpeedPivot.S0, PlaySounds = false, AutoCallMahjong = false };
+    private readonly FakeUserSettingsStorage _settingsStorage = new();
     private readonly FakePlayerStatisticsStorage _storage = new();
     private readonly FakeAnimationService _animations = new();
     private readonly FakeSoundService _sounds = new();
@@ -30,7 +31,7 @@ public class GameViewModel_Tests
             false,
             new Random(seed));
 
-        return new GameViewModel(setup, _dialogs, _settings, _storage, new FakeUiDispatcher(), _delay, _animations, _sounds);
+        return new GameViewModel(setup, _dialogs, _settings, _settingsStorage, _storage, new FakeUiDispatcher(), _delay, _animations, _sounds);
     }
 
     private static HumanControlsViewModel HumanOf(GameViewModel viewModel) => viewModel.Table.Human;

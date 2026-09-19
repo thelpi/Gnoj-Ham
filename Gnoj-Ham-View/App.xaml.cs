@@ -1,7 +1,9 @@
-﻿using System.Windows;
+﻿using System.IO;
+using System.Windows;
 using System.Windows.Controls;
 using Gnoj_Ham_View.Services;
 using Gnoj_Ham_ViewModel;
+using Gnoj_Ham_ViewModel.Services;
 
 namespace Gnoj_Ham_View;
 
@@ -11,6 +13,9 @@ namespace Gnoj_Ham_View;
 public partial class App : Application
 {
     private const double MinimalHeightResolution = 1024;
+
+    private static readonly string SettingsFilePath = Path.Combine(
+        Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Gnoj-Ham", "settings.json");
 
     static App()
     {
@@ -33,8 +38,12 @@ public partial class App : Application
 
         try
         {
-            var dialogs = CreateDialogService();
-            dialogs.ShowDialog(new IntroViewModel(new WpfUserSettings(), new FilePlayerStatisticsStorage(), dialogs, new WpfUiDispatcher()));
+            // The settings are shared by every window: what one changes, the others see.
+            var settingsStorage = new JsonUserSettingsStorage(SettingsFilePath);
+            var settings = settingsStorage.Load();
+
+            var dialogs = CreateDialogService(settings, settingsStorage);
+            dialogs.ShowDialog(new IntroViewModel(settings, settingsStorage, new FilePlayerStatisticsStorage(), dialogs, new WpfUiDispatcher()));
         }
         catch (Exception ex)
         {
@@ -50,12 +59,12 @@ public partial class App : Application
     }
 
     // Says which window displays which view-model.
-    private static WpfDialogService CreateDialogService()
+    private static WpfDialogService CreateDialogService(UserSettings settings, IUserSettingsStorage settingsStorage)
     {
         var dialogs = new WpfDialogService();
         dialogs.Register<IntroViewModel>(viewModel => new IntroWindow(viewModel));
         dialogs.Register<AutoPlayViewModel>(viewModel => new AutoPlayWindow(viewModel));
-        dialogs.Register<HumanGameSetup>(setup => new MainWindow(setup, dialogs, new WpfUserSettings(), new FilePlayerStatisticsStorage()));
+        dialogs.Register<HumanGameSetup>(setup => new MainWindow(setup, dialogs, settings, settingsStorage, new FilePlayerStatisticsStorage()));
         dialogs.Register<RulesViewModel>(_ => new RulesWindow());
         dialogs.Register<PlayerSaveStatsViewModel>(_ => new PlayerSaveStatsWindow());
         dialogs.Register<ScoreViewModel>(_ => new ScoreWindow());

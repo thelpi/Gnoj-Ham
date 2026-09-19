@@ -16,7 +16,7 @@ public sealed partial class HumanControlsViewModel : ObservableObject
     private readonly GamePivot _game;
     private readonly PlayerIndices _humanIndex;
     private readonly SeatViewModel _seat;
-    private readonly IUserSettings _settings;
+    private readonly UserSettings _settings;
     private readonly IHumanActions _actions;
 
     // What clicking a tile does when it is not a plain discard (e.g. choosing which tiles make a chii).
@@ -31,7 +31,7 @@ public sealed partial class HumanControlsViewModel : ObservableObject
     /// <param name="seat">The human player's seat on the table, which holds their hand.</param>
     /// <param name="settings">The user's settings.</param>
     /// <param name="actions">Carries out what the human player chooses.</param>
-    public HumanControlsViewModel(GamePivot game, PlayerIndices humanIndex, SeatViewModel seat, IUserSettings settings, IHumanActions actions)
+    public HumanControlsViewModel(GamePivot game, PlayerIndices humanIndex, SeatViewModel seat, UserSettings settings, IHumanActions actions)
     {
         _game = game;
         _humanIndex = humanIndex;

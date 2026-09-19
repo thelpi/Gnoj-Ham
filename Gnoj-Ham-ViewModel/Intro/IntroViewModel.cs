@@ -12,7 +12,8 @@ namespace Gnoj_Ham_ViewModel;
 /// </summary>
 public sealed partial class IntroViewModel : ObservableObject
 {
-    private readonly IUserSettings _settings;
+    private readonly UserSettings _settings;
+    private readonly IUserSettingsStorage _settingsStorage;
     private readonly IPlayerStatisticsStorage _statisticsStorage;
     private readonly IDialogService _dialogs;
     private readonly IUiDispatcher _dispatcher;
@@ -20,13 +21,15 @@ public sealed partial class IntroViewModel : ObservableObject
     /// <summary>
     /// Constructor.
     /// </summary>
-    /// <param name="settings">The saved settings.</param>
+    /// <param name="settings">The user's settings.</param>
+    /// <param name="settingsStorage">Where the user's settings are kept.</param>
     /// <param name="statisticsStorage">The saved player statistics.</param>
     /// <param name="dialogs">Opens the game and the secondary windows, and shows messages.</param>
     /// <param name="dispatcher">Brings updates from background work back onto the UI thread.</param>
-    public IntroViewModel(IUserSettings settings, IPlayerStatisticsStorage statisticsStorage, IDialogService dialogs, IUiDispatcher dispatcher)
+    public IntroViewModel(UserSettings settings, IUserSettingsStorage settingsStorage, IPlayerStatisticsStorage statisticsStorage, IDialogService dialogs, IUiDispatcher dispatcher)
     {
         _settings = settings;
+        _settingsStorage = settingsStorage;
         _statisticsStorage = statisticsStorage;
         _dialogs = dialogs;
         _dispatcher = dispatcher;
@@ -287,6 +290,6 @@ public sealed partial class IntroViewModel : ObservableObject
         _settings.UseDoubleYakuman = UseDoubleYakuman;
         _settings.UmaRule = UmaRuleIndex;
 
-        _settings.Save();
+        _settingsStorage.Save(_settings);
     }
 }

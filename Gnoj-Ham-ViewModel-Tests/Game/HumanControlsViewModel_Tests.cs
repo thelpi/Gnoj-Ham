@@ -1,6 +1,7 @@
 using Gnoj_Ham_Library;
 using Gnoj_Ham_Library.Enums;
 using Gnoj_Ham_ViewModel;
+using Gnoj_Ham_ViewModel.Services;
 using Gnoj_Ham_ViewModel_Tests.Fakes;
 
 namespace Gnoj_Ham_ViewModel_Tests;
@@ -11,7 +12,7 @@ public class HumanControlsViewModel_Tests
 {
     private const PlayerIndices Human = PlayerIndices.Zero;
 
-    private readonly FakeUserSettings _settings = new();
+    private readonly UserSettings _settings = new();
     private readonly FakeHumanActions _actions = new();
     private TableViewModel? _table;
 
