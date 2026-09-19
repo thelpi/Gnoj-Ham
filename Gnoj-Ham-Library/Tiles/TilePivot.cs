@@ -29,6 +29,23 @@ public class TilePivot : IEquatable<TilePivot>, IComparable<TilePivot>
     /// </summary>
     internal const byte MiddleNumber = 5;
 
+    /// <summary>
+    /// The families with numbers: caracters, circles and bamboos.
+    /// </summary>
+    internal const int SuitsCount = 3;
+
+    private static readonly int WindsCount = Enum.GetValues<Winds>().Length;
+
+    /// <summary>
+    /// The kinds of honors: the winds, then the dragons.
+    /// </summary>
+    internal static readonly int HonorKindsCount = WindsCount + Enum.GetValues<Dragons>().Length;
+
+    /// <summary>
+    /// The kinds of tiles: every number of each suit, and every honor (see <see cref="KindIndex"/>).
+    /// </summary>
+    internal static readonly int KindsCount = (SuitsCount * MaxNumber) + HonorKindsCount;
+
     #region Embedded properties
 
     // a unique code for a tile (consider this as the hashcode value)
@@ -58,6 +75,12 @@ public class TilePivot : IEquatable<TilePivot>, IComparable<TilePivot>
     /// </summary>
     public bool IsRedDora { get; }
 
+    /// <summary>
+    /// Number of the kind of the tile, from <c>0</c> to <see cref="KindsCount"/> excluded: the copies of a tile share it.
+    /// The kinds are numbered suit by suit (caracters, circles, bamboos), each from <c>1</c> to <c>9</c>, then the winds, then the dragons.
+    /// </summary>
+    internal int KindIndex { get; }
+
     #endregion Embedded properties
 
     #region Inferred properties
@@ -86,6 +109,7 @@ public class TilePivot : IEquatable<TilePivot>, IComparable<TilePivot>
         Number = number;
         IsRedDora = isRedDora;
         _code = number + (10 * (int)family);
+        KindIndex = ((int)family * MaxNumber) + number - MinNumber;
     }
 
     // Constructor for wind.
@@ -94,6 +118,7 @@ public class TilePivot : IEquatable<TilePivot>, IComparable<TilePivot>
         Family = Families.Wind;
         Wind = wind;
         _code = (int)(wind + 1) * 1000;
+        KindIndex = (SuitsCount * MaxNumber) + (int)wind;
     }
 
     // Constructor for dragon.
@@ -102,6 +127,7 @@ public class TilePivot : IEquatable<TilePivot>, IComparable<TilePivot>
         Family = Families.Dragon;
         Dragon = dragon;
         _code = (int)(dragon + 1) * 100;
+        KindIndex = (SuitsCount * MaxNumber) + WindsCount + (int)dragon;
     }
 
     #endregion Constructors
