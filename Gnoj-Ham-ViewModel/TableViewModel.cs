@@ -1,6 +1,7 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using Gnoj_Ham_Library;
 using Gnoj_Ham_Library.Enums;
+using Gnoj_Ham_ViewModel.Services;
 
 namespace Gnoj_Ham_ViewModel;
 
@@ -23,13 +24,15 @@ public sealed partial class TableViewModel : ObservableObject
     /// <param name="game">The game.</param>
     /// <param name="humanPlayerIndex">The human player's seat.</param>
     /// <param name="revealAllHands"><c>True</c> to show the tiles of every seat face up.</param>
-    public TableViewModel(GamePivot game, PlayerIndices humanPlayerIndex, bool revealAllHands)
+    /// <param name="settings">The user's settings.</param>
+    public TableViewModel(GamePivot game, PlayerIndices humanPlayerIndex, bool revealAllHands, IUserSettings settings)
     {
         _game = game;
 
         Seats = Enum.GetValues<PlayerIndices>()
             .Select(i => new SeatViewModel(game, i, i == humanPlayerIndex, revealAllHands))
             .ToList();
+        Human = new HumanControlsViewModel(game, humanPlayerIndex, Seats[(int)humanPlayerIndex], settings);
         _walls = Enum.GetValues<PlayerIndices>().Select(_ => NoTiles).ToList();
     }
 
@@ -37,6 +40,11 @@ public sealed partial class TableViewModel : ObservableObject
     /// The four seats, in player index order.
     /// </summary>
     public IReadOnlyList<SeatViewModel> Seats { get; }
+
+    /// <summary>
+    /// What the human player can do.
+    /// </summary>
+    public HumanControlsViewModel Human { get; }
 
     /// <summary>
     /// The dora indicators, in display order; those not yet revealed are face down.

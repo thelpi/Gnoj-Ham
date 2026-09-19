@@ -17,21 +17,25 @@
                 <DiscreteObjectKeyFrame KeyTime="00:00:00.7500000" Value="{x:Static Visibility.Collapsed}"/>
             </ObjectAnimationUsingKeyFrames>
         </Storyboard>
-        <Style x:Key="{x:Static loc:MainWindow.StyleHighlightTileResourceName}" TargetType="Button">
-            <Setter Property="Background" Value="DarkMagenta" />
-        </Style>
         <!-- Any change on the walls dimensions below should impact this value -->
         <sys:Double x:Key="WallTileSizeRate">0.2</sys:Double>
-        <!-- Shared by the 7 call-action buttons below; Margin and Foreground are left inline since
-             they differ per button (BtnRiichi has no left margin; Foreground is code-driven for some). -->
+        <!-- Shared by the 8 call-action buttons below, each bound to an ActionButtonViewModel; Margin and
+             Foreground are left inline since they differ per button (the riichi button has no left margin;
+             three are always red). The others turn magenta when their action is the one advised. -->
         <Style x:Key="{x:Static loc:MainWindow.CallActionButtonStyleResourceName}" TargetType="Button">
             <Setter Property="FontWeight" Value="ExtraBold" />
             <Setter Property="FontSize" Value="20" />
             <Setter Property="Height" Value="36" />
             <Setter Property="Width" Value="120" />
-            <Setter Property="Visibility" Value="Collapsed" />
             <Setter Property="VerticalAlignment" Value="Center" />
             <Setter Property="HorizontalAlignment" Value="Center" />
+            <Setter Property="Visibility" Value="{Binding IsAvailable, Converter={StaticResource BooleanToVisibilityConverter}}" />
+            <Setter Property="Command" Value="{Binding InvokeCommand}" />
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding IsAdvised}" Value="True">
+                    <Setter Property="Foreground" Value="DarkMagenta" />
+                </DataTrigger>
+            </Style.Triggers>
         </Style>
 
         <!-- Tiles: every list of tiles on the table is an ItemsControl laid out horizontally or vertically. -->
@@ -43,6 +47,12 @@
         </ItemsPanelTemplate>
         <DataTemplate x:Key="TileTemplate">
             <loc:TileView Tile="{Binding}" IsHighlighted="{Binding IsHighlighted}" />
+        </DataTemplate>
+        <!-- A tile of the human player's hand: clicking it is handled by the human controls. -->
+        <DataTemplate x:Key="HumanTileTemplate">
+            <loc:TileView Tile="{Binding}" IsHighlighted="{Binding IsHighlighted}" IsEnabled="{Binding IsEnabled}"
+                          Command="{Binding DataContext.Human.SelectTileCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                          CommandParameter="{Binding}" />
         </DataTemplate>
         <DataTemplate x:Key="DoraTileTemplate">
             <loc:TileView Tile="{Binding}" Rate="0.8" />
@@ -182,11 +192,13 @@
                 </Grid>
 
                 <!-- Hands stacks -->
-                <!-- P1 (bottom): the human player's hand, built and driven by the window itself for now -->
+                <!-- P1 (bottom): the human player's hand, whose tiles can be clicked -->
                 <DockPanel Grid.Column="2" Grid.Row="5" Grid.ColumnSpan="4">
-                    <StackPanel Orientation="Horizontal" DockPanel.Dock="Left" Name="StpHandP0" />
+                    <ItemsControl DockPanel.Dock="Left" ItemsSource="{Binding Seats[0].HandTiles}"
+                                  ItemsPanel="{StaticResource HorizontalPanelTemplate}" ItemTemplate="{StaticResource HumanTileTemplate}" />
                     <!-- Tile just picked (separate view) -->
-                    <StackPanel Orientation="Horizontal" DockPanel.Dock="Left" Name="StpPickP0" Margin="5, 0, 0, 0" />
+                    <ItemsControl DockPanel.Dock="Left" Margin="5, 0, 0, 0" ItemsSource="{Binding Seats[0].PickTiles}"
+                                  ItemsPanel="{StaticResource HorizontalPanelTemplate}" ItemTemplate="{StaticResource HumanTileTemplate}" />
                 </DockPanel>
                 <!-- P2 (right) -->
                 <Grid Grid.Column="5" Grid.Row="1" Grid.RowSpan="4" >
@@ -458,19 +470,21 @@
                 </Grid>
 
                 <!-- Call overlay with actions for player -->
-                <Border Name="GrdOverlayCanCall" Panel.ZIndex="2" Grid.Row="4" Grid.Column="2" Grid.ColumnSpan="3" Visibility="Collapsed" VerticalAlignment="Bottom" HorizontalAlignment="Center" Padding="30, 36, 30, 36">
+                <Border DataContext="{Binding Human}" Panel.ZIndex="2" Grid.Row="4" Grid.Column="2" Grid.ColumnSpan="3"
+                        Visibility="{Binding IsPanelVisible, Converter={StaticResource BooleanToVisibilityConverter}}"
+                        VerticalAlignment="Bottom" HorizontalAlignment="Center" Padding="30, 36, 30, 36">
                     <Border.Background>
                         <SolidColorBrush Color="Black" Opacity="0.3" />
                     </Border.Background>
                     <StackPanel Orientation="Horizontal">
-                        <Button Name="BtnRiichi"    Content="RIICHI !"  Style="{StaticResource {x:Static loc:MainWindow.CallActionButtonStyleResourceName}}" Margin="0, 0, 0, 0" Click="BtnRiichi_Click" />
-                        <Button Name="BtnKyuushuKyuuhai" Content="ABANDON !" Style="{StaticResource {x:Static loc:MainWindow.CallActionButtonStyleResourceName}}" Margin="5, 0, 0, 0" Click="BtnKyuushuKyuuhai_Click" Foreground="Red" />
-                        <Button Name="BtnTsumo"     Content="TSUMO !"   Style="{StaticResource {x:Static loc:MainWindow.CallActionButtonStyleResourceName}}" Margin="5, 0, 0, 0" Click="BtnTsumo_Click" Foreground="Red" />
-                        <Button Name="BtnRon"       Content="RON !"     Style="{StaticResource {x:Static loc:MainWindow.CallActionButtonStyleResourceName}}" Margin="5, 0, 0, 0" Click="BtnRon_Click" Foreground="Red" />
-                        <Button Name="BtnPon"       Content="PON !"     Style="{StaticResource {x:Static loc:MainWindow.CallActionButtonStyleResourceName}}" Margin="5, 0, 0, 0" Click="BtnPon_Click" />
-                        <Button Name="BtnChii"      Content="CHII !"    Style="{StaticResource {x:Static loc:MainWindow.CallActionButtonStyleResourceName}}" Margin="5, 0, 0, 0" Click="BtnChii_Click" />
-                        <Button Name="BtnKan"       Content="KAN !"     Style="{StaticResource {x:Static loc:MainWindow.CallActionButtonStyleResourceName}}" Margin="5, 0, 0, 0" Click="BtnKan_Click" />
-                        <Button Name="BtnSkipCall"  Content="X"         Style="{StaticResource {x:Static loc:MainWindow.CallActionButtonStyleResourceName}}" Margin="5, 0, 0, 0" Click="BtnSkipCall_Click" />
+                        <Button DataContext="{Binding Riichi}"         Content="RIICHI !"  Style="{StaticResource {x:Static loc:MainWindow.CallActionButtonStyleResourceName}}" Margin="0, 0, 0, 0" />
+                        <Button DataContext="{Binding KyuushuKyuuhai}" Content="ABANDON !" Style="{StaticResource {x:Static loc:MainWindow.CallActionButtonStyleResourceName}}" Margin="5, 0, 0, 0" Foreground="Red" />
+                        <Button DataContext="{Binding Tsumo}"          Content="TSUMO !"   Style="{StaticResource {x:Static loc:MainWindow.CallActionButtonStyleResourceName}}" Margin="5, 0, 0, 0" Foreground="Red" />
+                        <Button DataContext="{Binding Ron}"            Content="RON !"     Style="{StaticResource {x:Static loc:MainWindow.CallActionButtonStyleResourceName}}" Margin="5, 0, 0, 0" Foreground="Red" />
+                        <Button DataContext="{Binding Pon}"            Content="PON !"     Style="{StaticResource {x:Static loc:MainWindow.CallActionButtonStyleResourceName}}" Margin="5, 0, 0, 0" />
+                        <Button DataContext="{Binding Chii}"           Content="CHII !"    Style="{StaticResource {x:Static loc:MainWindow.CallActionButtonStyleResourceName}}" Margin="5, 0, 0, 0" />
+                        <Button DataContext="{Binding Kan}"            Content="KAN !"     Style="{StaticResource {x:Static loc:MainWindow.CallActionButtonStyleResourceName}}" Margin="5, 0, 0, 0" />
+                        <Button DataContext="{Binding Skip}"           Content="X"         Style="{StaticResource {x:Static loc:MainWindow.CallActionButtonStyleResourceName}}" Margin="5, 0, 0, 0" />
                     </StackPanel>
                 </Border>
             </Grid>

@@ -69,6 +69,12 @@ public sealed partial class TileViewModel : ObservableObject
     private bool _isHighlighted;
 
     /// <summary>
+    /// Indicates if the tile can be clicked; only the tiles of the human player's hand ever are.
+    /// </summary>
+    [ObservableProperty]
+    private bool _isEnabled = true;
+
+    /// <summary>
     /// Inferred; the image resource to display.
     /// </summary>
     public string ImageResourceName => IsConcealed ? ConcealedImageResourceName : Tile!.ToResourceName();

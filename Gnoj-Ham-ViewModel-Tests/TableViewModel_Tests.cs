@@ -1,6 +1,7 @@
 using Gnoj_Ham_Library;
 using Gnoj_Ham_Library.Enums;
 using Gnoj_Ham_ViewModel;
+using Gnoj_Ham_ViewModel_Tests.Fakes;
 
 namespace Gnoj_Ham_ViewModel_Tests;
 
@@ -11,7 +12,7 @@ public class TableViewModel_Tests
 
     private static TableViewModel NewTable(GamePivot game, bool revealAllHands = false)
     {
-        var table = new TableViewModel(game, PlayerIndices.Zero, revealAllHands);
+        var table = new TableViewModel(game, PlayerIndices.Zero, revealAllHands, new FakeUserSettings());
         table.RefreshRound();
         return table;
     }

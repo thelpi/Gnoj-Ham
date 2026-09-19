@@ -9,6 +9,8 @@ Points notés en cours de route, pas traités tout de suite.
 
 ## Interface WPF (Gnoj-Ham-View)
 
-- [ ] Pas de MVVM, accès aux contrôles par reconstruction de nom (`GraphicTools.FindName<T>`) — fragile aux renommages XAML ; `FindName` peut renvoyer `null` sans revérification (`GraphicTools.cs:150`).
+- [ ] MVVM (branche `feat/mvvm`) : reste le flux de jeu de `MainWindow.xaml.cs` (auto-jeu, chrono, annonces, réglages) à passer dans un view-model ; l'accès aux contrôles par nom (`GraphicTools.FindName<T>`) a disparu.
 - [ ] `AutoPlayWindow` : le panneau « Games in progress... » et sa barre de progression sont visibles dès l'ouverture, avant tout Start — reproduit tel quel par `AutoPlayViewModel.IsWaitingPanelVisible`, à masquer à l'état `Idle`.
+- [ ] `MainWindow.xaml` : les `Seats[0..3]` sont des index magiques (bas, droite, haut, gauche) — envisager des propriétés nommées sur `TableViewModel` (étape 6 du MVVM).
+- [ ] `MainWindow` : revoir le temps d'affichage des annonces (pon, chi, kan, riichi, ron, tsumo).
 - [ ] `ScoreWindow.xaml` : le séparateur sous la main d'un gagnant est une `Line` avec `Fill` mais sans `Stroke`, donc invisible depuis toujours — lui donner un `Stroke`, ou le retirer.
