@@ -30,10 +30,9 @@ public static class GlobalExtensions
     /// <param name="list1">The first list.</param>
     /// <param name="list2">The second list.</param>
     /// <returns><c>True</c> if <paramref name="list1"/> is a bijection of <paramref name="list2"/>; <c>False</c> otherwise.</returns>
-    internal static bool IsBijection<T>(this IReadOnlyList<T>? list1, IReadOnlyList<T>? list2) where T : IEquatable<T>
+    internal static bool IsBijection<T>(this IReadOnlyList<T> list1, IReadOnlyList<T> list2) where T : IEquatable<T>
     {
-        return list1 != null && list2 != null
-            && list1.All(e1 => list2.Contains(e1))
+        return list1.All(e1 => list2.Contains(e1))
             && list2.All(e2 => list1.Contains(e2));
     }
 
@@ -44,7 +43,7 @@ public static class GlobalExtensions
     /// <returns><c>True</c> if self draw; <c>False</c> otherwise.</returns>
     internal static bool IsSelfDraw(this DrawTypes drawType)
     {
-        return drawType == DrawTypes.Wall || drawType == DrawTypes.Compensation;
+        return drawType is DrawTypes.Wall or DrawTypes.Compensation;
     }
 
     /// <summary>
@@ -54,13 +53,7 @@ public static class GlobalExtensions
     /// <returns>The left wind.</returns>
     internal static Winds Left(this Winds origin)
     {
-        return origin switch
-        {
-            Winds.East => Winds.North,
-            Winds.South => Winds.East,
-            Winds.West => Winds.South,
-            _ => Winds.West,
-        };
+        return (Winds)Rotate((int)origin, -1);
     }
 
     /// <summary>
@@ -70,13 +63,7 @@ public static class GlobalExtensions
     /// <returns>The right wind.</returns>
     internal static Winds Right(this Winds origin)
     {
-        return origin switch
-        {
-            Winds.East => Winds.South,
-            Winds.South => Winds.West,
-            Winds.West => Winds.North,
-            _ => Winds.East,
-        };
+        return (Winds)Rotate((int)origin, 1);
     }
 
     /// <summary>
@@ -86,13 +73,7 @@ public static class GlobalExtensions
     /// <returns>The opposite wind.</returns>
     internal static Winds Opposite(this Winds origin)
     {
-        return origin switch
-        {
-            Winds.East => Winds.West,
-            Winds.South => Winds.North,
-            Winds.West => Winds.East,
-            _ => Winds.South,
-        };
+        return (Winds)Rotate((int)origin, 2);
     }
 
     /// <summary>
@@ -103,24 +84,26 @@ public static class GlobalExtensions
     /// <returns>The relative player index.</returns>
     public static PlayerIndices RelativePlayerIndex(this PlayerIndices playerIndex, int nIndex)
     {
-        if (nIndex == 0)
-        {
-            return playerIndex;
-        }
+        return (PlayerIndices)Rotate((int)playerIndex, nIndex);
+    }
 
-        var nIndexMod = nIndex % 4;
-        var newIndex = (int)playerIndex + nIndexMod;
+    /// <summary>
+    /// Extension; gets the wind of a player, knowing who is east.
+    /// </summary>
+    /// <param name="playerIndex">The player index.</param>
+    /// <param name="eastIndex">The index of the east player.</param>
+    /// <returns>The wind of the player.</returns>
+    internal static Winds WindFrom(this PlayerIndices playerIndex, PlayerIndices eastIndex)
+    {
+        return (Winds)Rotate((int)playerIndex, -(int)eastIndex);
+    }
 
-        if (nIndex > 0 && newIndex > 3)
-        {
-            newIndex %= 4;
-        }
-        else if (nIndex < 0 && newIndex < 0)
-        {
-            newIndex = 4 - Math.Abs(newIndex % 4);
-        }
-
-        return (PlayerIndices)newIndex;
+    // Moves around the table, from a seat (a PlayerIndices) or a wind (a Winds) - both are declared in
+    // turn order, and each player sits at a seat with a wind, so there are as many of each - by a number
+    // of steps, forward or (negative) backward.
+    private static int Rotate(int position, int steps)
+    {
+        return (((position + steps) % GamePivot.PlayersCount) + GamePivot.PlayersCount) % GamePivot.PlayersCount;
     }
 
     /// <summary>
@@ -130,7 +113,7 @@ public static class GlobalExtensions
     /// <returns><c>True</c> if applies rule; <c>False</c> otherwise.</returns>
     internal static bool TobiRuleApply(this EndOfGameRules endOfGameRule)
     {
-        return endOfGameRule == EndOfGameRules.Tobi || endOfGameRule == EndOfGameRules.EnchousenAndTobi;
+        return endOfGameRule is EndOfGameRules.Tobi or EndOfGameRules.EnchousenAndTobi;
     }
 
     /// <summary>
@@ -140,7 +123,7 @@ public static class GlobalExtensions
     /// <returns><c>True</c> if applies rule; <c>False</c> otherwise.</returns>
     internal static bool EnchousenRuleApply(this EndOfGameRules endOfGameRule)
     {
-        return endOfGameRule == EndOfGameRules.Enchousen || endOfGameRule == EndOfGameRules.EnchousenAndTobi;
+        return endOfGameRule is EndOfGameRules.Enchousen or EndOfGameRules.EnchousenAndTobi;
     }
 
     /// <summary>
@@ -151,11 +134,8 @@ public static class GlobalExtensions
     /// <param name="item">The item.</param>
     internal static void AddSorted<T>(this List<T> list, T item) where T : IComparable<T>
     {
-        if (list.Count == 0)
-        {
-            list.Add(item);
-        }
-        else if (list[^1].CompareTo(item) <= 0)
+        // An item equal to the last one goes after it, and one equal to the first goes before it.
+        if (list.Count == 0 || list[^1].CompareTo(item) <= 0)
         {
             list.Add(item);
         }

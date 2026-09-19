@@ -120,7 +120,7 @@ internal static class ScoreTools
     internal static (int tenpai, int nonTenpai) GetRyuukyokuPoints(int countTenpai)
     {
         return countTenpai == 1
-            ? (TENPAI_BASE_POINTS * (4 - countTenpai), -TENPAI_BASE_POINTS)
+            ? (TENPAI_BASE_POINTS * (GamePivot.PlayersCount - countTenpai), -TENPAI_BASE_POINTS)
             : countTenpai == 2
                 ? (TENPAI_BASE_POINTS + (TENPAI_BASE_POINTS / countTenpai), -(TENPAI_BASE_POINTS + (TENPAI_BASE_POINTS / countTenpai)))
                 : countTenpai == 3 ? (TENPAI_BASE_POINTS, countTenpai * -TENPAI_BASE_POINTS) : (0, 0);

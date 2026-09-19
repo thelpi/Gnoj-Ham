@@ -162,7 +162,7 @@ public class RoundPivot
             // "PlayerIndexHistory.Count" only ever equals the total discard count when no call
             // (pon / chii / kan) has happened yet: any call clears it. Requiring both to be 4 pins
             // this down to exactly "four discards, first turn each, nothing called in between".
-            if (_discardHistory.PlayerIndexHistory.Count != 4 || _discardHistory.Discards.Sum(d => d.Count) != 4)
+            if (_discardHistory.PlayerIndexHistory.Count != GamePivot.PlayersCount || _discardHistory.Discards.Sum(d => d.Count) != GamePivot.PlayersCount)
             {
                 return false;
             }
@@ -266,7 +266,7 @@ public class RoundPivot
     {
         Game = game;
 
-        WallOpeningIndex = (PlayerIndices)random.Next(0, 4);
+        WallOpeningIndex = (PlayerIndices)random.Next(GamePivot.PlayersCount);
 
         _fullTilesList = TilePivot
             .GetCompleteSet(Game.Ruleset.UseRedDoras)
@@ -275,9 +275,9 @@ public class RoundPivot
 
         drivenDraw?.Invoke(_fullTilesList);
 
-        _hands = Enumerable.Range(0, 4).Select(i => new HandPivot(_fullTilesList.GetRange(i * 13, 13))).ToList();
+        _hands = GamePivot.PerPlayer(p => new HandPivot(_fullTilesList.GetRange((int)p * 13, 13)));
         _discardHistory = new DiscardHistoryPivot();
-        _riichis = Enumerable.Range(0, 4).Select(i => (RiichiPivot?)null).ToList();
+        _riichis = GamePivot.PerPlayer(_ => (RiichiPivot?)null);
         _wallTiles = _fullTilesList.GetRange(52, 70);
         _compensationTiles = _fullTilesList.GetRange(122, 4);
         _doraIndicatorTiles = _fullTilesList.GetRange(126, 5);
@@ -289,7 +289,7 @@ public class RoundPivot
         _openedKanInProgress = null;
         _waitForDiscard = false;
         var cpuManagers = new Dictionary<PlayerIndices, CpuManagerBasePivot>();
-        foreach (var i in Enumerable.Range(0, 4).Select(i => (PlayerIndices)i))
+        foreach (var i in Enum.GetValues<PlayerIndices>())
         {
             cpuManagers[i] = cpuManagerFactories != null && cpuManagerFactories.TryGetValue(i, out var factory)
                 ? factory(this)

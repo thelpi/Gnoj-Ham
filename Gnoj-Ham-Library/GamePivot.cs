@@ -7,6 +7,22 @@ namespace Gnoj_Ham_Library;
 /// </summary>
 public class GamePivot
 {
+    /// <summary>
+    /// The number of players in a game, whatever the seats they take: one per <see cref="PlayerIndices"/>.
+    /// </summary>
+    public static readonly int PlayersCount = Enum.GetValues<PlayerIndices>().Length;
+
+    /// <summary>
+    /// Builds one item for each player, in seat order.
+    /// </summary>
+    /// <typeparam name="T">The item type.</typeparam>
+    /// <param name="create">Creates the item of a player.</param>
+    /// <returns>The items, the first one being the item of the first player.</returns>
+    public static List<T> PerPlayer<T>(Func<PlayerIndices, T> create)
+    {
+        return Enum.GetValues<PlayerIndices>().Select(create).ToList();
+    }
+
     #region Properties
 
     private readonly Random _random;
@@ -130,7 +146,7 @@ public class GamePivot
     public GamePivot(RulePivot ruleset, IReadOnlyList<PlayerPivot> players, Random random,
         IReadOnlyDictionary<PlayerIndices, Func<RoundPivot, CpuManagerBasePivot>>? cpuManagerFactories = null)
     {
-        if (players.Count != 4)
+        if (players.Count != PlayersCount)
         {
             throw new ArgumentException("Four players are required.", nameof(players));
         }
@@ -173,7 +189,7 @@ public class GamePivot
             throw new ArgumentException("Must have the same count as this game's own Players.", nameof(targetPlayers));
         }
 
-        var playersOrdered = new List<PlayerScorePivot>(4);
+        var playersOrdered = new List<PlayerScorePivot>(PlayersCount);
 
         var rank = 1;
         foreach (var seatIndex in Enumerable.Range(0, Players.Count).OrderByDescending(i => Players[i].CurrentGamePoints))
@@ -301,20 +317,7 @@ public class GamePivot
     /// <returns>The <see cref="Winds"/>.</returns>
     public Winds GetPlayerCurrentWind(PlayerIndices playerIndex)
     {
-        if (playerIndex == EastIndex + 1 || playerIndex == EastIndex - 3)
-        {
-            return Winds.South;
-        }
-        else if (playerIndex == EastIndex + 2 || playerIndex == EastIndex - 2)
-        {
-            return Winds.West;
-        }
-        else if (playerIndex == EastIndex + 3 || playerIndex == EastIndex - 1)
-        {
-            return Winds.North;
-        }
-
-        return Winds.East;
+        return playerIndex.WindFrom(EastIndex);
     }
 
     /// <summary>

@@ -52,7 +52,7 @@ public class PlayerPivot
     /// <summary>
     /// Number of last places.
     /// </summary>
-    public int LastPlaceCount => _scores.Count(s => s.Rank == 4);
+    public int LastPlaceCount => _scores.Count(s => s.Rank == GamePivot.PlayersCount);
 
     /// <summary>
     /// Average score.
@@ -115,11 +115,11 @@ public class PlayerPivot
         InitialPointsRules initialPointsRulePivot,
         Random random)
     {
-        var eastIndex = (PlayerIndices)random.Next(0, 4);
+        var eastIndex = (PlayerIndices)random.Next(GamePivot.PlayersCount);
 
         foreach (var i in Enum.GetValues<PlayerIndices>())
         {
-            players[(int)i].CurrentGameInitialWind = GetWindFromIndex(eastIndex, i);
+            players[(int)i].CurrentGameInitialWind = i.WindFrom(eastIndex);
             players[(int)i].CurrentGamePoints = initialPointsRulePivot.GetInitialPointsFromRule();
         }
     }
@@ -140,9 +140,4 @@ public class PlayerPivot
     {
         _scores.Clear();
     }
-
-    private static Winds GetWindFromIndex(PlayerIndices eastIndex, PlayerIndices i)
-        => i == eastIndex
-            ? Winds.East
-            : (i > eastIndex ? (Winds)(i - eastIndex) : (Winds)(4 - (int)eastIndex + i));
 }

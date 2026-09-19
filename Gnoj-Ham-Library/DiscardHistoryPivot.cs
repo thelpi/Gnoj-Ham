@@ -19,14 +19,12 @@ internal class DiscardHistoryPivot
     /// </summary>
     internal DiscardHistoryPivot()
     {
-        _discards = Enumerable.Range(0, 4).Select(i => new List<TilePivot>(20)).ToList();
-        _virtualDiscards = Enumerable.Range(0, 4).Select(i => new List<TilePivot>(20)).ToList();
+        _discards = GamePivot.PerPlayer(_ => new List<TilePivot>(20));
+        _virtualDiscards = GamePivot.PerPlayer(_ => new List<TilePivot>(20));
         _playerIndexHistory = new List<PlayerIndices>(10);
-        _lastOwnDiscardOpponentsVirtualRank = Enumerable.Range(0, 4)
-            .Select(i => Enum.GetValues<PlayerIndices>()
-                .Where(p => (int)p != i)
-                .ToDictionary(p => p, _ => 0))
-            .ToList();
+        _lastOwnDiscardOpponentsVirtualRank = GamePivot.PerPlayer(player => Enum.GetValues<PlayerIndices>()
+            .Where(p => p != player)
+            .ToDictionary(p => p, _ => 0));
     }
 
     /// <summary>

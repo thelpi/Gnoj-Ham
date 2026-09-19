@@ -44,7 +44,7 @@ internal class EndOfRoundCalculatorPivot
             }
         }
 
-        var playerInfos = new List<EndOfRoundInformationsPivot.PlayerInformationsPivot>(4);
+        var playerInfos = new List<EndOfRoundInformationsPivot.PlayerInformationsPivot>(GamePivot.PlayersCount);
 
         // Abortive draw (e.g. suucha riichi): no tenpai/noten payment, dealer always repeats (renchan),
         // riichi sticks carry over (handled by the caller through the "Ryuukyoku" flag), honba still
@@ -258,7 +258,7 @@ internal class EndOfRoundCalculatorPivot
     // Checks for players with nagashi mangan.
     private List<PlayerIndices> CheckForNagashiMangan()
     {
-        var playerIndexList = new List<PlayerIndices>(4);
+        var playerIndexList = new List<PlayerIndices>(GamePivot.PlayersCount);
 
         foreach (var i in Enum.GetValues<PlayerIndices>())
         {
@@ -294,7 +294,7 @@ internal class EndOfRoundCalculatorPivot
     /// <returns><c>True</c> if <paramref name="candidate"/> is the one who collects them.</returns>
     private static bool IsClosestWinnerToDiscarder(PlayerIndices candidate, PlayerIndices discarder, IReadOnlyList<PlayerIndices> winners)
     {
-        for (var i = 1; i <= 3; i++)
+        for (var i = 1; i < GamePivot.PlayersCount; i++)
         {
             var closerWinner = discarder.RelativePlayerIndex(i);
             if (winners.Contains(closerWinner))
