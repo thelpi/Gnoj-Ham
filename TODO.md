@@ -9,7 +9,6 @@ Points notés en cours de route, pas traités tout de suite.
 
 ## Interface WPF (Gnoj-Ham-View)
 
-- [ ] MVVM (branche `feat/mvvm`) : reste à ranger en dossiers les fichiers des projets `Gnoj-Ham-ViewModel` et `Gnoj-Ham-View` (presque tout est à la racine).
 - [ ] `AutoPlayWindow` : le panneau « Games in progress... » et sa barre de progression sont visibles dès l'ouverture, avant tout Start — reproduit tel quel par `AutoPlayViewModel.IsWaitingPanelVisible`, à masquer à l'état `Idle`.
 - [ ] `MainWindow` : revoir le temps d'affichage des annonces (pon, chi, kan, riichi, ron, tsumo).
 - [ ] `ScoreWindow.xaml` : le séparateur sous la main d'un gagnant est une `Line` avec `Fill` mais sans `Stroke`, donc invisible depuis toujours — lui donner un `Stroke`, ou le retirer.

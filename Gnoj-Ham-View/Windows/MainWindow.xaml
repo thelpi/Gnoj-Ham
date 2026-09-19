@@ -96,7 +96,7 @@
                     <Label Width="160" />
                     <Button Height="32" Width="32" Command="{Binding NewGameCommand}" ToolTip="Retour à l'accueil / débuter une nouvelle partie.">
                         <Button.Content>
-                            <Image Source="Resources/gohome.png" />
+                            <Image Source="../Resources/gohome.png" />
                         </Button.Content>
                     </Button>
                 </StackPanel>
@@ -147,7 +147,7 @@
                                         <GradientStop Color="DarkGreen" Offset="1" />
                                     </RadialGradientBrush>
                                 </StackPanel.Background>
-                                <Image Source="Resources/dragon_background.png" Opacity="0.1" Stretch="UniformToFill" />
+                                <Image Source="../Resources/dragon_background.png" Opacity="0.1" Stretch="UniformToFill" />
                             </StackPanel>
                         </VisualBrush.Visual>
                     </VisualBrush>
@@ -249,7 +249,7 @@
                 <!-- P1 (bottom) -->
                 <StackPanel Orientation="Vertical" Grid.Row="4" Grid.Column="3" Grid.ColumnSpan="2">
                     <StackPanel Orientation="Horizontal" Margin="107, 0, 0, 5">
-                        <Image HorizontalAlignment="Left" Height="60" Source="Resources/stick_1000.png"
+                        <Image HorizontalAlignment="Left" Height="60" Source="../Resources/stick_1000.png"
                                Visibility="{Binding BottomSeat.HasRiichiStick, Converter={StaticResource BooleanToHiddenConverter}}">
                             <Image.LayoutTransform>
                                 <RotateTransform Angle="90" />
@@ -266,7 +266,7 @@
                 <!-- P2 (right) -->
                 <StackPanel Orientation="Horizontal" Grid.Row="2" Grid.Column="4" Grid.RowSpan="2">
                     <StackPanel Orientation="Vertical" Margin="0, 280, 5, 0">
-                        <Image HorizontalAlignment="Left" Height="60" Source="Resources/stick_1000.png"
+                        <Image HorizontalAlignment="Left" Height="60" Source="../Resources/stick_1000.png"
                                Visibility="{Binding RightSeat.HasRiichiStick, Converter={StaticResource BooleanToHiddenConverter}}" />
                     </StackPanel>
                     <Grid>
@@ -321,7 +321,7 @@
                                       ItemsPanel="{StaticResource HorizontalPanelTemplate}" ItemTemplate="{StaticResource TileTemplate}" />
                     </Grid>
                     <StackPanel FlowDirection="RightToLeft" Orientation="Horizontal" Margin="0, 5, 107, 0">
-                        <Image HorizontalAlignment="Left" Height="60" Source="Resources/stick_1000.png"
+                        <Image HorizontalAlignment="Left" Height="60" Source="../Resources/stick_1000.png"
                                Visibility="{Binding TopSeat.HasRiichiStick, Converter={StaticResource BooleanToHiddenConverter}}">
                             <Image.LayoutTransform>
                                 <RotateTransform Angle="270" />
@@ -338,7 +338,7 @@
                     <ItemsControl Width="60" ItemsSource="{Binding LeftSeat.DiscardRows[0]}"
                                   ItemsPanel="{StaticResource VerticalPanelTemplate}" ItemTemplate="{StaticResource TileTemplate}" />
                     <StackPanel Orientation="Vertical" Margin="5, 107, 0, 0">
-                        <Image HorizontalAlignment="Right" Height="60" Source="Resources/stick_1000.png"
+                        <Image HorizontalAlignment="Right" Height="60" Source="../Resources/stick_1000.png"
                                Visibility="{Binding LeftSeat.HasRiichiStick, Converter={StaticResource BooleanToHiddenConverter}}" />
                     </StackPanel>
                 </StackPanel>
@@ -435,9 +435,9 @@
                     <Label Grid.Row="4" Grid.RowSpan="2" Grid.Column="3" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="20"
                            Content="{Binding EastTurnCountText}" ToolTip="{Binding EastTurnCountToolTip}" />
                     <StackPanel Grid.Row="2" Grid.RowSpan="2" Grid.Column="4" VerticalAlignment="Center" HorizontalAlignment="Center" Orientation="Horizontal">
-                        <Image Height="30" Stretch="UniformToFill" Source="Resources/stick_100.png" ToolTip="Honba" />
+                        <Image Height="30" Stretch="UniformToFill" Source="../Resources/stick_100.png" ToolTip="Honba" />
                         <TextBlock Margin="5, 0, 0, 0" VerticalAlignment="Center" FontSize="16" Text="{Binding HonbaText}" ToolTip="Honba" />
-                        <Image Height="30" Margin="5, 0, 0, 0" Stretch="UniformToFill" Source="Resources/stick_1000.png" ToolTip="Nombre de Riichis en jeu" />
+                        <Image Height="30" Margin="5, 0, 0, 0" Stretch="UniformToFill" Source="../Resources/stick_1000.png" ToolTip="Nombre de Riichis en jeu" />
                         <TextBlock Margin="5, 0, 0, 0" VerticalAlignment="Center" FontSize="16" Text="{Binding PendingRiichiText}" ToolTip="Nombre de Riichis en jeu" />
                     </StackPanel>
                     <Label Grid.Row="4" Grid.RowSpan="2" Grid.Column="4" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="20"
