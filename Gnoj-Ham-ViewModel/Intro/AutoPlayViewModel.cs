@@ -88,10 +88,9 @@ public sealed partial class AutoPlayViewModel : ObservableObject
     public bool IsActionPanelVisible => State != AutoPlayState.Running;
 
     /// <summary>
-    /// Inferred; the progress panel shows until the batch is over (it has always shown from the start,
-    /// before any game is played).
+    /// Inferred; the progress panel shows while games are being played.
     /// </summary>
-    public bool IsWaitingPanelVisible => State != AutoPlayState.Finished;
+    public bool IsWaitingPanelVisible => State == AutoPlayState.Running;
 
     /// <summary>
     /// Inferred; the results show once the batch is over.

@@ -27,13 +27,13 @@ public class AutoPlayViewModel_Tests
     }
 
     [Fact]
-    public void InitialState_ShowsTheStartControlsAndAlreadyTheProgressPanel()
+    public void InitialState_ShowsTheStartControlsAndNoProgressBeforeAnyGameIsPlayed()
     {
         var viewModel = NewViewModel();
 
         Assert.True(viewModel.AreSeatsEditable);
         Assert.True(viewModel.IsActionPanelVisible);
-        Assert.True(viewModel.IsWaitingPanelVisible);
+        Assert.False(viewModel.IsWaitingPanelVisible);
         Assert.False(viewModel.AreResultsVisible);
     }
 
