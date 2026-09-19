@@ -47,10 +47,9 @@ internal sealed class ManualDelay : IDelay
     }
 
     /// <summary>
-    /// Ends every wait still going, and lets whatever was waiting for them go on: under a synchronization
-    /// context (as tests have) it is queued, and would otherwise run after the caller.
+    /// Ends every wait still going.
     /// </summary>
-    public async Task ElapseAllAsync()
+    public void ElapseAll()
     {
         List<(TimeSpan delay, TaskCompletionSource source)> waits;
         lock (_waits)
@@ -63,7 +62,5 @@ internal sealed class ManualDelay : IDelay
         {
             source.TrySetResult();
         }
-
-        await Task.Yield();
     }
 }

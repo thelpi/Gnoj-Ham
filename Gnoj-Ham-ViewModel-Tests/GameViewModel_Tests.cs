@@ -487,7 +487,7 @@ public class GameViewModel_Tests
         Assert.Contains(TimeSpan.FromSeconds(5), manualDelay.PendingDelays);
         var discardsBefore = Enum.GetValues<PlayerIndices>().Sum(p => viewModel.Game.Round.GetDiscard(p).Count);
 
-        await manualDelay.ElapseAllAsync();
+        manualDelay.ElapseAll();
         await viewModel.WhenIdleAsync();
 
         // The offer was turned down, and the game went on: more tiles were discarded, or the human player picked theirs.
@@ -508,7 +508,7 @@ public class GameViewModel_Tests
         var picked = HumanOf(viewModel).PickTile!.Tile;
         var discards = viewModel.Game.Round.GetDiscard(Human).Count;
 
-        await manualDelay.ElapseAllAsync();
+        manualDelay.ElapseAll();
         await viewModel.WhenIdleAsync();
 
         Assert.Equal(discards + 1, viewModel.Game.Round.GetDiscard(Human).Count);
@@ -528,7 +528,7 @@ public class GameViewModel_Tests
         await HumanOf(viewModel).Pon.InvokeCommand.ExecuteAsync(null);
         await viewModel.WhenIdleAsync();
         var combinations = viewModel.Table.Seats[(int)Human].Combinations.Count;
-        await manualDelay.ElapseAllAsync();
+        manualDelay.ElapseAll();
         await viewModel.WhenIdleAsync();
 
         // The timer of the call is gone: elapsing what is left does not undo or redo it.

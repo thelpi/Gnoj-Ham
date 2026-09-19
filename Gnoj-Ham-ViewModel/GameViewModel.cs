@@ -729,12 +729,6 @@ public sealed partial class GameViewModel : ObservableObject, IHumanActions
     // calls offered are turned down. Nothing happens when the timer is disabled.
     private void StartDecisionTimer(TileViewModel? tileToClick)
     {
-        // The wait itself is not work: it goes on for as long as the human player takes.
-        RunInBackground(() => WaitForDecisionAsync(tileToClick), isWork: false);
-    }
-
-    private async Task WaitForDecisionAsync(TileViewModel? tileToClick)
-    {
         StopDecisionTimer();
 
         var chrono = (ChronoPivot)_settings.ChronoSpeed;
@@ -743,29 +737,30 @@ public sealed partial class GameViewModel : ObservableObject, IHumanActions
             return;
         }
 
-        using var timer = CancellationTokenSource.CreateLinkedTokenSource(_cancellation.Token);
+        var timer = CancellationTokenSource.CreateLinkedTokenSource(_cancellation.Token);
         _decisionTimer = timer;
-        try
-        {
-            await _delay.DelayAsync(TimeSpan.FromSeconds(chrono.GetDelay()), timer.Token);
-        }
-        catch (OperationCanceledException)
-        {
-            return;
-        }
 
-        if (ReferenceEquals(_decisionTimer, timer))
-        {
-            _decisionTimer = null;
-        }
+        // Not an await: the wait goes on for as long as the human player takes, and is no work to wait for.
+        // What follows once it is over is, and starts right away on the UI thread.
+        _ = _delay.DelayAsync(TimeSpan.FromSeconds(chrono.GetDelay()), timer.Token).ContinueWith(
+            finished =>
+            {
+                var elapsed = finished.IsCompletedSuccessfully
+                    && ReferenceEquals(Interlocked.CompareExchange(ref _decisionTimer, null, timer), timer);
+                timer.Dispose();
 
-        RunInBackground(() => tileToClick == null ? SkipCallsAsync() : Human.SelectTileAsync(tileToClick));
+                if (elapsed)
+                {
+                    _ = _dispatcher.InvokeAsync(() => RunInBackground(
+                        () => tileToClick == null ? SkipCallsAsync() : Human.SelectTileAsync(tileToClick)));
+                }
+            },
+            TaskContinuationOptions.ExecuteSynchronously);
     }
 
     private void StopDecisionTimer()
     {
-        var timer = _decisionTimer;
-        _decisionTimer = null;
+        var timer = Interlocked.Exchange(ref _decisionTimer, null);
         try
         {
             timer?.Cancel();
@@ -778,7 +773,7 @@ public sealed partial class GameViewModel : ObservableObject, IHumanActions
 
     // Runs work nobody waits for. A failure is not lost: it is raised on the UI thread, like any
     // unhandled exception there.
-    private void RunInBackground(Func<Task> operation, bool isWork = true)
+    private void RunInBackground(Func<Task> operation)
     {
         var task = operation();
         if (task.IsCompletedSuccessfully)
@@ -786,27 +781,23 @@ public sealed partial class GameViewModel : ObservableObject, IHumanActions
             return;
         }
 
-        if (isWork)
+        lock (_backgroundOperations)
         {
-            lock (_backgroundOperations)
-            {
-                _backgroundOperations.Add(task);
-            }
+            _backgroundOperations.Add(task);
         }
 
         _ = task.ContinueWith(
             finished =>
             {
                 // A failed operation stays in the list, for whoever waits for the work to be over to notice.
-                if (isWork && !finished.IsFaulted)
+                if (!finished.IsFaulted)
                 {
                     lock (_backgroundOperations)
                     {
                         _backgroundOperations.Remove(finished);
                     }
                 }
-
-                if (finished.IsFaulted)
+                else
                 {
                     var error = finished.Exception!.GetBaseException();
                     _ = _dispatcher.InvokeAsync(() => ExceptionDispatchInfo.Throw(error));
