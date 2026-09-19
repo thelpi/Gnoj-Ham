@@ -12,33 +12,7 @@ public class ShantenCalculator_Tests
     private static readonly IReadOnlyDictionary<int, List<TilePivot>> CopiesByKind =
         TilesSet.GroupBy(t => t.KindIndex).ToDictionary(g => g.Key, g => g.ToList());
 
-    // "123m456p789s1122z": the numbers, then their family (m: caracters, p: circles, s: bamboos, z: honors,
-    // the four winds then the three dragons).
-    private static List<TilePivot> Tiles(string notation)
-    {
-        var used = new int[TilePivot.KindsCount];
-        var tiles = new List<TilePivot>();
-        var numbers = new List<int>();
-
-        foreach (var c in notation)
-        {
-            if (char.IsDigit(c))
-            {
-                numbers.Add(c - '0');
-                continue;
-            }
-
-            foreach (var number in numbers)
-            {
-                var kind = (c == 'z' ? TilePivot.SuitsCount : "mps".IndexOf(c)) * TilePivot.MaxNumber + number - 1;
-                tiles.Add(CopiesByKind[kind][used[kind]++]);
-            }
-            numbers.Clear();
-        }
-
-        tiles.Sort();
-        return tiles;
-    }
+    private static List<TilePivot> Tiles(string notation) => HandNotation.Tiles(notation);
 
     [Theory]
     // Complete hands.

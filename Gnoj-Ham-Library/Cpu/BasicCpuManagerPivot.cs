@@ -204,6 +204,17 @@ public class BasicCpuManagerPivot : CpuManagerBasePivot
             return ChiitoitsuDiscardDecision(concealedTiles, discardableTiles, deadTiles);
         }
 
+        return DevelopmentDiscardDecision(concealedTiles, discardableTiles, deadTiles);
+    }
+
+    // What to discard to develop a hand that's neither tenpai, nor giving up, nor a special shape: the
+    // general ranking of the tiles by how much they're worth keeping. Virtual so a variant (see
+    // EfficiencyCpuManagerPivot) can replace this one step, and keep everything else as it is.
+    protected virtual TilePivot DevelopmentDiscardDecision(
+        IReadOnlyList<TilePivot> concealedTiles,
+        List<TilePivot> discardableTiles,
+        IReadOnlyList<TilePivot> deadTiles)
+    {
         var itsuFamily = CloseToHonitsuFamily(concealedTiles);
 
         var tilesGroup =
