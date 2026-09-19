@@ -49,8 +49,6 @@
                 <DataTemplate>
                     <GroupBox Header="{Binding PlayerName}">
                         <DockPanel>
-                            <Line DockPanel.Dock="Bottom" Fill="Black" Height="2" Width="200" VerticalAlignment="Center"
-                                  Visibility="{Binding HasYakus, Converter={StaticResource BooleanToVisibilityConverter}}" />
                             <Grid DockPanel.Dock="Bottom" HorizontalAlignment="Right">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="50" />
