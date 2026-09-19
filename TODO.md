@@ -9,5 +9,4 @@ Points notés en cours de route, pas traités tout de suite.
 
 ## Interface WPF (Gnoj-Ham-View)
 
-- [ ] `MainWindow` : revoir le temps d'affichage des annonces (pon, chi, kan, riichi, ron, tsumo).
 - [ ] `ScoreWindow.xaml` : le séparateur sous la main d'un gagnant est une `Line` avec `Fill` mais sans `Stroke`, donc invisible depuis toujours — lui donner un `Stroke`, ou le retirer.

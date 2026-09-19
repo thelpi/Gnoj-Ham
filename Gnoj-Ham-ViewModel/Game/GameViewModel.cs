@@ -652,7 +652,9 @@ public sealed partial class GameViewModel : ObservableObject, IHumanActions
         };
         _game.Round.CallNotifier += e =>
         {
-            _ = Announce(e.Action, e.PlayerIndex);
+            // Raised on the engine's thread, for the calls of the CPUs: the game waits for the announcement
+            // to have been seen before going on.
+            WaitForAnnouncement(Announce(e.Action, e.PlayerIndex));
         };
         _game.Round.RiichiChoicesNotifier += e =>
         {
@@ -709,13 +711,43 @@ public sealed partial class GameViewModel : ObservableObject, IHumanActions
 
     #region Announcements and timer
 
-    // Announces a call. The game plays on, unless the task returned is waited for.
+    // Announces a call, once the ones announced before have been fully seen: none cuts another short.
+    // The game plays on, unless the task returned is waited for.
     private Task Announce(CallTypes call, PlayerIndices playerIndex)
     {
-        var announcement = Task.CompletedTask;
-        _dispatcher.Invoke(() => announcement = _animations.PlayCallAnnouncementAsync(call, playerIndex));
-        _announcement = announcement;
-        return announcement;
+        var over = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var previous = Interlocked.Exchange(ref _announcement, over.Task);
+        return PlayAnnouncementAsync(previous, over, call, playerIndex);
+    }
+
+    private async Task PlayAnnouncementAsync(Task previous, TaskCompletionSource over, CallTypes call, PlayerIndices playerIndex)
+    {
+        try
+        {
+            await previous;
+
+            var playing = Task.CompletedTask;
+            _dispatcher.Invoke(() => playing = _animations.PlayCallAnnouncementAsync(call, playerIndex));
+            await playing;
+        }
+        finally
+        {
+            over.TrySetResult();
+        }
+    }
+
+    // Holds the game engine's thread back until the announcement has been seen. Nothing to wait for
+    // once the game is closed.
+    private void WaitForAnnouncement(Task announcement)
+    {
+        try
+        {
+            announcement.Wait(_cancellation.Token);
+        }
+        catch (OperationCanceledException)
+        {
+            // The game is closing.
+        }
     }
 
     // Runs the given action once any in-progress call announcement has fully finished playing (or

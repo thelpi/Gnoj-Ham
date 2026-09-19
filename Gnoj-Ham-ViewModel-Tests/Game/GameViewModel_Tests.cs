@@ -513,6 +513,49 @@ public class GameViewModel_Tests
     }
 
     [Fact]
+    public async Task ACpuCall_HoldsTheGameUntilItsAnnouncementHasBeenSeen()
+    {
+        _animations.Hold = true;
+        GameViewModel? viewModel = null;
+        Task? start = null;
+
+        // Plays until a CPU makes a call, whose announcement is held.
+        for (var seed = 1; seed <= 300 && viewModel == null; seed++)
+        {
+            var candidate = NewGame(seed);
+            start = candidate.StartCommand.ExecuteAsync(null);
+            var deadline = DateTime.UtcNow.AddSeconds(2);
+            while (!start.IsCompleted && _animations.AnnouncedCalls.Count == 0 && DateTime.UtcNow < deadline)
+            {
+                await Task.Delay(1);
+            }
+
+            if (_animations.AnnouncedCalls.Count > 0)
+            {
+                viewModel = candidate;
+            }
+        }
+        Assert.NotNull(viewModel);
+        Assert.NotNull(start);
+        var discardsBefore = Enum.GetValues<PlayerIndices>().Sum(p => viewModel.Game.Round.GetDiscard(p).Count);
+
+        await Task.Delay(100);
+
+        // The call has been announced, and nothing else happens for as long as the announcement lasts.
+        Assert.False(start.IsCompleted);
+        Assert.Single(_animations.AnnouncedCalls);
+        Assert.NotEqual(Human, _animations.AnnouncedCalls[0].playerIndex);
+        Assert.Equal(discardsBefore, Enum.GetValues<PlayerIndices>().Sum(p => viewModel.Game.Round.GetDiscard(p).Count));
+
+        _animations.Hold = false;
+        _animations.Release();
+        await start;
+        await viewModel.WhenIdleAsync();
+
+        Assert.True(Enum.GetValues<PlayerIndices>().Sum(p => viewModel.Game.Round.GetDiscard(p).Count) > discardsBefore);
+    }
+
+    [Fact]
     public async Task TheDecisionTimer_WhenCallsAreOffered_TurnsThemDownOnceElapsed()
     {
         var manualDelay = new ManualDelay();

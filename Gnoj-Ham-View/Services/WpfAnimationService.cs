@@ -39,8 +39,8 @@ internal sealed class WpfAnimationService : IAnimationService
     /// <inheritdoc />
     public Task PlayCallAnnouncementAsync(CallTypes call, PlayerIndices playerIndex)
     {
-        // An announcement starting while another is still playing takes its place: nobody should be
-        // kept waiting for the one cut short.
+        // The game announces one call at a time; should one start while another is still playing anyway, it
+        // takes its place: nobody should be kept waiting for the one cut short.
         Complete();
 
         var pending = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
