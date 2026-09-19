@@ -228,6 +228,7 @@ public class HumanControlsViewModel_Tests
     public void ShowDecision_ForAnAdvisedRiichi_AdvisesRiichi()
     {
         var controls = NewControls(NewGame(1));
+        _settings.DiscardTip = true;
 
         controls.ShowDecision(CallTypes.Riichi, riichiAdvised: true);
 
@@ -239,11 +240,27 @@ public class HumanControlsViewModel_Tests
     public void ShowDecision_ForARiichiNotAdvised_AdvisesTurningItDown()
     {
         var controls = NewControls(NewGame(1));
+        _settings.DiscardTip = true;
 
         controls.ShowDecision(CallTypes.Riichi, riichiAdvised: false);
 
         Assert.False(controls.Riichi.IsAdvised);
         Assert.True(controls.Skip.IsAdvised);
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void ShowDecision_ForARiichiWithoutTheAdviceEnabled_AdvisesNothing(bool riichiAdvised)
+    {
+        var controls = NewControls(NewGame(1));
+        _settings.DiscardTip = false;
+
+        controls.ShowDecision(CallTypes.Riichi, riichiAdvised);
+
+        Assert.True(controls.Riichi.IsAvailable);
+        Assert.False(controls.Riichi.IsAdvised);
+        Assert.False(controls.Skip.IsAdvised);
     }
 
     [Fact]

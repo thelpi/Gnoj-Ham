@@ -238,13 +238,18 @@ public sealed partial class HumanControlsViewModel : ObservableObject
         {
             case CallTypes.Riichi:
                 Riichi.IsAvailable = true;
-                if (riichiAdvised)
+                // Without the advice enabled the engine never advises a riichi, which must not read as
+                // advice against it.
+                if (_settings.DiscardTip)
                 {
-                    Riichi.IsAdvised = true;
-                }
-                else
-                {
-                    Skip.IsAdvised = true;
+                    if (riichiAdvised)
+                    {
+                        Riichi.IsAdvised = true;
+                    }
+                    else
+                    {
+                        Skip.IsAdvised = true;
+                    }
                 }
                 break;
             case CallTypes.Ron:

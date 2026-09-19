@@ -478,7 +478,7 @@
                     </Border.Background>
                     <StackPanel Orientation="Horizontal">
                         <Button DataContext="{Binding Riichi}"         Content="RIICHI !"  Style="{StaticResource {x:Static loc:MainWindow.CallActionButtonStyleResourceName}}" Margin="0, 0, 0, 0" />
-                        <Button DataContext="{Binding KyuushuKyuuhai}" Content="ABANDON !" Style="{StaticResource {x:Static loc:MainWindow.CallActionButtonStyleResourceName}}" Margin="5, 0, 0, 0" Foreground="Red" />
+                        <Button DataContext="{Binding KyuushuKyuuhai}" Content="KYUUSHU !" Style="{StaticResource {x:Static loc:MainWindow.CallActionButtonStyleResourceName}}" Margin="5, 0, 0, 0" Foreground="Red" />
                         <Button DataContext="{Binding Tsumo}"          Content="TSUMO !"   Style="{StaticResource {x:Static loc:MainWindow.CallActionButtonStyleResourceName}}" Margin="5, 0, 0, 0" Foreground="Red" />
                         <Button DataContext="{Binding Ron}"            Content="RON !"     Style="{StaticResource {x:Static loc:MainWindow.CallActionButtonStyleResourceName}}" Margin="5, 0, 0, 0" Foreground="Red" />
                         <Button DataContext="{Binding Pon}"            Content="PON !"     Style="{StaticResource {x:Static loc:MainWindow.CallActionButtonStyleResourceName}}" Margin="5, 0, 0, 0" />
