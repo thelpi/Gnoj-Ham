@@ -247,10 +247,4 @@
   <data name="wind_west" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\wind_west.png;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="DominantWindTooltipFormat" xml:space="preserve">
-    <value>Vent dominant : {0}</value>
-  </data>
-  <data name="EastTurnCountTooltipFormat" xml:space="preserve">
-    <value>N° de tour en {0}</value>
-  </data>
 </root>

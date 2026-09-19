@@ -1,3 +1,4 @@
+using CommunityToolkit.Mvvm.ComponentModel;
 using Gnoj_Ham_Library;
 
 namespace Gnoj_Ham_ViewModel;
@@ -6,7 +7,7 @@ namespace Gnoj_Ham_ViewModel;
 /// What a tile looks like on screen: which tile, how it's turned, whether it's face down. The image
 /// itself is the view's business - only its resource name is exposed here.
 /// </summary>
-public sealed class TileViewModel
+public sealed partial class TileViewModel : ObservableObject
 {
     /// <summary>
     /// Image resource name of a face-down tile.
@@ -28,10 +29,23 @@ public sealed class TileViewModel
         IsApart = isApart;
     }
 
+    private TileViewModel(AnglePivot angle)
+    {
+        Angle = angle;
+        IsConcealed = true;
+    }
+
     /// <summary>
-    /// The tile.
+    /// A face-down tile with no identity, like the ones in the wall.
     /// </summary>
-    public TilePivot Tile { get; }
+    /// <param name="angle">The tile rotation.</param>
+    /// <returns>The tile.</returns>
+    public static TileViewModel FaceDown(AnglePivot angle) => new(angle);
+
+    /// <summary>
+    /// The tile; <c>Null</c> for a face-down tile with no identity (see <see cref="FaceDown"/>).
+    /// </summary>
+    public TilePivot? Tile { get; }
 
     /// <summary>
     /// The tile rotation.
@@ -49,14 +63,20 @@ public sealed class TileViewModel
     public bool IsApart { get; }
 
     /// <summary>
+    /// Indicates if the tile stands out from the others (e.g. the discard a call can be made on).
+    /// </summary>
+    [ObservableProperty]
+    private bool _isHighlighted;
+
+    /// <summary>
     /// Inferred; the image resource to display.
     /// </summary>
-    public string ImageResourceName => IsConcealed ? ConcealedImageResourceName : Tile.ToResourceName();
+    public string ImageResourceName => IsConcealed ? ConcealedImageResourceName : Tile!.ToResourceName();
 
     /// <summary>
     /// Inferred; the tooltip text, or <c>Null</c> for a face-down tile (which reveals nothing).
     /// </summary>
-    public string? ToolTip => IsConcealed ? null : Tile.TileDisplay();
+    public string? ToolTip => IsConcealed ? null : Tile!.TileDisplay();
 
     /// <summary>
     /// Inferred; the rotation in degrees.

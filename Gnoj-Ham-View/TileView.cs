@@ -12,6 +12,8 @@ namespace Gnoj_Ham_View;
 /// </summary>
 public sealed class TileView : Button
 {
+    private const double HighlightedImageOpacity = 0.8;
+
     /// <summary>
     /// The tile to display.
     /// </summary>
@@ -23,6 +25,12 @@ public sealed class TileView : Button
     /// </summary>
     public static readonly DependencyProperty RateProperty = DependencyProperty.Register(
         nameof(Rate), typeof(double), typeof(TileView), new PropertyMetadata(1.0, OnDisplayChanged));
+
+    /// <summary>
+    /// Indicates if the tile stands out from the others.
+    /// </summary>
+    public static readonly DependencyProperty IsHighlightedProperty = DependencyProperty.Register(
+        nameof(IsHighlighted), typeof(bool), typeof(TileView), new PropertyMetadata(false, OnDisplayChanged));
 
     /// <summary>
     /// The tile to display.
@@ -40,6 +48,15 @@ public sealed class TileView : Button
     {
         get => (double)GetValue(RateProperty);
         set => SetValue(RateProperty, value);
+    }
+
+    /// <summary>
+    /// Indicates if the tile stands out from the others.
+    /// </summary>
+    public bool IsHighlighted
+    {
+        get => (bool)GetValue(IsHighlightedProperty);
+        set => SetValue(IsHighlightedProperty, value);
     }
 
     private static void OnDisplayChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
@@ -61,8 +78,18 @@ public sealed class TileView : Button
         Content = new Image
         {
             Source = TileImages.Get(tile.ImageResourceName),
-            LayoutTransform = new RotateTransform(tile.AngleDegrees)
+            LayoutTransform = new RotateTransform(tile.AngleDegrees),
+            Opacity = IsHighlighted ? HighlightedImageOpacity : 1
         };
+
+        if (IsHighlighted)
+        {
+            Background = Brushes.DarkMagenta;
+        }
+        else
+        {
+            ClearValue(BackgroundProperty);
+        }
 
         ToolTip = tile.ToolTip;
     }

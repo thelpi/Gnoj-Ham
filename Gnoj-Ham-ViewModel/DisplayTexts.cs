@@ -57,6 +57,38 @@ public static class DisplayTexts
     }
 
     /// <summary>
+    /// Gets a japanese caracter which represents the specified wind.
+    /// </summary>
+    /// <param name="wind">The wind to display.</param>
+    /// <returns>The associated japanese caracter.</returns>
+    /// <exception cref="NotImplementedException">The wind is not implemented.</exception>
+    public static string ToWindDisplay(this Winds wind)
+    {
+        return wind switch
+        {
+            Winds.East => "東",
+            Winds.South => "南",
+            Winds.West => "西",
+            Winds.North => "北",
+            _ => throw new NotImplementedException(),
+        };
+    }
+
+    /// <summary>
+    /// The tooltip of the dominant wind of the game.
+    /// </summary>
+    /// <param name="wind">The dominant wind.</param>
+    /// <returns>The tooltip text.</returns>
+    public static string DominantWindToolTip(this Winds wind) => $"Vent dominant : {wind.DisplayName()}";
+
+    /// <summary>
+    /// The tooltip of the number of turns played as east in the dominant wind.
+    /// </summary>
+    /// <param name="wind">The dominant wind.</param>
+    /// <returns>The tooltip text.</returns>
+    public static string EastTurnCountToolTip(this Winds wind) => $"N° de tour en {wind.DisplayName()}";
+
+    /// <summary>
     /// Transforms a <see cref="ChronoPivot"/> value into its french representation.
     /// </summary>
     /// <param name="chrono">The chrono value.</param>

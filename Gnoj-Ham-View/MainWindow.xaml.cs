@@ -21,24 +21,15 @@ public partial class MainWindow : Window
     private const string WINDOW_TITLE = "Gnoj-Ham";
     public const string StyleHighlightTileResourceName = "StyleHighlightTile";
     public const string OverlayStoryboardResourceName = "StbHideOverlay";
-    public const string WallTileSizeRateResourceName = "WallTileSizeRate";
     public const string CallActionButtonStyleResourceName = "StyleCallActionButton";
 
     private string PickPanel => StpPickP0.Name[..^1];
     private string HandPanel => StpHandP0.Name[..^1];
-    private string WallPanel => PnlWall0.Name[..^1];
-    private string CombosPanel => StpCombosP0.Name[..^1];
-    private string PlayerLabel => LblPlayerP0.Name[..^1];
-    private string WindLabel => LblWindP0.Name[..^1];
-    private string[] DiscardPanels => ["", StpDiscard1P0.Name[..^1], StpDiscard2P0.Name[..^1], StpDiscard3P0.Name[..^1]];
-    private string PlayerPanel => StpPlayerP0.Name[..^1];
-    private string NameLabel => LblNameP0.Name[..^1];
-    private string PointsLabel => LblPointsP0.Name[..^1];
-    private string RiichiStickImage => RiichiStickP0.Name[..^1];
     private string ActionButton => BtnChii.Name[..BtnChii.Name.IndexOf(CallTypes.Chii.ToString())];
 
     private readonly IDialogService _dialogs;
     private readonly GamePivot _game;
+    private readonly TableViewModel _table;
     private readonly System.Media.SoundPlayer _tickSound;
     private System.Timers.Timer? _timer;
     private System.Timers.ElapsedEventHandler? _currentTimerHandler;
@@ -70,9 +61,10 @@ public partial class MainWindow : Window
         _debugMode = debugMode;
 
         _cancellationToken = _cancellationTokenSource.Token;
-        this.FindControl(PlayerLabel, _humanPlayerIndex).Content = playerName;
 
         _game = new GamePivot(playerName, ruleset, stats, new Random(), drivenDraw);
+        _table = new TableViewModel(_game, _humanPlayerIndex, debugMode);
+        DataContext = _table;
         _tickSound = new System.Media.SoundPlayer(Properties.Resources.tick);
 
         _overlayStoryboard = (FindResource(OverlayStoryboardResourceName) as Storyboard)!;
@@ -111,8 +103,8 @@ public partial class MainWindow : Window
             {
                 Dispatcher.Invoke(() =>
                 {
-                    FillHandPanel(_game.Round.PreviousPlayerIndex);
-                    FillDiscardPanel(_game.Round.PreviousPlayerIndex);
+                    RefreshHand(_game.Round.PreviousPlayerIndex);
+                    Seat(_game.Round.PreviousPlayerIndex).RefreshDiscards();
                     SetActionButtonsVisibility();
                 });
                 RunAutoPlay();
@@ -134,9 +126,9 @@ public partial class MainWindow : Window
 
                 Dispatcher.Invoke(() =>
                 {
-                    FillHandPanel(_game.Round.CurrentPlayerIndex);
-                    FillCombinationStack(_game.Round.CurrentPlayerIndex);
-                    FillDiscardPanel(_game.Round.PreviousPlayerIndex);
+                    RefreshHand(_game.Round.CurrentPlayerIndex);
+                    Seat(_game.Round.CurrentPlayerIndex).RefreshCombinations();
+                    Seat(_game.Round.PreviousPlayerIndex).RefreshDiscards();
                     SetActionButtonsVisibility();
                     ActivateTimer(GetFirstAvailableDiscardButton());
                 });
@@ -167,9 +159,9 @@ public partial class MainWindow : Window
 
                 Dispatcher.Invoke(() =>
                 {
-                    FillHandPanel(_humanPlayerIndex);
-                    FillCombinationStack(_humanPlayerIndex);
-                    FillDiscardPanel(previousPlayerIndex);
+                    RefreshHand(_humanPlayerIndex);
+                    Seat(_humanPlayerIndex).RefreshCombinations();
+                    Seat(previousPlayerIndex).RefreshDiscards();
                     SetActionButtonsVisibility();
                     ActivateTimer(GetFirstAvailableDiscardButton());
                 });
@@ -223,10 +215,10 @@ public partial class MainWindow : Window
             {
                 Dispatcher.Invoke(() =>
                 {
-                    FillHandPanel(_game.Round.PreviousPlayerIndex);
-                    FillDiscardPanel(_game.Round.PreviousPlayerIndex);
+                    RefreshHand(_game.Round.PreviousPlayerIndex);
+                    Seat(_game.Round.PreviousPlayerIndex).RefreshDiscards();
                     SetActionButtonsVisibility(cpuPlay: !_game.Round.PreviousIsHumanPlayer);
-                    this.FindName<Image>(RiichiStickImage, _game.Round.PreviousPlayerIndex).Visibility = Visibility.Visible;
+                    Seat(_game.Round.PreviousPlayerIndex).ShowRiichiStick();
                 });
 
                 if (_game.Round.PreviousIsHumanPlayer)
@@ -370,7 +362,7 @@ public partial class MainWindow : Window
             || BtnRon.Visibility == Visibility.Visible)
         {
             // Cancels the Highlighting of the previous player discard
-            FillDiscardPanel(_game.Round.PreviousPlayerIndex);
+            Seat(_game.Round.PreviousPlayerIndex).RefreshDiscards();
 
             if (BtnKan.Visibility == Visibility.Visible && _game.Round.IsHumanPlayer)
             {
@@ -565,15 +557,11 @@ public partial class MainWindow : Window
     // Triggered when the tiles count in the wall is updated.
     private void OnNotifyWallCount()
     {
-        Dispatcher.Invoke(() =>
-        {
-            LblWallTilesLeft.Content = _game.Round.WallTiles.Count;
-            if (_game.Round.WallTiles.Count <= 4)
-            {
-                LblWallTilesLeft.Foreground = Brushes.Red;
-            }
-        });
+        Dispatcher.Invoke(() => _table.RefreshWallTilesLeft());
     }
+
+    // The seat of the table for a player.
+    private SeatViewModel Seat(PlayerIndices playerIndex) => _table.Seats[(int)playerIndex];
 
     // Gets the first button for a discardable tile.
     private TileButton GetFirstAvailableDiscardButton()
@@ -655,62 +643,57 @@ public partial class MainWindow : Window
         Rod4.Height = new GridLength(dim2);
         Rod5.Height = new GridLength(dim1);
         Rod6.Height = new GridLength(dim1);
+    }
 
-        foreach (var i in Enum.GetValues<PlayerIndices>())
+    // Refills the hand of the specified player: the human player's is still built here (its tiles are
+    // clickable), every other hand comes from the table.
+    private void RefreshHand(PlayerIndices pIndex, TilePivot? pickTile = null)
+    {
+        if (pIndex == _humanPlayerIndex)
         {
-            for (var j = 1; j <= 3; j++)
-            {
-                var panel = this.FindPanel(DiscardPanels[j], i);
-                if (i == PlayerIndices.Zero || i == PlayerIndices.Two)
-                {
-                    panel.Height = TileButton.TILE_HEIGHT;
-                }
-                else
-                {
-                    panel.Width = TileButton.TILE_HEIGHT;
-                }
-            }
+            FillHumanHandPanel(pickTile);
+        }
+        else
+        {
+            Seat(pIndex).RefreshHand(pickTile);
         }
     }
 
-    // Clears and refills the hand panel of the specified player index.
-    private void FillHandPanel(PlayerIndices pIndex, TilePivot? pickTile = null)
+    // Clears and refills the hand panel of the human player.
+    private void FillHumanHandPanel(TilePivot? pickTile)
     {
-        var isHuman = pIndex == _humanPlayerIndex;
+        var panel = this.FindPanel(HandPanel, _humanPlayerIndex);
 
-        var panel = this.FindPanel(HandPanel, pIndex);
-
-        this.FindPanel(PickPanel, pIndex).Children.Clear();
+        this.FindPanel(PickPanel, _humanPlayerIndex).Children.Clear();
 
         panel.Children.Clear();
-        foreach (var tile in _game.Round.GetHand(pIndex).ConcealedTiles)
+        foreach (var tile in _game.Round.GetHand(_humanPlayerIndex).ConcealedTiles)
         {
             if (pickTile == null || !ReferenceEquals(pickTile, tile))
             {
-                RoutedEventHandler? handler = isHuman && !_game.Round.IsRiichi(pIndex)
+                RoutedEventHandler? handler = !_game.Round.IsRiichi(_humanPlayerIndex)
                     ? BtnDiscard_Click
                     : null;
-                panel.Children.Add(new TileButton(tile, handler, (AnglePivot)pIndex, !isHuman && !_debugMode));
+                panel.Children.Add(new TileButton(tile, handler, (AnglePivot)_humanPlayerIndex, false));
             }
         }
 
         if (pickTile != null)
         {
-            this.FindPanel(PickPanel, pIndex).Children.Add(
+            this.FindPanel(PickPanel, _humanPlayerIndex).Children.Add(
                 new TileButton(
                     pickTile,
                     _game.Round.IsHumanPlayer ? BtnDiscard_Click : null,
-                    (AnglePivot)pIndex,
+                    (AnglePivot)_humanPlayerIndex,
                     !_game.Round.IsHumanPlayer && !_debugMode
                 )
             );
         }
     }
 
-    // Resets and refills every panels at a new round.
+    // Resets and refills the table at a new round.
     private void NewRoundRefresh()
     {
-        LblWallTilesLeft.Foreground = Brushes.Black;
         _game.Round.NotifyWallCount += OnNotifyWallCount;
         _game.Round.NotifyPick += delegate (PickTileEventArgs e)
         {
@@ -722,7 +705,7 @@ public partial class MainWindow : Window
             {
                 Dispatcher.Invoke(() =>
                 {
-                    FillHandPanel(e.PlayerIndex, e.Tile);
+                    RefreshHand(e.PlayerIndex, e.Tile);
                 });
             }
         };
@@ -733,9 +716,9 @@ public partial class MainWindow : Window
                 switch (e.Call)
                 {
                     case CallTypes.Chii:
-                        FillHandPanel(_game.Round.CurrentPlayerIndex);
-                        FillCombinationStack(_game.Round.CurrentPlayerIndex);
-                        FillDiscardPanel(_game.Round.PreviousPlayerIndex);
+                        RefreshHand(_game.Round.CurrentPlayerIndex);
+                        Seat(_game.Round.CurrentPlayerIndex).RefreshCombinations();
+                        Seat(_game.Round.PreviousPlayerIndex).RefreshDiscards();
                         SetActionButtonsVisibility(cpuPlay: !_game.Round.IsHumanPlayer);
                         if (_game.Round.IsHumanPlayer)
                         {
@@ -744,9 +727,9 @@ public partial class MainWindow : Window
                         break;
                     case CallTypes.Pon:
                         var isCpu = e.PlayerIndex != _humanPlayerIndex;
-                        FillHandPanel(e.PlayerIndex);
-                        FillCombinationStack(e.PlayerIndex);
-                        FillDiscardPanel(e.PreviousPlayerIndex);
+                        RefreshHand(e.PlayerIndex);
+                        Seat(e.PlayerIndex).RefreshCombinations();
+                        Seat(e.PreviousPlayerIndex).RefreshDiscards();
                         SetActionButtonsVisibility(cpuPlay: isCpu);
                         if (!isCpu)
                         {
@@ -754,24 +737,24 @@ public partial class MainWindow : Window
                         }
                         break;
                     case CallTypes.Riichi:
-                        FillHandPanel(_game.Round.PreviousPlayerIndex);
-                        FillDiscardPanel(_game.Round.PreviousPlayerIndex);
+                        RefreshHand(_game.Round.PreviousPlayerIndex);
+                        Seat(_game.Round.PreviousPlayerIndex).RefreshDiscards();
                         SetActionButtonsVisibility(cpuPlay: !_game.Round.PreviousIsHumanPlayer);
-                        this.FindName<Image>(RiichiStickImage, _game.Round.PreviousPlayerIndex).Visibility = Visibility.Visible;
+                        Seat(_game.Round.PreviousPlayerIndex).ShowRiichiStick();
                         break;
                     case CallTypes.NoCall:
-                        FillHandPanel(_game.Round.PreviousPlayerIndex);
-                        FillDiscardPanel(_game.Round.PreviousPlayerIndex);
+                        RefreshHand(_game.Round.PreviousPlayerIndex);
+                        Seat(_game.Round.PreviousPlayerIndex).RefreshDiscards();
                         SetActionButtonsVisibility(cpuPlay: !_game.Round.PreviousIsHumanPlayer);
                         break;
                     case CallTypes.Kan:
                         if (e.PotentialPreviousPlayerIndex.HasValue)
                         {
-                            FillDiscardPanel(e.PotentialPreviousPlayerIndex.Value);
+                            Seat(e.PotentialPreviousPlayerIndex.Value).RefreshDiscards();
                         }
-                        FillCombinationStack(_game.Round.CurrentPlayerIndex);
+                        Seat(_game.Round.CurrentPlayerIndex).RefreshCombinations();
                         SetActionButtonsVisibility(cpuPlay: !_game.Round.IsHumanPlayer, preDiscard: _game.Round.IsHumanPlayer);
-                        StpDoras.SetDorasPanel(_game.Round.DoraIndicatorTiles, _game.Round.VisibleDorasCount);
+                        _table.RefreshDoras();
                         break;
                 }
             });
@@ -784,18 +767,16 @@ public partial class MainWindow : Window
                 {
                     SetActionButtonsVisibility(preDiscard: true);
                 }
-                SetWallsLength();
+                _table.RefreshWalls();
             });
         };
         _game.Round.DiscardTileNotifier += e =>
         {
             Dispatcher.Invoke(() =>
             {
-                var highlightButton = FillDiscardPanel(_game.Round.PreviousPlayerIndex);
-                if (highlightButton != null)
-                {
-                    SetHighlight(highlightButton);
-                }
+                var seat = Seat(_game.Round.PreviousPlayerIndex);
+                seat.RefreshDiscards();
+                seat.HighlightLastDiscard();
             });
         };
         _game.Round.HumanCallNotifier += e =>
@@ -859,97 +840,18 @@ public partial class MainWindow : Window
             RefreshPlayerTurnStyle();
         };
 
-        // event is forced because the subscription is made too late relative to first triggered event
-        OnNotifyWallCount();
+        // The table reads the wall count itself: the notification above is subscribed too late to
+        // have been triggered for the first tiles.
+        _table.RefreshRound();
+        RefreshHand(_humanPlayerIndex);
 
-        StpDoras.SetDorasPanel(_game.Round.DoraIndicatorTiles, _game.Round.VisibleDorasCount);
-        
-        LblDominantWind.Content = _game.DominantWind.ToWindDisplay();
-        LblDominantWind.ToolTip = string.Format(Properties.Resources.DominantWindTooltipFormat, _game.DominantWind.DisplayName());
-        LblEastTurnCount.Content = $"{_game.EastRank}";
-        LblEastTurnCount.ToolTip = string.Format(Properties.Resources.EastTurnCountTooltipFormat, _game.DominantWind.DisplayName());
-        
-        TxtHonba.Text = _game.HonbaCount.ToString();
-        TxtPendingRiichi.Text = _game.PendingRiichiCount.ToString();
-
-        foreach (var pIndex in Enum.GetValues<PlayerIndices>())
-        {
-            this.FindPanel(CombosPanel, pIndex).Children.Clear();
-            FillHandPanel(pIndex);
-            FillDiscardPanel(pIndex);
-            this.FindName<Panel>(PlayerPanel, pIndex).ToolTip = _game.GetPlayerCurrentWind(pIndex).DisplayName();
-            this.FindControl(WindLabel, pIndex).Content = _game.GetPlayerCurrentWind(pIndex).ToWindDisplay();
-            this.FindControl(NameLabel, pIndex).Content = _game.Players[(int)pIndex].Name;
-            this.FindControl(PointsLabel, pIndex).Content = $"{_game.Players[(int)pIndex].CurrentGamePoints / 1000}k";
-            this.FindName<Image>(RiichiStickImage, pIndex).Visibility = Visibility.Hidden;
-        }
-
-        RefreshPlayerTurnStyle();
         SetActionButtonsVisibility(preDiscard: true);
-
-        SetWallsLength();
     }
 
     // Refresh the style of players when turn changes.
     private void RefreshPlayerTurnStyle()
     {
-        Dispatcher.Invoke(() =>
-        {
-            foreach (var pIndex in Enum.GetValues<PlayerIndices>())
-            {
-                var brush = pIndex == _game.Round.CurrentPlayerIndex ? Brushes.OrangeRed : Brushes.White;
-                this.FindName<Label>(PlayerLabel, pIndex).Foreground = brush;
-                this.FindName<Label>(WindLabel, pIndex).Foreground = brush;
-            }
-        });
-    }
-
-    // Rebuilds the discard panel of the specified player.
-    private TileButton? FillDiscardPanel(PlayerIndices pIndex)
-    {
-        for (var r = 1; r <= 3; r++)
-        {
-            this.FindPanel(DiscardPanels[r], pIndex).Children.Clear();
-        }
-
-        var reversed = pIndex == PlayerIndices.One || pIndex == PlayerIndices.Two;
-
-        TileButton? lastButton = null;
-        var i = 0;
-        foreach (var tile in _game.Round.GetDiscard(pIndex))
-        {
-            var r = i < 6 ? 1 : (i < 12 ? 2 : 3);
-            var panel = this.FindPanel(DiscardPanels[r], pIndex);
-            var angle = (AnglePivot)pIndex;
-            if (_game.Round.IsRiichiRank(pIndex, i))
-            {
-                angle = (AnglePivot)pIndex.RelativePlayerIndex(1);
-            }
-            lastButton = new TileButton(tile, angle: angle);
-            if (reversed)
-            {
-                panel.Children.Insert(0, lastButton);
-            }
-            else
-            {
-                panel.Children.Add(lastButton);
-            }
-            i++;
-        }
-
-        return lastButton;
-    }
-
-    // Adds to the player stack its last combination.
-    private void FillCombinationStack(PlayerIndices pIndex)
-    {
-        var panel = this.FindPanel(CombosPanel, pIndex);
-
-        panel.Children.Clear();
-        foreach (var combo in _game.Round.GetHand(pIndex).DeclaredCombinations)
-        {
-            panel.Children.Add(combo.CreateCombinationPanel(pIndex, _game.GetPlayerCurrentWind(pIndex)));
-        }
+        Dispatcher.Invoke(() => _table.RefreshTurn());
     }
 
     // Sets the Visibility property of every action buttons
@@ -1076,43 +978,6 @@ public partial class MainWindow : Window
     {
         buttonClickable.Style = FindResource(StyleHighlightTileResourceName) as Style;
         (buttonClickable.Content as Image)!.Opacity = 0.8;
-    }
-
-    // Comptes the length of walls
-    private void SetWallsLength()
-    {
-        // the order of consumption of walls; the index follow the player index
-        var wallIndexes = new[] { 0, 3, 2, 1 };
-        for (var i = 1; i <= (int)_game.Round.WallOpeningIndex; i++)
-        {
-            for (var j = 0; j < wallIndexes.Length; j++)
-            {
-                wallIndexes[j] = wallIndexes[j] == 3 ? 0 : wallIndexes[j] + 1;
-            }
-        }
-
-        var wallTileSizeRate = (double)FindResource(WallTileSizeRateResourceName);
-
-        // every tile to display in 4 walls
-        // two tile stacked so we need half the count
-        var wallTiles = (_game.Round.WallTiles.Count + _game.Round.AllTreasureTiles.Count) / 2;
-
-        var tilesExpectedCoeff = 3;
-        foreach (var iWall in wallIndexes)
-        {
-            var tilesCountForThisWall = Math.Max(0, Math.Min(_game.Round.FullTilesList.Count / 8, wallTiles - (_game.Round.FullTilesList.Count / 8 * tilesExpectedCoeff)));
-
-            var wallPanel = this.FindName<StackPanel>(WallPanel, (PlayerIndices)iWall);
-
-            wallPanel.Children.Clear();
-
-            for (var oneTile = 1; oneTile <= tilesCountForThisWall; oneTile++)
-            {
-                wallPanel.Children.Add(new TileButton(null, null, iWall % 2 == 0 ? AnglePivot.A0 : AnglePivot.A90, true, wallTileSizeRate));
-            }
-
-            tilesExpectedCoeff--;
-        }
     }
 
     #endregion Graphic tools

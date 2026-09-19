@@ -30,7 +30,10 @@ internal sealed class WpfDialogService : IDialogService
         }
 
         var window = createWindow(viewModel);
-        window.DataContext = viewModel;
+
+        // A window that has already picked its own data context (e.g. a table view-model built from
+        // the game it is given) keeps it.
+        window.DataContext ??= viewModel;
         window.ShowDialog();
     }
 

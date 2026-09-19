@@ -8,8 +8,6 @@ namespace Gnoj_Ham_ViewModel;
 /// </summary>
 public sealed class ScoreViewModel
 {
-    private const int DoraIndicatorsCount = 5;
-
     /// <summary>
     /// Constructor.
     /// </summary>
@@ -19,8 +17,8 @@ public sealed class ScoreViewModel
     {
         HonbaCount = info.HonbaCount;
         PendingRiichiCount = info.PendingRiichiCount;
-        DoraTiles = BuildIndicatorTiles(info.DoraTiles, info.DoraVisibleCount);
-        UraDoraTiles = BuildIndicatorTiles(info.UraDoraTiles, info.UraDoraVisibleCount);
+        DoraTiles = DoraIndicatorTiles.Build(info.DoraTiles, info.DoraVisibleCount);
+        UraDoraTiles = DoraIndicatorTiles.Build(info.UraDoraTiles, info.UraDoraVisibleCount);
 
         Winners = info.PlayersInfo
             .Where(p => p.HandPointsGain > 0)
@@ -66,17 +64,4 @@ public sealed class ScoreViewModel
     /// The players, best first.
     /// </summary>
     public IReadOnlyList<ScoreRankingRowViewModel> Ranking { get; }
-
-    // Indicators are laid out from the last one down to the first: the first (the one revealed
-    // initially) ends up rightmost, and the ones past the visible count are face down.
-    private static IReadOnlyList<TileViewModel> BuildIndicatorTiles(IReadOnlyList<TilePivot> tiles, int visibleCount)
-    {
-        var result = new List<TileViewModel>(DoraIndicatorsCount);
-        for (var i = DoraIndicatorsCount - 1; i >= 0; i--)
-        {
-            result.Add(new TileViewModel(tiles[i], isConcealed: visibleCount <= i));
-        }
-
-        return result;
-    }
 }
