@@ -36,7 +36,7 @@ public static class DrivenDrawPivot
     /// <param name="playerIndex">The player who should get the kan opportunity.</param>
     internal static void GuaranteeInitialKan(List<TilePivot> fullTilesList, PlayerIndices playerIndex)
     {
-        var startIndex = (int)playerIndex * 13;
+        var startIndex = WallLayout.HandStart(playerIndex);
 
         var redDragons = ExtractQuad(fullTilesList, Dragons.Red);
 
@@ -53,7 +53,7 @@ public static class DrivenDrawPivot
     /// <param name="playerIndex">The player who should get both kan opportunities.</param>
     internal static void GuaranteeTwoInitialKans(List<TilePivot> fullTilesList, PlayerIndices playerIndex)
     {
-        var startIndex = (int)playerIndex * 13;
+        var startIndex = WallLayout.HandStart(playerIndex);
 
         var redDragons = ExtractQuad(fullTilesList, Dragons.Red);
         var greenDragons = ExtractQuad(fullTilesList, Dragons.Green);
@@ -68,9 +68,9 @@ public static class DrivenDrawPivot
     {
         var redDragons = ExtractQuad(fullTilesList, Dragons.Red);
 
-        // Both insertions keep the wall the same size, and land in the two hands' own 13 tiles.
-        fullTilesList.InsertRange((int)playerIndex * 13, redDragons.Take(3));
-        fullTilesList.Insert((int)playerIndex.RelativePlayerIndex(-1) * 13, redDragons[3]);
+        // Both insertions keep the wall the same size, and land in the two hands dealt.
+        fullTilesList.InsertRange(WallLayout.HandStart(playerIndex), redDragons.Take(3));
+        fullTilesList.Insert(WallLayout.HandStart(playerIndex.RelativePlayerIndex(-1)), redDragons[3]);
     }
 
     // Pulls every copy of the specified dragon out of the wall (order-preserving from the end, like

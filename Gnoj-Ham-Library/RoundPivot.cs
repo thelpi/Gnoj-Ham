@@ -275,14 +275,15 @@ public class RoundPivot
 
         drivenDraw?.Invoke(_fullTilesList);
 
-        _hands = GamePivot.PerPlayer(p => new HandPivot(_fullTilesList.GetRange((int)p * 13, 13)));
+        var wall = new WallLayout(_fullTilesList);
+        _hands = wall.Hands.Select(tiles => new HandPivot(tiles)).ToList();
         _discardHistory = new DiscardHistoryPivot();
         _riichis = GamePivot.PerPlayer(_ => (RiichiPivot?)null);
-        _wallTiles = _fullTilesList.GetRange(52, 70);
-        _compensationTiles = _fullTilesList.GetRange(122, 4);
-        _doraIndicatorTiles = _fullTilesList.GetRange(126, 5);
-        _uraDoraIndicatorTiles = _fullTilesList.GetRange(131, 5);
-        _deadTreasureTiles = new List<TilePivot>(14);
+        _wallTiles = wall.LiveWall;
+        _compensationTiles = wall.CompensationTiles;
+        _doraIndicatorTiles = wall.DoraIndicators;
+        _uraDoraIndicatorTiles = wall.UraDoraIndicators;
+        _deadTreasureTiles = new List<TilePivot>(WallLayout.MaxKans);
         CurrentPlayerIndex = firstPlayerIndex;
         _stealingInProgress = false;
         _closedKanInProgress = null;
@@ -784,7 +785,7 @@ public class RoundPivot
         return _waitForDiscard
             && !IsRiichi(CurrentPlayerIndex)
             && _hands[(int)CurrentPlayerIndex].IsConcealed
-            && _wallTiles.Count >= 4
+            && _wallTiles.Count >= GamePivot.PlayersCount
             && Game.Players[(int)CurrentPlayerIndex].CurrentGamePoints >= ScoreTools.RIICHI_COST;
     }
 
@@ -1270,7 +1271,7 @@ public class RoundPivot
         tiles.AddRange(_uraDoraIndicatorTiles);
 
         // Dora tiles except when visible.
-        tiles.AddRange(_doraIndicatorTiles.Skip(1 + (4 - _compensationTiles.Count)));
+        tiles.AddRange(_doraIndicatorTiles.Skip(1 + (WallLayout.MaxKans - _compensationTiles.Count)));
 
         return tiles;
     }
