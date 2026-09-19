@@ -38,7 +38,13 @@ public class DisplayTexts_Tests
     public void DrivenDrawScenarios_AreNamed()
     {
         Assert.Equal(
-            new[] { "Aucun", "Kan possible au 1er tour", "2 Kans possibles au 1er tour" },
+            new[]
+            {
+                "Aucun",
+                "Kan possible au 1er tour",
+                "2 Kans possibles au 1er tour",
+                "Kan ouvert possible sur la défausse du joueur précédent"
+            },
             DisplayTexts.GetDrivenDrawScenarioDisplayValue());
     }
 

@@ -22,6 +22,7 @@ public static class DrivenDrawPivot
         {
             DrivenDrawScenarios.HumanInitialKan => fullTilesList => GuaranteeInitialKan(fullTilesList, humanPlayerIndex),
             DrivenDrawScenarios.HumanTwoInitialKans => fullTilesList => GuaranteeTwoInitialKans(fullTilesList, humanPlayerIndex),
+            DrivenDrawScenarios.HumanOpenKanChance => fullTilesList => GuaranteeOpenKanChance(fullTilesList, humanPlayerIndex),
             _ => null
         };
     }
@@ -58,6 +59,18 @@ public static class DrivenDrawPivot
         var greenDragons = ExtractQuad(fullTilesList, Dragons.Green);
 
         fullTilesList.InsertRange(startIndex, redDragons.Concat(greenDragons));
+    }
+
+    // The human player starts with three red dragons, and the player right before them (whose discard
+    // they can call) with the fourth: the CPU has no use for a lone dragon, so it is likely to be
+    // discarded early, offering the human an open kan.
+    internal static void GuaranteeOpenKanChance(List<TilePivot> fullTilesList, PlayerIndices playerIndex)
+    {
+        var redDragons = ExtractQuad(fullTilesList, Dragons.Red);
+
+        // Both insertions keep the wall the same size, and land in the two hands' own 13 tiles.
+        fullTilesList.InsertRange((int)playerIndex * 13, redDragons.Take(3));
+        fullTilesList.Insert((int)playerIndex.RelativePlayerIndex(-1) * 13, redDragons[3]);
     }
 
     // Pulls every copy of the specified dragon out of the wall (order-preserving from the end, like

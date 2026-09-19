@@ -193,6 +193,9 @@ public static class DisplayTexts
                 case DrivenDrawScenarios.HumanTwoInitialKans:
                     results.Add("2 Kans possibles au 1er tour");
                     break;
+                case DrivenDrawScenarios.HumanOpenKanChance:
+                    results.Add("Kan ouvert possible sur la défausse du joueur précédent");
+                    break;
             }
         }
 
