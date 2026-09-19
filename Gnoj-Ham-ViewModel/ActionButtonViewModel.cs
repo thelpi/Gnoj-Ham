@@ -9,13 +9,13 @@ namespace Gnoj_Ham_ViewModel;
 /// </summary>
 public sealed partial class ActionButtonViewModel : ObservableObject
 {
-    private readonly Action _execute;
+    private readonly Func<Task> _execute;
 
     /// <summary>
     /// Constructor.
     /// </summary>
     /// <param name="execute">What pressing the button does.</param>
-    public ActionButtonViewModel(Action execute)
+    public ActionButtonViewModel(Func<Task> execute)
     {
         _execute = execute;
     }
@@ -33,8 +33,10 @@ public sealed partial class ActionButtonViewModel : ObservableObject
     [ObservableProperty]
     private bool _isAdvised;
 
-    [RelayCommand(CanExecute = nameof(IsAvailable))]
-    private void Invoke() => _execute();
+    // Pressing the button again while the game is still playing on is not an error: the game says
+    // what it accepts at that point.
+    [RelayCommand(CanExecute = nameof(IsAvailable), AllowConcurrentExecutions = true)]
+    private Task Invoke() => _execute();
 
     internal void Reset()
     {

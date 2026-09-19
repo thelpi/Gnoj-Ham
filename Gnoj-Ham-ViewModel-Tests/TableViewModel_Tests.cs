@@ -12,7 +12,7 @@ public class TableViewModel_Tests
 
     private static TableViewModel NewTable(GamePivot game, bool revealAllHands = false)
     {
-        var table = new TableViewModel(game, PlayerIndices.Zero, revealAllHands, new FakeUserSettings());
+        var table = new TableViewModel(game, PlayerIndices.Zero, revealAllHands, new FakeUserSettings(), new FakeHumanActions());
         table.RefreshRound();
         return table;
     }

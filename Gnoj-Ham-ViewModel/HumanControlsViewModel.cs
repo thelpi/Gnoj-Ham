@@ -9,7 +9,7 @@ namespace Gnoj_Ham_ViewModel;
 /// <summary>
 /// What the human player can do: which calls are offered (and which is advised), and which tiles of
 /// their hand can be clicked. It decides what is offered, reading the game and its advisor; what
-/// happens once the player chooses is signalled through events, for whoever runs the game to handle.
+/// happens once the player chooses is up to the <see cref="IHumanActions"/> it is given.
 /// </summary>
 public sealed partial class HumanControlsViewModel : ObservableObject
 {
@@ -17,9 +17,10 @@ public sealed partial class HumanControlsViewModel : ObservableObject
     private readonly PlayerIndices _humanIndex;
     private readonly SeatViewModel _seat;
     private readonly IUserSettings _settings;
+    private readonly IHumanActions _actions;
 
     // What clicking a tile does when it is not a plain discard (e.g. choosing which tiles make a chii).
-    private readonly Dictionary<TileViewModel, Action<TilePivot>> _tileChoices = new();
+    private readonly Dictionary<TileViewModel, Func<TilePivot, Task>> _tileChoices = new();
     private bool _isKanAdvised;
 
     /// <summary>
@@ -29,12 +30,14 @@ public sealed partial class HumanControlsViewModel : ObservableObject
     /// <param name="humanIndex">The human player's seat.</param>
     /// <param name="seat">The human player's seat on the table, which holds their hand.</param>
     /// <param name="settings">The user's settings.</param>
-    public HumanControlsViewModel(GamePivot game, PlayerIndices humanIndex, SeatViewModel seat, IUserSettings settings)
+    /// <param name="actions">Carries out what the human player chooses.</param>
+    public HumanControlsViewModel(GamePivot game, PlayerIndices humanIndex, SeatViewModel seat, IUserSettings settings, IHumanActions actions)
     {
         _game = game;
         _humanIndex = humanIndex;
         _seat = seat;
         _settings = settings;
+        _actions = actions;
 
         Riichi = NewButton(CallTypes.Riichi);
         KyuushuKyuuhai = NewButton(CallTypes.KyuushuKyuuhai);
@@ -43,24 +46,8 @@ public sealed partial class HumanControlsViewModel : ObservableObject
         Pon = NewButton(CallTypes.Pon);
         Chii = NewButton(CallTypes.Chii);
         Kan = NewButton(CallTypes.Kan);
-        Skip = new ActionButtonViewModel(() => SkipRequested?.Invoke());
+        Skip = new ActionButtonViewModel(actions.SkipCallsAsync);
     }
-
-    /// <summary>
-    /// Raised when the player asks for a call, be it by pressing its button or by any other way it is
-    /// made on their behalf (see <see cref="RequestCall"/>).
-    /// </summary>
-    public event Action<CallTypes>? CallRequested;
-
-    /// <summary>
-    /// Raised when the player turns down the calls offered to them.
-    /// </summary>
-    public event Action? SkipRequested;
-
-    /// <summary>
-    /// Raised when the player discards a tile.
-    /// </summary>
-    public event Action<TilePivot>? DiscardRequested;
 
     /// <summary>
     /// The riichi button.
@@ -287,26 +274,17 @@ public sealed partial class HumanControlsViewModel : ObservableObject
     }
 
     /// <summary>
-    /// Makes a call the way pressing its button does, whether it is offered or not - as when the game
-    /// makes it on the player's behalf.
-    /// </summary>
-    /// <param name="call">The call.</param>
-    public void RequestCall(CallTypes call)
-    {
-        CallRequested?.Invoke(call);
-    }
-
-    /// <summary>
     /// Clicks a tile of the hand: it is discarded, unless the player is choosing among tiles (see
     /// <see cref="RestrictTo"/>) in which case the choice is made instead.
     /// </summary>
     /// <param name="tile">The tile clicked.</param>
-    [RelayCommand]
-    public void SelectTile(TileViewModel tile)
+    /// <returns>A task completing once the game needs the player again.</returns>
+    [RelayCommand(AllowConcurrentExecutions = true)]
+    public async Task SelectTileAsync(TileViewModel tile)
     {
         if (_tileChoices.TryGetValue(tile, out var choose))
         {
-            choose(tile.Tile!);
+            await choose(tile.Tile!);
             return;
         }
 
@@ -317,7 +295,7 @@ public sealed partial class HumanControlsViewModel : ObservableObject
             : !_game.Round.IsRiichi(_humanIndex);
         if (canDiscard)
         {
-            DiscardRequested?.Invoke(tile.Tile!);
+            await _actions.DiscardAsync(tile.Tile!);
         }
     }
 
@@ -328,7 +306,7 @@ public sealed partial class HumanControlsViewModel : ObservableObject
     /// <param name="choices">The tiles that can be chosen.</param>
     /// <param name="choose">What choosing a tile does.</param>
     /// <returns>The tiles of the hand that can be clicked.</returns>
-    public IReadOnlyList<TileViewModel> RestrictTo(IReadOnlyList<TilePivot> choices, Action<TilePivot> choose)
+    public IReadOnlyList<TileViewModel> RestrictTo(IReadOnlyList<TilePivot> choices, Func<TilePivot, Task> choose)
     {
         _tileChoices.Clear();
 
@@ -393,5 +371,5 @@ public sealed partial class HumanControlsViewModel : ObservableObject
     }
 
     private ActionButtonViewModel NewButton(CallTypes call)
-        => new(() => CallRequested?.Invoke(call));
+        => new(() => _actions.CallAsync(call));
 }

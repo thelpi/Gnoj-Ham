@@ -25,14 +25,15 @@ public sealed partial class TableViewModel : ObservableObject
     /// <param name="humanPlayerIndex">The human player's seat.</param>
     /// <param name="revealAllHands"><c>True</c> to show the tiles of every seat face up.</param>
     /// <param name="settings">The user's settings.</param>
-    public TableViewModel(GamePivot game, PlayerIndices humanPlayerIndex, bool revealAllHands, IUserSettings settings)
+    /// <param name="humanActions">Carries out what the human player chooses.</param>
+    public TableViewModel(GamePivot game, PlayerIndices humanPlayerIndex, bool revealAllHands, IUserSettings settings, IHumanActions humanActions)
     {
         _game = game;
 
         Seats = Enum.GetValues<PlayerIndices>()
             .Select(i => new SeatViewModel(game, i, i == humanPlayerIndex, revealAllHands))
             .ToList();
-        Human = new HumanControlsViewModel(game, humanPlayerIndex, Seats[(int)humanPlayerIndex], settings);
+        Human = new HumanControlsViewModel(game, humanPlayerIndex, Seats[(int)humanPlayerIndex], settings, humanActions);
         _walls = Enum.GetValues<PlayerIndices>().Select(_ => NoTiles).ToList();
     }
 

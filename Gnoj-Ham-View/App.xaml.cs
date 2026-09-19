@@ -55,7 +55,7 @@ public partial class App : Application
         var dialogs = new WpfDialogService();
         dialogs.Register<IntroViewModel>(viewModel => new IntroWindow(viewModel));
         dialogs.Register<AutoPlayViewModel>(viewModel => new AutoPlayWindow(viewModel));
-        dialogs.Register<HumanGameSetup>(setup => new MainWindow(dialogs, new WpfUserSettings(), setup.PlayerName, setup.Ruleset, setup.Stats, setup.DrivenDraw, setup.DebugMode));
+        dialogs.Register<HumanGameSetup>(setup => new MainWindow(setup, dialogs, new WpfUserSettings(), new FilePlayerStatisticsStorage()));
         dialogs.Register<RulesViewModel>(_ => new RulesWindow());
         dialogs.Register<PlayerSaveStatsViewModel>(_ => new PlayerSaveStatsWindow());
         dialogs.Register<ScoreViewModel>(_ => new ScoreWindow());

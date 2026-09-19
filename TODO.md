@@ -9,7 +9,7 @@ Points notés en cours de route, pas traités tout de suite.
 
 ## Interface WPF (Gnoj-Ham-View)
 
-- [ ] MVVM (branche `feat/mvvm`) : reste le flux de jeu de `MainWindow.xaml.cs` (auto-jeu, chrono, annonces, réglages) à passer dans un view-model ; l'accès aux contrôles par nom (`GraphicTools.FindName<T>`) a disparu.
+- [ ] MVVM (branche `feat/mvvm`) : reste les réglages (`Properties.Settings` lus et écrits par le code-behind de `MainWindow`) et `FixWindowDimensions` (grille) à passer dans le view-model / XAML ; `TileButton` à retirer s'il ne reste que ses constantes et `RulesWindow`.
 - [ ] `AutoPlayWindow` : le panneau « Games in progress... » et sa barre de progression sont visibles dès l'ouverture, avant tout Start — reproduit tel quel par `AutoPlayViewModel.IsWaitingPanelVisible`, à masquer à l'état `Idle`.
 - [ ] `MainWindow.xaml` : les `Seats[0..3]` sont des index magiques (bas, droite, haut, gauche) — envisager des propriétés nommées sur `TableViewModel` (étape 6 du MVVM).
 - [ ] `MainWindow` : revoir le temps d'affichage des annonces (pon, chi, kan, riichi, ron, tsumo).

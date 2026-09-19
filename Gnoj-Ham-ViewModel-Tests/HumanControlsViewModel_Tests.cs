@@ -12,6 +12,7 @@ public class HumanControlsViewModel_Tests
     private const PlayerIndices Human = PlayerIndices.Zero;
 
     private readonly FakeUserSettings _settings = new();
+    private readonly FakeHumanActions _actions = new();
     private TableViewModel? _table;
 
     // The tiles of the human player's hand, apart from the one just picked.
@@ -22,7 +23,7 @@ public class HumanControlsViewModel_Tests
 
     private HumanControlsViewModel NewControls(GamePivot game, TilePivot? pickTile = null)
     {
-        _table = new TableViewModel(game, Human, false, _settings);
+        _table = new TableViewModel(game, Human, false, _settings, _actions);
         _table.RefreshRound();
         _table.Seats[(int)Human].RefreshHand(pickTile);
         return _table.Human;
@@ -291,19 +292,17 @@ public class HumanControlsViewModel_Tests
     }
 
     [Fact]
-    public void ActionButton_CanOnlyBePressedWhileItIsAvailable()
+    public async Task ActionButton_CanOnlyBePressedWhileItIsAvailable()
     {
         var controls = NewControls(NewGame(1));
-        var requested = new List<CallTypes>();
-        controls.CallRequested += requested.Add;
 
         Assert.False(controls.Pon.InvokeCommand.CanExecute(null));
 
         controls.Pon.IsAvailable = true;
         Assert.True(controls.Pon.InvokeCommand.CanExecute(null));
-        controls.Pon.InvokeCommand.Execute(null);
+        await controls.Pon.InvokeCommand.ExecuteAsync(null);
 
-        Assert.Equal(new[] { CallTypes.Pon }, requested);
+        Assert.Equal(new[] { CallTypes.Pon }, _actions.Calls);
     }
 
     [Fact]
@@ -326,11 +325,9 @@ public class HumanControlsViewModel_Tests
     [InlineData(CallTypes.Pon)]
     [InlineData(CallTypes.Chii)]
     [InlineData(CallTypes.Kan)]
-    public void EachActionButton_RequestsItsOwnCall(CallTypes call)
+    public async Task EachActionButton_RequestsItsOwnCall(CallTypes call)
     {
         var controls = NewControls(NewGame(1));
-        var requested = new List<CallTypes>();
-        controls.CallRequested += requested.Add;
         var button = call switch
         {
             CallTypes.Riichi => controls.Riichi,
@@ -343,35 +340,20 @@ public class HumanControlsViewModel_Tests
         };
         button.IsAvailable = true;
 
-        button.InvokeCommand.Execute(null);
+        await button.InvokeCommand.ExecuteAsync(null);
 
-        Assert.Equal(new[] { call }, requested);
+        Assert.Equal(new[] { call }, _actions.Calls);
     }
 
     [Fact]
-    public void SkipButton_RequestsToTurnTheCallsDown()
+    public async Task SkipButton_RequestsToTurnTheCallsDown()
     {
         var controls = NewControls(NewGame(1));
-        var skipped = 0;
-        controls.SkipRequested += () => skipped++;
         controls.ShowPanel();
 
-        controls.Skip.InvokeCommand.Execute(null);
+        await controls.Skip.InvokeCommand.ExecuteAsync(null);
 
-        Assert.Equal(1, skipped);
-    }
-
-    [Fact]
-    public void RequestCall_MakesTheCallWhetherItIsOfferedOrNot()
-    {
-        var controls = NewControls(NewGame(1));
-        var requested = new List<CallTypes>();
-        controls.CallRequested += requested.Add;
-
-        controls.RequestCall(CallTypes.Ron);
-
-        Assert.Equal(new[] { CallTypes.Ron }, requested);
-        Assert.False(controls.Ron.IsAvailable);
+        Assert.Equal(1, _actions.SkipCount);
     }
 
     [Fact]
@@ -385,41 +367,35 @@ public class HumanControlsViewModel_Tests
     }
 
     [Fact]
-    public void SelectTile_OnAHandTile_RequestsItsDiscard()
+    public async Task SelectTile_OnAHandTile_RequestsItsDiscard()
     {
         var (_, controls) = AtDiscardTime();
-        var discarded = new List<TilePivot>();
-        controls.DiscardRequested += discarded.Add;
         var viewModel = controls.FirstDiscardableTile();
 
-        controls.SelectTileCommand.Execute(viewModel);
+        await controls.SelectTileCommand.ExecuteAsync(viewModel);
 
-        Assert.Same(viewModel.Tile, Assert.Single(discarded));
+        Assert.Same(viewModel.Tile, Assert.Single(_actions.Discarded));
     }
 
     [Fact]
-    public void SelectTile_OnThePickedTile_RequestsItsDiscard()
+    public async Task SelectTile_OnThePickedTile_RequestsItsDiscard()
     {
         var (_, controls) = AtDiscardTime();
-        var discarded = new List<TilePivot>();
-        controls.DiscardRequested += discarded.Add;
 
-        controls.SelectTile(controls.PickTile!);
+        await controls.SelectTileAsync(controls.PickTile!);
 
-        Assert.Same(controls.PickTile!.Tile, Assert.Single(discarded));
+        Assert.Same(controls.PickTile!.Tile, Assert.Single(_actions.Discarded));
     }
 
     [Fact]
-    public void SelectTile_OnThePickedTileOutsideThePlayersTurn_DoesNothing()
+    public async Task SelectTile_OnThePickedTileOutsideThePlayersTurn_DoesNothing()
     {
         var game = FindGame(g => !g.Round.IsHumanPlayer);
         var controls = NewControls(game, game.Round.GetHand(Human).ConcealedTiles[^1]);
-        var discarded = new List<TilePivot>();
-        controls.DiscardRequested += discarded.Add;
 
-        controls.SelectTile(controls.PickTile!);
+        await controls.SelectTileAsync(controls.PickTile!);
 
-        Assert.Empty(discarded);
+        Assert.Empty(_actions.Discarded);
     }
 
     [Fact]
@@ -442,7 +418,7 @@ public class HumanControlsViewModel_Tests
         var hand = game.Round.GetHand(Human).ConcealedTiles;
         var choice = hand[1];
 
-        var clickable = controls.RestrictTo(new[] { choice }, _ => { });
+        var clickable = controls.RestrictTo(new[] { choice }, _ => Task.CompletedTask);
 
         var single = Assert.Single(clickable);
         Assert.Equal(choice, single.Tile);
@@ -456,21 +432,22 @@ public class HumanControlsViewModel_Tests
         });
     }
 
-
     [Fact]
-    public void RestrictTo_MakesClickingAChoiceMakeTheChoiceInsteadOfADiscard()
+    public async Task RestrictTo_MakesClickingAChoiceMakeTheChoiceInsteadOfADiscard()
     {
         var (game, controls) = AtDiscardTime();
         var choice = game.Round.GetHand(Human).ConcealedTiles[1];
         var chosen = new List<TilePivot>();
-        var discarded = new List<TilePivot>();
-        controls.DiscardRequested += discarded.Add;
 
-        var clickable = controls.RestrictTo(new[] { choice }, chosen.Add);
-        controls.SelectTile(clickable[0]);
+        var clickable = controls.RestrictTo(new[] { choice }, tile =>
+        {
+            chosen.Add(tile);
+            return Task.CompletedTask;
+        });
+        await controls.SelectTileAsync(clickable[0]);
 
         Assert.Equal(choice, Assert.Single(chosen));
-        Assert.Empty(discarded);
+        Assert.Empty(_actions.Discarded);
     }
 
     [Fact]
