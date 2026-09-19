@@ -7,6 +7,8 @@
         xmlns:sys="clr-namespace:System;assembly=mscorlib"
         mc:Ignorable="d"
         Background="Gainsboro"
+        Title="Gnoj-Ham"
+        Height="970"
         WindowStartupLocation="CenterScreen"
         SizeToContent="Width"
         Closing="Window_Closing">
@@ -100,19 +102,19 @@
                 </StackPanel>
                 <StackPanel Orientation="Horizontal">
                     <Label Width="160" HorizontalContentAlignment="Right" Content="Vitesse des adversaires" />
-                    <ComboBox Width="100" VerticalContentAlignment="Center" Height="23" Name="CbbCpuSpeed" SelectionChanged="CbbCpuSpeed_SelectionChanged" />
+                    <ComboBox Width="100" VerticalContentAlignment="Center" Height="23" ItemsSource="{Binding Options.CpuSpeedChoices}" SelectedIndex="{Binding Options.CpuSpeedIndex}" />
                 </StackPanel>
                 <StackPanel Orientation="Horizontal">
                     <Label Width="160"  HorizontalContentAlignment="Right" Content="Chrono" />
-                    <ComboBox Width="100" VerticalContentAlignment="Center" Height="23" Name="CbbChrono" SelectionChanged="CbbChrono_SelectionChanged" ToolTip="Temps maximal pour prendre une décision." />
+                    <ComboBox Width="100" VerticalContentAlignment="Center" Height="23" ItemsSource="{Binding Options.ChronoSpeedChoices}" SelectedIndex="{Binding Options.ChronoSpeedIndex}" ToolTip="Temps maximal pour prendre une décision." />
                 </StackPanel>
                 <StackPanel Orientation="Horizontal">
                     <Label Width="160"  HorizontalContentAlignment="Right" Content="Victoire automatique" />
-                    <CheckBox VerticalContentAlignment="Center" Name="ChkAutoTsumoRon" Click="ChkAutoTsumoRon_Click" ToolTip="Les appels 'Ron' et 'Tsumo' sont réalisés automatiquement dés que possible." />
+                    <CheckBox VerticalContentAlignment="Center" IsChecked="{Binding Options.AutoCallMahjong}" ToolTip="Les appels 'Ron' et 'Tsumo' sont réalisés automatiquement dés que possible." />
                 </StackPanel>
                 <StackPanel Orientation="Horizontal">
                     <Label Width="160"  HorizontalContentAlignment="Right" Content="Sons" />
-                    <CheckBox VerticalContentAlignment="Center" Name="ChkSounds" Click="ChkSounds_Click" />
+                    <CheckBox VerticalContentAlignment="Center" IsChecked="{Binding Options.PlaySounds}" />
                 </StackPanel>
                 <Separator Foreground="Black" />
                 <TextBlock HorizontalAlignment="Center" Margin="0, 5, 0, 0">
@@ -131,7 +133,10 @@
             <ContentControl.InputBindings>
                 <MouseBinding MouseAction="LeftDoubleClick" Command="{Binding SkipCallsCommand}" />
             </ContentControl.InputBindings>
-            <Grid Name="GrdMain" DataContext="{Binding Table}">
+            <!-- The table is a square of 920. Around the centre (240) each side holds two strips, the outer one as
+                 wide as a tile is tall plus a margin (60 + 10, twice) and the inner one as wide as three tiles
+                 and two margins (200) : 2 * (2 * 70 + 200) + 240 = 920. -->
+            <Grid Width="920" Height="920" DataContext="{Binding Table}">
                 <Grid.Background>
                     <VisualBrush>
                         <VisualBrush.Visual>
@@ -148,22 +153,22 @@
                     </VisualBrush>
                 </Grid.Background>
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Name="Cod0" />
-                    <ColumnDefinition Name="Cod1" />
-                    <ColumnDefinition Name="Cod2" />
-                    <ColumnDefinition Name="Cod3" />
-                    <ColumnDefinition Name="Cod4" />
-                    <ColumnDefinition Name="Cod5" />
-                    <ColumnDefinition Name="Cod6" />
+                    <ColumnDefinition Width="70" />
+                    <ColumnDefinition Width="70" />
+                    <ColumnDefinition Width="200" />
+                    <ColumnDefinition Width="240" />
+                    <ColumnDefinition Width="200" />
+                    <ColumnDefinition Width="70" />
+                    <ColumnDefinition Width="70" />
                 </Grid.ColumnDefinitions>
                 <Grid.RowDefinitions>
-                    <RowDefinition Name="Rod0" />
-                    <RowDefinition Name="Rod1" />
-                    <RowDefinition Name="Rod2" />
-                    <RowDefinition Name="Rod3" />
-                    <RowDefinition Name="Rod4" />
-                    <RowDefinition Name="Rod5" />
-                    <RowDefinition Name="Rod6" />
+                    <RowDefinition Height="70" />
+                    <RowDefinition Height="70" />
+                    <RowDefinition Height="200" />
+                    <RowDefinition Height="240" />
+                    <RowDefinition Height="200" />
+                    <RowDefinition Height="70" />
+                    <RowDefinition Height="70" />
                 </Grid.RowDefinitions>
 
                 <!-- Combinations stacks -->
@@ -174,15 +179,15 @@
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
                     <DockPanel Grid.Column="1">
-                        <ItemsControl DockPanel.Dock="Right" ItemsSource="{Binding Seats[0].Combinations}"
+                        <ItemsControl DockPanel.Dock="Right" ItemsSource="{Binding BottomSeat.Combinations}"
                                       ItemsPanel="{StaticResource HorizontalPanelTemplate}" ItemTemplate="{StaticResource HorizontalCombinationTemplate}" />
                     </DockPanel>
                 </Grid>
                 <!-- P2 (right) -->
-                <ItemsControl Grid.Column="6" Grid.Row="0" Grid.RowSpan="6" ItemsSource="{Binding Seats[1].Combinations}"
+                <ItemsControl Grid.Column="6" Grid.Row="0" Grid.RowSpan="6" ItemsSource="{Binding RightSeat.Combinations}"
                               ItemsPanel="{StaticResource VerticalPanelTemplate}" ItemTemplate="{StaticResource VerticalCombinationTemplate}" />
                 <!-- P3 (top) -->
-                <ItemsControl Grid.Column="0" Grid.Row="0" Grid.ColumnSpan="6" ItemsSource="{Binding Seats[2].Combinations}"
+                <ItemsControl Grid.Column="0" Grid.Row="0" Grid.ColumnSpan="6" ItemsSource="{Binding TopSeat.Combinations}"
                               ItemsPanel="{StaticResource HorizontalPanelTemplate}" ItemTemplate="{StaticResource HorizontalCombinationTemplate}" />
                 <!-- P4 (left) -->
                 <Grid Grid.Column="0" Grid.Row="1" Grid.RowSpan="6">
@@ -190,17 +195,17 @@
                         <RowDefinition Height="*" />
                         <RowDefinition Height="Auto" />
                     </Grid.RowDefinitions>
-                    <ItemsControl Grid.Row="1" ItemsSource="{Binding Seats[3].Combinations}"
+                    <ItemsControl Grid.Row="1" ItemsSource="{Binding LeftSeat.Combinations}"
                                   ItemsPanel="{StaticResource VerticalPanelTemplate}" ItemTemplate="{StaticResource VerticalCombinationTemplate}" />
                 </Grid>
 
                 <!-- Hands stacks -->
                 <!-- P1 (bottom): the human player's hand, whose tiles can be clicked -->
                 <DockPanel Grid.Column="2" Grid.Row="5" Grid.ColumnSpan="4">
-                    <ItemsControl DockPanel.Dock="Left" ItemsSource="{Binding Seats[0].HandTiles}"
+                    <ItemsControl DockPanel.Dock="Left" ItemsSource="{Binding BottomSeat.HandTiles}"
                                   ItemsPanel="{StaticResource HorizontalPanelTemplate}" ItemTemplate="{StaticResource HumanTileTemplate}" />
                     <!-- Tile just picked (separate view) -->
-                    <ItemsControl DockPanel.Dock="Left" Margin="5, 0, 0, 0" ItemsSource="{Binding Seats[0].PickTiles}"
+                    <ItemsControl DockPanel.Dock="Left" Margin="5, 0, 0, 0" ItemsSource="{Binding BottomSeat.PickTiles}"
                                   ItemsPanel="{StaticResource HorizontalPanelTemplate}" ItemTemplate="{StaticResource HumanTileTemplate}" />
                 </DockPanel>
                 <!-- P2 (right) -->
@@ -210,10 +215,10 @@
                         <RowDefinition Height="Auto" />
                     </Grid.RowDefinitions>
                     <DockPanel Grid.Row="1">
-                        <ItemsControl DockPanel.Dock="Bottom" ItemsSource="{Binding Seats[1].HandTiles}"
+                        <ItemsControl DockPanel.Dock="Bottom" ItemsSource="{Binding RightSeat.HandTiles}"
                                       ItemsPanel="{StaticResource VerticalPanelTemplate}" ItemTemplate="{StaticResource TileTemplate}" />
                         <!-- Tile just picked (separate view) -->
-                        <ItemsControl DockPanel.Dock="Bottom" Margin="0, 0, 0, 5" ItemsSource="{Binding Seats[1].PickTiles}"
+                        <ItemsControl DockPanel.Dock="Bottom" Margin="0, 0, 0, 5" ItemsSource="{Binding RightSeat.PickTiles}"
                                       ItemsPanel="{StaticResource VerticalPanelTemplate}" ItemTemplate="{StaticResource TileTemplate}" />
                     </DockPanel>
                 </Grid>
@@ -224,19 +229,19 @@
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
                     <DockPanel Grid.Row="1">
-                        <ItemsControl DockPanel.Dock="Right" ItemsSource="{Binding Seats[2].HandTiles}"
+                        <ItemsControl DockPanel.Dock="Right" ItemsSource="{Binding TopSeat.HandTiles}"
                                       ItemsPanel="{StaticResource HorizontalPanelTemplate}" ItemTemplate="{StaticResource TileTemplate}" />
                         <!-- Tile just picked (separate view) -->
-                        <ItemsControl DockPanel.Dock="Right" Margin="0, 0, 5, 0" HorizontalAlignment="Right" ItemsSource="{Binding Seats[2].PickTiles}"
+                        <ItemsControl DockPanel.Dock="Right" Margin="0, 0, 5, 0" HorizontalAlignment="Right" ItemsSource="{Binding TopSeat.PickTiles}"
                                       ItemsPanel="{StaticResource HorizontalPanelTemplate}" ItemTemplate="{StaticResource TileTemplate}" />
                     </DockPanel>
                 </Grid>
                 <!-- P4 (left) -->
                 <DockPanel Grid.Column="1" Grid.Row="2" Grid.RowSpan="4">
-                    <ItemsControl DockPanel.Dock="Top" ItemsSource="{Binding Seats[3].HandTiles}"
+                    <ItemsControl DockPanel.Dock="Top" ItemsSource="{Binding LeftSeat.HandTiles}"
                                   ItemsPanel="{StaticResource VerticalPanelTemplate}" ItemTemplate="{StaticResource TileTemplate}" />
                     <!-- Tile just picked (separate view) -->
-                    <ItemsControl DockPanel.Dock="Top" Margin="0, 5, 0, 0" ItemsSource="{Binding Seats[3].PickTiles}"
+                    <ItemsControl DockPanel.Dock="Top" Margin="0, 5, 0, 0" ItemsSource="{Binding LeftSeat.PickTiles}"
                                   ItemsPanel="{StaticResource VerticalPanelTemplate}" ItemTemplate="{StaticResource TileTemplate}" />
                 </DockPanel>
 
@@ -245,31 +250,31 @@
                 <StackPanel Orientation="Vertical" Grid.Row="4" Grid.Column="3" Grid.ColumnSpan="2">
                     <StackPanel Orientation="Horizontal" Margin="107, 0, 0, 5">
                         <Image HorizontalAlignment="Left" Height="60" Source="Resources/stick_1000.png"
-                               Visibility="{Binding Seats[0].HasRiichiStick, Converter={StaticResource BooleanToHiddenConverter}}">
+                               Visibility="{Binding BottomSeat.HasRiichiStick, Converter={StaticResource BooleanToHiddenConverter}}">
                             <Image.LayoutTransform>
                                 <RotateTransform Angle="90" />
                             </Image.LayoutTransform>
                         </Image>
                     </StackPanel>
-                    <ItemsControl Height="60" ItemsSource="{Binding Seats[0].DiscardRows[0]}"
+                    <ItemsControl Height="60" ItemsSource="{Binding BottomSeat.DiscardRows[0]}"
                                   ItemsPanel="{StaticResource HorizontalPanelTemplate}" ItemTemplate="{StaticResource TileTemplate}" />
-                    <ItemsControl Height="60" ItemsSource="{Binding Seats[0].DiscardRows[1]}"
+                    <ItemsControl Height="60" ItemsSource="{Binding BottomSeat.DiscardRows[1]}"
                                   ItemsPanel="{StaticResource HorizontalPanelTemplate}" ItemTemplate="{StaticResource TileTemplate}" />
-                    <ItemsControl Height="60" ItemsSource="{Binding Seats[0].DiscardRows[2]}"
+                    <ItemsControl Height="60" ItemsSource="{Binding BottomSeat.DiscardRows[2]}"
                                   ItemsPanel="{StaticResource HorizontalPanelTemplate}" ItemTemplate="{StaticResource TileTemplate}" />
                 </StackPanel>
                 <!-- P2 (right) -->
                 <StackPanel Orientation="Horizontal" Grid.Row="2" Grid.Column="4" Grid.RowSpan="2">
                     <StackPanel Orientation="Vertical" Margin="0, 280, 5, 0">
                         <Image HorizontalAlignment="Left" Height="60" Source="Resources/stick_1000.png"
-                               Visibility="{Binding Seats[1].HasRiichiStick, Converter={StaticResource BooleanToHiddenConverter}}" />
+                               Visibility="{Binding RightSeat.HasRiichiStick, Converter={StaticResource BooleanToHiddenConverter}}" />
                     </StackPanel>
                     <Grid>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="*" />
                             <RowDefinition Height="Auto" />
                         </Grid.RowDefinitions>
-                        <ItemsControl Grid.Row="1" Width="60" ItemsSource="{Binding Seats[1].DiscardRows[0]}"
+                        <ItemsControl Grid.Row="1" Width="60" ItemsSource="{Binding RightSeat.DiscardRows[0]}"
                                       ItemsPanel="{StaticResource VerticalPanelTemplate}" ItemTemplate="{StaticResource TileTemplate}" />
                     </Grid>
                     <Grid>
@@ -277,7 +282,7 @@
                             <RowDefinition Height="*" />
                             <RowDefinition Height="Auto" />
                         </Grid.RowDefinitions>
-                        <ItemsControl Grid.Row="1" Width="60" ItemsSource="{Binding Seats[1].DiscardRows[1]}"
+                        <ItemsControl Grid.Row="1" Width="60" ItemsSource="{Binding RightSeat.DiscardRows[1]}"
                                       ItemsPanel="{StaticResource VerticalPanelTemplate}" ItemTemplate="{StaticResource TileTemplate}" />
                     </Grid>
                     <Grid>
@@ -285,7 +290,7 @@
                             <RowDefinition Height="*" />
                             <RowDefinition Height="Auto" />
                         </Grid.RowDefinitions>
-                        <ItemsControl Grid.Row="1" Width="60" ItemsSource="{Binding Seats[1].DiscardRows[2]}"
+                        <ItemsControl Grid.Row="1" Width="60" ItemsSource="{Binding RightSeat.DiscardRows[2]}"
                                       ItemsPanel="{StaticResource VerticalPanelTemplate}" ItemTemplate="{StaticResource TileTemplate}" />
                     </Grid>
                 </StackPanel>
@@ -296,7 +301,7 @@
                             <ColumnDefinition Width="*" />
                             <ColumnDefinition Width="Auto" />
                         </Grid.ColumnDefinitions>
-                        <ItemsControl Grid.Column="1" Height="60" ItemsSource="{Binding Seats[2].DiscardRows[2]}"
+                        <ItemsControl Grid.Column="1" Height="60" ItemsSource="{Binding TopSeat.DiscardRows[2]}"
                                       ItemsPanel="{StaticResource HorizontalPanelTemplate}" ItemTemplate="{StaticResource TileTemplate}" />
                     </Grid>
                     <Grid>
@@ -304,7 +309,7 @@
                             <ColumnDefinition Width="*" />
                             <ColumnDefinition Width="Auto" />
                         </Grid.ColumnDefinitions>
-                        <ItemsControl Grid.Column="1" Height="60" ItemsSource="{Binding Seats[2].DiscardRows[1]}"
+                        <ItemsControl Grid.Column="1" Height="60" ItemsSource="{Binding TopSeat.DiscardRows[1]}"
                                       ItemsPanel="{StaticResource HorizontalPanelTemplate}" ItemTemplate="{StaticResource TileTemplate}" />
                     </Grid>
                     <Grid>
@@ -312,12 +317,12 @@
                             <ColumnDefinition Width="*" />
                             <ColumnDefinition Width="Auto" />
                         </Grid.ColumnDefinitions>
-                        <ItemsControl Grid.Column="1" Height="60" ItemsSource="{Binding Seats[2].DiscardRows[0]}"
+                        <ItemsControl Grid.Column="1" Height="60" ItemsSource="{Binding TopSeat.DiscardRows[0]}"
                                       ItemsPanel="{StaticResource HorizontalPanelTemplate}" ItemTemplate="{StaticResource TileTemplate}" />
                     </Grid>
                     <StackPanel FlowDirection="RightToLeft" Orientation="Horizontal" Margin="0, 5, 107, 0">
                         <Image HorizontalAlignment="Left" Height="60" Source="Resources/stick_1000.png"
-                               Visibility="{Binding Seats[2].HasRiichiStick, Converter={StaticResource BooleanToHiddenConverter}}">
+                               Visibility="{Binding TopSeat.HasRiichiStick, Converter={StaticResource BooleanToHiddenConverter}}">
                             <Image.LayoutTransform>
                                 <RotateTransform Angle="270" />
                             </Image.LayoutTransform>
@@ -326,26 +331,26 @@
                 </StackPanel>
                 <!-- P4 (left) -->
                 <StackPanel Orientation="Horizontal" Grid.Row="3" Grid.Column="2" Grid.RowSpan="2">
-                    <ItemsControl Width="60" ItemsSource="{Binding Seats[3].DiscardRows[2]}"
+                    <ItemsControl Width="60" ItemsSource="{Binding LeftSeat.DiscardRows[2]}"
                                   ItemsPanel="{StaticResource VerticalPanelTemplate}" ItemTemplate="{StaticResource TileTemplate}" />
-                    <ItemsControl Width="60" ItemsSource="{Binding Seats[3].DiscardRows[1]}"
+                    <ItemsControl Width="60" ItemsSource="{Binding LeftSeat.DiscardRows[1]}"
                                   ItemsPanel="{StaticResource VerticalPanelTemplate}" ItemTemplate="{StaticResource TileTemplate}" />
-                    <ItemsControl Width="60" ItemsSource="{Binding Seats[3].DiscardRows[0]}"
+                    <ItemsControl Width="60" ItemsSource="{Binding LeftSeat.DiscardRows[0]}"
                                   ItemsPanel="{StaticResource VerticalPanelTemplate}" ItemTemplate="{StaticResource TileTemplate}" />
                     <StackPanel Orientation="Vertical" Margin="5, 107, 0, 0">
                         <Image HorizontalAlignment="Right" Height="60" Source="Resources/stick_1000.png"
-                               Visibility="{Binding Seats[3].HasRiichiStick, Converter={StaticResource BooleanToHiddenConverter}}" />
+                               Visibility="{Binding LeftSeat.HasRiichiStick, Converter={StaticResource BooleanToHiddenConverter}}" />
                     </StackPanel>
                 </StackPanel>
 
                 <!-- Player infos -->
                 <!-- P1 (bottom) -->
-                <StackPanel DataContext="{Binding Seats[0]}" ToolTip="{Binding WindToolTip}" Orientation="Vertical" VerticalAlignment="Center" HorizontalAlignment="Center" Grid.Row="5" Grid.Column="1">
+                <StackPanel DataContext="{Binding BottomSeat}" ToolTip="{Binding WindToolTip}" Orientation="Vertical" VerticalAlignment="Center" HorizontalAlignment="Center" Grid.Row="5" Grid.Column="1">
                     <Label FontSize="16" Content="{Binding WindText}" HorizontalContentAlignment="Center" Style="{StaticResource SeatLabelStyle}" />
                     <Label FontSize="14" Content="{Binding SideName}" HorizontalContentAlignment="Center" Style="{StaticResource SeatLabelStyle}" />
                 </StackPanel>
                 <!-- P2 (right) -->
-                <StackPanel DataContext="{Binding Seats[1]}" ToolTip="{Binding WindToolTip}" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center" Grid.Row="5" Grid.Column="5">
+                <StackPanel DataContext="{Binding RightSeat}" ToolTip="{Binding WindToolTip}" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center" Grid.Row="5" Grid.Column="5">
                     <Label FontSize="16" Content="{Binding WindText}" HorizontalContentAlignment="Center" Style="{StaticResource SeatLabelStyle}">
                         <Label.LayoutTransform>
                             <RotateTransform Angle="270" />
@@ -363,7 +368,7 @@
                         <ColumnDefinition Width="*" />
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
-                    <StackPanel DataContext="{Binding Seats[2]}" ToolTip="{Binding WindToolTip}" Orientation="Vertical" Grid.Column="1">
+                    <StackPanel DataContext="{Binding TopSeat}" ToolTip="{Binding WindToolTip}" Orientation="Vertical" Grid.Column="1">
                         <Label FontSize="14" Content="{Binding SideName}" HorizontalContentAlignment="Center" Style="{StaticResource SeatLabelStyle}">
                             <Label.LayoutTransform>
                                 <RotateTransform Angle="180" />
@@ -382,7 +387,7 @@
                         <RowDefinition Height="*" />
                         <RowDefinition Height="Auto" />
                     </Grid.RowDefinitions>
-                    <StackPanel DataContext="{Binding Seats[3]}" ToolTip="{Binding WindToolTip}" Orientation="Horizontal" Grid.Row="1">
+                    <StackPanel DataContext="{Binding LeftSeat}" ToolTip="{Binding WindToolTip}" Orientation="Horizontal" Grid.Row="1">
                         <Label FontSize="14" Content="{Binding SideName}" VerticalContentAlignment="Center" Style="{StaticResource SeatLabelStyle}">
                             <Label.LayoutTransform>
                                 <RotateTransform Angle="90" />
@@ -417,14 +422,14 @@
                     </Grid.RowDefinitions>
                     <ItemsControl Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="4" HorizontalAlignment="Center" ItemsSource="{Binding DoraTiles}"
                                   ItemsPanel="{StaticResource HorizontalPanelTemplate}" ItemTemplate="{StaticResource DoraTileTemplate}" />
-                    <Label Grid.Row="2" Grid.Column="1" Content="{Binding Seats[0].Name}" />
-                    <Label Grid.Row="3" Grid.Column="1" Content="{Binding Seats[1].Name}" />
-                    <Label Grid.Row="4" Grid.Column="1" Content="{Binding Seats[2].Name}" />
-                    <Label Grid.Row="5" Grid.Column="1" Content="{Binding Seats[3].Name}" />
-                    <Label Grid.Row="2" Grid.Column="2" Content="{Binding Seats[0].Points}" HorizontalAlignment="Right" />
-                    <Label Grid.Row="3" Grid.Column="2" Content="{Binding Seats[1].Points}" HorizontalAlignment="Right" />
-                    <Label Grid.Row="4" Grid.Column="2" Content="{Binding Seats[2].Points}" HorizontalAlignment="Right" />
-                    <Label Grid.Row="5" Grid.Column="2" Content="{Binding Seats[3].Points}" HorizontalAlignment="Right" />
+                    <Label Grid.Row="2" Grid.Column="1" Content="{Binding BottomSeat.Name}" />
+                    <Label Grid.Row="3" Grid.Column="1" Content="{Binding RightSeat.Name}" />
+                    <Label Grid.Row="4" Grid.Column="1" Content="{Binding TopSeat.Name}" />
+                    <Label Grid.Row="5" Grid.Column="1" Content="{Binding LeftSeat.Name}" />
+                    <Label Grid.Row="2" Grid.Column="2" Content="{Binding BottomSeat.Points}" HorizontalAlignment="Right" />
+                    <Label Grid.Row="3" Grid.Column="2" Content="{Binding RightSeat.Points}" HorizontalAlignment="Right" />
+                    <Label Grid.Row="4" Grid.Column="2" Content="{Binding TopSeat.Points}" HorizontalAlignment="Right" />
+                    <Label Grid.Row="5" Grid.Column="2" Content="{Binding LeftSeat.Points}" HorizontalAlignment="Right" />
                     <Label Grid.Row="2" Grid.RowSpan="2" Grid.Column="3" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="20"
                            Content="{Binding DominantWindText}" ToolTip="{Binding DominantWindToolTip}" />
                     <Label Grid.Row="4" Grid.RowSpan="2" Grid.Column="3" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="20"

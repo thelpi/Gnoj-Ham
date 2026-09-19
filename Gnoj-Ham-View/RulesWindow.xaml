@@ -4,15 +4,11 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:sys="clr-namespace:System;assembly=mscorlib"
-        xmlns:cvt="clr-namespace:Gnoj_Ham_View.Converters"
+        xmlns:loc="clr-namespace:Gnoj_Ham_View"
         mc:Ignorable="d"
         WindowStartupLocation="CenterScreen"
         Title="Règles et lexique" Width="1024" Height="600">
     <Window.Resources>
-        <cvt:YakuToolTipConverter x:Key="YakuToolTipConverter" />
-        <cvt:FansToTextConverter x:Key="FansToTextConverter" />
-        <cvt:FansToFontStyleConverter x:Key="FansToFontStyleConverter" />
-        <cvt:TilesToButtonsConverter x:Key="TilesToButtonsConverter" />
         <sys:Double x:Key="TileSizeRate">0.6</sys:Double>
     </Window.Resources>
     <TabControl Margin="5">
@@ -265,12 +261,14 @@
                     <ListView.Resources>
                         <Style TargetType="ListViewItem">
                             <Setter Property="ItemsControl.Height" Value="40" />
-                            <Setter Property="ItemsControl.ToolTip" Value="{Binding Converter={StaticResource YakuToolTipConverter}}" />
-                            <Setter Property="ItemsControl.FontStyle" Value="{Binding Converter={StaticResource FansToFontStyleConverter}}" />
+                            <Setter Property="ItemsControl.ToolTip" Value="{Binding ToolTip}" />
                             <Style.Triggers>
                                 <Trigger Property="ItemsControl.AlternationIndex"  Value="0">
                                     <Setter Property="Background" Value="White" />
                                 </Trigger>
+                                <DataTrigger Binding="{Binding IsConcealedOnly}" Value="True">
+                                    <Setter Property="FontStyle" Value="Italic" />
+                                </DataTrigger>
                                 <Trigger Property="ItemsControl.AlternationIndex"  Value="1">
                                     <Setter Property="Background" Value="Azure" />
                                 </Trigger>
@@ -291,7 +289,7 @@
                                 <GridViewColumn.Header>Fans</GridViewColumn.Header>
                                 <GridViewColumn.CellTemplate>
                                     <DataTemplate>
-                                        <TextBlock Text="{Binding Converter={StaticResource FansToTextConverter}}" FontWeight="Bold" />
+                                        <TextBlock Text="{Binding FansText}" FontWeight="Bold" />
                                     </DataTemplate>
                                 </GridViewColumn.CellTemplate>
                             </GridViewColumn>
@@ -307,7 +305,12 @@
                                 <GridViewColumn.Header>Exemple</GridViewColumn.Header>
                                 <GridViewColumn.CellTemplate>
                                     <DataTemplate>
-                                        <ItemsControl ItemsSource="{Binding Example, Converter={StaticResource TilesToButtonsConverter}, ConverterParameter={StaticResource TileSizeRate}}">
+                                        <ItemsControl ItemsSource="{Binding ExampleTiles}">
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate>
+                                                    <loc:TileView Tile="{Binding}" Rate="{StaticResource TileSizeRate}" />
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
                                             <ItemsControl.ItemsPanel>
                                                 <ItemsPanelTemplate>
                                                     <StackPanel Orientation="Horizontal"/>

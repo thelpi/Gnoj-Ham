@@ -67,8 +67,9 @@ public class GameViewModel_Tests
         await choice.InvokeCommand.ExecuteAsync(null);
     }
 
-    // Plays until the game is over, the human player accepting every call (except the abortive draw).
-    private static async Task<bool> PlayToTheEndAsync(GameViewModel viewModel, bool acceptCalls, int maxSteps = 4000)
+    // Plays until the game is over, the human player accepting every call (except the abortive draw) - or
+    // only the pons (and the wins), turning down the rest.
+    private static async Task<bool> PlayToTheEndAsync(GameViewModel viewModel, bool acceptCalls, int maxSteps = 4000, bool ponsOnly = false)
     {
         var closed = false;
         viewModel.CloseRequested += (_, _) => closed = true;
@@ -86,7 +87,11 @@ public class GameViewModel_Tests
 
             if (controls.IsPanelVisible)
             {
-                if (acceptCalls)
+                if (ponsOnly)
+                {
+                    await DecideAsync(viewModel, controls.Ron, controls.Tsumo, controls.Pon);
+                }
+                else if (acceptCalls)
                 {
                     await DecideAsync(viewModel, controls.Ron, controls.Tsumo, controls.Riichi, controls.Kan, controls.Pon, controls.Chii);
                 }
@@ -167,6 +172,20 @@ public class GameViewModel_Tests
     }
 
     [Fact]
+    public void Options_ReadAndChangeTheSettingsTheGameRunsOn()
+    {
+        _settings.ChronoSpeed = (int)ChronoPivot.Short;
+        var viewModel = NewGame(1);
+
+        Assert.Equal((int)ChronoPivot.Short, viewModel.Options.ChronoSpeedIndex);
+        Assert.Equal((int)CpuSpeedPivot.S0, viewModel.Options.CpuSpeedIndex);
+
+        viewModel.Options.ChronoSpeedIndex = (int)ChronoPivot.None;
+
+        Assert.Equal((int)ChronoPivot.None, _settings.ChronoSpeed);
+    }
+
+    [Fact]
     public async Task Start_PlaysTheCpusUntilTheHumanPlayerIsNeeded()
     {
         var viewModel = NewGame(1);
@@ -229,6 +248,23 @@ public class GameViewModel_Tests
         Assert.True(_dialogs.ShownViewModels.Count >= 5);
         // The statistics are saved once per round.
         Assert.Equal(_dialogs.ShownViewModels.Count - 1, _storage.SaveCount);
+    }
+
+    [Theory]
+    [InlineData(1)]
+    [InlineData(5)]
+    [InlineData(7)]
+    [InlineData(8)]
+    public async Task AWholeGame_TakingPonsAndTurningDownTheChii_ShowsNoWarning(int seed)
+    {
+        // A chii turned down once the hand is open used to be made anyway by the engine, which left the
+        // human player without the tile they had to pick, and the game warning about it.
+        var viewModel = NewGame(seed);
+
+        var finished = await PlayToTheEndAsync(viewModel, acceptCalls: false, ponsOnly: true);
+
+        Assert.True(finished);
+        Assert.Empty(_dialogs.ShownMessages);
     }
 
     [Fact]

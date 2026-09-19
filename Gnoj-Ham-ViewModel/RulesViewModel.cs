@@ -17,11 +17,12 @@ public sealed class RulesViewModel
             .OrderBy(x => x.ConcealedFanCount)
             .ThenBy(x => x.FanCount)
             .ThenBy(x => x.Name)
+            .Select(y => new YakuRuleViewModel(y))
             .ToList();
     }
 
     /// <summary>
     /// The yakus, from the least to the most valuable (nagashi mangan excluded: it isn't a regular hand).
     /// </summary>
-    public IReadOnlyList<YakuPivot> Yakus { get; }
+    public IReadOnlyList<YakuRuleViewModel> Yakus { get; }
 }

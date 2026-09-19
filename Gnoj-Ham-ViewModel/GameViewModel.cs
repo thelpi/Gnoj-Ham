@@ -67,6 +67,7 @@ public sealed partial class GameViewModel : ObservableObject, IHumanActions
 
         _game = new GamePivot(setup.PlayerName, setup.Ruleset, setup.Stats, setup.Random ?? new Random(), setup.DrivenDraw);
         Table = new TableViewModel(_game, HumanPlayerIndex, setup.DebugMode, settings, this);
+        Options = new GameOptionsViewModel(settings);
 
         NewRoundRefresh();
     }
@@ -80,6 +81,11 @@ public sealed partial class GameViewModel : ObservableObject, IHumanActions
     /// The game table.
     /// </summary>
     public TableViewModel Table { get; }
+
+    /// <summary>
+    /// The options the player can change during the game.
+    /// </summary>
+    public GameOptionsViewModel Options { get; }
 
     internal GamePivot Game => _game;
 

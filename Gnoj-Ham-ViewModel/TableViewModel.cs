@@ -43,6 +43,26 @@ public sealed partial class TableViewModel : ObservableObject
     public IReadOnlyList<SeatViewModel> Seats { get; }
 
     /// <summary>
+    /// Inferred; the seat at the bottom of the table (the first, <see cref="PlayerIndices.Zero"/>).
+    /// </summary>
+    public SeatViewModel BottomSeat => Seats[(int)PlayerIndices.Zero];
+
+    /// <summary>
+    /// Inferred; the seat on the right of the table (the second, <see cref="PlayerIndices.One"/>).
+    /// </summary>
+    public SeatViewModel RightSeat => Seats[(int)PlayerIndices.One];
+
+    /// <summary>
+    /// Inferred; the seat at the top of the table (the third, <see cref="PlayerIndices.Two"/>).
+    /// </summary>
+    public SeatViewModel TopSeat => Seats[(int)PlayerIndices.Two];
+
+    /// <summary>
+    /// Inferred; the seat on the left of the table (the fourth, <see cref="PlayerIndices.Three"/>).
+    /// </summary>
+    public SeatViewModel LeftSeat => Seats[(int)PlayerIndices.Three];
+
+    /// <summary>
     /// What the human player can do.
     /// </summary>
     public HumanControlsViewModel Human { get; }

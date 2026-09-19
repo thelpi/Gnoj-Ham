@@ -147,9 +147,9 @@ public class RoundResultViewModels_Tests
     {
         var viewModel = new RulesViewModel();
 
-        Assert.DoesNotContain(YakuPivot.NagashiMangan, viewModel.Yakus);
-        Assert.Equal(
-            viewModel.Yakus.Select(y => y.ConcealedFanCount).OrderBy(f => f),
-            viewModel.Yakus.Select(y => y.ConcealedFanCount));
+        Assert.DoesNotContain(viewModel.Yakus, y => y.Name == YakuPivot.NagashiMangan.Name);
+        var fans = viewModel.Yakus.Select(y => YakuPivot.Yakus.First(p => p.Name == y.Name).ConcealedFanCount).ToList();
+        Assert.Equal(fans.OrderBy(f => f), fans);
+        Assert.Equal(YakuPivot.Yakus.Count - 1, viewModel.Yakus.Count);
     }
 }

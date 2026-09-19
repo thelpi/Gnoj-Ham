@@ -6,12 +6,15 @@ using Gnoj_Ham_ViewModel;
 namespace Gnoj_Ham_View;
 
 /// <summary>
-/// Displays a <see cref="TileViewModel"/>: same look as <see cref="TileButton"/> (a button holding the
-/// tile image), but driven by data binding instead of constructor arguments, so it can be used in a
-/// data template.
+/// Displays a <see cref="TileViewModel"/>: a button holding the tile image, driven by data binding so
+/// it can be used in a data template.
 /// </summary>
 public sealed class TileView : Button
 {
+    // A tile, standing up, in device independent pixels.
+    private const int TileWidth = 45;
+    private const int TileHeight = 60;
+
     private const double HighlightedImageOpacity = 0.8;
 
     /// <summary>
@@ -72,8 +75,8 @@ public sealed class TileView : Button
             return;
         }
 
-        Height = (tile.IsSideways ? TileButton.TILE_WIDTH : TileButton.TILE_HEIGHT) * Rate;
-        Width = (tile.IsSideways ? TileButton.TILE_HEIGHT : TileButton.TILE_WIDTH) * Rate;
+        Height = (tile.IsSideways ? TileWidth : TileHeight) * Rate;
+        Width = (tile.IsSideways ? TileHeight : TileWidth) * Rate;
 
         Content = new Image
         {
