@@ -13,14 +13,14 @@ public class AutoPlayViewModel_Tests
         => new(RulePivot.Default, _dialogs, new FakeUiDispatcher());
 
     [Fact]
-    public void InitialState_OffersFourBasicSeatsAndTenGames()
+    public void InitialState_OffersFourDefaultSeatsAndTenGames()
     {
         var viewModel = NewViewModel();
 
         Assert.Equal(AutoPlayState.Idle, viewModel.State);
         Assert.Equal("10", viewModel.GamesCountText);
         Assert.Equal(4, viewModel.Seats.Count);
-        Assert.All(viewModel.Seats, seat => Assert.Equal(typeof(BasicCpuManagerPivot), seat.Selected.Type));
+        Assert.All(viewModel.Seats, seat => Assert.Equal(CpuManagerCatalog.Default, seat.Selected));
         Assert.Same(CpuManagerCatalog.Implementations, viewModel.CpuOptions);
         Assert.Null(viewModel.Results);
         Assert.Equal(0, viewModel.Progress);
@@ -96,7 +96,7 @@ public class AutoPlayViewModel_Tests
 
         var names = viewModel.Results!.Select(p => p.Name).ToList();
         Assert.Single(names, n => n.Contains($"({noDefense.DisplayName})"));
-        Assert.Equal(3, names.Count(n => n.Contains("(basic)")));
+        Assert.Equal(3, names.Count(n => n.Contains($"({CpuManagerCatalog.Default.DisplayName})")));
     }
 
     [Fact]

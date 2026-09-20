@@ -424,7 +424,7 @@ public class BasicCpuManagerPivot : CpuManagerBasePivot
                 ? tileKey.Number + 2
                 : tileKey.Number + 1;
             var companion = concealedTiles.First(t => t.Family == tileKey.Family && t.Number == companionNumber);
-            var cost = TileKeepValue(tileKey) + TileKeepValue(companion);
+            var cost = ChiiCost(tileKey, companion);
 
             if (cost < bestCost)
             {
@@ -490,6 +490,11 @@ public class BasicCpuManagerPivot : CpuManagerBasePivot
         var isDora = Round.GetDoraCount(key) > 0 || key.IsRedDora;
         return isDora ? 1 : 0;
     }
+
+    // What a chii call with these two tiles of the hand costs: the lowest goes first, and
+    // int.MaxValue is a sequence that's never worth calling.
+    protected virtual int ChiiCost(TilePivot tileKey, TilePivot companion)
+        => TileKeepValue(tileKey) + TileKeepValue(companion);
 
     // Rough "worth keeping" score for a tile about to be spent on a chii call: doras are the obvious
     // loss, and a tile already paired in hand has follow-up potential (yakuhai, toitoi, extra brelan)

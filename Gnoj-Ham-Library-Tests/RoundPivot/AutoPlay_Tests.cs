@@ -1,4 +1,5 @@
 using Gnoj_Ham_Library;
+using Gnoj_Ham_Library.Enums;
 
 namespace Gnoj_Ham_Library_Tests;
 
@@ -46,7 +47,12 @@ public class AutoPlay_Tests
     {
         var random = new Random(seed);
 
-        var game = new GamePivot(RulePivot.Default, PlayerPivot.BuildPlayers(null), random);
+        // The seeds above are picked for what the basic CPU happens to do with them (see the comments),
+        // whichever CPU plays by default.
+        var basicCpus = Enum.GetValues<PlayerIndices>().ToDictionary(
+            i => i,
+            i => (Func<RoundPivot, CpuManagerBasePivot>)(round => new BasicCpuManagerPivot(round)));
+        var game = new GamePivot(RulePivot.Default, PlayerPivot.BuildPlayers(null), random, basicCpus);
 
         IReadOnlyList<PlayerScorePivot>? scores;
         while (true)

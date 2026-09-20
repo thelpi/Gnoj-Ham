@@ -259,7 +259,7 @@ public class RoundPivot
     /// <param name="cpuManagerFactories">
     /// Optional; per-seat override of which <see cref="CpuManagerBasePivot"/> implementation plays
     /// that seat, for any seat present in the dictionary. A seat missing from the dictionary (or
-    /// <c>Null</c> altogether, the default) plays through the plain <see cref="BasicCpuManagerPivot"/>.
+    /// <c>Null</c> altogether, the default) plays through <see cref="CpuManagerCatalog.Default"/>.
     /// </param>
     internal RoundPivot(GamePivot game, PlayerIndices firstPlayerIndex, Random random, Action<List<TilePivot>>? drivenDraw = null,
         IReadOnlyDictionary<PlayerIndices, Func<RoundPivot, CpuManagerBasePivot>>? cpuManagerFactories = null)
@@ -294,7 +294,7 @@ public class RoundPivot
         {
             cpuManagers[i] = cpuManagerFactories != null && cpuManagerFactories.TryGetValue(i, out var factory)
                 ? factory(this)
-                : new BasicCpuManagerPivot(this);
+                : CpuManagerCatalog.CreateDefault(this);
         }
         _cpuManagers = cpuManagers;
     }

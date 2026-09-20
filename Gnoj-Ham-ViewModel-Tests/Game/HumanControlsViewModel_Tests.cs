@@ -121,7 +121,8 @@ public class HumanControlsViewModel_Tests
     [Fact]
     public void ShowActions_WhenNothingCanBeCalled_OffersNothing()
     {
-        var game = FindGame(g => !g.Round.IsHumanPlayer
+        // A CPU is about to play, at the very start of a round: the human player has nothing to call yet.
+        var game = Enumerable.Range(1, 50).Select(NewGame).First(g => !g.Round.IsHumanPlayer
             && !g.Round.CanCallPon(Human)
             && g.Round.CanCallKan(Human).Count == 0);
         var controls = NewControls(game);

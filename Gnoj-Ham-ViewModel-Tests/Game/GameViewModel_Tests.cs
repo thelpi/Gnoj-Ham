@@ -223,14 +223,14 @@ public class GameViewModel_Tests
         var controls = HumanOf(viewModel);
         var discards = viewModel.Game.Round.GetDiscard(Human).Count;
 
-        // The same tile, discarded a second time by a double click: nothing is left of it in the hand.
+        // A double click on a tile: the second click comes while the CPUs are playing, and is ignored.
         var tile = controls.FirstDiscardableTile();
-        await controls.SelectTileCommand.ExecuteAsync(tile);
+        var first = controls.SelectTileCommand.ExecuteAsync(tile);
+        var second = controls.SelectTileCommand.ExecuteAsync(tile);
+        await Task.WhenAll(first, second);
         await viewModel.WhenIdleAsync();
-        var afterFirst = viewModel.Game.Round.GetDiscard(Human).Count;
-        await controls.SelectTileCommand.ExecuteAsync(tile);
 
-        Assert.Equal(discards + 1, afterFirst);
+        Assert.Equal(discards + 1, viewModel.Game.Round.GetDiscard(Human).Count);
     }
 
     [Theory]
@@ -493,6 +493,7 @@ public class GameViewModel_Tests
         var viewModel = await PlayUntilAsync(g => HumanOf(g).Riichi.IsAvailable && HumanOf(g).IsPanelVisible, seeds: 300);
         Assert.NotNull(viewModel);
         var controls = HumanOf(viewModel);
+        var shownBefore = _dialogs.ShownViewModels.Count;
         _animations.Hold = true;
 
         var riichi = controls.Riichi.InvokeCommand.ExecuteAsync(null);
@@ -507,10 +508,12 @@ public class GameViewModel_Tests
         await riichi;
         await viewModel.WhenIdleAsync();
 
-        // Either the only tile went through, or the player is asked to choose among some.
+        // Either the only tile went through (and a CPU may have won on it, ending the round), or the player is
+        // asked to choose among some.
         var declared = viewModel.Table.Seats[(int)Human].HasRiichiStick;
         var asked = viewModel.Table.Seats[(int)Human].HandTiles.Concat(viewModel.Table.Seats[(int)Human].PickTiles).Any(t => !t.IsEnabled);
-        Assert.True(declared || asked);
+        var roundIsOver = _dialogs.ShownViewModels.Count > shownBefore;
+        Assert.True(declared || asked || roundIsOver);
     }
 
     [Fact]

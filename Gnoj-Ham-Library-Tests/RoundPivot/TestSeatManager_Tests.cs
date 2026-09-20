@@ -6,7 +6,7 @@ namespace Gnoj_Ham_Library_Tests;
 public class TestSeatManager_Tests
 {
     [Fact]
-    public void OnlyTheGivenSeatsUseTheirFactory_EveryOtherSeatStaysBasic()
+    public void OnlyTheGivenSeatsUseTheirFactory_EveryOtherSeatStaysDefault()
     {
         var factories = new Dictionary<PlayerIndices, Func<RoundPivot, CpuManagerBasePivot>>
         {
@@ -24,19 +24,19 @@ public class TestSeatManager_Tests
             }
             else
             {
-                Assert.IsType<BasicCpuManagerPivot>(manager);
+                Assert.IsType(CpuManagerCatalog.Default.Type, manager);
             }
         }
     }
 
     [Fact]
-    public void NoCpuManagerFactories_EverySeatStaysBasic()
+    public void NoCpuManagerFactories_EverySeatStaysDefault()
     {
         var game = new GamePivot(RulePivot.Default, PlayerPivot.BuildPlayers(null), new Random(1));
 
         for (var i = 0; i < 4; i++)
         {
-            Assert.IsType<BasicCpuManagerPivot>(game.Round.CpuManager((PlayerIndices)i));
+            Assert.IsType(CpuManagerCatalog.Default.Type, game.Round.CpuManager((PlayerIndices)i));
         }
     }
 
@@ -53,7 +53,7 @@ public class TestSeatManager_Tests
         game.NextRound(null);
 
         Assert.IsType<NoDefenseCpuManagerPivot>(game.Round.CpuManager(PlayerIndices.Three));
-        Assert.IsType<BasicCpuManagerPivot>(game.Round.CpuManager(PlayerIndices.Zero));
+        Assert.IsType(CpuManagerCatalog.Default.Type, game.Round.CpuManager(PlayerIndices.Zero));
     }
 
     [Fact]
@@ -69,7 +69,7 @@ public class TestSeatManager_Tests
 
         Assert.IsType<NoDefenseCpuManagerPivot>(game.Round.CpuManager(PlayerIndices.Zero));
         Assert.IsType<NoDefenseCpuManagerPivot>(game.Round.CpuManager(PlayerIndices.Two));
-        Assert.IsType<BasicCpuManagerPivot>(game.Round.CpuManager(PlayerIndices.One));
-        Assert.IsType<BasicCpuManagerPivot>(game.Round.CpuManager(PlayerIndices.Three));
+        Assert.IsType(CpuManagerCatalog.Default.Type, game.Round.CpuManager(PlayerIndices.One));
+        Assert.IsType(CpuManagerCatalog.Default.Type, game.Round.CpuManager(PlayerIndices.Three));
     }
 }

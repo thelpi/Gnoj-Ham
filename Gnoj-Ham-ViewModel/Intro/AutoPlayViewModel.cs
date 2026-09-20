@@ -31,7 +31,7 @@ public sealed partial class AutoPlayViewModel : ObservableObject
         _dialogs = dialogs;
         _dispatcher = dispatcher;
 
-        Seats = GamePivot.PerPlayer(_ => new CpuSeatViewModel(CpuManagerCatalog.Implementations[0]));
+        Seats = GamePivot.PerPlayer(_ => new CpuSeatViewModel(CpuManagerCatalog.Default));
     }
 
     /// <summary>

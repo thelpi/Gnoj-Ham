@@ -143,10 +143,9 @@ public class GamePivot
     /// <param name="cpuManagerFactories">
     /// Optional; per-seat override of which <see cref="CpuManagerBasePivot"/> implementation plays
     /// that seat, for any seat present in the dictionary - e.g. for benchmarking a variant against
-    /// three <see cref="BasicCpuManagerPivot"/> opponents over many unattended games. A seat missing
-    /// from the dictionary (or <c>Null</c> altogether, the default) plays through the plain
-    /// <see cref="BasicCpuManagerPivot"/>. Stays the same for every round of this game, including
-    /// after <see cref="NextRound"/>.
+    /// three other CPUs over many unattended games. A seat missing from the dictionary (or <c>Null</c>
+    /// altogether, the default) plays through <see cref="CpuManagerCatalog.Default"/>. Stays the same
+    /// for every round of this game, including after <see cref="NextRound"/>.
     /// </param>
     /// <exception cref="ArgumentException">Four players are required.</exception>
     public GamePivot(RulePivot ruleset, IReadOnlyList<PlayerPivot> players, Random random,
