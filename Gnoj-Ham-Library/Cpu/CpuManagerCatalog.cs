@@ -22,5 +22,6 @@ public static class CpuManagerCatalog
         new(typeof(BasicNoWaitWidthCpuManagerPivot), "basic no wait width"),
         new(typeof(BasicNoNumberKabeCpuManagerPivot), "basic no number kabe"),
         new(typeof(EfficiencyCpuManagerPivot), "efficiency"),
+        new(typeof(EfficiencyPushFoldCpuManagerPivot), "efficiency push fold"),
     };
 }

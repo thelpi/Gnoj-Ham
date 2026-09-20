@@ -18,9 +18,42 @@ public class EfficiencyCpuManagerPivot : BasicCpuManagerPivot
         : base(round)
     { }
 
+    /// <summary>
+    /// What a hand is worth once a tile is discarded.
+    /// </summary>
+    /// <param name="Tile">The tile discarded.</param>
+    /// <param name="Shanten">How far the hand is from tenpai (see <see cref="ShantenCalculatorPivot"/>).</param>
+    /// <param name="Ukeire">How many of the tiles still to draw bring the hand closer to tenpai.</param>
+    protected readonly record struct DiscardEvaluation(TilePivot Tile, int Shanten, int Ukeire);
+
     protected override TilePivot DevelopmentDiscardDecision(
         IReadOnlyList<TilePivot> concealedTiles,
         List<TilePivot> discardableTiles,
+        IReadOnlyList<TilePivot> deadTiles)
+    {
+        var evaluations = EvaluateDiscards(concealedTiles, discardableTiles, deadTiles);
+
+        var best = evaluations
+            .OrderBy(e => e.Shanten)
+            .ThenByDescending(e => e.Ukeire)
+            .First();
+
+        return base.DevelopmentDiscardDecision(
+            concealedTiles,
+            evaluations.Where(e => e.Shanten == best.Shanten && e.Ukeire == best.Ukeire).Select(e => e.Tile).ToList(),
+            deadTiles);
+    }
+
+    /// <summary>
+    /// Evaluates each possible discard of the current player.
+    /// </summary>
+    /// <param name="concealedTiles">The concealed tiles of the current player.</param>
+    /// <param name="discardableTiles">The tiles that can be discarded, of distinct kinds.</param>
+    /// <param name="deadTiles">The tiles in sight of the current player (see <see cref="RoundPivot.DeadTilesFromIndexPointOfView"/>).</param>
+    /// <returns>One evaluation per tile.</returns>
+    protected List<DiscardEvaluation> EvaluateDiscards(
+        IReadOnlyList<TilePivot> concealedTiles,
+        IReadOnlyList<TilePivot> discardableTiles,
         IReadOnlyList<TilePivot> deadTiles)
     {
         var declaredCombinationsCount = Round.GetHand(Round.CurrentPlayerIndex).DeclaredCombinations.Count;
@@ -39,25 +72,12 @@ public class EfficiencyCpuManagerPivot : BasicCpuManagerPivot
             kindCounts[tile.KindIndex]++;
         }
 
-        var candidates = discardableTiles
-            .Select(tile => (tile, choice: EvaluateDiscard(tile, kindCounts, declaredCombinationsCount, liveCopies)))
+        return discardableTiles
+            .Select(tile => EvaluateDiscard(tile, kindCounts, declaredCombinationsCount, liveCopies))
             .ToList();
-
-        var best = candidates
-            .OrderBy(c => c.choice.Shanten)
-            .ThenByDescending(c => c.choice.Ukeire)
-            .First()
-            .choice;
-
-        return base.DevelopmentDiscardDecision(
-            concealedTiles,
-            candidates.Where(c => c.choice.Shanten == best.Shanten && c.choice.Ukeire == best.Ukeire).Select(c => c.tile).ToList(),
-            deadTiles);
     }
 
-    // What the hand is worth once the tile is thrown: how far it is from tenpai, and how many of the
-    // tiles still to draw bring it closer.
-    private static (int Shanten, int Ukeire) EvaluateDiscard(TilePivot tile, int[] kindCounts, int declaredCombinationsCount, int[] liveCopies)
+    private static DiscardEvaluation EvaluateDiscard(TilePivot tile, int[] kindCounts, int declaredCombinationsCount, int[] liveCopies)
     {
         kindCounts[tile.KindIndex]--;
 
@@ -80,6 +100,6 @@ public class EfficiencyCpuManagerPivot : BasicCpuManagerPivot
         }
 
         kindCounts[tile.KindIndex]++;
-        return (shanten, ukeire);
+        return new DiscardEvaluation(tile, shanten, ukeire);
     }
 }

@@ -188,7 +188,7 @@ public class BasicCpuManagerPivot : CpuManagerBasePivot
 
         if (stopCurrentHand)
         {
-            return tilesSafety[0].tile;
+            return FoldDiscardDecision(concealedTiles, discardableTiles, tilesSafety, deadTiles);
         }
 
         // kokushi musou and chiitoitsu pursuits are special hand shapes that play by entirely
@@ -205,6 +205,18 @@ public class BasicCpuManagerPivot : CpuManagerBasePivot
         }
 
         return DevelopmentDiscardDecision(concealedTiles, discardableTiles, deadTiles);
+    }
+
+    // What to discard when an opponent looks dangerous and the hand isn't tenpai: the safest tile,
+    // whatever it does to the hand. Virtual so a variant (see EfficiencyPushFoldCpuManagerPivot) can keep
+    // developing a hand close enough to tenpai, and keep everything else as it is.
+    protected virtual TilePivot FoldDiscardDecision(
+        IReadOnlyList<TilePivot> concealedTiles,
+        List<TilePivot> discardableTiles,
+        IReadOnlyList<(TilePivot tile, int unsafePoints)> tilesSafety,
+        IReadOnlyList<TilePivot> deadTiles)
+    {
+        return tilesSafety[0].tile;
     }
 
     // What to discard to develop a hand that's neither tenpai, nor giving up, nor a special shape: the
